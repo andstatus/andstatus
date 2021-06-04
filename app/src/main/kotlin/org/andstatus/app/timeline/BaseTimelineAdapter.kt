@@ -138,7 +138,7 @@ abstract class BaseTimelineAdapter<T : ViewItem<T>>(
         if (myContext.isEmpty) {
             displayDensity = 1f
         } else {
-            displayDensity = myContext.context().resources.displayMetrics.density
+            displayDensity = myContext.context.resources.displayMetrics.density
             MyLog.v(this) { "density=$displayDensity" }
         }
     }

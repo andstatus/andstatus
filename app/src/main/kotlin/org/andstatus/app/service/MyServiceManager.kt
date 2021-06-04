@@ -187,7 +187,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
         fun sendCommandIgnoringServiceAvailability(commandData: CommandData) {
             // Using explicit Service intent,
             // see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
-            var serviceIntent = Intent(MyContextHolder.myContextHolder.getNow().context(), MyService::class.java)
+            var serviceIntent = Intent(MyContextHolder.myContextHolder.getNow().context, MyService::class.java)
             when (commandData.command) {
                 CommandEnum.STOP_SERVICE,
                 CommandEnum.BROADCAST_SERVICE_STATE -> serviceIntent = commandData.toIntent(serviceIntent)
@@ -196,13 +196,13 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
                 else -> CommandQueue.addToPreQueue(commandData)
             }
             try {
-                MyContextHolder.myContextHolder.getNow().context().startService(serviceIntent)
+                MyContextHolder.myContextHolder.getNow().context.startService(serviceIntent)
             } catch (e: IllegalStateException) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     try {
                         // Since Android Oreo TODO: https://developer.android.com/about/versions/oreo/android-8.0-changes.html#back-all
                         // See also https://github.com/evernote/android-job/issues/254
-                        MyContextHolder.myContextHolder.getNow().context().startForegroundService(serviceIntent)
+                        MyContextHolder.myContextHolder.getNow().context.startForegroundService(serviceIntent)
                     } catch (e2: IllegalStateException) {
                         MyLog.e(TAG, "Failed to start MyService in the foreground", e2)
                     }
@@ -219,7 +219,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
          */
         fun stopService() {
             stateInTime = MyServiceStateInTime.getUnknown()
-            MyContextHolder.myContextHolder.getNow().takeIf { it.nonEmpty }?.context()?.sendBroadcast(
+            MyContextHolder.myContextHolder.getNow().takeIf { it.nonEmpty }?.context?.sendBroadcast(
                     CommandData.newCommand(CommandEnum.STOP_SERVICE)
                             .toIntent(MyAction.EXECUTE_COMMAND.getIntent())
             )
@@ -244,7 +244,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
                 state.stateEnum = MyServiceState.UNKNOWN
                 state.isWaiting = true
                 stateInTime = state
-                MyContextHolder.myContextHolder.getNow().context()
+                MyContextHolder.myContextHolder.getNow().context
                         .sendBroadcast(CommandData.newCommand(CommandEnum.BROADCAST_SERVICE_STATE)
                                 .toIntent(MyAction.EXECUTE_COMMAND.getIntent()))
             }

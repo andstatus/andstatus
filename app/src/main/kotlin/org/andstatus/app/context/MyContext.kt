@@ -34,11 +34,10 @@ import java.util.function.Supplier
 
 interface MyContext : IdentifiableInstance, IsEmpty {
     fun newInitialized(initializer: Any): MyContext
-    fun newCreator(context: Context, initializer: Any?): MyContext
     fun initialized(): Boolean
     fun isReady(): Boolean
     fun state(): MyContextState
-    fun context(): Context
+    val context: Context
     fun baseContext(): Context
     fun preferencesChangeTime(): Long
     fun getLastDatabaseError(): String

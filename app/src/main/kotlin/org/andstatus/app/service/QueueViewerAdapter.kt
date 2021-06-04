@@ -39,7 +39,7 @@ internal class QueueViewerAdapter(private val container: QueueViewer, items: Mut
         MyUrlSpan.Companion.showText(view, R.id.queue_type, item.queueType.acronym, false, false)
         MyUrlSpan.Companion.showText(view, R.id.command_summary, item.commandData.toCommandSummary(myContext)
                 + "\t "
-                + item.commandData.createdDateWithLabel(myContext.context()), false, false)
+                + item.commandData.createdDateWithLabel(myContext.context), false, false)
         MyUrlSpan.Companion.showText(view, R.id.result_summary, item.commandData.getResult().toSummary(), false, false)
         return view
     }

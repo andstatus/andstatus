@@ -123,7 +123,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
             // http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
             ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY, syncAutomatically)
         }
-        val am = AccountManager.get(myContext.context())
+        val am = AccountManager.get(myContext.context)
         val jsonString = toJsonString()
         logMe("Saving to " + androidAccount.name)
         am.setUserData(androidAccount, AccountUtils.KEY_ACCOUNT, jsonString)
@@ -269,7 +269,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
 
         fun fromAndroidAccount(myContext: MyContext, androidAccount: Account?): AccountData {
             requireNotNull(androidAccount) { "$TAG account is null" }
-            val am = AccountManager.get(myContext.context())
+            val am = AccountManager.get(myContext.context)
             val jsonString: String = am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT) ?: ""
             val accountData = fromJsonString(myContext, jsonString, true)
             accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,

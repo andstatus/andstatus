@@ -124,7 +124,7 @@ class Attachment : Comparable<Attachment>, IsEmpty {
         fun fromUriAndMimeType(uriIn: Uri, mimeTypeIn: String): Attachment {
             Objects.requireNonNull(uriIn)
             Objects.requireNonNull(mimeTypeIn)
-            return Attachment( MyContextHolder.myContextHolder.getNow().context()?.getContentResolver(), uriIn, mimeTypeIn)
+            return Attachment( MyContextHolder.myContextHolder.getNow().context?.getContentResolver(), uriIn, mimeTypeIn)
         }
     }
 }

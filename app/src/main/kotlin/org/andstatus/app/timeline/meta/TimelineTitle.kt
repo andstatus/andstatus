@@ -63,13 +63,13 @@ class TimelineTitle private constructor(val title: String, val subTitle: String?
             val title = MyStringBuilder()
             if (showActor(timeline, accountToHide, namesAreHidden)) {
                 if (isActorMayBeShownInSubtitle(timeline)) {
-                    title.withSpace(timeline.timelineType.title(myContext.context()))
+                    title.withSpace(timeline.timelineType.title(myContext.context))
                 } else {
                     title.withSpace(
-                            timeline.timelineType.title(myContext.context(), getActorName(timeline)))
+                            timeline.timelineType.title(myContext.context, getActorName(timeline)))
                 }
             } else {
-                title.withSpace(timeline.timelineType.title(myContext.context()))
+                title.withSpace(timeline.timelineType.title(myContext.context))
                 if (showOrigin(timeline, namesAreHidden)) {
                     title.withSpaceQuoted(timeline.getSearchQuery())
                 }
@@ -99,7 +99,7 @@ class TimelineTitle private constructor(val title: String, val subTitle: String?
                 title.withSpaceQuoted(timeline.getSearchQuery())
             }
             if (timeline.isCombined) {
-                title.withSpace(if (myContext.isEmpty) "combined" else myContext.context().getText(R.string.combined_timeline_on))
+                title.withSpace(if (myContext.isEmpty) "combined" else myContext.context.getText(R.string.combined_timeline_on))
             }
             return title.toString()
         }

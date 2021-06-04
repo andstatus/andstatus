@@ -48,12 +48,12 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 TestSuite.setHttpConnectionMockInstance(httpConnectionMock)
                  MyContextHolder.myContextHolder.getBlocking().setExpired { this.javaClass.simpleName + " setUp" }
             }
-            myContext =  MyContextHolder.myContextHolder.initialize(myContext.context(), this).getBlocking()
+            myContext =  MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
             if (!myContext.isReady()) {
                 val msg = "Context is not ready after the initialization, repeating... $myContext"
                 MyLog.w(this, msg)
                 myContext.setExpired { this.javaClass.simpleName + msg }
-                myContext =  MyContextHolder.myContextHolder.initialize(myContext.context(), this).getBlocking()
+                myContext =  MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
                 Assert.assertEquals("Context should be ready", true, myContext.isReady())
             }
             MyServiceManager.Companion.setServiceUnavailable()
@@ -64,7 +64,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
             }
             connectionInstanceId = httpConnectionMock?.getInstanceId() ?: 0
             serviceConnector = MyServiceEventsReceiver(myContext, this).also {
-                it.registerReceiver(myContext.context())
+                it.registerReceiver(myContext.context)
             }
             dropQueues()
             httpConnectionMock?.clearPostedData()
@@ -189,7 +189,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
         MyLog.v(this, "tearDown started")
         dropQueues()
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true)
-        serviceConnector?.unregisterReceiver(myContext.context())
+        serviceConnector?.unregisterReceiver(myContext.context)
         TestSuite.clearHttpMocks()
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.UNKNOWN)
          MyContextHolder.myContextHolder.getBlocking().accounts().initialize()

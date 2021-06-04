@@ -96,7 +96,7 @@ class MyUrlSpan : URLSpan {
                 MyLog.i(this, "Malformed link:'$url', $data")
                 val myContext = MyContextHolder.myContextHolder.getNow()
                 if (myContext.nonEmpty) {
-                    Toast.makeText(myContext.context(), myContext.context().getText(R.string.malformed_link)
+                    Toast.makeText(myContext.context, myContext.context.getText(R.string.malformed_link)
                             .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
                 }
             } catch (e2: Exception) {
@@ -108,7 +108,7 @@ class MyUrlSpan : URLSpan {
                 MyLog.i(this, "Malformed link:'$url', $data")
                 val myContext = MyContextHolder.myContextHolder.getNow()
                 if (myContext.nonEmpty) {
-                    Toast.makeText(myContext.context(), myContext.context().getText(R.string.malformed_link)
+                    Toast.makeText(myContext.context, myContext.context.getText(R.string.malformed_link)
                             .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
                 }
             } catch (e2: Exception) {

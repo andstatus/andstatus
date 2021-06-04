@@ -160,7 +160,7 @@ class CommandData private constructor(
             builder.withComma(commandTimeline.toString())
         }
         builder.withComma("itemId", itemId) { itemId != 0L }
-        builder.withComma("created:" + RelativeTime.getDifference(myContext.context(), getCreatedDate()))
+        builder.withComma("created:" + RelativeTime.getDifference(myContext.context, getCreatedDate()))
         builder.withComma(CommandResult.toString(commandResult))
         return MyStringBuilder.formatKeyValue(this, builder)
     }
@@ -242,7 +242,7 @@ class CommandData private constructor(
             CommandEnum.GET_ATTACHMENT, CommandEnum.UPDATE_NOTE -> builder.withSpaceQuoted(trimConditionally(description, summaryOnly))
             CommandEnum.GET_TIMELINE -> builder.append(TimelineTitle.from(myContext, getTimeline()).toString())
             CommandEnum.GET_OLDER_TIMELINE -> {
-                builder.append(WhichPage.OLDER.getTitle(myContext.context()))
+                builder.append(WhichPage.OLDER.getTitle(myContext.context))
                 builder.withSpace(TimelineTitle.from(myContext, getTimeline()).toString())
             }
             CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS -> builder.withSpace(getTimeline().actor.actorNameInTimeline)
@@ -250,7 +250,7 @@ class CommandData private constructor(
             else -> appendScopeName(myContext, builder)
         }
         if (!summaryOnly) {
-            builder.atNewLine(createdDateWithLabel(myContext.context()))
+            builder.atNewLine(createdDateWithLabel(myContext.context))
             builder.atNewLine(getResult().toSummary())
         }
         return builder.toString()
@@ -278,11 +278,11 @@ class CommandData private constructor(
     private fun toShortCommandName(myContext: MyContext): String {
         val builder = StringBuilder()
         when (command) {
-            CommandEnum.GET_TIMELINE -> builder.append(getTimelineType().title(myContext.context()))
+            CommandEnum.GET_TIMELINE -> builder.append(getTimelineType().title(myContext.context))
             CommandEnum.GET_OLDER_TIMELINE -> {
-                builder.append(WhichPage.OLDER.getTitle(myContext.context()))
+                builder.append(WhichPage.OLDER.getTitle(myContext.context))
                 builder.append(" ")
-                builder.append(getTimelineType().title(myContext.context()))
+                builder.append(getTimelineType().title(myContext.context))
             }
             else -> builder.append(command.getTitle(myContext, getTimeline().myAccountToSync.getAccountName()))
         }

@@ -61,7 +61,7 @@ class Audience(val origin: Origin) {
 
     fun toAudienceString(inReplyToActor: Actor): String {
         if (this === EMPTY) return "(empty)"
-        val context = origin.myContext.context()
+        val context = origin.myContext.context
         val builder = MyStringBuilder()
         val toBuilder = MyStringBuilder()
         if (visibility.isPublic()) {

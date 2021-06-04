@@ -53,7 +53,7 @@ class ActorProfileViewer(container: NoteContextMenuContainer) {
         populator.populateView(profileView, item, 0)
         showOrigin(item)
         MyUrlSpan.showText(profileView, R.id.profileAge, RelativeTime.getDifference(
-                contextMenu.getMyContext().context(), item.actor.getUpdatedDate()), false, false)
+                contextMenu.getMyContext().context, item.actor.getUpdatedDate()), false, false)
     }
 
     private fun showOrigin(item: ActorViewItem) {

@@ -72,8 +72,8 @@ class SyncInitiator : BroadcastReceiver() {
             MyLog.v(this) { "syncIfNeeded Service is unavailable" }
             return false
         }
-        val connectionState = UriUtils.getConnectionState(myContext.context())
-        MyLog.v(this) { "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()) }
+        val connectionState = UriUtils.getConnectionState(myContext.context)
+        MyLog.v(this) { "syncIfNeeded " + UriUtils.getConnectionState(myContext.context) }
         if (!ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) return false
         for (myAccount in myContext.accounts().accountsToSync()) {
             if (myContext.timelines().toAutoSyncForAccount(myAccount).isNotEmpty()) {
@@ -102,7 +102,7 @@ class SyncInitiator : BroadcastReceiver() {
         private fun scheduleRepeatingAlarm(myContext: MyContext) {
             val minSyncIntervalMillis = myContext.accounts().minSyncIntervalMillis()
             if (minSyncIntervalMillis > 0) {
-                val alarmManager = myContext.context().getSystemService(AlarmManager::class.java)
+                val alarmManager = myContext.context.getSystemService(AlarmManager::class.java)
                 if (alarmManager == null) {
                     MyLog.w(SyncInitiator::class.java, "No AlarmManager ???")
                     return
@@ -113,19 +113,19 @@ class SyncInitiator : BroadcastReceiver() {
                 alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                         SystemClock.elapsedRealtime() + randomDelay,
                         minSyncIntervalMillis,
-                        PendingIntent.getBroadcast(myContext.context(), 0, MyAction.SYNC.getIntent(), 0)
+                        PendingIntent.getBroadcast(myContext.context, 0, MyAction.SYNC.getIntent(), 0)
                 )
             }
         }
 
         private fun registerBroadcastReceiver(myContext: MyContext?) {
-            if (myContext != null && myContext.accounts().hasSyncedAutomatically()) myContext.context()
+            if (myContext != null && myContext.accounts().hasSyncedAutomatically()) myContext.context
                     .registerReceiver(BROADCAST_RECEIVER, IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED))
         }
 
         fun unregister(myContext: MyContext?) {
             try {
-                myContext?.context()?.unregisterReceiver(BROADCAST_RECEIVER)
+                myContext?.context?.unregisterReceiver(BROADCAST_RECEIVER)
             } catch (e: IllegalArgumentException) {
                 MyLog.ignored(BROADCAST_RECEIVER, e)
             }

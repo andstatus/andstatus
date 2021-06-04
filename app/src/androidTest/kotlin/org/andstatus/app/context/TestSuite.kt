@@ -67,13 +67,13 @@ object TestSuite {
         ) {
             ensureDataAdded()
         }
-        return getMyContextForTest().context()
+        return getMyContextForTest().context
     }
 
     fun initializeWithData(testCase: Any?): Context {
         initialize(testCase)
         ensureDataAdded()
-        return getMyContextForTest().context()
+        return getMyContextForTest().context
     }
 
     @Synchronized
@@ -149,13 +149,13 @@ object TestSuite {
             "Test Suite initialized, MyContext state=" + MyContextHolder.myContextHolder.getNow().state(),
             initialized
         )
-        dataPath = MyContextHolder.myContextHolder.getNow().context().getDatabasePath("andstatus").getPath()
+        dataPath = MyContextHolder.myContextHolder.getNow().context.getDatabasePath("andstatus").getPath()
         MyLog.v(
             "TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.myContextHolder.getNow().state()
                     + "; databasePath=" + dataPath
         )
         if (FirstActivity.Companion.checkAndUpdateLastOpenedAppVersion(
-                MyContextHolder.myContextHolder.getNow().context(), true
+                MyContextHolder.myContextHolder.getNow().context, true
             )
         ) {
             MyLog.i(TAG, "New version of application is running")
@@ -173,9 +173,9 @@ object TestSuite {
 
     fun waitUntilContextIsReady() {
         val method = "waitUntilContextIsReady"
-        var intent = Intent(MyContextHolder.myContextHolder.getNow().context(), HelpActivity::class.java)
+        var intent = Intent(MyContextHolder.myContextHolder.getNow().context, HelpActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        MyContextHolder.myContextHolder.getNow().context().startActivity(intent)
+        MyContextHolder.myContextHolder.getNow().context.startActivity(intent)
         var i = 100
         while (i > 0) {
             DbUtils.waitMs(method, 2000)
@@ -188,10 +188,10 @@ object TestSuite {
             i--
         }
         Assert.assertEquals("Is Not ready", MyContextState.READY, MyContextHolder.myContextHolder.getNow().state())
-        intent = Intent(MyContextHolder.myContextHolder.getNow().context(), HelpActivity::class.java)
+        intent = Intent(MyContextHolder.myContextHolder.getNow().context, HelpActivity::class.java)
         intent.putExtra(HelpActivity.Companion.EXTRA_CLOSE_ME, true)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        MyContextHolder.myContextHolder.getNow().context().startActivity(intent)
+        MyContextHolder.myContextHolder.getNow().context.startActivity(intent)
         DbUtils.waitMs(method, 2000)
     }
 

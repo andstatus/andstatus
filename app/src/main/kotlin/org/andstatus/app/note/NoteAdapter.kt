@@ -87,6 +87,6 @@ class NoteAdapter(contextMenu: NoteContextMenu, listData: TimelineData<NoteViewI
     }
 
     init {
-        TOP_TEXT = myContext.context().getText(R.string.top).toString()
+        TOP_TEXT = myContext.context.getText(R.string.top).toString()
     }
 }

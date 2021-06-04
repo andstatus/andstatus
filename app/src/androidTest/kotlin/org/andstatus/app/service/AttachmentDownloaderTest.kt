@@ -68,7 +68,7 @@ class AttachmentDownloaderTest {
         val data: DownloadData = DownloadData.Companion.fromId(downloadRowId)
         Assert.assertTrue(data.getFilename(), data.getFile().existed)
         val uri: Uri = FileProvider.Companion.downloadFilenameToUri(data.getFile().getFilename())
-        val inputStream: InputStream =  MyContextHolder.myContextHolder.getNow().context().contentResolver.openInputStream(uri)
+        val inputStream: InputStream =  MyContextHolder.myContextHolder.getNow().context.contentResolver.openInputStream(uri)
                 ?: throw IllegalStateException("No stream")
         val buffer = ByteArray(100)
         val bytesRead = inputStream.read(buffer)

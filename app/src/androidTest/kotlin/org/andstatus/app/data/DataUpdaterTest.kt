@@ -66,7 +66,7 @@ class DataUpdaterTest {
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
         myContext = TestSuite.getMyContextForTest()
-        context = myContext.context()
+        context = myContext.context
         DemoData.demoData.checkDataPath()
     }
 

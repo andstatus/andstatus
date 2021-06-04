@@ -106,7 +106,7 @@ internal class CheckAudience : DataChecker() {
         }
         logger.logProgressIfLongProcess {
             """${origin.name}: need to fix ${fixSummary.toFixCount} of ${fixSummary.rowsCount} audiences;
-${RelativeTime.getDifference(myContext.context(), insDate)}, ${I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 120)}"""
+${RelativeTime.getDifference(myContext.context, insDate)}, ${I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 120)}"""
         }
         return fixSummary
     }

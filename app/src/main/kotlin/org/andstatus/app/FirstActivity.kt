@@ -107,7 +107,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
         }
         if (!launched) {
             HelpActivity.startMe(
-                    if (myContext == null)  MyContextHolder.myContextHolder.getNow().context() else myContext.context(),
+                    if (myContext == null)  MyContextHolder.myContextHolder.getNow().context else myContext.context,
                     true, HelpActivity.PAGE_LOGO)
         }
         finish()
@@ -165,7 +165,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
         }
 
         fun startApp(myContext: MyContext) {
-            myContext.context().let { startApp(it) }
+            myContext.context.let { startApp(it) }
         }
 
         private fun startApp(context: Context) {

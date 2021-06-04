@@ -127,7 +127,7 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
 
     protected fun showNoteContent(view: View, item: T) {
         MyUrlSpan.showSpannable(view.findViewById<TextView?>(R.id.note_body),
-                if (item.isSensitive() && !MyPreferences.isShowSensitiveContent()) SpannableString.valueOf("(" + myContext.context().getText(R.string.sensitive) + ")") else item.getContent(),
+                if (item.isSensitive() && !MyPreferences.isShowSensitiveContent()) SpannableString.valueOf("(" + myContext.context.getText(R.string.sensitive) + ")") else item.getContent(),
                 false)
     }
 
@@ -177,7 +177,7 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
         if (myContext.users().isMe(item.inReplyToActor.actor) &&
                 !myContext.users().isMe(item.author.actor)) {
             val referencedView = view.findViewById<View?>(R.id.note_indented)
-            val replyToMeMarkerView: ImageView = ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(6),
+            val replyToMeMarkerView: ImageView = ConversationIndentImageView(myContext.context, referencedView, dpToPixes(6),
                     R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker)
             replyToMeMarkerView.id = R.id.reply_timeline_marker
             view.addView(replyToMeMarkerView, 1)

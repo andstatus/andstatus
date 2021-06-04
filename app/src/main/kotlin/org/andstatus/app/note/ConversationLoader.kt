@@ -148,7 +148,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
         }
         val uri: Uri = MatchedUri.getTimelineItemUri(
                 myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin], item.getNoteId())
-        myContext.context().contentResolver
+        myContext.context.contentResolver
                 .query(uri, item.getProjection().toTypedArray(), null, null, null).use { cursor ->
                     if (cursor != null && cursor.moveToFirst()) {
                         val loadedItem = item.fromCursor(myContext, cursor)

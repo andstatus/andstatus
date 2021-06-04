@@ -251,7 +251,7 @@ class HttpReadResult(val request: HttpRequest) {
             if (request.isFileTooLarge()) {
                 setException(ConnectionException.hardConnectionException(
                         "File, downloaded from '$url', is too large: "
-                                + Formatter.formatShortFileSize( MyContextHolder.myContextHolder.getNow().context(),
+                                + Formatter.formatShortFileSize( MyContextHolder.myContextHolder.getNow().context,
                                 request.fileResult?.length() ?: 0),
                         null))
                 return Try.failure(exception)

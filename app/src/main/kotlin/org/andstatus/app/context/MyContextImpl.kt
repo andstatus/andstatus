@@ -54,9 +54,9 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
 
     @Volatile
     private var state: MyContextState = MyContextState.EMPTY
-    private val baseContext: Context
-    private val context: Context
-    private val initializedBy: String
+    private val initializedBy: String = MyStringBuilder.objToTag(initializer)
+    private val baseContext: Context = calcBaseContextToUse(parent, context)
+    override val context: Context = MyLocale.onAttachBaseContext(baseContext)
 
     /**
      * When preferences, loaded into this class, were changed
@@ -68,7 +68,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     private var db: DatabaseHolder? = null
 
     @Volatile
-    private var lastDatabaseError: String = ""
+    private var lastDatabaseError: String = if (parent.nonEmpty) parent.getLastDatabaseError() else ""
     private val users: CachedUsersAndActors = CachedUsersAndActors.newEmpty(this)
     private val accounts: MyAccounts = MyAccounts.newEmpty(this)
     private val origins: PersistentOrigins = PersistentOrigins.newEmpty(this)
@@ -81,11 +81,9 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
 
     private val notifier: Notifier = Notifier(this)
 
-    private fun calcBaseContextToUse(parent: MyContext, contextIn: Context?): Context {
-        val context: Context = contextIn ?: parent.let { if (it.nonEmpty) it.context() else null }
-                ?: throw IllegalArgumentException("parent:$parent, contextIn:$contextIn")
-        val contextToUse: Context = context.applicationContext
-        // TODO: Maybe we need to determine if the context is compatible, using some Interface...
+    private fun calcBaseContextToUse(parent: MyContext, contextIn: Context): Context {
+        val contextToUse: Context = contextIn.applicationContext
+        // Maybe we need to determine if the context is compatible, using some Interface...
         // ...but we don't have any yet.
         if (!contextToUse.javaClass.name.contains(ClassInApplicationPackage.PACKAGE_NAME)) {
             throw IllegalArgumentException("parent:$parent, Incompatible context: " + contextToUse.javaClass.name)
@@ -133,7 +131,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
                 users.initialize()
                 accounts.initialize()
                 timelines.initialize()
-                ImageCaches.initialize(context())
+                ImageCaches.initialize(context)
                 commandQueue.load()
                 MyContextState.READY
             }
@@ -147,8 +145,6 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     }
 
     private fun initializeDatabase(createApplicationData: Boolean) {
-        requireNotNull(baseContext)
-
         val stopWatch: StopWatch = StopWatch.createStarted()
         val method = "initializeDatabase"
         val newDb = DatabaseHolder(baseContext, createApplicationData)
@@ -197,10 +193,6 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
                 ("context=" + context.javaClass.name)
     }
 
-    override fun newCreator(context: Context, initializer: Any?): MyContext {
-        return MyContextImpl(MyContextEmpty.EMPTY, context, initializer)
-    }
-
     override fun initialized(): Boolean {
         return state != MyContextState.EMPTY
     }
@@ -211,10 +203,6 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
 
     override fun state(): MyContextState {
         return state
-    }
-
-    override fun context(): Context {
-        return context
     }
 
     override fun baseContext(): Context {
@@ -332,15 +320,6 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
                 inForegroundChangedAt = System.currentTimeMillis()
             }
             Companion.inForeground = inForeground
-        }
-    }
-
-    init {
-        initializedBy = MyStringBuilder.objToTag(initializer)
-        baseContext = calcBaseContextToUse(parent, context)
-        this.context = MyLocale.onAttachBaseContext(baseContext)
-        if (parent.nonEmpty) {
-            lastDatabaseError = parent.getLastDatabaseError()
         }
     }
 }

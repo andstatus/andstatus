@@ -49,7 +49,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         val stopWatch: StopWatch = StopWatch.createStarted()
         myAccounts.clear()
         recentAccounts.clear()
-        for (account in AccountUtils.getCurrentAccounts(myContext.context())) {
+        for (account in AccountUtils.getCurrentAccounts(myContext.context)) {
             val ma: MyAccount = MyAccount.Builder.loadFromAndroidAccount(myContext, account).myAccount
             if (ma.isValid) {
                 myAccounts.add(ma)
@@ -116,7 +116,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
                 return persistentAccount
             }
         }
-        for (androidAccount in AccountUtils.getCurrentAccounts(myContext.context())) {
+        for (androidAccount in AccountUtils.getCurrentAccounts(myContext.context)) {
             if (accountName.toString() == androidAccount.name) {
                 val myAccount: MyAccount = MyAccount.Builder.loadFromAndroidAccount(myContext, androidAccount).myAccount
                 if (myAccount.isValid) {
@@ -505,7 +505,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
 
         fun myAccountIds(): SqlIds {
             return SqlIds.fromIds(
-                    AccountUtils.getCurrentAccounts( MyContextHolder.myContextHolder.getNow().context()).stream()
+                    AccountUtils.getCurrentAccounts( MyContextHolder.myContextHolder.getNow().context).stream()
                             .map({ account: Account ->
                                 AccountData.fromAndroidAccount( MyContextHolder.myContextHolder.getNow(), account)
                                         .getDataLong(MyAccount.KEY_ACTOR_ID, 0)

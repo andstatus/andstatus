@@ -48,12 +48,12 @@ class NotificationData(val event: NotificationEventType, val myActor: Actor, upd
                 if (timelineType == TimelineType.UNREAD_NOTIFICATIONS) Actor.EMPTY
                 else myActor, Origin.EMPTY]
                 .orElse(myContext.timelines().getDefault())
-        val intent = Intent(myContext.context(), FirstActivity::class.java)
+        val intent = Intent(myContext.context, FirstActivity::class.java)
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
         intent.data = Uri.withAppendedPath(timeline.getUri(),
                 "rnd/" + SystemClock.elapsedRealtime())
-        return PendingIntent.getActivity(myContext.context(), timeline.hashCode(), intent,
+        return PendingIntent.getActivity(myContext.context, timeline.hashCode(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT)
     }
 

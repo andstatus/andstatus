@@ -54,11 +54,7 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
     }
 
     override fun newInitialized(initializer: Any): MyContext {
-        return MyContextTestImpl(this, context(), initializer).initialize()
-    }
-
-    override fun newCreator(context: Context, initializer: Any?): MyContext {
-        return MyContextTestImpl(MyContextEmpty.EMPTY, context, initializer)
+        return MyContextTestImpl(this, context, initializer).initialize()
     }
 
     override fun isTestRun(): Boolean {

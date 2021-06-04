@@ -779,7 +779,7 @@ class AccountSettingsActivity : MyActivity() {
                         state.forget()
                     } else {
                         if (myContext.accounts().size() > 1) {
-                            val intent = Intent(myContext.context(), MySettingsActivity::class.java)
+                            val intent = Intent(myContext.context, MySettingsActivity::class.java)
                             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
                             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                             startActivity(intent)

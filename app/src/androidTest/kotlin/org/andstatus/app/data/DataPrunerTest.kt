@@ -45,7 +45,7 @@ class DataPrunerTest {
         val pruneDate1 = SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE)
         Assert.assertTrue(
                 "Pruning date updated $pruneDate1 - "
-                        + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(),
+                        + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context,
                         pruneDate1),
                 !RelativeTime.moreSecondsAgoThan(pruneDate1, 300))
         Assert.assertFalse("Second prune skipped", dp.prune())

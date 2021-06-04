@@ -1091,7 +1091,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
         }
 
         private fun getIntentForTimeline(myContext: MyContext, timeline: Timeline, clearTask: Boolean): Intent {
-            val intent = Intent(myContext.context(), if (clearTask) FirstActivity::class.java else TimelineActivity::class.java)
+            val intent = Intent(myContext.context, if (clearTask) FirstActivity::class.java else TimelineActivity::class.java)
             intent.data = timeline.getUri()
             if (clearTask) {
                 // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android

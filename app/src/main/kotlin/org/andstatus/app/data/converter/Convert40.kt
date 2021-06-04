@@ -35,7 +35,7 @@ internal class Convert40 : ConvertOneStep() {
                         DbUtils.getLong(cursor, "_id"),
                         uri,
                         MyContentType.fromUri(DownloadType.ATTACHMENT,
-                                 MyContextHolder.myContextHolder.getNow().context().getContentResolver(),
+                                 MyContextHolder.myContextHolder.getNow().context.getContentResolver(),
                                 UriUtils.fromString(uri),
                                 DbUtils.getString(cursor, "media_type"))
                 )

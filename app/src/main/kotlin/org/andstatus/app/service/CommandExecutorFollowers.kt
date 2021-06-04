@@ -230,7 +230,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
                     lum.save()
                     MyLog.v(this, "Server didn't return Actor's activity for "
                             + actor.getUniqueNameWithOrigin()
-                            + " found activity " + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(), updatedDate),
+                            + " found activity " + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context, updatedDate),
                             exception)
                 }
             }

@@ -130,7 +130,7 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         var clip: ClipData? = null
         override fun run() {
             // http://developer.android.com/guide/topics/text/copy-paste.html
-            val clipboard =  MyContextHolder.myContextHolder.getNow().context()
+            val clipboard =  MyContextHolder.myContextHolder.getNow().context
                     .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             clip = clipboard.primaryClip
         }

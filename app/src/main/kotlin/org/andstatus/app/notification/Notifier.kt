@@ -72,9 +72,9 @@ class Notifier(val myContext: MyContext) {
     }
 
     fun getAndroidNotification(data: NotificationData): Notification? {
-        val contentText = (if (data.myActor.nonEmpty) data.myActor.actorNameInTimeline else myContext.context().getText(data.event.titleResId)).toString() + ": " + data.count
+        val contentText = (if (data.myActor.nonEmpty) data.myActor.actorNameInTimeline else myContext.context.getText(data.event.titleResId)).toString() + ": " + data.count
         MyLog.v(this, contentText)
-        val builder = Notification.Builder(myContext.context())
+        val builder = Notification.Builder(myContext.context)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             builder.setChannelId(data.channelId())
         } else {
@@ -89,7 +89,7 @@ class Notifier(val myContext: MyContext) {
             }
         }
         builder.setSmallIcon(if (data.event == NotificationEventType.SERVICE_RUNNING) R.drawable.ic_sync_white_24dp else if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)) R.drawable.notification_icon_circle else R.drawable.notification_icon)
-                .setContentTitle(myContext.context().getText(data.event.titleResId))
+                .setContentTitle(myContext.context.getText(data.event.titleResId))
                 .setContentText(contentText)
                 .setWhen(data.updatedDate)
                 .setShowWhen(true)
@@ -112,7 +112,7 @@ class Notifier(val myContext: MyContext) {
     fun createNotificationChannel(data: NotificationData) {
         if (nM == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channelId = data.channelId()
-        val channelName = myContext.context().getText(data.event.titleResId)
+        val channelName = myContext.context.getText(data.event.titleResId)
         val description = "AndStatus, $channelName"
         val isSilent = data.event == NotificationEventType.SERVICE_RUNNING || UriUtils.isEmpty(soundUri)
         val channel = NotificationChannel(channelId, channelName,
@@ -135,7 +135,7 @@ class Notifier(val myContext: MyContext) {
     fun initialize() {
         val stopWatch: StopWatch = StopWatch.createStarted()
         if (myContext.isReady()) {
-            nM = myContext.context().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            nM = myContext.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (nM == null) {
                 MyLog.w(this, "No Notification Service")
             }

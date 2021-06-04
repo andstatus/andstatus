@@ -44,7 +44,7 @@ class AccountName private constructor(uniqueName: String,
     }
 
     fun getContext(): Context {
-        return myContext.context()
+        return myContext.context
     }
 
     val myContext: MyContext get() = origin.myContext

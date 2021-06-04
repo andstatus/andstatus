@@ -48,7 +48,7 @@ open class ActorsLoader(val myContext: MyContext,
             MyLog.d(this, "Loaded " + size() + " items, " + stopWatch.time + "ms")
         }
         if (items.isEmpty()) {
-            items.add(ActorViewItem.newEmpty(myContext.context()
+            items.add(ActorViewItem.newEmpty(myContext.context
                     .getText(R.string.nothing_in_the_loadable_list).toString()))
         }
     }
@@ -70,7 +70,7 @@ open class ActorsLoader(val myContext: MyContext,
 
     protected open fun loadInternal() {
         val mContentUri: Uri = MatchedUri.getActorsScreenUri(actorsScreenType, origin.id, centralActorId, searchQuery)
-        myContext.context().contentResolver
+        myContext.context.contentResolver
                 .query(mContentUri, ActorSql.baseProjection(), getSelection(), null, null).use { c ->
                     while (c != null && c.moveToNext()) {
                         populateItem(c)

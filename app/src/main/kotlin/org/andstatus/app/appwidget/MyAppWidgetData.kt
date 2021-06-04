@@ -49,7 +49,7 @@ class MyAppWidgetData private constructor(val events: NotificationEvents, privat
         } else {
             nothingPref = prefs.getString(PREF_NOTHING_KEY, null)
             if (nothingPref == null) {
-                nothingPref = events.myContext.context().getString(R.string.appwidget_nothingnew_default)
+                nothingPref = events.myContext.context.getString(R.string.appwidget_nothingnew_default)
                 if (MyPreferences.isShowDebuggingInfoInUi()) {
                     nothingPref += " ($appWidgetId)"
                 }
@@ -92,7 +92,7 @@ class MyAppWidgetData private constructor(val events: NotificationEvents, privat
     /** Delete the preferences file!  */
     fun delete(): Boolean {
         MyLog.v(this) { "Deleting data for widgetId=$appWidgetId" }
-        return SharedPreferencesUtil.delete(events.myContext.context(), prefsFileName)
+        return SharedPreferencesUtil.delete(events.myContext.context, prefsFileName)
     }
 
     override fun toString(): String {

@@ -83,7 +83,7 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
         try {
             ContextMenuHeader(getActivity(), menu).setTitle(noteForAnyAccount.getBodyTrimmed())
                     .setSubtitle(getActingAccount().getAccountName())
-            if ((getMyContext().context().getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager).isTouchExplorationEnabled) {
+            if ((getMyContext().context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager).isTouchExplorationEnabled) {
                 addNoteLinksSubmenu(menu, v, order++)
             }
             if (!ConversationActivity::class.java.isAssignableFrom(getActivity().javaClass)) {

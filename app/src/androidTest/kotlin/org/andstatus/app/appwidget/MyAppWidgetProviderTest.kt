@@ -53,8 +53,8 @@ class MyAppWidgetProviderTest {
             val startMillis = dateTest.date1.toMillis(false /* use isDst */)
             val endMillis = dateTest.date2.toMillis(false /* use isDst */)
             val flags = dateTest.flags
-            val output = DateUtils.formatDateRange(myContext.context(), startMillis, endMillis, flags)
-            val output2: String = MyRemoteViewData.Companion.formatWidgetTime(myContext.context(), startMillis, endMillis)
+            val output = DateUtils.formatDateRange(myContext.context, startMillis, endMillis, flags)
+            val output2: String = MyRemoteViewData.Companion.formatWidgetTime(myContext.context, startMillis, endMillis)
             MyLog.v(this, "\"$output\"; \"$output2\"")
         }
     }

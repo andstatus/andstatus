@@ -34,9 +34,9 @@ class SharedPreferencesUtilTest {
 
     @Test
     fun testPrefsDirectory() {
-        val prefsDir = SharedPreferencesUtil.prefsDirectory( MyContextHolder.myContextHolder.getNow().context())
+        val prefsDir = SharedPreferencesUtil.prefsDirectory( MyContextHolder.myContextHolder.getNow().context)
         Assert.assertTrue("Prefs dir: " + prefsDir.absolutePath, prefsDir.exists())
-        val defaultSharedPreferencesFile = SharedPreferencesUtil.defaultSharedPreferencesPath( MyContextHolder.myContextHolder.getNow().context())
+        val defaultSharedPreferencesFile = SharedPreferencesUtil.defaultSharedPreferencesPath( MyContextHolder.myContextHolder.getNow().context)
         Assert.assertTrue("defaultSharedPreferencesFile: " + defaultSharedPreferencesFile.absolutePath, defaultSharedPreferencesFile.exists())
     }
 

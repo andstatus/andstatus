@@ -56,7 +56,7 @@ class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyC
                         + if (progress.isEmpty()) "" else ", progress:$progress")
             }
         }
-        mMyContext.context().sendBroadcast(intent)
+        mMyContext.context.sendBroadcast(intent)
     }
 
     companion object {

@@ -54,9 +54,10 @@ internal object ApacheHttpClientUtils {
                 builder.addTextBody(name, value, textContentType)
             }
         }
-        val contentResolver = request.myContext().context().contentResolver
+        val contentResolver = request.myContext().context.contentResolver
                 ?: throw ConnectionException.fromStatusCode(StatusCode.NOT_FOUND,
-                        "Content Resolver is null in " + request.myContext().context())
+                        "Content Resolver is null in " + request.myContext().context
+                )
         if (request.mediaUri.isPresent) {
             val mediaUri = request.mediaUri.get()
             try {

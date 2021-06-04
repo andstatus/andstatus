@@ -51,7 +51,7 @@ import java.util.function.Function
  */
 class DataPruner(private val myContext: MyContext) {
     private val db: SQLiteDatabase? = myContext.getDatabase()
-    private val mContentResolver: ContentResolver = myContext.context().contentResolver
+    private val mContentResolver: ContentResolver = myContext.context.contentResolver
     private var pruneNow = false
     private var logger: ProgressLogger = ProgressLogger.getEmpty(TAG)
     private var mDeleted: Long = 0

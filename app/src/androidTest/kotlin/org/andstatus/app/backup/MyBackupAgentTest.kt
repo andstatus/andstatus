@@ -48,7 +48,7 @@ class MyBackupAgentTest: IgnoredInTravis2() {
         DemoData.demoData.assertConversations()
         Assert.assertEquals("Compare Persistent accounts with copy",  MyContextHolder.myContextHolder.getNow().accounts(), accountsBefore)
         compareOneAccount( MyContextHolder.myContextHolder.getNow().accounts(), accountsBefore, DemoData.demoData.gnusocialTestAccountName)
-        val outputFolder = DocumentFile.fromFile( MyContextHolder.myContextHolder.getNow().context().getCacheDir())
+        val outputFolder = DocumentFile.fromFile( MyContextHolder.myContextHolder.getNow().context.getCacheDir())
         val dataFolder = testBackup(outputFolder)
         deleteApplicationData()
         testRestore(dataFolder)
@@ -89,19 +89,19 @@ class MyBackupAgentTest: IgnoredInTravis2() {
         Assert.assertEquals("Accounts backed up", MyContextHolder.myContextHolder.getNow().accounts().size().toLong(),
                 backupManager.getBackupAgent()?.getAccountsBackedUp())
         val descriptorFile2: Try<DocumentFile> = MyBackupManager.Companion.getExistingDescriptorFile(dataFolder)
-        var jso = DocumentFileUtils.getJSONObject( MyContextHolder.myContextHolder.getNow().context(), descriptorFile2.get())
+        var jso = DocumentFileUtils.getJSONObject( MyContextHolder.myContextHolder.getNow().context, descriptorFile2.get())
         Assert.assertEquals(MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION.toLong(), jso.getInt(MyBackupDescriptor.Companion.KEY_BACKUP_SCHEMA_VERSION).toLong())
         Assert.assertTrue(jso.getLong(MyBackupDescriptor.Companion.KEY_CREATED_DATE) > System.currentTimeMillis() - 1000000)
         val backupDescriptor = backupManager.getBackupAgent()?.getBackupDescriptor() ?: throw IllegalStateException("No backup descriptor")
         Assert.assertEquals(MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION.toLong(), backupDescriptor.getBackupSchemaVersion().toLong())
         val accountHeader = dataFolder.createFile("", "account_header.json") ?: throw IllegalStateException("No accountHeader file")
         Assert.assertTrue(accountHeader.exists())
-        jso = DocumentFileUtils.getJSONObject( MyContextHolder.myContextHolder.getNow().context(), accountHeader)
+        jso = DocumentFileUtils.getJSONObject( MyContextHolder.myContextHolder.getNow().context, accountHeader)
         Assert.assertTrue(jso.getInt(MyBackupDataOutput.Companion.KEY_DATA_SIZE) > 10)
         Assert.assertEquals(".json", jso.getString(MyBackupDataOutput.Companion.KEY_FILE_EXTENSION))
         val accountData = dataFolder.createFile("", "account_data.json") ?: throw IllegalStateException("No accountData")
         Assert.assertTrue(accountData.exists())
-        val jsa = DocumentFileUtils.getJSONArray( MyContextHolder.myContextHolder.getNow().context(), accountData)
+        val jsa = DocumentFileUtils.getJSONArray( MyContextHolder.myContextHolder.getNow().context, accountData)
         Assert.assertTrue(jsa.length() > 2)
         return dataFolder
     }
@@ -110,7 +110,7 @@ class MyBackupAgentTest: IgnoredInTravis2() {
     private fun deleteApplicationData() {
         MyServiceManager.Companion.setServiceUnavailable()
         deleteAccounts()
-        val context: Context =  MyContextHolder.myContextHolder.getNow().context()
+        val context: Context =  MyContextHolder.myContextHolder.getNow().context
          MyContextHolder.myContextHolder.release { "deleteApplicationData" }
         deleteFiles(context, false)
         deleteFiles(context, true)
@@ -121,8 +121,8 @@ class MyBackupAgentTest: IgnoredInTravis2() {
 
     @Throws(IOException::class)
     private fun deleteAccounts() {
-        val am = AccountManager.get( MyContextHolder.myContextHolder.getNow().context())
-        val aa = AccountUtils.getCurrentAccounts( MyContextHolder.myContextHolder.getNow().context())
+        val am = AccountManager.get( MyContextHolder.myContextHolder.getNow().context)
+        val aa = AccountUtils.getCurrentAccounts( MyContextHolder.myContextHolder.getNow().context)
         for (androidAccount in aa) {
             val logMsg = "Removing old account: " + androidAccount.name
             MyLog.i(this, logMsg)

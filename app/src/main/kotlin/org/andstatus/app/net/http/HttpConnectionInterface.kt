@@ -99,7 +99,7 @@ interface HttpConnectionInterface {
 
     fun downloadLocalFile(result: HttpReadResult): HttpReadResult {
         return result.readStream("mediaUri='" + result.request.uri + "'"
-        ) { result.request.myContext().context().contentResolver.openInputStream(result.request.uri) }
+        ) { result.request.myContext().context.contentResolver.openInputStream(result.request.uri) }
                 .recover(Exception::class.java) { e: Exception? -> result.setException(e) }
                 .getOrElse(result)
     }

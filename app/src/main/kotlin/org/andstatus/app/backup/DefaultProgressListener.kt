@@ -116,7 +116,7 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
 
     private fun showToast(message: CharSequence?) {
         try {
-            Toast.makeText( MyContextHolder.myContextHolder.getNow().context(),
+            Toast.makeText( MyContextHolder.myContextHolder.getNow().context,
                 "${defaultTitle.toString()}\n$versionText" +
                         (if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) "\n$upgradingText" else "") +
                         "\n\n" + message,

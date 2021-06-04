@@ -213,7 +213,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
     open fun getDetails(context: Context, showReceivedTime: Boolean): MyStringBuilder {
         val builder = getMyStringBuilderWithTime(context, showReceivedTime)
         if (isSensitive() && MyPreferences.isShowSensitiveContent()) {
-            builder.prependWithSeparator(myContext.context().getText(R.string.sensitive), " ")
+            builder.prependWithSeparator(myContext.context.getText(R.string.sensitive), " ")
         }
         setAudience(builder)
         setNoteSource(context, builder)
@@ -298,7 +298,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
 
     override fun toString(): String {
         return MyStringBuilder.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40).toString() + ", "
-                + getDetails(myContext.context(), false)
+                + getDetails(myContext.context, false)
                 + "', actorId:" + author.getActorId() + ", " + noteStatus
         )
     }

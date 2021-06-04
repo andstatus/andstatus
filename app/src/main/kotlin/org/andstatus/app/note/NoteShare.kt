@@ -62,8 +62,8 @@ class NoteShare(private val origin: Origin, private val noteId: Long, private va
         if (subjectString.isEmpty()) {
             subjectString = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(noteContent), 80)
         }
-        subjectString = (if (MyQuery.isSensitive(noteId)) "(" +  MyContextHolder.myContextHolder.getNow().context().getText(R.string.sensitive) + ") " else "") +
-                 MyContextHolder.myContextHolder.getNow().context().getText(origin.alternativeTermForResourceId(R.string.message)) +
+        subjectString = (if (MyQuery.isSensitive(noteId)) "(" +  MyContextHolder.myContextHolder.getNow().context.getText(R.string.sensitive) + ") " else "") +
+                 MyContextHolder.myContextHolder.getNow().context.getText(origin.alternativeTermForResourceId(R.string.message)) +
                 " - " + subjectString
         val intent = Intent(if (share) Intent.ACTION_SEND else Intent.ACTION_VIEW)
         val downloadData = downloads.getFirstToShare()

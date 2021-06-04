@@ -178,13 +178,13 @@ class MyFutureContext private constructor(private val previousContext: MyContext
                 if (myContext.isReady()) {
                     try {
                         MyLog.d(TAG, "Start activity with intent:$intent")
-                        myContext.context().startActivity(intent)
+                        myContext.context.startActivity(intent)
                         launched = true
                     } catch (e: AndroidRuntimeException) {
                         try {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             MyLog.d(TAG, "Start activity with intent (new task):$intent")
-                            myContext.context().startActivity(intent)
+                            myContext.context.startActivity(intent)
                             launched = true
                         } catch (e2: Exception) {
                             MyLog.e(TAG, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e)
@@ -194,7 +194,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
                     }
                 }
                 if (!launched) {
-                    HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO)
+                    HelpActivity.startMe(myContext.context, true, HelpActivity.PAGE_LOGO)
                 }
             }
         }

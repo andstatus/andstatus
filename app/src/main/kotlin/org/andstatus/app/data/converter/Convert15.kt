@@ -51,9 +51,9 @@ internal class Convert15 : ConvertOneStep() {
                 MyLog.i(TAG, "Accounts upgrading step from version $oldVersion to version $versionTo")
                 val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
                 myContext.origins().initialize(db)
-                val am = AccountManager.get(myContext.context())
+                val am = AccountManager.get(myContext.context)
                 val accountsToRemove: MutableCollection<Account> = ArrayList()
-                for (androidAccount in AccountUtils.getAllAccounts(myContext.context())) {
+                for (androidAccount in AccountUtils.getAllAccounts(myContext.context)) {
                     DatabaseConverterController.stillUpgrading()
                     val androidAccountData = AndroidAccountData(am, androidAccount)
                     val versionOldBefore16 = androidAccountData.getDataInt(AccountUtils.KEY_VERSION, 0)

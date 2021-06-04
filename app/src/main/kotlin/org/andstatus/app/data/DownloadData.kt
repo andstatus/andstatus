@@ -154,7 +154,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         }
         if (contentType == MyContentType.UNKNOWN) {
             contentType = MyContentType.fromUri(DownloadType.ATTACHMENT,
-                     MyContextHolder.myContextHolder.getNow().context()?.getContentResolver(), uri, mimeType)
+                     MyContextHolder.myContextHolder.getNow().context?.getContentResolver(), uri, mimeType)
         }
     }
 

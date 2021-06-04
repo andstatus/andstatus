@@ -117,7 +117,7 @@ class InstanceForNewAccountFragment : Fragment() {
             MyLog.d(this, "onNewOrigin After 'initialize' $future1")
             val future2: CompletableFuture<MyContext> =  MyContextHolder.myContextHolder.whenSuccessAsync({ myContext: MyContext ->
                 activity.finish()
-                AccountSettingsActivity.startAddingNewAccount(myContext.context(), originNew.name, true)
+                AccountSettingsActivity.startAddingNewAccount(myContext.context, originNew.name, true)
             }, UiThreadExecutor.INSTANCE).getFuture().future
             MyLog.d(this, "onNewOrigin After 'whenSuccessAsync' $future2")
         }

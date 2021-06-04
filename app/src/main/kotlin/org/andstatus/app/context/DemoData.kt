@@ -220,7 +220,7 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
         }
 
         override fun onFinish(result: Void?, success: Boolean) {
-            FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context(), true)
+            FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context, true)
             progressListener.onComplete(success)
         }
     }
@@ -267,7 +267,7 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
     fun checkDataPath() {
         if (dataPath.isNotEmpty()) {
             Assert.assertEquals("Data path. " +  MyContextHolder.myContextHolder.getNow(), dataPath,
-                     MyContextHolder.myContextHolder.getNow().context().getDatabasePath("andstatus")?.getPath())
+                     MyContextHolder.myContextHolder.getNow().context.getDatabasePath("andstatus")?.getPath())
         }
     }
 

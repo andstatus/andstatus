@@ -43,7 +43,7 @@ class AppWidgets private constructor(val events: NotificationEvents) {
     }
 
     @JvmOverloads
-    fun updateViews(appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(events.myContext.context()),
+    fun updateViews(appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(events.myContext.context),
                     predicate: Predicate<MyAppWidgetData> = Predicate { data: MyAppWidgetData -> true }) {
         MyLog.v(this) {
             ("Sending update to " + size() + " remote view" + (if (size() > 1) "s" else "")
@@ -56,8 +56,8 @@ class AppWidgets private constructor(val events: NotificationEvents) {
         val method = "updateView"
         try {
             MyLog.v(this) { method + "; Started id=" + widgetData.getId() }
-            val viewData: MyRemoteViewData = MyRemoteViewData.Companion.fromViewData(events.myContext.context(), widgetData)
-            val views = constructRemoteViews(events.myContext.context(), viewData)
+            val viewData: MyRemoteViewData = MyRemoteViewData.Companion.fromViewData(events.myContext.context, widgetData)
+            val views = constructRemoteViews(events.myContext.context, viewData)
             appWidgetManager.updateAppWidget(widgetData.getId(), views)
         } catch (e: Exception) {
             MyLog.i(this, method, e)
@@ -102,8 +102,8 @@ class AppWidgets private constructor(val events: NotificationEvents) {
 
     init {
         list = if (events === NotificationEvents.EMPTY) emptyList() else Arrays.stream(
-                AppWidgetManager.getInstance(events.myContext.context())
-                        .getAppWidgetIds(ComponentName(events.myContext.context(), MyAppWidgetProvider::class.java)))
+                AppWidgetManager.getInstance(events.myContext.context)
+                        .getAppWidgetIds(ComponentName(events.myContext.context, MyAppWidgetProvider::class.java)))
                 .boxed()
                 .map { id: Int -> MyAppWidgetData.Companion.newInstance(events, id) }
                 .collect(Collectors.toList())

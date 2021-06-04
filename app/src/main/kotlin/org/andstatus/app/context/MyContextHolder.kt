@@ -66,7 +66,7 @@ class MyContextHolder private constructor() : TaggedClass {
             if (field == ExecutionMode.UNKNOWN) {
                 val myContext = getNow()
                 if (myContext.nonEmpty) {
-                    if ("true" == Settings.System.getString(myContext.context().contentResolver, "firebase.test.lab")) {
+                    if ("true" == Settings.System.getString(myContext.context.contentResolver, "firebase.test.lab")) {
                         // See https://firebase.google.com/docs/test-lab/android-studio
                         field = if (myContext.isTestRun()) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
                     } else {
@@ -80,7 +80,7 @@ class MyContextHolder private constructor() : TaggedClass {
             if (field != value) {
                 field = value
                 if (field != ExecutionMode.DEVICE) {
-                    MyLog.i(this, "Executing: " + getVersionText(getNow().context()))
+                    MyLog.i(this, "Executing: " + getVersionText(getNow().context))
                 }
             }
         }
@@ -142,7 +142,7 @@ class MyContextHolder private constructor() : TaggedClass {
         } else {
             synchronized(contextLock) { myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy) }
             whenSuccessOrPreviousAsync(NonUiThreadExecutor.INSTANCE) {
-                if (it.nonEmpty) MyServiceManager.registerReceiver(it.context())
+                if (it.nonEmpty) MyServiceManager.registerReceiver(it.context)
             }
         }
         return this
@@ -241,7 +241,7 @@ class MyContextHolder private constructor() : TaggedClass {
         val myContext = getNow()
         if (myContext.isEmpty) return ExecutionMode.UNKNOWN
 
-        if ("true" == Settings.System.getString(myContext.context().contentResolver, "firebase.test.lab")) {
+        if ("true" == Settings.System.getString(myContext.context.contentResolver, "firebase.test.lab")) {
             // See https://firebase.google.com/docs/test-lab/android-studio
             return if (myContext.isTestRun()) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
         }

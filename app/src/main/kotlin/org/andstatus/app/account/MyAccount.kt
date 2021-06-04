@@ -592,14 +592,14 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             }
             save()
             if (credentialsOfOtherAccount) {
-                MyLog.w(this, myAccount.myContext.context().getText(R.string.error_credentials_of_other_user).toString() + ": " +
+                MyLog.w(this, myAccount.myContext.context.getText(R.string.error_credentials_of_other_user).toString() + ": " +
                         actor.getUniqueNameWithOrigin() +
                         " account name: " + myAccount.getAccountName() +
                         " vs username: " + actor.getUsername())
                 return Try.failure(ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getUniqueNameWithOrigin()))
             }
             if (errorSettingUsername) {
-                val msg = myAccount.myContext.context().getText(R.string.error_set_username).toString() + " " + actor.getUsername()
+                val msg = myAccount.myContext.context.getText(R.string.error_set_username).toString() + " " + actor.getUsername()
                 MyLog.w(this, msg)
                 return Try.failure(ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg))
             }

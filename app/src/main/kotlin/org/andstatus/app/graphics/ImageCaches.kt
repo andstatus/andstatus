@@ -147,7 +147,7 @@ object ImageCaches {
         }
         val myContext = MyContextHolder.myContextHolder.getNow()
         if (!myContext.isEmpty) {
-            val context: Context =  myContext.context()
+            val context: Context =  myContext.context
             builder.append("Memory. App total: " + I18n.formatBytes(getTotalAppMemory(context)))
             val memInfo = getMemoryInfo(context)
             builder.append("; Device: available " + I18n.formatBytes(memInfo.availMem) + " of "
@@ -185,7 +185,7 @@ object ImageCaches {
         if (styledImage == null) {
             val myContext = MyContextHolder.myContextHolder.getNow()
             if (!myContext.isEmpty) {
-                val context: Context =  myContext.context()
+                val context: Context =  myContext.context
                 val image = getImageCompat(context, resourceId)
                 val imageLight = getImageCompat(context, resourceIdLight)
                 styledImage = arrayOf(image, imageLight)

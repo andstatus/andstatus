@@ -91,7 +91,7 @@ enum class CommandEnum constructor(
         if (ma.isValid) {
             resId = ma.origin.alternativeTermForResourceId(titleResId)
         }
-        return myContext.context().getText(resId)
+        return myContext.context.getText(resId)
     }
 
     fun getPriority(): Int {

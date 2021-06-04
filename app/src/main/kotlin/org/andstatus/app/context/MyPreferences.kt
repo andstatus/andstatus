@@ -239,7 +239,7 @@ object MyPreferences {
     fun onPreferencesChanged() {
         SharedPreferencesUtil.forget()
         SharedPreferencesUtil.putLong(KEY_PREFERENCES_CHANGE_TIME, System.currentTimeMillis())
-        val context: Context? =  MyContextHolder.myContextHolder.getNow().context()
+        val context: Context? =  MyContextHolder.myContextHolder.getNow().context
         if (context != null && SharedPreferencesUtil.getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
             BackupManager(context).dataChanged()
         }

@@ -66,7 +66,7 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
         val editorView = activity.findViewById<View?>(R.id.note_editor)
         ActivityTestHelper.waitViewVisible(method, editorView)
         val details = editorView.findViewById<TextView?>(R.id.noteEditDetails)
-        val textToFind: String =  MyContextHolder.myContextHolder.getNow().context().getText(R.string.label_with_media).toString()
+        val textToFind: String =  MyContextHolder.myContextHolder.getNow().context.getText(R.string.label_with_media).toString()
         ActivityTestHelper.waitTextInAView(method, details, textToFind)
         TestSuite.waitForIdleSync()
         val content = "Test note with a shared image " + DemoData.demoData.testRunUid

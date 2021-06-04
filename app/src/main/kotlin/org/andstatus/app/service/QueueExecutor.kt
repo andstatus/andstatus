@@ -113,7 +113,7 @@ class QueueExecutor(myService: MyService, accessorType: AccessorType) : MyAsyncT
             sb.withComma("notExecuting", currentlyExecutingDescription)
         } else {
             sb.withComma("executing", currentlyExecutingDescription)
-            sb.withComma("since", RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(), currentlyExecutingSince))
+            sb.withComma("since", RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context, currentlyExecutingSince))
         }
         if (isStopping()) {
             sb.withComma("stopping")

@@ -31,15 +31,14 @@ import java.util.function.Supplier
 class MyContextEmpty: MyContext {
     override fun newInitialized(initializer: Any): MyContext = throwException()
 
-    override fun newCreator(context: Context, initializer: Any?): MyContext = throwException()
-
     override fun initialized(): Boolean = false
 
     override fun isReady(): Boolean = false
 
     override fun state(): MyContextState = MyContextState.EMPTY
 
-    override fun context(): Context = throwException()
+    override val context: Context
+        get() = throwException()
 
     override fun baseContext(): Context = throwException()
 

@@ -137,7 +137,7 @@ class CommandResult : Parcelable {
         val message = StringBuilder()
         if (executionCount > 0) {
             message.append("executed:$executionCount, ")
-            message.append("last:" + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(), lastExecutedDate) + ", ")
+            message.append("last:" + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context, lastExecutedDate) + ", ")
             if (retriesLeft > 0) {
                 message.append("retriesLeft:$retriesLeft, ")
             }

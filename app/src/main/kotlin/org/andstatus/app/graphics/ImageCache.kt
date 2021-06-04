@@ -214,7 +214,7 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
         var retriever: MediaMetadataRetriever? = null
         return try {
             retriever = MediaMetadataRetriever()
-            retriever.setDataSource( MyContextHolder.myContextHolder.getNow().context(), Uri.parse(mediaFile.getPath()))
+            retriever.setDataSource( MyContextHolder.myContextHolder.getNow().context, Uri.parse(mediaFile.getPath()))
             val source = retriever.frameAtTime ?: return null
             val options = calculateScaling(mediaFile, mediaFile.getSize())
             val bitmap = ThumbnailUtils.extractThumbnail(source, mediaFile.getSize().x / options.inSampleSize,

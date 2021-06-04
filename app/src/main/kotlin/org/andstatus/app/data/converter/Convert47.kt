@@ -46,9 +46,9 @@ internal class Convert47 : ConvertOneStep() {
         progressLogger.logProgress("$stepTitle: Converting accounts")
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         myContext.origins().initialize(db)
-        val am = AccountManager.get(myContext.context())
+        val am = AccountManager.get(myContext.context)
         val accountsToRemove: MutableCollection<Account> = ArrayList()
-        for (accountIn in AccountUtils.getAllAccounts(myContext.context())) {
+        for (accountIn in AccountUtils.getAllAccounts(myContext.context)) {
             DatabaseConverterController.stillUpgrading()
             val jsonIn = JsonUtils.toJsonObject(am.getUserData(accountIn, AccountUtils.KEY_ACCOUNT))
             val versionIn = jsonIn.map { obj: JSONObject -> AccountUtils.getVersion(obj) }.getOrElse(0)

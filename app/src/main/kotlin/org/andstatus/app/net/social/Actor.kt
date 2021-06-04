@@ -575,7 +575,7 @@ class Actor private constructor(// In our system
 
     fun getRecipientName(): String {
         return if (groupType == GroupType.FOLLOWERS) {
-            origin.myContext.context().getText(R.string.followers).toString()
+            origin.myContext.context.getText(R.string.followers).toString()
         } else uniqueName
     }
 

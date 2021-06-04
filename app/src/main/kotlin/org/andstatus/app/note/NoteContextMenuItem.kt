@@ -311,7 +311,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         MyLog.v(this) { "text='" + editorData.getContent() + "'" }
         if (editorData.getContent().isNotEmpty()) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
-            val clipboard = editorData.myContext.context().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipboard = editorData.myContext.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(
                     I18n.trimTextAt(MyHtml.htmlToCompactPlainText(editorData.getContent()), 40),
                     MyHtml.htmlToPlainText(editorData.getContent()))

@@ -19,7 +19,7 @@ class CommandExecutionContext(val myContext: MyContext, val commandData: Command
     }
 
     fun getContext(): Context {
-        return myContext.context()
+        return myContext.context
     }
 
     fun getTimeline(): Timeline {

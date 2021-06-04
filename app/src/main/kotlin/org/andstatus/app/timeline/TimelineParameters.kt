@@ -134,7 +134,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
     }
 
     fun toSummary(): String {
-        return whichPage.getTitle(myContext.context()).toString() + " " + TimelineTitle.from(myContext, timeline)
+        return whichPage.getTitle(myContext.context).toString() + " " + TimelineTitle.from(myContext, timeline)
     }
 
     fun getMyAccount(): MyAccount {
@@ -178,7 +178,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
 
     fun queryDatabase(): Cursor? {
         prepareQueryParameters()
-        return myContext.context().contentResolver.query(getContentUri(), mProjection.toTypedArray<String>(),
+        return myContext.context.contentResolver.query(getContentUri(), mProjection.toTypedArray<String>(),
                 selectionAndArgs.selection, selectionAndArgs.selectionArgs, sortOrderAndLimit)
     }
 

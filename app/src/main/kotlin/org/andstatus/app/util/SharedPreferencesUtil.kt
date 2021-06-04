@@ -194,7 +194,7 @@ object SharedPreferencesUtil {
 
     fun getDefaultSharedPreferences(): SharedPreferences? {
         MyContextHolder.myContextHolder.getNow().let {
-            return if (it.isEmpty) null else PreferenceManager.getDefaultSharedPreferences(it.context())
+            return if (it.isEmpty) null else PreferenceManager.getDefaultSharedPreferences(it.context)
         }
     }
 
@@ -207,7 +207,7 @@ object SharedPreferencesUtil {
             }
             null
         } else {
-            myContext.context().getSharedPreferences(name, Context.MODE_PRIVATE)
+            myContext.context.getSharedPreferences(name, Context.MODE_PRIVATE)
         }
     }
 

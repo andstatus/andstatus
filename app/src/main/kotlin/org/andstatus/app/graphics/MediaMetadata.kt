@@ -82,7 +82,7 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
                     var retriever: MediaMetadataRetriever? = null
                     return try {
                         retriever = MediaMetadataRetriever()
-                        retriever.setDataSource( MyContextHolder.myContextHolder.getNow().context(), Uri.parse(path))
+                        retriever.setDataSource( MyContextHolder.myContextHolder.getNow().context, Uri.parse(path))
                         MediaMetadata(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH).toInt(),
                                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT).toInt(),
                                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong())
