@@ -134,7 +134,7 @@ class Notifier(val myContext: MyContext) {
 
     fun initialize() {
         val stopWatch: StopWatch = StopWatch.createStarted()
-        if (myContext.isReady()) {
+        if (myContext.isReady) {
             nM = myContext.context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (nM == null) {
                 MyLog.w(this, "No Notification Service")

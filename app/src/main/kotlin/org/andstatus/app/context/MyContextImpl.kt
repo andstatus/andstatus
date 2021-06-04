@@ -53,22 +53,26 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     override val instanceId = InstanceId.next()
 
     @Volatile
-    private var state: MyContextState = MyContextState.EMPTY
+    final override var state: MyContextState = MyContextState.EMPTY
+        private set
+
     private val initializedBy: String = MyStringBuilder.objToTag(initializer)
-    private val baseContext: Context = calcBaseContextToUse(parent, context)
+    override val baseContext: Context = calcBaseContextToUse(parent, context)
     override val context: Context = MyLocale.onAttachBaseContext(baseContext)
 
     /**
      * When preferences, loaded into this class, were changed
      */
     @Volatile
-    private var preferencesChangeTime: Long = 0
+    final override var preferencesChangeTime: Long = 0
+        private set
 
     @Volatile
     private var db: DatabaseHolder? = null
 
     @Volatile
-    private var lastDatabaseError: String = if (parent.nonEmpty) parent.getLastDatabaseError() else ""
+    final override var lastDatabaseError: String = if (parent.nonEmpty) parent.lastDatabaseError else ""
+        private set
     private val users: CachedUsersAndActors = CachedUsersAndActors.newEmpty(this)
     private val accounts: MyAccounts = MyAccounts.newEmpty(this)
     private val origins: PersistentOrigins = PersistentOrigins.newEmpty(this)
@@ -150,7 +154,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
         val newDb = DatabaseHolder(baseContext, createApplicationData)
         try {
             state = newDb.checkState()
-            if (state() == MyContextState.DATABASE_READY && MyStorage.isApplicationDataCreated().untrue) {
+            if (state == MyContextState.DATABASE_READY && MyStorage.isApplicationDataCreated().untrue) {
                 state = MyContextState.ERROR
             }
         } catch (e: SQLiteException) {
@@ -164,7 +168,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
             newDb.close()
             db = null
         }
-        if (state() == MyContextState.DATABASE_READY) {
+        if (state == MyContextState.DATABASE_READY) {
             db = newDb
         }
         MyLog.i(this, "databaseInitializedMs: " + stopWatch.time + "; " + state)
@@ -173,10 +177,6 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     private fun logDatabaseError(method: String, e: Exception) {
         MyLog.w(this, "$method; Error", e)
         e.message?.let { lastDatabaseError = it }
-    }
-
-    override fun getLastDatabaseError(): String {
-        return lastDatabaseError
     }
 
     private fun tryToSetExternalStorageOnDataCreation() {
@@ -193,25 +193,9 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
                 ("context=" + context.javaClass.name)
     }
 
-    override fun initialized(): Boolean {
-        return state != MyContextState.EMPTY
-    }
+    override val initialized: Boolean get() = state != MyContextState.EMPTY
 
-    override fun isReady(): Boolean {
-        return state == MyContextState.READY && !DatabaseConverterController.isUpgrading()
-    }
-
-    override fun state(): MyContextState {
-        return state
-    }
-
-    override fun baseContext(): Context {
-        return baseContext
-    }
-
-    override fun preferencesChangeTime(): Long {
-        return preferencesChangeTime
-    }
+    override val isReady: Boolean get() = state == MyContextState.READY && !DatabaseConverterController.isUpgrading()
 
     override fun getDatabase(): SQLiteDatabase? {
         if (db == null || this.isExpired) {

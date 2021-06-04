@@ -385,7 +385,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         if (needToLoadActorInTimeline()) {
             setChanged()
         }
-        if (timelineType.isPersistable() && (id == 0L || changed) && myContext.isReady()) {
+        if (timelineType.isPersistable() && (id == 0L || changed) && myContext.isReady) {
             val isNew = id == 0L
             if (isNew) {
                 val duplicatedId = findDuplicateInDatabase(myContext)

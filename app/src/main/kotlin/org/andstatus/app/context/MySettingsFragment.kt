@@ -433,7 +433,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (mIgnorePreferenceChange || onSharedPreferenceChangedIsBusy ||
-                !MyContextHolder.myContextHolder.getNow().initialized() ||
+                !MyContextHolder.myContextHolder.getNow().initialized ||
                 storageSwitch.isDataBeingMoved()) {
             return
         }

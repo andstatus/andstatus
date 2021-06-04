@@ -167,9 +167,9 @@ class MyService : Service(), IdentifiableInstance {
 
     fun ensureInitialized() {
         if (initialized.get() || isStopping.get()) return
-        if (!myContext.isReady()) {
+        if (!myContext.isReady) {
             myContext =  MyContextHolder.myContextHolder.initialize(this).getBlocking()
-            if (!myContext.isReady()) return
+            if (!myContext.isReady) return
         }
         if (initialized.compareAndSet(false, true)) {
             initializedTime = System.currentTimeMillis()
@@ -203,7 +203,7 @@ class MyService : Service(), IdentifiableInstance {
 
     fun startStopExecution() {
         if (!initialized.get()) return
-        if (isStopping.get() || !myContext.isReady() || isForcedToStop() || (!isAnythingToExecuteNow()
+        if (isStopping.get() || !myContext.isReady || isForcedToStop() || (!isAnythingToExecuteNow()
                         && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))) {
             stopDelayed(false)
         } else if (isAnythingToExecuteNow()) {

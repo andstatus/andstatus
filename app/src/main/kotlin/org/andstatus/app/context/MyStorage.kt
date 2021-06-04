@@ -75,7 +75,7 @@ object MyStorage {
             if (isStorageExternal(useExternalStorage)) {
                 if (isWritableExternalStorageAvailable(textToLog)) {
                     try {
-                        dir = myContext.baseContext().getExternalFilesDir(type)
+                        dir = myContext.baseContext.getExternalFilesDir(type)
                     } catch (e: NullPointerException) {
                         // I noticed this exception once, but that time it was related to SD card malfunction...
                         if (logged) {
@@ -84,7 +84,7 @@ object MyStorage {
                     }
                 }
             } else {
-                dir = myContext.baseContext().filesDir
+                dir = myContext.baseContext.filesDir
                 if (!type.isNullOrEmpty()) {
                     dir = File(dir, type)
                 }

@@ -58,7 +58,7 @@ class MyBackupAgent : BackupAgent() {
     fun setActivity(activity: Activity?) {
         this.activity = activity
          MyContextHolder.myContextHolder.initialize(activity)
-        attachBaseContext( MyContextHolder.myContextHolder.getNow().baseContext())
+        attachBaseContext( MyContextHolder.myContextHolder.getNow().baseContext)
     }
 
     override fun onCreate() {
@@ -96,7 +96,7 @@ class MyBackupAgent : BackupAgent() {
         try {
             if (data == null) {
                 throw FileNotFoundException("No BackupDataOutput")
-            } else if (! MyContextHolder.myContextHolder.getNow().isReady()) {
+            } else if (! MyContextHolder.myContextHolder.getNow().isReady) {
                 throw FileNotFoundException("Application context is not initialized")
             } else if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
                 throw FileNotFoundException("Nothing to backup - No accounts yet")
@@ -266,7 +266,7 @@ class MyBackupAgent : BackupAgent() {
             return
         }
          MyContextHolder.myContextHolder.initialize(this).getBlocking()
-        if (! MyContextHolder.myContextHolder.getNow().isReady()) {
+        if (! MyContextHolder.myContextHolder.getNow().isReady) {
             throw FileNotFoundException("Application context is not initialized")
         } else if ( MyContextHolder.myContextHolder.getNow().accounts().nonEmpty) {
             throw FileNotFoundException("Cannot restore: AndStatus accounts are present. Please reinstall application before restore")
@@ -292,7 +292,7 @@ class MyBackupAgent : BackupAgent() {
         MyContextHolder.myContextHolder
                 .setOnRestore(true)
                 .initialize(this).getBlocking()
-        if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING && activity != null) {
+        if ( MyContextHolder.myContextHolder.getNow().state == MyContextState.UPGRADING && activity != null) {
              MyContextHolder.myContextHolder.upgradeIfNeeded(activity)
         }
         if (optionalNextHeader(data, LOG_FILES_KEY)) {

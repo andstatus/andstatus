@@ -109,7 +109,7 @@ internal class MyBackupManager(private val activity: Activity?, progressListener
         this.dataFolder = dataFolder
         newDescriptor = descriptorFile.map { df: DocumentFile? ->
             val descriptor: MyBackupDescriptor = MyBackupDescriptor.fromOldDocFileDescriptor(
-                    MyContextHolder.myContextHolder.getNow().baseContext(), df, progressLogger)
+                    MyContextHolder.myContextHolder.getNow().baseContext, df, progressLogger)
             if (descriptor.getBackupSchemaVersion() != MyBackupDescriptor.BACKUP_SCHEMA_VERSION) {
                 throw FileNotFoundException(
                         "Unsupported backup schema version: ${descriptor.getBackupSchemaVersion()}" +

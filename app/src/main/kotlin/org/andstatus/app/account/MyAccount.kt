@@ -503,7 +503,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
 
         fun save() {
-            if (saveSilently().getOrElse(false) && myAccount.myContext.isReady()) {
+            if (saveSilently().getOrElse(false) && myAccount.myContext.isReady) {
                 MyPreferences.onPreferencesChanged()
             }
         }
@@ -521,7 +521,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
                                         this.toString()
                             }
                             myAccount.myContext.accounts().addIfAbsent(myAccount)
-                            if (myAccount.myContext.isReady() && !myAccount.hasAnyTimelines()) {
+                            if (myAccount.myContext.isReady && !myAccount.hasAnyTimelines()) {
                                 TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myAccount.myContext)
                             }
                         }

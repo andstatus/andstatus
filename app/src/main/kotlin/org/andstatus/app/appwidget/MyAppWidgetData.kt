@@ -127,7 +127,7 @@ class MyAppWidgetData private constructor(val events: NotificationEvents, privat
         private val PREF_DATECHECKED_KEY: String = "datechecked"
         fun newInstance(events: NotificationEvents, appWidgetId: Int): MyAppWidgetData {
             val data = MyAppWidgetData(events, appWidgetId)
-            if ( MyContextHolder.myContextHolder.getNow().isReady()) {
+            if ( MyContextHolder.myContextHolder.getNow().isReady) {
                 data.load()
             }
             return data

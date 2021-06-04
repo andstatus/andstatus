@@ -176,7 +176,7 @@ class DemoData {
             MyServiceManager.setServiceUnavailable()
             progressListener.onProgressMessage("Demo accounts added...")
             DbUtils.waitMs(logTag, 500)
-            Assert.assertTrue("Context is not ready " +  MyContextHolder.myContextHolder.getNow(),  MyContextHolder.myContextHolder.getNow().isReady())
+            Assert.assertTrue("Context is not ready " +  MyContextHolder.myContextHolder.getNow(),  MyContextHolder.myContextHolder.getNow().isReady)
             demoData.checkDataPath()
             val size: Int =  MyContextHolder.myContextHolder.getNow().accounts().size()
             Assert.assertTrue("Only " + size + " accounts added: " +  MyContextHolder.myContextHolder.getNow().accounts(),

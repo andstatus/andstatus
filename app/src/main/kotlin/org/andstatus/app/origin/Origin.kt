@@ -344,7 +344,7 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
     }
 
     fun assertContext() {
-        if (!myContext.isReady()) {
+        if (!myContext.isReady) {
             Assert.fail("Origin context should be ready $this\ncontext: $myContext")
         }
         if (myContext.getDatabase() == null) {
@@ -598,7 +598,7 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
                         .onFailure { e: Throwable? -> MyLog.w("Origin", "Failed to save $this") }
                         .isSuccess
             }
-            if (changed && getMyContext().isReady()) {
+            if (changed && getMyContext().isReady) {
                 MyPreferences.onPreferencesChanged()
             }
             saved = changed

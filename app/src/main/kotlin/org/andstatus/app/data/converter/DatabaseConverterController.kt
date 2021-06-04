@@ -77,7 +77,7 @@ class DatabaseConverterController {
                 MyLog.v(TAG, "Upgrade didn't start")
             }
             if (success) {
-                MyLog.i(TAG, "success " +  MyContextHolder.myContextHolder.getNow().state())
+                MyLog.i(TAG, "success " +  MyContextHolder.myContextHolder.getNow().state)
                 onUpgradeSucceeded()
             }
             return success
@@ -85,7 +85,7 @@ class DatabaseConverterController {
 
         private fun onUpgradeSucceeded() {
             MyServiceManager.setServiceUnavailable()
-            if (! MyContextHolder.myContextHolder.getNow().isReady()) {
+            if (! MyContextHolder.myContextHolder.getNow().isReady) {
                  MyContextHolder.myContextHolder.release { "onUpgradeSucceeded1" }
                 MyContextHolder.myContextHolder.initialize(upgradeRequestor).getBlocking()
             }
@@ -157,7 +157,7 @@ class DatabaseConverterController {
                         + ": already upgrading")
                 skip = true
             }
-            if (!skip && ! MyContextHolder.myContextHolder.getNow().initialized()) {
+            if (!skip && ! MyContextHolder.myContextHolder.getNow().initialized) {
                 MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName
                         + ": not initialized yet")
                 skip = true

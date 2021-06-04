@@ -245,7 +245,7 @@ class MyProvider : ContentProvider() {
             sortOrderIn
         }
         var cursor: Cursor? = null
-        if ( MyContextHolder.myContextHolder.getNow().isReady()) {
+        if ( MyContextHolder.myContextHolder.getNow().isReady) {
             try {
                 if (where.isNotEmpty()) {
                     qb.appendWhere(where)

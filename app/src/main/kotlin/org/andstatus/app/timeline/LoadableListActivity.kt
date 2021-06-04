@@ -86,13 +86,13 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
         super.onCreate(savedInstanceState)
         if (restartMeIfNeeded()) return
         textualSyncIndicator = findViewById(R.id.sync_indicator)
-        configChangeTime = myContext.preferencesChangeTime()
+        configChangeTime = myContext.preferencesChangeTime
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "onCreate, config changed " + RelativeTime.secondsAgo(configChangeTime) + " seconds ago"
-                    + if ( MyContextHolder.myContextHolder.getNow().isReady()) "" else ", MyContext is not ready"
+                    + if ( MyContextHolder.myContextHolder.getNow().isReady) "" else ", MyContext is not ready"
             )
         }
-        if (myContext.isReady()) {
+        if (myContext.isReady) {
             MyServiceManager.setServiceAvailable()
         }
         myServiceReceiver = MyServiceEventsReceiver(myContext, this)
@@ -155,7 +155,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
 
     protected fun isContextNeedsUpdate(): Boolean {
         val myContextNew: MyContext =  MyContextHolder.myContextHolder.getNow()
-        return !myContext.isReady() || myContext !== myContextNew || configChangeTime != myContextNew.preferencesChangeTime()
+        return !myContext.isReady || myContext !== myContextNew || configChangeTime != myContextNew.preferencesChangeTime
     }
 
     /** @return selectedItem or EmptyViewItem

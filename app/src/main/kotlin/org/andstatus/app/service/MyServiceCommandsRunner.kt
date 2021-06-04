@@ -25,7 +25,7 @@ class MyServiceCommandsRunner(private val myContext: MyContext) {
     private var ignoreServiceAvailability = false
     fun autoSyncAccount(ma: MyAccount, syncResult: SyncResult) {
         val method = "syncAccount " + ma.getAccountName()
-        if (!myContext.isReady()) {
+        if (!myContext.isReady) {
             MyLog.d(this, "$method; Context is not ready")
             return
         }

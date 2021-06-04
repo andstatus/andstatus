@@ -49,12 +49,12 @@ class MyServiceTestHelper : MyServiceEventsListener {
                  MyContextHolder.myContextHolder.getBlocking().setExpired { this.javaClass.simpleName + " setUp" }
             }
             myContext =  MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
-            if (!myContext.isReady()) {
+            if (!myContext.isReady) {
                 val msg = "Context is not ready after the initialization, repeating... $myContext"
                 MyLog.w(this, msg)
                 myContext.setExpired { this.javaClass.simpleName + msg }
                 myContext =  MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
-                Assert.assertEquals("Context should be ready", true, myContext.isReady())
+                Assert.assertEquals("Context should be ready", true, myContext.isReady)
             }
             MyServiceManager.Companion.setServiceUnavailable()
             MyServiceManager.Companion.stopService()

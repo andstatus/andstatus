@@ -102,7 +102,7 @@ class HelpActivity : MyActivity() {
     private fun showRestoreButton() {
         val restoreButton = findViewById<Button?>(R.id.button_restore)
         if (!generatingDemoData
-                &&  MyContextHolder.myContextHolder.getNow().isReady() &&  MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
+                &&  MyContextHolder.myContextHolder.getNow().isReady &&  MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
             restoreButton.setOnClickListener { v: View? ->
                 startActivity(Intent(this@HelpActivity, RestoreActivity::class.java))
                 finish()
@@ -121,7 +121,7 @@ class HelpActivity : MyActivity() {
                  MyContextHolder.myContextHolder.initialize(this).thenStartApp()
                 return@setOnClickListener
             }
-            when ( MyContextHolder.myContextHolder.getNow().state()) {
+            when ( MyContextHolder.myContextHolder.getNow().state) {
                 MyContextState.READY -> {
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(this@HelpActivity, true)
                     if ( MyContextHolder.myContextHolder.getNow().accounts().currentAccount.isValid) {
@@ -165,9 +165,9 @@ class HelpActivity : MyActivity() {
         private fun showVersionText(context: Context?, parentView: View) {
             val versionText = parentView.findViewById<TextView?>(R.id.splash_application_version)
             val text: MyStringBuilder = MyStringBuilder.of( MyContextHolder.myContextHolder.getVersionText(context))
-            if (! MyContextHolder.myContextHolder.getNow().isReady()) {
-                text.withSpace(MyContextHolder.myContextHolder.getNow().state().toString())
-                text.withSpace(MyContextHolder.myContextHolder.getNow().getLastDatabaseError())
+            if (! MyContextHolder.myContextHolder.getNow().isReady) {
+                text.withSpace(MyContextHolder.myContextHolder.getNow().state.toString())
+                text.withSpace(MyContextHolder.myContextHolder.getNow().lastDatabaseError)
             }
              MyContextHolder.myContextHolder.tryNow().onFailure({ e: Throwable ->
                 text.append(""" ${e.message} ${MyLog.getStackTrace(e)}""") })
@@ -196,7 +196,7 @@ class HelpActivity : MyActivity() {
                 }
             }
         })
-        if (ViewUtils.showView(this, R.id.button_help_learn_more,  MyContextHolder.myContextHolder.getNow().isReady())) {
+        if (ViewUtils.showView(this, R.id.button_help_learn_more,  MyContextHolder.myContextHolder.getNow().isReady)) {
             val learnMore = findViewById<Button?>(R.id.button_help_learn_more)
             learnMore.setOnClickListener { v: View? ->
                 val adapter = flipper.getAdapter()

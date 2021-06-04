@@ -183,8 +183,8 @@ class CommandQueue(private val myContext: MyContext) {
             MyLog.d(TAG, "save; Database is unavailable")
             return
         }
-        if (!myContext.isReady() && !myContext.isExpired) {
-            MyLog.d(TAG, "save; Cannot save: context is " + myContext.state())
+        if (!myContext.isReady && !myContext.isExpired) {
+            MyLog.d(TAG, "save; Cannot save: context is " + myContext.state)
             return
         }
         accessors.values.forEach(Consumer { obj: Accessor -> obj.moveCommandsFromPreToMainQueue() })

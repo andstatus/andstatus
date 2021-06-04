@@ -31,7 +31,7 @@ class HtmlContentTester {
     private val ma: MyAccount
     fun insertPumpIoHtmlContent() {
         val author = DemoNoteInserter(ma).buildActorFromOid("acct:html@example.com")
-        Assert.assertEquals("Author1: $author", MyContextState.READY, author.origin.myContext.state())
+        Assert.assertEquals("Author1: $author", MyContextState.READY, author.origin.myContext.state)
         author.setAvatarUrl("http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png")
         val bodyString = ("<h4>This is a note with HTML content</h4>"
                 + "<p>This is a second line, <b>Bold</b> formatting."
@@ -54,7 +54,7 @@ class HtmlContentTester {
     private fun assertHtmlNoteContentAllowed(author: Actor,
                                              bodyString: String?, noteOid: String?, htmlContentAllowed: Boolean) {
         val mi = DemoNoteInserter(ma)
-        Assert.assertEquals("Author: $author", MyContextState.READY, author.origin.myContext.state())
+        Assert.assertEquals("Author: $author", MyContextState.READY, author.origin.myContext.state)
         val activity = mi.buildActivity(author, "", bodyString, null, noteOid,
                 DownloadStatus.LOADED)
         mi.onActivity(activity)

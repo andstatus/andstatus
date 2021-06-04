@@ -149,7 +149,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             var dbFileOld: File? = null
             var dbFileNew: File? = null
             try {
-                dbFileOld = MyContextHolder.myContextHolder.getNow().baseContext().getDatabasePath(
+                dbFileOld = MyContextHolder.myContextHolder.getNow().baseContext.getDatabasePath(
                         databaseName)
                 dbFileNew = MyStorage.getDatabasePath(databaseName, TriState.fromBoolean(useExternalStorageNew))
                 if (dbFileOld == null) {

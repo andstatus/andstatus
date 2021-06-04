@@ -115,7 +115,7 @@ object HttpConnectionUtils {
         var size: Long = 0
         fun isFailed(count: Int): Boolean {
             size += count.toLong()
-            if (!request.myContext().isReady()) {
+            if (!request.myContext().isReady) {
                 result.setException(ConnectionException("App restarted?!"))
                 return true
             }

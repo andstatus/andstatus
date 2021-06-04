@@ -110,7 +110,7 @@ object TestSuite {
                     if (MyContextHolder.myContextHolder.getFuture().future.isDone()) {
                         val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
                         MyLog.i(TAG, "After starting FirstActivity $iter $myContext")
-                        if (myContext.state() == MyContextState.READY) break
+                        if (myContext.state == MyContextState.READY) break
                     } else {
                         MyLog.i(TAG, "After starting FirstActivity $iter is initializing...")
                     }
@@ -124,7 +124,7 @@ object TestSuite {
         MyContextHolder.myContextHolder.executionMode =
             ExecutionMode.Companion.load(InstrumentationRegistry.getArguments().getString("executionMode"))
         val myContext: MyContext = MyContextHolder.myContextHolder.getBlocking()
-        Assert.assertNotEquals("MyContext state $myContext", MyContextState.EMPTY, myContext.state())
+        Assert.assertNotEquals("MyContext state $myContext", MyContextState.EMPTY, myContext.state)
         val logLevel = MyLog.VERBOSE
         MyLog.setMinLogLevel(logLevel)
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_DOWNLOAD_AND_DISPLAY_ATTACHED_IMAGES, true)
@@ -136,22 +136,22 @@ object TestSuite {
         MyLog.forget()
         Assert.assertTrue("Level $logLevel should be loggable", MyLog.isLoggable(TAG, logLevel))
         MyServiceManager.Companion.setServiceUnavailable()
-        if (MyContextHolder.myContextHolder.getBlocking().state() != MyContextState.READY) {
-            MyLog.d(TAG, "MyContext is not ready: " + MyContextHolder.myContextHolder.getNow().state())
-            if (MyContextHolder.myContextHolder.getNow().state() == MyContextState.NO_PERMISSIONS) {
+        if (MyContextHolder.myContextHolder.getBlocking().state != MyContextState.READY) {
+            MyLog.d(TAG, "MyContext is not ready: " + MyContextHolder.myContextHolder.getNow().state)
+            if (MyContextHolder.myContextHolder.getNow().state == MyContextState.NO_PERMISSIONS) {
                 Permissions.setAllGranted(true)
             }
             waitUntilContextIsReady()
         }
         MyLog.d(TAG, "Before check isReady " + MyContextHolder.myContextHolder.getNow())
-        initialized = MyContextHolder.myContextHolder.getNow().isReady()
+        initialized = MyContextHolder.myContextHolder.getNow().isReady
         Assert.assertTrue(
-            "Test Suite initialized, MyContext state=" + MyContextHolder.myContextHolder.getNow().state(),
+            "Test Suite initialized, MyContext state=" + MyContextHolder.myContextHolder.getNow().state,
             initialized
         )
         dataPath = MyContextHolder.myContextHolder.getNow().context.getDatabasePath("andstatus").getPath()
         MyLog.v(
-            "TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.myContextHolder.getNow().state()
+            "TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.myContextHolder.getNow().state
                     + "; databasePath=" + dataPath
         )
         if (FirstActivity.Companion.checkAndUpdateLastOpenedAppVersion(
@@ -179,15 +179,15 @@ object TestSuite {
         var i = 100
         while (i > 0) {
             DbUtils.waitMs(method, 2000)
-            MyLog.d(TAG, "Waiting for context " + i + " " + MyContextHolder.myContextHolder.getNow().state())
-            when (MyContextHolder.myContextHolder.getNow().state()) {
+            MyLog.d(TAG, "Waiting for context " + i + " " + MyContextHolder.myContextHolder.getNow().state)
+            when (MyContextHolder.myContextHolder.getNow().state) {
                 MyContextState.READY, MyContextState.ERROR -> i = 0
                 else -> {
                 }
             }
             i--
         }
-        Assert.assertEquals("Is Not ready", MyContextState.READY, MyContextHolder.myContextHolder.getNow().state())
+        Assert.assertEquals("Is Not ready", MyContextState.READY, MyContextHolder.myContextHolder.getNow().state)
         intent = Intent(MyContextHolder.myContextHolder.getNow().context, HelpActivity::class.java)
         intent.putExtra(HelpActivity.Companion.EXTRA_CLOSE_ME, true)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

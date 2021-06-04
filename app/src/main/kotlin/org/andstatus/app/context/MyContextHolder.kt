@@ -181,7 +181,7 @@ class MyContextHolder private constructor() : TaggedClass {
         synchronized(contextLock) {
             if (getNow().isEmpty) {
                 val contextCreator = MyContextImpl(MyContextEmpty.EMPTY, context, calledBy)
-                requireNonNullContext(contextCreator.baseContext(), calledBy, "no compatible context")
+                requireNonNullContext(contextCreator.baseContext, calledBy, "no compatible context")
                 myFutureContext = MyFutureContext.completed(contextCreator)
             }
         }
@@ -189,7 +189,7 @@ class MyContextHolder private constructor() : TaggedClass {
     }
 
     fun upgradeIfNeeded(upgradeRequestor: Activity?) {
-        if (getNow().state() == MyContextState.UPGRADING && upgradeRequestor != null) {
+        if (getNow().state == MyContextState.UPGRADING && upgradeRequestor != null) {
             DatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor)
         }
     }

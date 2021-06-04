@@ -34,13 +34,13 @@ import java.util.function.Supplier
 
 interface MyContext : IdentifiableInstance, IsEmpty {
     fun newInitialized(initializer: Any): MyContext
-    fun initialized(): Boolean
-    fun isReady(): Boolean
-    fun state(): MyContextState
+    val initialized: Boolean
+    val isReady: Boolean
+    val state: MyContextState
     val context: Context
-    fun baseContext(): Context
-    fun preferencesChangeTime(): Long
-    fun getLastDatabaseError(): String
+    val baseContext: Context
+    val preferencesChangeTime: Long
+    val lastDatabaseError: String
     fun getDatabase(): SQLiteDatabase?
     fun users(): CachedUsersAndActors
     fun accounts(): MyAccounts
@@ -75,7 +75,7 @@ interface MyContext : IdentifiableInstance, IsEmpty {
     }
 
     fun isPreferencesChanged(): Boolean {
-        return initialized() && preferencesChangeTime() != MyPreferences.getPreferencesChangeTime()
+        return initialized && preferencesChangeTime != MyPreferences.getPreferencesChangeTime()
     }
 
 }

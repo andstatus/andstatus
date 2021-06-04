@@ -55,7 +55,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
     }
 
     fun isReady(): Boolean {
-        return getNow().isReady()
+        return getNow().isReady
     }
 
     fun getNow(): MyContext {
@@ -121,7 +121,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
 
         private fun initializeMyContextIfNeeded(calledBy: Any?): UnaryOperator<MyContext> {
             return UnaryOperator { previousContext: MyContext ->
-                val reason: String = if (!previousContext.isReady()) {
+                val reason: String = if (!previousContext.isReady) {
                     "Context not ready"
                 } else if (previousContext.isExpired) {
                     "Context expired"
@@ -175,7 +175,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
         fun startActivity(myContext: MyContext, intent: Intent?) {
             if (intent != null) {
                 var launched = false
-                if (myContext.isReady()) {
+                if (myContext.isReady) {
                     try {
                         MyLog.d(TAG, "Start activity with intent:$intent")
                         myContext.context.startActivity(intent)

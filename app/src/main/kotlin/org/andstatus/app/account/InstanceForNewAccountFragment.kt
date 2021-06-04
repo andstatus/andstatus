@@ -107,7 +107,7 @@ class InstanceForNewAccountFragment : Fragment() {
     }
 
     private fun onNewOrigin(activity: AccountSettingsActivity, originNew: Origin) {
-        if (originNew == origin ||  MyContextHolder.myContextHolder.getNow().isReady()) {
+        if (originNew == origin ||  MyContextHolder.myContextHolder.getNow().isReady) {
             if (activity.state.myAccount.origin != originNew) {
                 activity.state.builder.setOrigin(originNew)
             }

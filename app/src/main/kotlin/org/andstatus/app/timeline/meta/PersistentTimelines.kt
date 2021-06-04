@@ -165,7 +165,7 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
     }
 
     fun delete(timeline: Timeline) {
-        if (myContext.isReady()) {
+        if (myContext.isReady) {
             timeline.delete(myContext)
             timelines.remove(timeline.getId())
         }

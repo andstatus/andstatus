@@ -84,7 +84,7 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
                         if (progressDialog == null) {
                             progressDialog = ProgressDialog(activity, ProgressDialog.STYLE_SPINNER).also { dialog ->
                                 dialog.setOnDismissListener(this@DefaultProgressListener)
-                                dialog.setTitle(if (MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) upgradingText else defaultTitle)
+                                dialog.setTitle(if (MyContextHolder.myContextHolder.getNow().state == MyContextState.UPGRADING) upgradingText else defaultTitle)
                                 dialog.setMessage(message)
                                 if (isCancelable && !isCancelled()) {
                                     dialog.setCancelable(false)
@@ -118,7 +118,7 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
         try {
             Toast.makeText( MyContextHolder.myContextHolder.getNow().context,
                 "${defaultTitle.toString()}\n$versionText" +
-                        (if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) "\n$upgradingText" else "") +
+                        (if ( MyContextHolder.myContextHolder.getNow().state == MyContextState.UPGRADING) "\n$upgradingText" else "") +
                         "\n\n" + message,
                 Toast.LENGTH_LONG)
                 .show()

@@ -200,7 +200,8 @@ class Audience(val origin: Origin) {
      */
     fun save(actorOfAudience: Actor, noteId: Long, visibility: Visibility, countOnly: Boolean): Boolean {
         if (this === EMPTY || !actorOfAudience.origin.isValid() || noteId == 0L || actorOfAudience.actorId == 0L ||
-                !origin.myContext.isReady()) {
+                !origin.myContext.isReady
+        ) {
             return false
         }
         val prevAudience = loadIds(actorOfAudience.origin, noteId, Optional.of(visibility))

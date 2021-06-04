@@ -221,7 +221,7 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
                                           progressLoggerIn: ProgressLogger): MyBackupDescriptor {
             val myBackupDescriptor = MyBackupDescriptor(progressLoggerIn)
             myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor()
-            myBackupDescriptor.setEmptyFields( MyContextHolder.myContextHolder.getNow().baseContext())
+            myBackupDescriptor.setEmptyFields( MyContextHolder.myContextHolder.getNow().baseContext)
             myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION
             return myBackupDescriptor
         }

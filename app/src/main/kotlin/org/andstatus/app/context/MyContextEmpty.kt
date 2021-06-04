@@ -31,20 +31,21 @@ import java.util.function.Supplier
 class MyContextEmpty: MyContext {
     override fun newInitialized(initializer: Any): MyContext = throwException()
 
-    override fun initialized(): Boolean = false
+    override val initialized: Boolean = false
 
-    override fun isReady(): Boolean = false
+    override val isReady: Boolean = false
 
-    override fun state(): MyContextState = MyContextState.EMPTY
+    override val state: MyContextState = MyContextState.EMPTY
 
     override val context: Context
         get() = throwException()
 
-    override fun baseContext(): Context = throwException()
+    override val baseContext: Context get() = throwException()
 
-    override fun preferencesChangeTime(): Long = 0
+    override val preferencesChangeTime: Long
+        get() = 0
 
-    override fun getLastDatabaseError(): String = ""
+    override val lastDatabaseError: String = ""
 
     override fun getDatabase(): SQLiteDatabase? = null
 

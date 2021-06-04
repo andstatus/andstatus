@@ -109,7 +109,7 @@ abstract class DataChecker {
         fun fixData(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean): Long {
             var counter: Long = 0
             val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
-            if (!myContext.isReady()) {
+            if (!myContext.isReady) {
                 MyLog.w(TAG, "fixData skipped: context is not ready $myContext")
                 return counter
             }

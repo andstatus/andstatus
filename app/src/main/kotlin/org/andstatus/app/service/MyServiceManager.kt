@@ -78,7 +78,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
                 stopService()
             }
             else -> {
-                if (serviceAvailability.get().isAvailable() && !MyContextHolder.myContextHolder.getNow().isReady()) {
+                if (serviceAvailability.get().isAvailable() && !MyContextHolder.myContextHolder.getNow().isReady) {
                     MyContextHolder.myContextHolder.initialize(context, this)
                 }
                 when (myAction) {
@@ -254,14 +254,15 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
         private val serviceAvailability: AtomicReference<ServiceAvailability> = AtomicReference(ServiceAvailability.AVAILABLE)
         fun isServiceAvailable(): Boolean {
             var myContext = MyContextHolder.myContextHolder.getNow()
-            if (!myContext.isReady()) {
+            if (!myContext.isReady) {
                 if (serviceAvailability.get().isAvailable()
                         && MyAsyncTask.nonUiThread() // Don't block on UI thread
-                        && !MyContextHolder.myContextHolder.getNow().initialized()) {
+                        && !MyContextHolder.myContextHolder.getNow().initialized
+                ) {
                     myContext = MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
                 }
             }
-            return if (myContext.isReady()) {
+            return if (myContext.isReady) {
                 val availableInMillis = serviceAvailability.updateAndGet { it.checkAndGet() }
                         .willBeAvailableInMillis()
                 (availableInMillis == 0L).also {

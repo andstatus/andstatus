@@ -81,7 +81,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
                 finish()
             }
             MyAction.CLOSE_ALL_ACTIVITIES -> finish()
-            else -> if ( MyContextHolder.myContextHolder.getFuture().isReady() ||  MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) {
+            else -> if ( MyContextHolder.myContextHolder.getFuture().isReady() ||  MyContextHolder.myContextHolder.getNow().state == MyContextState.UPGRADING) {
                 startNextActivitySync( MyContextHolder.myContextHolder.getNow(), intent)
                 finish()
             } else {
@@ -95,7 +95,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
 
     private val startNextActivity: BiConsumer<MyContext?, Throwable?> = BiConsumer { myContext: MyContext?, throwable: Throwable? ->
         var launched = false
-        if (myContext != null && myContext.isReady() && !myContext.isExpired) {
+        if (myContext != null && myContext.isReady && !myContext.isExpired) {
             try {
                 startNextActivitySync(myContext, intent)
                 launched = true
@@ -176,14 +176,14 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
         }
 
         fun needToStartNext(context: Context, myContext: MyContext): NeedToStart {
-            if (!myContext.isReady()) {
+            if (!myContext.isReady) {
                 MyLog.i(context, "Context is not ready: " + myContext.toString())
                 return NeedToStart.HELP
             } else if (myContext.accounts().isEmpty) {
                 MyLog.i(context, "No AndStatus Accounts yet")
                 return NeedToStart.HELP
             }
-            return if (myContext.isReady() && checkAndUpdateLastOpenedAppVersion(context, false)) {
+            return if (myContext.isReady && checkAndUpdateLastOpenedAppVersion(context, false)) {
                 NeedToStart.CHANGELOG
             } else NeedToStart.OTHER
         }
@@ -209,7 +209,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
                                 + if (update) ", updating" else "")
                     }
                     changed = true
-                    if (update &&  MyContextHolder.myContextHolder.getNow().isReady()) {
+                    if (update &&  MyContextHolder.myContextHolder.getNow().isReady) {
                         SharedPreferencesUtil.putLong(MyPreferences.KEY_VERSION_CODE_LAST, versionCode.toLong())
                     }
                 }
