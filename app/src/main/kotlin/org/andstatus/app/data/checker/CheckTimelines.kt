@@ -16,7 +16,6 @@
 package org.andstatus.app.data.checker
 
 import android.database.Cursor
-import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.TimelineTable
 import org.andstatus.app.timeline.meta.Timeline
@@ -44,7 +43,7 @@ internal class CheckTimelines : DataChecker() {
                     .forEach(Consumer { timeline: Timeline ->
                 if (!timeline.isValid()) {
                     logger.logProgress("Invalid timeline: $timeline")
-                    DbUtils.waitMs(this, 1000)
+                    pauseToShowCount(this, 0)
                     toDelete.add(timeline)
                 }
             })
@@ -55,13 +54,13 @@ internal class CheckTimelines : DataChecker() {
         } catch (e: Exception) {
             val logMsg = "Error: " + e.message
             logger.logProgress(logMsg)
-            DbUtils.waitMs(this, 5000)
+            pauseToShowCount(this, 1)
             MyLog.e(this, logMsg, e)
         }
         myContext.timelines.saveChanged()
         logger.logProgress(if (deletedCount == 0L) "No invalid timelines found"
         else (if (countOnly) "To delete " else "Deleted ") + deletedCount + " invalid timelines. Valid timelines: " + size1)
-        DbUtils.waitMs(this, if (deletedCount == 0L) 1000 else 3000)
+        pauseToShowCount(this, deletedCount)
         return deletedCount
     }
 
@@ -82,7 +81,7 @@ internal class CheckTimelines : DataChecker() {
         val size2 = myContext.timelines.values().size
         val addedCount = size2 - size1
         logger.logProgress(if (addedCount == 0L) "No new timelines were added. $size2 timelines" else "Added $addedCount of $size2 timelines")
-        DbUtils.waitMs(this, if (addedCount == 0L) 1000 else 3000)
+        pauseToShowCount(this, addedCount)
         return addedCount
     }
 
@@ -107,9 +106,12 @@ internal class CheckTimelines : DataChecker() {
         myContext.timelines.saveChanged()
         val size2 = myContext.timelines.values().size
         val deletedCount = if (countOnly) toDelete.size else size1 - size2
-        logger.logProgress(if (deletedCount == 0L) "No duplicated timelines found. $size2 timelines" else (if (countOnly) "To delete " else "Deleted ") + deletedCount +
-                " duplicates of " + size1 + " timelines")
-        DbUtils.waitMs(this, if (deletedCount == 0L) 1000 else 3000)
+        logger.logProgress(
+            if (deletedCount == 0L) "No duplicated timelines found. $size2 timelines"
+            else (if (countOnly) "To delete " else "Deleted ") + deletedCount +
+                    " duplicates of " + size1 + " timelines"
+        )
+        pauseToShowCount(this, deletedCount)
         return deletedCount.toLong()
     }
 }

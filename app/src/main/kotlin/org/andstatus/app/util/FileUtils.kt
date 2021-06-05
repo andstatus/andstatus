@@ -168,8 +168,7 @@ object FileUtils {
     }
 
     /**
-     * Based on [Backing
- * up your Android SQLite database to the SD card](http://www.screaming-penguin.com/node/7749)
+     * Based on [Backing up your Android SQLite database to the SD card](http://www.screaming-penguin.com/node/7749)
      *
      * @param src
      * @param dst

@@ -33,7 +33,7 @@ import kotlin.properties.Delegates
  * @author yvolk@yurivolkov.com
  */
 abstract class DataChecker {
-    var myContext: MyContext by Delegates.notNull<MyContext>()
+    var myContext: MyContext by Delegates.notNull()
     var logger: ProgressLogger = ProgressLogger.getEmpty("DataChecker")
     var includeLong = false
     var countOnly = false
@@ -71,11 +71,22 @@ abstract class DataChecker {
         val changedCount = fixInternal()
         logger.logProgress(checkerName() + " checker ended in " + stopWatch.getTime(TimeUnit.SECONDS) + " sec, " +
                 if (changedCount > 0) (if (countOnly) "need to change " else "changed ") + changedCount + " items" else " no changes were needed")
-        DbUtils.waitMs(checkerName(), if (changedCount == 0L) 1000 else 3000)
+        pauseToShowCount(checkerName(), changedCount)
         return changedCount
     }
 
     abstract fun fixInternal(): Long
+
+    protected fun pauseToShowCount(tag: Any?, count: Number) {
+        DbUtils.waitMs(
+            tag,
+            if (count == 0) {
+                if (myContext.isTestRun) 500 else 1000
+            } else {
+                if (myContext.isTestRun) 1000 else 3000
+            }
+        )
+    }
 
     companion object {
         private val TAG: String = DataChecker::class.java.simpleName
@@ -92,7 +103,7 @@ abstract class DataChecker {
                             fixData(logger, includeLong, countOnly)
                             DbUtils.waitMs(TAG, 3000)
                             MyContextHolder.myContextHolder.release { "fixDataAsync" }
-                             MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
+                            MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
                             return null
                         }
 

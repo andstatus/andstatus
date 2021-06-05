@@ -70,7 +70,7 @@ internal class CheckAudience : DataChecker() {
         logger.logProgress(origin.name + ": " +
                 if (summary.toFixCount == 0) "No changes to Audience were needed. " + summary.rowsCount + " notes" else (if (countOnly) "Need to update " else "Updated") + " Audience for " + summary.toFixCount +
                         " of " + summary.rowsCount + " notes")
-        DbUtils.waitMs(this, 1000)
+        pauseToShowCount(this, summary.toFixCount)
         return summary.toFixCount
     }
 
