@@ -1,16 +1,9 @@
-# Based on https://travis-ci.org/ankidroid/Anki-Android/builds/624268367
+# Based on a script from https://github.com/ankidroid/Anki-Android (now gone from there...)
 # See also https://travis-ci.community/t/is-android-28-emulator-supported/1718/6
 sudo: true
 language: bash
 # ignored on non-linux platforms, but bionic is required for nested virtualization
 dist: bionic
-
-stages:
-  - install
-  - unit_test # custom stage defined in jobs::include section
-  - test
-  - finalize_coverage # custom stage defined in jobs::include section
-  - cache
 
 env:
   global:
@@ -26,14 +19,13 @@ env:
     - TOOLS=${ANDROID_HOME}/tools
     # PATH order is incredibly important. e.g. the 'emulator' script exists in more than one place!
     - PATH=${ANDROID_HOME}:${ANDROID_HOME}/emulator:${TOOLS}:${TOOLS}/bin:${ANDROID_HOME}/platform-tools:${PATH}
-    - UNIT_TEST=FALSE # by default we don't run the unit tests, they are run only in specific builds
-    - FINALIZE_COVERAGE=FALSE # by default we don't finalize coverage, it is done in one specific build
   matrix:
     - API=29
-    - API=28
-    - API=27
-    - API=25
-    - API=24
+# Below APIs are turned off in order to decrease Travis-ci plan usage
+#    - API=28
+#    - API=27
+#    - API=25
+#    - API=24
 
 before_install:
   # This section may run on all platforms, and may run for unit tests or for coverage finalization
@@ -45,17 +37,17 @@ before_install:
   - JDK="1.8"
   - source ~/.install-jdk-travis.sh
 
-  # Set up Android SDK - this is needed everywhere but coverage finalization, so toggle on that
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then wget -q "${ANDROID_TOOLS_URL}" -O android-sdk-tools.zip; fi
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then unzip -q android-sdk-tools.zip -d ${ANDROID_HOME}; fi
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then rm android-sdk-tools.zip; fi
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then mkdir ~/.android; fi # avoid harmless sdkmanager warning
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then echo 'count=0' > ~/.android/repositories.cfg; fi # avoid harmless sdkmanager warning
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then yes | sdkmanager --licenses >/dev/null; fi # accept all sdkmanager warnings
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then echo y | sdkmanager --no_https "platform-tools" >/dev/null; fi
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then echo y | sdkmanager --no_https "tools" >/dev/null; fi # A second time per Travis docs, gets latest versions
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then echo y | sdkmanager --no_https "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null; fi # Implicit gradle dependency - gradle drives changes
-  - if [ "$FINALIZE_COVERAGE" = "FALSE" ]; then echo y | sdkmanager --no_https "platforms;android-${COMPILE_API}" >/dev/null; fi # We need the API of the current compileSdkVersion from gradle.properties
+  # Set up Android SDK
+  - wget -q "${ANDROID_TOOLS_URL}" -O android-sdk-tools.zip; fi
+  - unzip -q android-sdk-tools.zip -d ${ANDROID_HOME}; fi
+  - rm android-sdk-tools.zip; fi
+  - mkdir ~/.android; fi # avoid harmless sdkmanager warning
+  - echo 'count=0' > ~/.android/repositories.cfg; fi # avoid harmless sdkmanager warning
+  - yes | sdkmanager --licenses >/dev/null; fi # accept all sdkmanager warnings
+  - echo y | sdkmanager --no_https "platform-tools" >/dev/null; fi
+  - echo y | sdkmanager --no_https "tools" >/dev/null; fi # A second time per Travis docs, gets latest versions
+  - echo y | sdkmanager --no_https "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null; fi # Implicit gradle dependency - gradle drives changes
+  - echo y | sdkmanager --no_https "platforms;android-${COMPILE_API}" >/dev/null; fi # We need the API of the current compileSdkVersion from gradle.properties
 
 install:
   # In our setup, install only runs on matrix entries we want full emulator tests on
@@ -91,9 +83,15 @@ install:
 
 script:
 - chmod +x gradlew
-
 - |
   ./gradlew :app:testDebugUnitTest
+  retval=$?
+  if [ $retval -ne 0 ]; then
+    echo "error during Unit tests, exit code: "$retval
+    exit $retval
+  fi
+
+- |
   travis_wait 45 ./gradlew -Pandroid.testInstrumentationRunnerArguments.executionMode=travisTest :app:createDebugCoverageReport
   retval=$?
   if [ $retval -ne 0 ]; then
