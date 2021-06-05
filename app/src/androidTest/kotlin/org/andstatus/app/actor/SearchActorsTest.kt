@@ -27,13 +27,17 @@ import org.junit.Assert
 import org.junit.Test
 
 class SearchActorsTest : ActivityTest<ActorsScreen>() {
+
+    init {
+        TestSuite.initializeWithAccounts(this)
+    }
+
     override fun getActivityClass(): Class<ActorsScreen> {
         return ActorsScreen::class.java
     }
 
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
-        TestSuite.initializeWithAccounts(this)
         MyLog.i(this, "setUp ended")
         return Intent(MyAction.VIEW_ACTORS.action,
                 MatchedUri.Companion.getActorsScreenUri(ActorsScreenType.ACTORS_AT_ORIGIN, 0, 0, DemoData.demoData.t131tUsername))

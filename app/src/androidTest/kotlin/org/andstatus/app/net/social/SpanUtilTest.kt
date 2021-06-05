@@ -27,15 +27,12 @@ import org.andstatus.app.origin.OriginPumpio
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.util.MyUrlSpan
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import java.util.*
 import java.util.function.Function
 
 class SpanUtilTest {
-    @Before
-    @Throws(Exception::class)
-    fun setUp() {
+    init {
         TestSuite.initializeWithAccounts(this)
     }
 

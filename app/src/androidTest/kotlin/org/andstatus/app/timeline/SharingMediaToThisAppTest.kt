@@ -13,7 +13,7 @@ import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.DownloadStatus
@@ -29,18 +29,17 @@ import java.util.*
 import kotlin.properties.Delegates
 
 class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
-
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var mService: MyServiceTestHelper by Delegates.notNull()
     private var ma: MyAccount = MyAccount.EMPTY
 
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
-        TestSuite.initializeWithAccounts(this)
         mService = MyServiceTestHelper()
         mService.setUp(DemoData.demoData.gnusocialTestAccountName)
         ma = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getBlocking().accounts.setCurrentAccount(ma)
+        myContext.accounts.setCurrentAccount(ma)
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "image/png"
         val mediaUri: Uri = DemoData.demoData.localImageTestUri2
@@ -66,7 +65,7 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
         val editorView = activity.findViewById<View?>(R.id.note_editor)
         ActivityTestHelper.waitViewVisible(method, editorView)
         val details = editorView.findViewById<TextView?>(R.id.noteEditDetails)
-        val textToFind: String =  MyContextHolder.myContextHolder.getNow().context.getText(R.string.label_with_media).toString()
+        val textToFind: String = myContext.context.getText(R.string.label_with_media).toString()
         ActivityTestHelper.waitTextInAView(method, details, textToFind)
         TestSuite.waitForIdleSync()
         val content = "Test note with a shared image " + DemoData.demoData.testRunUid

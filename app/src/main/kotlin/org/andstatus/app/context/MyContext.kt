@@ -15,10 +15,13 @@
  */
 package org.andstatus.app.context
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.andstatus.app.account.MyAccounts
+import org.andstatus.app.appwidget.MyAppWidgetProvider
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.Notifier
@@ -70,4 +73,9 @@ interface MyContext : IdentifiableInstance, IsEmpty {
     val isPreferencesChanged: Boolean
         get() = initialized && preferencesChangeTime != MyPreferences.getPreferencesChangeTime()
 
+    val appWidgetIds: List<Int>
+        get() = if (isEmptyOrExpired) emptyList()
+        else AppWidgetManager.getInstance(context)
+            .getAppWidgetIds(ComponentName(context, MyAppWidgetProvider::class.java))
+            .asList()
 }

@@ -24,14 +24,13 @@ import androidx.test.espresso.matcher.ViewMatchers
 import org.andstatus.app.ActivityTestHelper
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ConnectionMock
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.Visibility
-import org.andstatus.app.note.NoteEditorTest
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.TimelineType
@@ -43,6 +42,7 @@ import org.junit.Test
 import kotlin.properties.Delegates
 
 class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var mock: ConnectionMock by Delegates.notNull()
 
     override fun getActivityIntent(): Intent {
@@ -50,11 +50,10 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initializeWithAccounts(this)
         mock = ConnectionMock.newFor(DemoData.demoData.activityPubTestAccountName)
         val ma = mock.getData().getMyAccount()
-         MyContextHolder.myContextHolder.getBlocking().accounts.setCurrentAccount(ma)
+        myContext.accounts.setCurrentAccount(ma)
         Assert.assertTrue("isValidAndSucceeded $ma", ma.isValidAndSucceeded())
         MyLog.i(this, "setUp ended")
-        return Intent(Intent.ACTION_VIEW,
-                 MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
+        return Intent(Intent.ACTION_VIEW, myContext.timelines.get(TimelineType.HOME, ma.actor, Origin.EMPTY).getUri())
     }
 
     @Test
@@ -81,11 +80,11 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
 
     @Test
     fun sendingSensitive() {
-        wrap { _sendingSensitive() }
+        wrap { sendingSensitive1() }
     }
 
     @Throws(Exception::class)
-    private fun _sendingSensitive() {
+    private fun sendingSensitive1() {
         val method = "sendingSensitive"
         TestSuite.waitForListLoaded(activity, 2)
         ActivityTestHelper.hideEditorAndSaveDraft(method, activity)

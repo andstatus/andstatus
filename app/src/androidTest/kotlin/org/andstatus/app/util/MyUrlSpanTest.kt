@@ -38,6 +38,9 @@ import java.util.function.Function
 
 /** See https://github.com/andstatus/andstatus/issues/300  */
 class MyUrlSpanTest : ActivityTest<HelpActivity>() {
+    init {
+        TestSuite.initializeWithAccounts(this)
+    }
 
     override fun getActivityClass(): Class<HelpActivity> {
         return HelpActivity::class.java
@@ -45,7 +48,6 @@ class MyUrlSpanTest : ActivityTest<HelpActivity>() {
 
     @Before
     fun setUp() {
-        TestSuite.initializeWithAccounts(this)
         activity
         getInstrumentation().waitForIdleSync()
     }

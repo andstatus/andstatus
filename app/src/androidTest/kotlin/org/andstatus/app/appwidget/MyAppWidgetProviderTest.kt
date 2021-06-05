@@ -19,7 +19,6 @@ import android.text.format.DateFormat
 import android.text.format.DateUtils
 import android.text.format.Time
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.notification.NotificationEventType
@@ -27,22 +26,21 @@ import org.andstatus.app.notification.NotifierTest
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.util.*
-import kotlin.properties.Delegates
 
 /**
  * Runs various tests...
  * @author yvolk@yurivolkov.com
  */
 class MyAppWidgetProviderTest {
-    private var myContext: MyContext by Delegates.notNull<MyContext>()
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
+
     @Before
     @Throws(Exception::class)
     fun setUp() {
-        TestSuite.initializeWithAccounts(this)
-        myContext =  MyContextHolder.myContextHolder.getNow()
         MyServiceManager.Companion.setServiceUnavailable()
     }
 
@@ -120,6 +118,7 @@ class MyAppWidgetProviderTest {
         DbUtils.waitMs(method, 2000)
         myContext.notifier.clearAll()
         val appWidgets: AppWidgets = AppWidgets.Companion.of(myContext)
+        assertTrue("$method; No appWidgets found in $myContext", appWidgets.nonEmpty)
         checkDateChecked(appWidgets, dateSinceMin, dateSinceMax)
         checkDateSince(appWidgets, dateSinceMin, dateSinceMax)
         checkEvents(0, 0, 0)
@@ -149,10 +148,10 @@ class MyAppWidgetProviderTest {
     private fun checkDateSince(appWidgets: AppWidgets, dateMin: Long, dateMax: Long) {
         val method = "checkDateSince"
         DbUtils.waitMs(method, 500)
-        if (appWidgets.isEmpty()) {
+        if (appWidgets.isEmpty) {
             MyLog.i(this, "$method; No appWidgets found")
         }
-        for (widgetData in appWidgets.list()) {
+        for (widgetData in appWidgets.listOfData) {
             assertDatePeriod(method, dateMin, dateMax, widgetData.dateSince)
         }
     }
@@ -160,10 +159,7 @@ class MyAppWidgetProviderTest {
     private fun checkDateChecked(appWidgets: AppWidgets, dateMin: Long, dateMax: Long) {
         val method = "checkDateChecked"
         DbUtils.waitMs(method, 500)
-        if (appWidgets.isEmpty()) {
-            MyLog.i(this, "$method; No appWidgets found")
-        }
-        for (widgetData in appWidgets.list()) {
+        for (widgetData in appWidgets.listOfData) {
             assertDatePeriod(method, dateMin, dateMax, widgetData.dateLastChecked)
         }
     }

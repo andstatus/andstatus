@@ -17,25 +17,20 @@ package org.andstatus.app.net.social
 
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.origin.Origin
 import org.junit.Assert
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Test
 
 class ActorTest {
-    @Before
-    @Throws(Exception::class)
-    fun setUp() {
-        TestSuite.initializeWithAccounts(this)
-    }
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Test
     fun testFromBodyText1() {
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.gnusocialTestOriginName)
+        val origin: Origin =  myContext.origins.fromName(DemoData.demoData.gnusocialTestOriginName)
         val anotherUser2 = "anotherUser@somedomain.org"
         val shortUsername3 = "shortusername"
         val groupname1 = "gnusocial"
@@ -43,14 +38,14 @@ class ActorTest {
 @$anotherUser2 @${DemoData.demoData.gnusocialTestAccount2Username} And we also send this to the group !$groupname1 And let me mention: @$shortUsername3"""
         val actors: List<Actor> = Actor.Companion.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.EMPTY)
         val msgLog = "$body ->\n$actors"
-        Assert.assertEquals(msgLog, 6, actors.size.toLong())
-        Assert.assertEquals(msgLog, DemoData.demoData.gnusocialTestAccountUsername, actors[0].getUsername())
-        Assert.assertEquals(msgLog, DemoData.demoData.gnusocialTestAccount2Username, actors[1].getUsername())
-        Assert.assertEquals(msgLog, anotherUser2.toLowerCase(), actors[2].getWebFingerId())
-        Assert.assertEquals(msgLog, GroupType.UNKNOWN, actors[3].groupType)
-        Assert.assertEquals(msgLog, groupname1, actors[4].getUsername())
-        Assert.assertEquals(msgLog, GroupType.GENERIC, actors[4].groupType)
-        Assert.assertEquals(msgLog, shortUsername3, actors[5].getUsername())
+        assertEquals(msgLog, 6, actors.size.toLong())
+        assertEquals(msgLog, DemoData.demoData.gnusocialTestAccountUsername, actors[0].getUsername())
+        assertEquals(msgLog, DemoData.demoData.gnusocialTestAccount2Username, actors[1].getUsername())
+        assertEquals(msgLog, anotherUser2.toLowerCase(), actors[2].getWebFingerId())
+        assertEquals(msgLog, GroupType.UNKNOWN, actors[3].groupType)
+        assertEquals(msgLog, groupname1, actors[4].getUsername())
+        assertEquals(msgLog, GroupType.GENERIC, actors[4].groupType)
+        assertEquals(msgLog, shortUsername3, actors[5].getUsername())
     }
 
     @Test
@@ -59,7 +54,7 @@ class ActorTest {
         val SKIPPED_USERNAME2 = "rocuhdjekrt"
         val SKIPPED_USERNAME3 = "kauiwoeieurt"
         val USERNAME4 = "djjerekwerwewer"
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.twitterTestOriginName)
+        val origin: Origin =  myContext.origins.fromName(DemoData.demoData.twitterTestOriginName)
         val body = "Starting post @ #ThisIsTagofsome-event-and entertainment by @" +
                 USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3 +
                 " &amp; @" + USERNAME4 +
@@ -67,13 +62,13 @@ class ActorTest {
                 " https://t.co/djkdfeowefPh"
         val actors: List<Actor> = Actor.Companion.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.EMPTY)
         val msgLog = "$body -> $actors"
-        Assert.assertEquals(msgLog, 2, actors.size.toLong())
+        assertEquals(msgLog, 2, actors.size.toLong())
         val actor0 = actors[0]
-        Assert.assertEquals(msgLog, USERNAME1, actor0.getUsername())
+        assertEquals(msgLog, USERNAME1, actor0.getUsername())
         Assert.assertFalse(msgLog, actor0.isOidReal())
         Assert.assertFalse("$msgLog\nusername:${actor0.getUsername()}\ntempOid: ${actor0.toTempOid()}" +
                 "\naltOid:  ${actor0.toAltTempOid()}", actor0.hasAltTempOid())
-        Assert.assertEquals(msgLog, USERNAME4, actors[1].getUsername())
+        assertEquals(msgLog, USERNAME4, actors[1].getUsername())
     }
 
     @Test
@@ -93,13 +88,13 @@ class ActorTest {
     }
 
     private fun checkWebFingerId(username: String?, valid: Boolean) {
-        Assert.assertEquals("Username '" + username + "' " + if (valid) "is valid" else "invalid", valid,
+        assertEquals("Username '" + username + "' " + if (valid) "is valid" else "invalid", valid,
                 Actor.Companion.isWebFingerIdValid(username))
     }
 
     @Test
     fun testEquals() {
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromId(18)
+        val origin: Origin =  myContext.origins.fromId(18)
         val actor1: Actor = Actor.Companion.fromOid(origin, "acct:fourthWithoutAvatar@pump.example.com")
         actor1.actorId = 11
         actor1.setUsername( "fourthWithoutAvatar@pump.example.com")
@@ -109,8 +104,8 @@ class ActorTest {
         val actor2: Actor = Actor.Companion.fromId(origin, 11)
         actor2.setUsername( "fourthWithoutAvatar@pump.example.com")
         actor2.build()
-        Assert.assertEquals(actor1, actor2)
-        Assert.assertEquals("$actor1 vs $actor2", actor1.hashCode().toLong(), actor2.hashCode().toLong())
+        assertEquals(actor1, actor2)
+        assertEquals("$actor1 vs $actor2", actor1.hashCode().toLong(), actor2.hashCode().toLong())
     }
 
     @Test
@@ -119,8 +114,8 @@ class ActorTest {
                 " <a href=\"https://gnusocial.no/mcscx2\">ex mcscx2@quitter.no</a>."
         val actors: List<Actor> = Actor.Companion.newUnknown(DemoData.demoData.getPumpioConversationAccount().origin, GroupType.UNKNOWN)
                 .extractActorsFromContent(content, Actor.EMPTY)
-        Assert.assertEquals("Actors: $actors", 1, actors.size.toLong())
-        Assert.assertEquals("Actors: $actors", "mcscx2@quitter.no", actors[0].getWebFingerId())
+        assertEquals("Actors: $actors", 1, actors.size.toLong())
+        assertEquals("Actors: $actors", "mcscx2@quitter.no", actors[0].getWebFingerId())
     }
 
     @Test
@@ -129,8 +124,8 @@ class ActorTest {
         val content = "Sending note to the unknown yet Actor @$actorUniqueName"
         val actors: List<Actor> = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName).actor
                 .extractActorsFromContent(content, Actor.EMPTY)
-        Assert.assertEquals("Actors: $actors", 1, actors.size.toLong())
-        Assert.assertEquals("Actors: $actors", actorUniqueName, actors[0].uniqueName)
+        assertEquals("Actors: $actors", 1, actors.size.toLong())
+        assertEquals("Actors: $actors", actorUniqueName, actors[0].uniqueName)
     }
 
     @Test
@@ -152,7 +147,7 @@ class ActorTest {
         val content = "Sending note to the unknown yet Actor @$username from the Fediverse"
         val actors: List<Actor> = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName).actor
                 .extractActorsFromContent(content, Actor.EMPTY)
-        Assert.assertEquals("Actors from '$content': \n$actors", 1, actors.size.toLong())
-        Assert.assertEquals("Actors from '$content': \n$actors", username, actors[0].getUsername())
+        assertEquals("Actors from '$content': \n$actors", 1, actors.size.toLong())
+        assertEquals("Actors from '$content': \n$actors", username, actors[0].getUsername())
     }
 }

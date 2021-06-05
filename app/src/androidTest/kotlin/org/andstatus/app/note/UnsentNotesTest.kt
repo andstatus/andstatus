@@ -11,14 +11,13 @@ import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.NoteTable
-import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.service.MyServiceTestHelper
 import org.andstatus.app.timeline.ListScreenTestHelper
@@ -31,16 +30,16 @@ import org.junit.Assert
 import org.junit.Test
 
 class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private val mService: MyServiceTestHelper = MyServiceTestHelper()
 
     override fun getActivityIntent(): Intent {
-        TestSuite.initializeWithAccounts(this)
         mService.setUp(null)
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+        myContext.accounts.setCurrentAccount(ma)
         return Intent(Intent.ACTION_VIEW,
-                 MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin).getUri())
+                 myContext.timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin).getUri())
     }
 
     @After
@@ -54,14 +53,14 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         val method = "testEditUnsentNote"
         var step = "Start editing a note"
         MyLog.v(this, "$method started")
-        val editorView: View = ActivityTestHelper.openEditor<ActivityViewItem>("$method; $step", activity)
+        val editorView: View = ActivityTestHelper.openEditor("$method; $step", activity)
         val suffix = "unsent" + DemoData.demoData.testRunUid
         val body = "Test unsent note, which we will try to edit $suffix"
         TestSuite.waitForIdleSync()
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(body))
         TestSuite.waitForIdleSync()
         mService.serviceStopped = false
-        ActivityTestHelper.clickSendButton<ActivityViewItem>(method, activity)
+        ActivityTestHelper.clickSendButton(method, activity)
         mService.waitForServiceStopped(false)
         val condition = NoteTable.CONTENT + " LIKE('%" + suffix + "%')"
         val unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition)
@@ -70,11 +69,11 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals("$method; $step", DownloadStatus.SENDING, DownloadStatus.Companion.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)))
         step = "Start editing unsent note $unsentMsgId"
-        activity.getNoteEditor()?.startEditingNote(NoteEditorData.Companion.load( MyContextHolder.myContextHolder.getNow(), unsentMsgId))
+        activity.getNoteEditor()?.startEditingNote(NoteEditorData.Companion.load(myContext, unsentMsgId))
         ActivityTestHelper.waitViewVisible("$method; $step", editorView)
         TestSuite.waitForIdleSync()
         step = "Saving previously unsent note $unsentMsgId as a draft"
-        ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>("$method; $step", activity)
+        ActivityTestHelper.hideEditorAndSaveDraft("$method; $step", activity)
         Assert.assertEquals("$method; $step", DownloadStatus.DRAFT, DownloadStatus.Companion.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)))
         MyLog.v(this, "$method ended")
@@ -97,7 +96,7 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.waitForIdleSync()
         mService.waitForServiceStopped(false)
         val results = mService.getHttp()?.getResults() ?: emptyList()
-        Assert.assertTrue("No results in ${mService.getHttp()}\n$logMsg", !results.isEmpty())
+        Assert.assertTrue("No results in ${mService.getHttp()}\n$logMsg", results.isNotEmpty())
         val urlFound = results
             .map { it.url?.toExternalForm() ?: "" }
             .find { it.contains("retweet") && it.contains(noteOid) }

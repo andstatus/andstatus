@@ -18,7 +18,7 @@ package org.andstatus.app.service
 import android.net.Uri
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadData
@@ -30,18 +30,12 @@ import org.andstatus.app.net.social.Attachment
 import org.andstatus.app.net.social.ConnectionMock
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import java.io.IOException
 import java.io.InputStream
 
 class AttachmentDownloaderTest {
-    @Before
-    @Throws(Exception::class)
-    fun setUp() {
-        MyLog.i(this, "setUp started")
-        TestSuite.initializeWithAccounts(this)
-    }
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Test
     @Throws(IOException::class)
@@ -68,7 +62,7 @@ class AttachmentDownloaderTest {
         val data: DownloadData = DownloadData.Companion.fromId(downloadRowId)
         Assert.assertTrue(data.getFilename(), data.getFile().existed)
         val uri: Uri = FileProvider.Companion.downloadFilenameToUri(data.getFile().getFilename())
-        val inputStream: InputStream =  MyContextHolder.myContextHolder.getNow().context.contentResolver.openInputStream(uri)
+        val inputStream: InputStream = myContext.context.contentResolver.openInputStream(uri)
                 ?: throw IllegalStateException("No stream")
         val buffer = ByteArray(100)
         val bytesRead = inputStream.read(buffer)

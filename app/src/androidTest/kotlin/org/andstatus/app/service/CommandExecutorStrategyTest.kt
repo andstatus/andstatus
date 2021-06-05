@@ -18,7 +18,7 @@ package org.andstatus.app.service
 import org.andstatus.app.SearchObjects
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadStatus
@@ -38,14 +38,14 @@ import java.io.IOException
 import kotlin.properties.Delegates
 
 class CommandExecutorStrategyTest {
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var mock: ConnectionMock by Delegates.notNull()
     private var httpConnectionMock: HttpConnectionMock by Delegates.notNull()
     private var ma: MyAccount = MyAccount.EMPTY
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
-        TestSuite.initializeWithAccounts(this)
-        ma =  MyContextHolder.myContextHolder.getNow().accounts.getFirstPreferablySucceededForOrigin(DemoData.demoData.getGnuSocialOrigin())
+        ma =  myContext.accounts.getFirstPreferablySucceededForOrigin(DemoData.demoData.getGnuSocialOrigin())
         mock = ConnectionMock.newFor(ma)
         httpConnectionMock = mock.getHttpMock()
         Assert.assertTrue(ma.toString(), ma.isValidAndSucceeded())
@@ -64,12 +64,12 @@ class CommandExecutorStrategyTest {
     @Test
     fun testSearch() {
         val commandData1: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,
-                 MyContextHolder.myContextHolder.getNow(),  Origin.EMPTY, DemoData.demoData.globalPublicNoteText)
+                 myContext,  Origin.EMPTY, DemoData.demoData.globalPublicNoteText)
         Assert.assertTrue("${commandData1}; myContext:${commandData1.myContext} ", commandData1.myContext.nonEmpty)
         CommandExecutorStrategy.Companion.getStrategy(commandData1, null)
 
         val commandData2: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,
-                 MyContextHolder.myContextHolder.getNow(), ma.origin, DemoData.demoData.globalPublicNoteText)
+                 myContext, ma.origin, DemoData.demoData.globalPublicNoteText)
 
         val strategy = CommandExecutorStrategy.Companion.getStrategy(commandData2, null)
         Assert.assertEquals(TimelineDownloaderOther::class.java, strategy.javaClass)
@@ -166,6 +166,6 @@ class CommandExecutorStrategyTest {
     @After
     fun tearDown() {
         TestSuite.clearHttpMocks()
-         MyContextHolder.myContextHolder.getBlocking().accounts.initialize()
+        myContext.setExpired { this.toString() }
     }
 }

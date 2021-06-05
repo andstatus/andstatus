@@ -17,7 +17,7 @@ package org.andstatus.app.net.social
 
 import android.content.Context
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.DownloadStatus
@@ -41,11 +41,11 @@ import java.util.*
 import kotlin.properties.Delegates
 
 class ConnectionGnuSocialTest {
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var mock: ConnectionMock by Delegates.notNull()
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
-        TestSuite.initializeWithAccounts(this)
         mock = ConnectionMock.newFor(DemoData.demoData.gnusocialTestAccountName)
     }
 
@@ -297,7 +297,7 @@ class ConnectionGnuSocialTest {
         activity.getNote().updatedDate = MyLog.uniqueCurrentTimeMS()
         activity.setUpdatedNow(0)
         val executionContext = CommandExecutionContext(
-                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, mock.getData().getMyAccount(), 123))
+                 myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, mock.getData().getMyAccount(), 123))
         DataUpdater(executionContext).onActivity(activity)
         assertAudience(activity, activity.audience(), numberOfMembers)
         val storedAudience: Audience = Audience.Companion.load(activity.getNote().origin, activity.getNote().noteId, Optional.empty())

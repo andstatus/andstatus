@@ -16,7 +16,7 @@
 package org.andstatus.app.net.social.activitypub
 
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.MyContentType
@@ -49,6 +49,7 @@ import java.util.function.Consumer
 import kotlin.properties.Delegates
 
 class ConnectionActivityPubTest {
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var mock: ConnectionMock by Delegates.notNull()
     var pawooActorOid: String = "https://pawoo.net/users/pawooAndStatusTester"
     var pawooNoteOid: String = "https://pawoo.net/users/pawooAndStatusTester/statuses/101727836012435643"
@@ -261,7 +262,7 @@ class ConnectionActivityPubTest {
                 "https://pleroma.site/users/AndStatus/followers")
         oids.forEach(Consumer { oid: String? -> Assert.assertTrue("Audience should contain $oid\n $activity\n $audience", audience.containsOid(oid)) })
         val executionContext = CommandExecutionContext(
-                 MyContextHolder.myContextHolder.getNow(),
+                 myContext,
                 CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT))
         DataUpdater(executionContext).onActivity(activity)
         val noteStored: Note = Note.Companion.loadContentById(mock.getData().getOrigin().myContext, note.noteId)
@@ -299,10 +300,10 @@ class ConnectionActivityPubTest {
         val attachments = activity.getNote().attachments
         Assert.assertTrue("Attachments of $activity", attachments.nonEmpty)
         val executionContext = CommandExecutionContext(
-                 MyContextHolder.myContextHolder.getNow(),
+                 myContext,
                 CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT))
         DataUpdater(executionContext).onActivity(activity)
-        val attachmentsStored: Attachments = Attachments.Companion.load( MyContextHolder.myContextHolder.getNow(), activity.getNote().noteId)
+        val attachmentsStored: Attachments = Attachments.Companion.load( myContext, activity.getNote().noteId)
         Assert.assertTrue("Attachments should be stored of $activity\n $attachmentsStored\n",
                 attachmentsStored.nonEmpty)
         Assert.assertEquals("Attachment stored of $activity\n $attachmentsStored\n",
@@ -324,7 +325,7 @@ class ConnectionActivityPubTest {
         Assert.assertEquals("Actor's oid $received", actorOid, received.oid)
         MatcherAssert.assertThat("Note name $received", received.getUsername(), CoreMatchers.`is`("ActivityPubTester"))
         val executionContext = CommandExecutionContext(
-                 MyContextHolder.myContextHolder.getNow(),
+                myContext,
                 CommandData.Companion.newActorCommandAtOrigin(
                         CommandEnum.GET_ACTOR, partial, "", mock.getData().getOrigin()))
         val activity = executionContext.getMyAccount().actor.update(received)

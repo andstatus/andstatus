@@ -22,10 +22,7 @@ import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
-import org.andstatus.app.data.DataUpdater
-import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.database.table.NoteTable
@@ -55,18 +52,13 @@ import org.andstatus.app.util.TriState
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import kotlin.properties.Delegates
 
 class DataUpdaterTest {
-    private var myContext: MyContext by Delegates.notNull()
-    private var context: Context by Delegates.notNull()
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
+    private val context: Context = myContext.context
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
-        TestSuite.initializeWithAccounts(this)
-        myContext = TestSuite.getMyContextForTest()
-        context = myContext.context
         DemoData.demoData.checkDataPath()
     }
 
@@ -568,7 +560,7 @@ $activity""",
         Assert.assertTrue("Group should be in audience: $audience", group.isPresent)
         Assert.assertEquals("Group type: $group", GroupType.GENERIC, group.get().groupType)
         Assert.assertNotEquals("Group id: $group", 0, group.get().actorId)
-        val savedGroup: Actor = Actor.Companion.loadFromDatabase( MyContextHolder.myContextHolder.getNow(), group.get().actorId, { Actor.EMPTY }, false)
+        val savedGroup: Actor = Actor.Companion.loadFromDatabase(myContext, group.get().actorId, { Actor.EMPTY }, false)
         Assert.assertEquals("Saved group: $savedGroup", groupname, savedGroup.getUsername())
         Assert.assertEquals("Saved group type: $savedGroup", GroupType.GENERIC, savedGroup.groupType)
     }

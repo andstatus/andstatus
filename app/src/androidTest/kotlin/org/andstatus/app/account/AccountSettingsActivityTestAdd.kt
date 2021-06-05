@@ -4,7 +4,6 @@ import android.content.Intent
 import android.view.View
 import android.widget.TextView
 import org.andstatus.app.IntentExtra
-import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.junit.Assert
 
@@ -18,8 +17,7 @@ class AccountSettingsActivityTestAdd() : AccountSettingsActivityTest() {
     }
 
     override fun getActivityIntent(): Intent {
-        TestSuite.initializeWithAccounts(this)
-        val ma = MyContextHolder.myContextHolder.getNow().accounts.fromAccountName(accountNameString)
+        val ma = TestSuite.initializeWithAccounts(this).accounts.fromAccountName(accountNameString)
         if (ma.isValid) Assert.fail("Found persistent account '$accountNameString'")
         return Intent(accountAction).putExtra(IntentExtra.ACCOUNT_NAME.key, accountNameString)
     }

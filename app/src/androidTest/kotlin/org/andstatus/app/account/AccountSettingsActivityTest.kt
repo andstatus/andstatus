@@ -24,7 +24,6 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.ActivityTest
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.origin.OriginType
@@ -51,8 +50,7 @@ open class AccountSettingsActivityTest() : ActivityTest<AccountSettingsActivity>
     }
 
     override fun getActivityIntent(): Intent {
-        TestSuite.initializeWithAccounts(this)
-        ma = MyContextHolder.myContextHolder.getNow().accounts.fromAccountName(accountNameString)
+        ma = TestSuite.initializeWithAccounts(this).accounts.fromAccountName(accountNameString)
         if (ma.nonValid) fail("No persistent account '$accountNameString'")
         return Intent().putExtra(IntentExtra.ACCOUNT_NAME.key, accountNameString)
     }

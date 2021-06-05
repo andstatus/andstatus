@@ -17,22 +17,14 @@ package org.andstatus.app.account
 
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.origin.OriginType
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 
-import kotlin.Throws
-
 class MyAccountTest {
-    @Before
-    @Throws(Exception::class)
-    fun setUp() {
-        TestSuite.initializeWithAccounts(this)
-    }
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Test
     fun testNewAccountCreation() {
@@ -47,7 +39,6 @@ class MyAccountTest {
 
     private fun createAccountOfOriginType(username: String?, host: String?, originType: OriginType) {
         val uniqueName = if (username.isNullOrEmpty()) "" else "$username@$host"
-        val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         val logMsg = "Creating account '$uniqueName' for '$originType'"
         MyLog.v(this, logMsg)
         val origin = myContext.origins.fromOriginInAccountNameAndHost(originType.title, host)

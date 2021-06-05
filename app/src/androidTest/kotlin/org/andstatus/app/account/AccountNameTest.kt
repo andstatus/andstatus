@@ -16,21 +16,14 @@
 package org.andstatus.app.account
 
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.origin.Origin
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 
-import kotlin.Throws
-
 class AccountNameTest {
-    @Before
-    @Throws(Exception::class)
-    fun setUp() {
-        TestSuite.initializeWithAccounts(this)
-    }
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Test
     fun preserveInputValues() {
@@ -56,9 +49,9 @@ class AccountNameTest {
 
     @Test
     fun testUniqueAccountName() {
-        val accountName1: AccountName = AccountName.Companion.fromAccountName( MyContextHolder.myContextHolder.getNow(), "someTester/Pump.io")
+        val accountName1: AccountName = AccountName.Companion.fromAccountName(myContext, "someTester/Pump.io")
         Assert.assertEquals(accountName1.toString(), accountName1.origin.name, "Pump.io")
-        val accountName2: AccountName = AccountName.Companion.fromAccountName( MyContextHolder.myContextHolder.getNow(), "someTester/PumpioTest")
+        val accountName2: AccountName = AccountName.Companion.fromAccountName(myContext, "someTester/PumpioTest")
         Assert.assertEquals(accountName2.toString(), accountName2.origin.name, "PumpioTest")
     }
 }

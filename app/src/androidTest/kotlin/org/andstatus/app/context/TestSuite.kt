@@ -60,20 +60,20 @@ object TestSuite {
         return initialized && dataAdded
     }
 
-    fun initializeWithAccounts(testCase: Any?): Context {
+    fun initializeWithAccounts(testCase: Any?): MyContextTestImpl {
         initialize(testCase)
         if (MyContextHolder.myContextHolder.getBlocking().accounts
                 .fromAccountName(DemoData.demoData.activityPubTestAccountName).isEmpty
         ) {
             ensureDataAdded()
         }
-        return getMyContextForTest().context
+        return getMyContextForTest()
     }
 
-    fun initializeWithData(testCase: Any?): Context {
+    fun initializeWithData(testCase: Any?): MyContextTestImpl {
         initialize(testCase)
         ensureDataAdded()
-        return getMyContextForTest().context
+        return getMyContextForTest()
     }
 
     @Synchronized
@@ -203,6 +203,9 @@ object TestSuite {
         val myContext: MyContext = MyContextHolder.myContextHolder.getBlocking()
         if (myContext !is MyContextTestImpl) {
             Assert.fail("Wrong type of current context: " + (myContext.javaClass.name))
+        }
+        if (myContext.isExpired) {
+            MyContextHolder.myContextHolder.initialize(myContext.context)
         }
         return MyContextHolder.myContextHolder.getBlocking() as MyContextTestImpl
     }

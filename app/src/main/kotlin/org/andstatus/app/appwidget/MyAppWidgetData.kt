@@ -29,7 +29,7 @@ import org.andstatus.app.util.SharedPreferencesUtil
  *
  * @author yvolk@yurivolkov.com
  */
-class MyAppWidgetData private constructor(val events: NotificationEvents, private val appWidgetId: Int) {
+class MyAppWidgetData private constructor(val events: NotificationEvents, val appWidgetId: Int) {
     private val prefsFileName: String = TAG + appWidgetId
     private var isLoaded = false
     var nothingPref: String? = ""
@@ -42,28 +42,25 @@ class MyAppWidgetData private constructor(val events: NotificationEvents, privat
      * If there was some new notes on the server, they were loaded at that time.
      */
     var dateLastChecked: Long = 0
-    private fun load() {
-        val prefs = SharedPreferencesUtil.getSharedPreferences(prefsFileName)
-        if (prefs == null) {
-            MyLog.w(this, "The prefs file '$prefsFileName' was not loaded")
-        } else {
-            nothingPref = prefs.getString(PREF_NOTHING_KEY, null)
-            if (nothingPref == null) {
-                nothingPref = events.myContext.context.getString(R.string.appwidget_nothingnew_default)
-                if (MyPreferences.isShowDebuggingInfoInUi()) {
-                    nothingPref += " ($appWidgetId)"
-                }
+
+    private fun load() = SharedPreferencesUtil.getSharedPreferences(prefsFileName)?.let { prefs ->
+        nothingPref = prefs.getString(PREF_NOTHING_KEY, null)
+        if (nothingPref == null) {
+            nothingPref = events.myContext.context.getString(R.string.appwidget_nothingnew_default)
+            if (MyPreferences.isShowDebuggingInfoInUi()) {
+                nothingPref += " ($appWidgetId)"
             }
-            dateLastChecked = prefs.getLong(PREF_DATECHECKED_KEY, 0)
-            if (dateLastChecked == 0L) {
-                clearCounters()
-            } else {
-                dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0)
-            }
-            MyLog.v(this) { "Prefs for appWidgetId=$appWidgetId were loaded" }
-            isLoaded = true
         }
+        dateLastChecked = prefs.getLong(PREF_DATECHECKED_KEY, 0)
+        if (dateLastChecked == 0L) {
+            clearCounters()
+        } else {
+            dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0)
+        }
+        MyLog.v(this) { "Prefs for appWidgetId=$appWidgetId were loaded" }
+        isLoaded = true
     }
+
 
     fun clearCounters() {
         dateSince = dateLastChecked
@@ -110,10 +107,6 @@ class MyAppWidgetData private constructor(val events: NotificationEvents, privat
         save()
     }
 
-    fun getId(): Int {
-        return appWidgetId
-    }
-
     companion object {
         private val TAG: String = MyAppWidgetData::class.java.simpleName
 
@@ -125,9 +118,10 @@ class MyAppWidgetData private constructor(val events: NotificationEvents, privat
 
         /** Date and time when data was checked on the server last time  */
         private val PREF_DATECHECKED_KEY: String = "datechecked"
+
         fun newInstance(events: NotificationEvents, appWidgetId: Int): MyAppWidgetData {
             val data = MyAppWidgetData(events, appWidgetId)
-            if ( MyContextHolder.myContextHolder.getNow().isReady) {
+            if (MyContextHolder.myContextHolder.getNow().isReady) {
                 data.load()
             }
             return data

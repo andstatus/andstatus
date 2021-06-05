@@ -17,7 +17,7 @@ package org.andstatus.app.net.social.pumpio
 
 import android.net.Uri
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.DownloadStatus
@@ -63,6 +63,7 @@ import java.util.stream.Collectors
 import kotlin.properties.Delegates
 
 class ConnectionPumpioTest {
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var connection: ConnectionPumpio by Delegates.notNull()
     private var originUrl: URL by Delegates.notNull()
     private var mock: ConnectionMock by Delegates.notNull()
@@ -244,8 +245,13 @@ class ConnectionPumpioTest {
                 audience.getNonSpecialActors().stream().map { obj: Actor -> obj.getUsername() }.collect(Collectors.toList()),
                 Matchers.containsInAnyOrder("user/jpope/followers"))
         val executionContext = CommandExecutionContext(
-                 MyContextHolder.myContextHolder.getNow(),
-                CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, mock.getData().getMyAccount(), TimelineType.HOME))
+            myContext,
+            CommandData.Companion.newTimelineCommand(
+                CommandEnum.GET_TIMELINE,
+                mock.getData().getMyAccount(),
+                TimelineType.HOME
+            )
+        )
         DataUpdater(executionContext).onActivity(activity)
         val actorStored: Actor = Actor.Companion.loadFromDatabase(mock.getData().getOrigin().myContext, actor.actorId,
                 { Actor.EMPTY }, false)
@@ -432,7 +438,7 @@ class ConnectionPumpioTest {
     }
 
     @Throws(IOException::class)
-    private fun privateGetNoteWithAttachment(uniqueUid: Boolean): Note? {
+    private fun privateGetNoteWithAttachment(uniqueUid: Boolean): Note {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image)
         var note: Note = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").get().getNote()
         if (uniqueUid) {

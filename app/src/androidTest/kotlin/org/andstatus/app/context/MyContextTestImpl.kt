@@ -122,6 +122,9 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
         return TAG
     }
 
+    override val appWidgetIds: List<Int>
+        get() = super.appWidgetIds.ifEmpty { listOf(1) }
+
     companion object {
         private val TAG: String = MyContextTestImpl::class.java.simpleName
     }

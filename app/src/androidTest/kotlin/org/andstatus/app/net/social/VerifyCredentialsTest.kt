@@ -17,7 +17,7 @@ package org.andstatus.app.net.social
 
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
@@ -37,15 +37,14 @@ import java.util.*
 import kotlin.properties.Delegates
 
 class VerifyCredentialsTest {
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var connection: Connection by Delegates.notNull()
     private var mock: ConnectionMock by Delegates.notNull()
     private var keyStored: String? = null
     private var secretStored: String? = null
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
-        TestSuite.initializeWithAccounts(this)
         mock = ConnectionMock.newFor(DemoData.demoData.twitterTestAccountName)
         connection = mock.connection
         val data = mock.getHttp().data
@@ -71,7 +70,7 @@ class VerifyCredentialsTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()
         assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.TWITTER)
+        val origin: Origin =  myContext.origins.firstOfType(OriginType.TWITTER)
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().getAccountName())
         builder.onCredentialsVerified(actor).onFailure { e -> AssertionError("Failed: $e" ) }
         assertTrue("Account is persistent", builder.isPersistent())
@@ -80,7 +79,7 @@ class VerifyCredentialsTest {
         assertEquals("Account actorOid", builder.myAccount.getActorOid(), actor.oid)
         assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
-                MyQuery.idToOid( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
+                MyQuery.idToOid( myContext, OidEnum.ACTOR_OID, actorId, 0))
         val noteOid = "383296535213002752"
         val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, noteOid)
         assertTrue("Note not found", noteId != 0L)

@@ -19,22 +19,17 @@ import android.content.UriMatcher
 import android.net.Uri
 import org.andstatus.app.actor.ActorsScreenType
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.OriginType
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 
 class ParsedUriTest {
-    @Before
-    @Throws(Exception::class)
-    fun setUp() {
-        TestSuite.initializeWithAccounts(this)
-    }
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Test
     fun testActorsScreen() {
@@ -80,8 +75,8 @@ class ParsedUriTest {
     }
 
     private fun oneSearchQuery(searchQuery: String?) {
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.SEARCH, Actor.EMPTY,
-                 MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.GNUSOCIAL), searchQuery)
+        val timeline: Timeline =  myContext.timelines.get(TimelineType.SEARCH, Actor.EMPTY,
+                 myContext.origins.firstOfType(OriginType.GNUSOCIAL), searchQuery)
         val clickUri = timeline.getClickUri()
         val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(clickUri)
         Assert.assertEquals("$parsedUri\n$timeline", TimelineType.SEARCH, parsedUri.getTimelineType())

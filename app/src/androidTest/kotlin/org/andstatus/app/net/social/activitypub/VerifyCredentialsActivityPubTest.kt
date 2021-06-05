@@ -18,7 +18,7 @@ package org.andstatus.app.net.social.activitypub
 import org.andstatus.app.account.AccountName
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
@@ -35,12 +35,13 @@ import java.io.IOException
 import kotlin.properties.Delegates
 
 class VerifyCredentialsActivityPubTest {
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var mock: ConnectionMock by Delegates.notNull()
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.activityPubTestOriginName)
+        val origin: Origin =  myContext.origins.fromName(DemoData.demoData.activityPubTestOriginName)
         val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN)
         mock = ConnectionMock.newFor(MyAccount.Builder.Companion.fromAccountName(accountName).myAccount)
     }
@@ -59,7 +60,7 @@ class VerifyCredentialsActivityPubTest {
         Assert.assertEquals("Account actorOid", "https://pleroma.site/users/AndStatus", actor.oid)
         Assert.assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
-                MyQuery.idToOid( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
+                MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId, 0))
         assertActor(actor)
         val stored: Actor = Actor.Companion.loadFromDatabase(mock.getData().getOrigin().myContext, actorId, { Actor.EMPTY }, false)
         assertActor(stored)

@@ -13,7 +13,6 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Attachment
 import org.andstatus.app.net.social.ConnectionMock
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 import java.io.IOException
 
@@ -31,10 +30,9 @@ import java.io.IOException
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */   class LargeImageTest {
-    @Before
-    @Throws(Exception::class)
-    fun setUp() {
+ */
+class LargeImageTest {
+    init {
         TestSuite.initializeWithAccounts(this)
     }
 

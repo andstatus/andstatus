@@ -18,7 +18,7 @@ package org.andstatus.app.note
 import android.content.Intent
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.DemoNoteInserter
@@ -42,15 +42,10 @@ import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.json.JSONObject
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 
 class AllowHtmlContentTest {
-    @Before
-    @Throws(Exception::class)
-    fun setUp() {
-        TestSuite.initializeWithAccounts(this)
-    }
+    private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Test
     @Throws(Exception::class)
@@ -72,9 +67,9 @@ class AllowHtmlContentTest {
         val origin: Origin = DemoData.demoData.getPumpioConversationOrigin()
         Assert.assertNotNull(DemoData.demoData.conversationOriginName + " exists", origin)
         val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.demoData.htmlNoteOid)
-        val note: Note = Note.Companion.loadContentById( MyContextHolder.myContextHolder.getNow(), noteId)
+        val note: Note = Note.Companion.loadContentById( myContext, noteId)
         Assert.assertTrue("origin=" + origin.id + "; oid=" + DemoData.demoData.htmlNoteOid, noteId != 0L)
-        val noteShare = NoteShare(origin, noteId, NoteDownloads.Companion.fromNoteId( MyContextHolder.myContextHolder.getNow(), noteId))
+        val noteShare = NoteShare(origin, noteId, NoteDownloads.Companion.fromNoteId(myContext, noteId))
         val intent = noteShare.intentToViewAndShare(true)
         Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT))
         Assert.assertTrue(
@@ -96,7 +91,7 @@ class AllowHtmlContentTest {
         val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(myAccount, body,
                 DemoData.demoData.plainTextNoteOid, DownloadStatus.LOADED)
         val noteShare = NoteShare(myAccount.origin, activity.getNote().noteId,
-                NoteDownloads.Companion.fromNoteId( MyContextHolder.myContextHolder.getNow(), activity.getNote().noteId))
+                NoteDownloads.Companion.fromNoteId(myContext, activity.getNote().noteId))
         val intent = noteShare.intentToViewAndShare(true)
         Assert.assertTrue(intent.extras?.containsKey(Intent.EXTRA_TEXT) == true)
         Assert.assertTrue(intent.getStringExtra(Intent.EXTRA_TEXT), intent.getStringExtra(Intent.EXTRA_TEXT)?.contains(body) == true)
@@ -135,7 +130,7 @@ class AllowHtmlContentTest {
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val executionContext = CommandExecutionContext(
-                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
+                 myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
     }
 }

@@ -16,21 +16,15 @@
 package org.andstatus.app.account
 
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.junit.Assert
-import org.junit.Before
 import org.junit.Test
 
 class MyAccountsTest {
-    @Before
-    fun setUp() {
-        TestSuite.initializeWithAccounts(this)
-    }
 
     @Test
     fun test() {
-        val accounts: MyAccounts =  MyContextHolder.myContextHolder.getNow().accounts
+        val accounts: MyAccounts = TestSuite.initializeWithAccounts(this).accounts
         Assert.assertNotEquals(accounts.toString(), MyAccount.EMPTY,
                 accounts.fromWebFingerId(DemoData.demoData.pumpioTestAccountUniqueName.toLowerCase()))
         Assert.assertNotEquals(accounts.toString(), MyAccount.EMPTY,

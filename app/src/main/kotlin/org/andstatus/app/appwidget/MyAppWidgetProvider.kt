@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2010-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import android.content.Intent
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.notification.NotificationEvents
 import org.andstatus.app.util.MyLog
-import java.util.*
-import java.util.function.Predicate
 
 /**
  * A widget provider. It uses [MyAppWidgetData] to store preferences and to
@@ -41,13 +39,13 @@ class MyAppWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         MyLog.v(TAG) { "onUpdate; ids=" + appWidgetIds.contentToString() }
-        AppWidgets.of(NotificationEvents.newInstance()).updateViews(appWidgetManager, filterIds(appWidgetIds))
+        AppWidgets.of(NotificationEvents.newInstance()).updateViews(appWidgetManager, createFilter(appWidgetIds))
     }
 
     override fun onDeleted(context: Context?, appWidgetIds: IntArray) {
         MyLog.v(TAG) { "onDeleted; ids=" + appWidgetIds.contentToString() }
-        AppWidgets.of(NotificationEvents.newInstance()).list()
-                .stream().filter(filterIds(appWidgetIds)).forEach { obj: MyAppWidgetData -> obj.update() }
+        AppWidgets.of(NotificationEvents.newInstance()).listOfData
+            .filter(createFilter(appWidgetIds)).forEach { obj: MyAppWidgetData -> obj.update() }
     }
 
     override fun onEnabled(context: Context?) {
@@ -60,9 +58,9 @@ class MyAppWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private val TAG: String = MyAppWidgetProvider::class.java.simpleName
-        private fun filterIds(appWidgetIds: IntArray): Predicate<MyAppWidgetData> {
-            return Predicate { data: MyAppWidgetData -> Arrays.stream(appWidgetIds).boxed()
-                    .anyMatch { id: Int -> data.getId() == id } }
+
+        private fun createFilter(appWidgetIds: IntArray): (MyAppWidgetData) -> Boolean = {
+            data -> appWidgetIds.contains(data.appWidgetId)
         }
     }
 }
