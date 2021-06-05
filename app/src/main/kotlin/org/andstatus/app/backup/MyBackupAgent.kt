@@ -65,7 +65,6 @@ class MyBackupAgent : BackupAgent() {
          MyContextHolder.myContextHolder.initialize(this)
     }
 
-    @Throws(IOException::class)
     override fun onBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?,
                           newState: ParcelFileDescriptor) {
         if ( MyContextHolder.myContextHolder.getNow().isTestRun) {
@@ -84,7 +83,6 @@ class MyBackupAgent : BackupAgent() {
                 MyBackupDescriptor.fromEmptyParcelFileDescriptor(newState, ProgressLogger.getEmpty("")))
     }
 
-    @Throws(IOException::class)
     fun onBackup(oldDescriptor: MyBackupDescriptor?, data: MyBackupDataOutput?,
                  newDescriptor: MyBackupDescriptor?) {
         val method = "onBackup"
@@ -114,7 +112,6 @@ class MyBackupAgent : BackupAgent() {
         }
     }
 
-    @Throws(IOException::class)
     fun checkAndSetServiceUnavailable(): Boolean {
         val isServiceAvailableStored: Boolean = MyServiceManager.isServiceAvailable()
         MyServiceManager.setServiceUnavailable()
@@ -136,7 +133,6 @@ class MyBackupAgent : BackupAgent() {
         return isServiceAvailableStored
     }
 
-    @Throws(IOException::class)
     private fun doBackup(data: MyBackupDataOutput) {
          MyContextHolder.myContextHolder.release { "doBackup" }
         sharedPreferencesBackedUp = backupFile(data,
@@ -173,7 +169,6 @@ class MyBackupAgent : BackupAgent() {
                 .getOrElse(0)
     }
 
-    @Throws(IOException::class)
     private fun backupFile(data: MyBackupDataOutput, key: String, dataFile: File): Long {
         var backedUpFilesCount: Long = 0
         if (dataFile.exists()) {
@@ -225,13 +220,11 @@ class MyBackupAgent : BackupAgent() {
         }
     }
 
-    @Throws(IOException::class)
     override fun onRestore(data: BackupDataInput?, appVersionCode: Int, newState: ParcelFileDescriptor?) {
         onRestore(MyBackupDataInput(getContext(), data), appVersionCode,
                 MyBackupDescriptor.fromOldParcelFileDescriptor(newState, ProgressLogger.getEmpty("")))
     }
 
-    @Throws(IOException::class)
     fun onRestore(data: MyBackupDataInput?, appVersionCode: Int, newDescriptor: MyBackupDescriptor) {
         val method = "onRestore"
         backupDescriptor = newDescriptor
@@ -260,7 +253,6 @@ class MyBackupAgent : BackupAgent() {
         }
     }
 
-    @Throws(IOException::class)
     private fun ensureNoDataIsPresent() {
         if (MyStorage.isApplicationDataCreated().isFalse) {
             return
@@ -276,7 +268,6 @@ class MyBackupAgent : BackupAgent() {
          MyContextHolder.myContextHolder.release { "ensureNoDataIsPresent" }
     }
 
-    @Throws(IOException::class)
     private fun doRestore(data: MyBackupDataInput) {
         restoreSharedPreferences(data)
         if (optionalNextHeader(data, DOWNLOADS_KEY)) {
@@ -309,7 +300,6 @@ class MyBackupAgent : BackupAgent() {
          MyContextHolder.myContextHolder.initialize(this).getBlocking()
     }
 
-    @Throws(IOException::class)
     private fun restoreSharedPreferences(data: MyBackupDataInput) {
         MyLog.i(this, "On restoring Shared preferences")
         FirstActivity.setDefaultValues(getContext())
@@ -340,7 +330,6 @@ class MyBackupAgent : BackupAgent() {
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false)
     }
 
-    @Throws(IOException::class)
     private fun assertNextHeader(data: MyBackupDataInput, key: String) {
         if (key != previousKey && !data.readNextHeader()) {
             throw FileNotFoundException("Unexpected end of backup on key='$key'")
@@ -351,7 +340,6 @@ class MyBackupAgent : BackupAgent() {
         }
     }
 
-    @Throws(IOException::class)
     private fun optionalNextHeader(data: MyBackupDataInput, key: String): Boolean {
         if (data.readNextHeader()) {
             previousKey = data.getKey()
@@ -360,7 +348,6 @@ class MyBackupAgent : BackupAgent() {
         return false
     }
 
-    @Throws(IOException::class)
     private fun restoreFolder(data: MyBackupDataInput, targetFolder: File): Long {
         val tempFile = MyStorage.newTempFile(data.getKey() + ".zip")
         restoreFile(data, tempFile)
@@ -374,7 +361,6 @@ class MyBackupAgent : BackupAgent() {
 
     /** @return count of restores files
      */
-    @Throws(IOException::class)
     fun restoreFile(data: MyBackupDataInput, dataFile: File): Long {
         if (dataFile.exists() && !dataFile.delete()) {
             throw FileNotFoundException("Couldn't delete old file before restore '"

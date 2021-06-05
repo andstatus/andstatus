@@ -170,12 +170,10 @@ abstract class ConnectionTwitterLike : Connection() {
                 .map { b: Uri.Builder -> if (actor.oid.isEmpty()) b else b.appendQueryParameter("user_id", actor.oid) }
     }
 
-    @Throws(ConnectionException::class)
     protected open fun activityFromTwitterLikeJson(jso: JSONObject?): AActivity {
         return activityFromJson(jso)
     }
 
-    @Throws(ConnectionException::class)
     fun activityFromJson(jso: JSONObject?): AActivity {
         if (jso == null) {
             return AActivity.EMPTY
@@ -204,12 +202,10 @@ abstract class ConnectionTwitterLike : Connection() {
                 DownloadStatus.LOADED).setOid(oid)
     }
 
-    @Throws(ConnectionException::class)
     open fun rebloggedNoteFromJson(jso: JSONObject): AActivity {
         return activityFromJson2(jso.optJSONObject("retweeted_status"))
     }
 
-    @Throws(ConnectionException::class)
     open fun activityFromJson2(jso: JSONObject?): AActivity {
         if (jso == null) {
             return AActivity.EMPTY
@@ -280,7 +276,6 @@ abstract class ConnectionTwitterLike : Connection() {
         return activity
     }
 
-    @Throws(ConnectionException::class, JSONException::class)
     private fun authorFromJson(jso: JSONObject): Actor {
         var author: Actor = Actor.EMPTY
         if (jso.has("sender")) {
@@ -304,14 +299,12 @@ abstract class ConnectionTwitterLike : Connection() {
         return author
     }
 
-    @Throws(JSONException::class)
     protected open fun setNoteBodyFromJson(note: Note, jso: JSONObject) {
         if (jso.has("text")) {
             note.setContentPosted(jso.getString("text"))
         }
     }
 
-    @Throws(ConnectionException::class)
     protected open fun actorFromJson(jso: JSONObject?): Actor {
         val actor = actorBuilderFromJson(jso).build()
         if (jso != null && !jso.isNull("status")) {
@@ -518,7 +511,6 @@ abstract class ConnectionTwitterLike : Connection() {
 
     abstract fun updateNote2(note: Note): Try<AActivity>
 
-    @Throws(JSONException::class)
     fun updateNoteSetFields(note: Note, formParams: JSONObject) {
         if (note.getContentToPost().isNotEmpty()) {
             formParams.put("status", note.getContentToPost())

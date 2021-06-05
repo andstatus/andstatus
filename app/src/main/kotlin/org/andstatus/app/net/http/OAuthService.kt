@@ -31,7 +31,6 @@ interface OAuthService {
     /**
      * @return OAuth Provider for this connection
      */
-    @Throws(ConnectionException::class)
     fun getProvider(): OAuthProvider?
     fun getService(redirect: Boolean): OAuth20Service?
     fun isOAuth2(): Boolean

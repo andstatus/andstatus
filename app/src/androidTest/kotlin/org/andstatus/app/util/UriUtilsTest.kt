@@ -18,7 +18,6 @@ package org.andstatus.app.util
 import android.net.Uri
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
-import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
@@ -47,7 +46,6 @@ class UriUtilsTest {
     }
 
     @Test
-    @Throws(JSONException::class)
     fun testFromJson() {
         val jso = JSONObject("{\"profile_image_url\":\"http://a0.twimg.com/profile_images/36_normal.jpeg\"" +
                 ",\n\"profile_image_url_https\":\"https://si0.twimg.com/profile_images/37_normal.jpeg\"}")

@@ -54,7 +54,6 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun actAsActor() {
         TestSuite.waitForListLoaded(activity, 2)
         Assert.assertEquals("Default actor", MyAccount.EMPTY, activity.getContextMenu()?.getSelectedActingAccount())
@@ -63,7 +62,6 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
         }
     }
 
-    @Throws(InterruptedException::class)
     private fun oneAttempt(attempt: Int): Boolean {
         val method = "actAsActor"
         val listData = activity.getListData()

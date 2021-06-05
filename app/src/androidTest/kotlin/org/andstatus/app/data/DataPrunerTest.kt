@@ -12,21 +12,18 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.net.MalformedURLException
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToLong
 
 class DataPrunerTest {
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initialize(this)
         Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(false))
     }
 
     @Test
-    @Throws(MalformedURLException::class)
     fun testPrune() {
         val method = "testPrune"
         MyLog.v(this, "$method; Started")

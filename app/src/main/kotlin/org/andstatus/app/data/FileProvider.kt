@@ -25,7 +25,6 @@ import java.io.FileNotFoundException
 
 class FileProvider : ContentProvider() {
 
-    @Throws(FileNotFoundException::class)
     override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
         val downloadFile = DownloadFile(uriToFilename(uri))
         if (!downloadFile.existed) {

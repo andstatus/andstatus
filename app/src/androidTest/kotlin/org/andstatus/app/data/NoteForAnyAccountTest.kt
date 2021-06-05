@@ -14,7 +14,6 @@ import org.junit.Test
 
 class NoteForAnyAccountTest {
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithData(this)
     }

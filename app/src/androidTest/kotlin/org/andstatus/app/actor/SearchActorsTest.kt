@@ -44,7 +44,6 @@ class SearchActorsTest : ActivityTest<ActorsScreen>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testSearchActor() {
         TestSuite.waitForListLoaded(activity, 2)
         val listItems = activity.getListLoader().getList()

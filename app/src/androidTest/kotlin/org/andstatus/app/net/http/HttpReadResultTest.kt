@@ -19,14 +19,12 @@ import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.UriUtils
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
-import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Assert
 import org.junit.Test
 
 class HttpReadResultTest {
     @Test
-    @Throws(JSONException::class)
     fun testResultToArray() {
         val uri = UriUtils.fromString("https://example.com/somepath/file.html")
         val `in` = ("{\"results\":[{\"text\":\"Text1\",\"to_user\":\"someuser\",\"from_user\":\"author1\"},"

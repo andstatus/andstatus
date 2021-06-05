@@ -34,7 +34,6 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 import kotlin.properties.Delegates
 
 class CommandExecutorStrategyTest {
@@ -82,7 +81,6 @@ class CommandExecutorStrategyTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testUpdateDestroyStatus() {
         var commandData = getCommandDataForUnsentNote("1")
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_update_note_response)
@@ -147,7 +145,6 @@ class CommandExecutorStrategyTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testDiscoverOrigins() {
         val http = HttpConnectionMock()
         http.addResponse(org.andstatus.app.tests.R.raw.get_open_instances)

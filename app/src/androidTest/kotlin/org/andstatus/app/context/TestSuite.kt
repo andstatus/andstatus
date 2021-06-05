@@ -247,7 +247,6 @@ object TestSuite {
         return cal.time
     }
 
-    @Throws(InterruptedException::class)
     fun waitForListLoaded(activity: Activity, minCount: Int): Int {
         val method = "waitForListLoaded"
         val list = activity.findViewById<View?>(android.R.id.list) as ViewGroup?
@@ -271,7 +270,6 @@ object TestSuite {
         return itemsCount
     }
 
-    @Throws(InterruptedException::class)
     fun waitForIdleSync() {
         val method = "waitForIdleSync"
         DbUtils.waitMs(method, 200)

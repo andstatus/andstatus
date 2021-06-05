@@ -40,7 +40,6 @@ class NotificationsTimelineTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun openNotifications() {
         val method = "openNotifications"
         TestSuite.waitForListLoaded(activity, 4)

@@ -21,8 +21,8 @@ import org.junit.Before
 import org.junit.Test
 
 class MbActivityTest {
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initialize(this)
     }

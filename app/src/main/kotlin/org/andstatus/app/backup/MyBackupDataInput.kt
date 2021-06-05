@@ -119,12 +119,10 @@ class MyBackupDataInput {
     }
 
     /** [BackupDataInput.readNextHeader]   */
-    @Throws(IOException::class)
     fun readNextHeader(): Boolean {
         return backupDataInput?.readNextHeader() ?: readNextHeader2()
     }
 
-    @Throws(IOException::class)
     private fun readNextHeader2(): Boolean {
         mHeaderReady = false
         dataOffset = 0
@@ -166,12 +164,10 @@ class MyBackupDataInput {
     }
 
     /** [BackupDataInput.readEntityData]   */
-    @Throws(IOException::class)
     fun readEntityData(data: ByteArray, offset: Int, size: Int): Int {
         return backupDataInput?.readEntityData(data, offset, size) ?: readEntityData2(data, offset, size)
     }
 
-    @Throws(IOException::class)
     private fun readEntityData2(data: ByteArray, offset: Int, size: Int): Int {
         var bytesRead = 0
         if (size > MyStorage.FILE_CHUNK_SIZE) {
@@ -190,7 +186,6 @@ class MyBackupDataInput {
         return bytesRead
     }
 
-    @Throws(IOException::class)
     private fun getBytes(size: Int): ByteArray {
         val childName = header.key + MyBackupDataOutput.DATA_FILE_SUFFIX + header.fileExtension
         val childDocFile = docFolder?.findFile(childName)
@@ -199,8 +194,6 @@ class MyBackupDataInput {
     }
 
     /** [BackupDataInput.skipEntityData]   */
-    @Throws(IOException::class)
-
     fun skipEntityData() {
         backupDataInput?.skipEntityData() ?: skipEntityData2()
     }

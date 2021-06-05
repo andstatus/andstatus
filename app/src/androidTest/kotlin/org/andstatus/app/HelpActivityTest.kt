@@ -51,7 +51,6 @@ class HelpActivityTest : ActivityTest<HelpActivity>() {
     }
 
     @Test
-    @Throws(Throwable::class)
     fun test() {
         TestSuite.waitForIdleSync()
         val mFlipper = mActivityRule.activity.findViewById<ViewPager?>(R.id.help_flipper)

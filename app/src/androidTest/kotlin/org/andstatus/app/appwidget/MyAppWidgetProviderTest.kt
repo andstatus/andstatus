@@ -39,7 +39,6 @@ class MyAppWidgetProviderTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         MyServiceManager.Companion.setServiceUnavailable()
     }

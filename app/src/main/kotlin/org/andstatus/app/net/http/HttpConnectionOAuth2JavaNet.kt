@@ -199,7 +199,6 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         return serviceBuilder.build(OAuthApi20(this))
     }
 
-    @Throws(ConnectionException::class)
     private fun signRequest(request: OAuthRequest, service: OAuth20Service, redirected: Boolean) {
         val originUrl = data.originUrl
         val urlForUserToken = data.urlForUserToken
@@ -232,7 +231,6 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         }
     }
 
-    @Throws(ConnectionException::class)
     override fun signConnection(conn: HttpURLConnection, consumer: OAuthConsumer, redirected: Boolean) {
         val originUrl = data.originUrl
         val urlForUserToken = data.urlForUserToken
@@ -262,7 +260,6 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         }
     }
 
-    @Throws(ConnectionException::class)
     override fun getProvider(): OAuthProvider? {
         return null
     }

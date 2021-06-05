@@ -11,7 +11,6 @@ import org.junit.Assert
 import org.junit.Test
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutionException
 
 class CompletableFutureTest {
     internal class TestData(val stepNumber: Long, val messages: MutableList<String>) {
@@ -40,7 +39,6 @@ class CompletableFutureTest {
     }
 
     @Test
-    @Throws(ExecutionException::class, InterruptedException::class)
     fun asyncStagesTest1() {
         val method = "asyncStagesTest1"
         DbUtils.waitMs(this, 1000)

@@ -50,13 +50,11 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @After
-    @Throws(Exception::class)
     fun tearDown() {
         mService.tearDown()
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testSharingMediaToThisApp() {
         val method = "testSharingMediaToThisApp"
         val listScreenTestHelper: ListScreenTestHelper<TimelineActivity<*>> =

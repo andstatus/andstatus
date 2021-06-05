@@ -94,19 +94,16 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testEditing1() {
         Assert.assertTrue("MyService is available", MyServiceManager.Companion.isServiceAvailable())
         editingTester()
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testEditing2() {
         editingTester()
     }
 
-    @Throws(InterruptedException::class)
     private fun editingTester() {
         TestSuite.waitForListLoaded(activity, 2)
         when (editingStep.incrementAndGet()) {
@@ -120,7 +117,6 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         MyLog.v(this, "After step " + editingStep + " ended")
     }
 
-    @Throws(InterruptedException::class)
     private fun editingStep1() {
         val method = "editingStep1"
         MyLog.v(this, "$method started")
@@ -133,7 +129,6 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         MyLog.v(this, "$method ended")
     }
 
-    @Throws(InterruptedException::class)
     private fun editingStep2() {
         val method = "editingStep2"
         MyLog.v(this, "$method started")
@@ -150,18 +145,15 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun attachOneImage() {
         attachImages(this, 1, 1)
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun attachTwoImages() {
         attachImages(this, 2, 1)
     }
 
-    @Throws(InterruptedException::class)
     private fun assertInitialText(description: String) {
         val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
         val textView = activity.findViewById<TextView?>(R.id.noteBodyEditText)
@@ -171,7 +163,6 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun editLoadedNote() {
         val method = "editLoadedNote"
         TestSuite.waitForListLoaded(activity, 2)
@@ -216,7 +207,6 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun replying() {
         val method = "replying"
         TestSuite.waitForListLoaded(activity, 2)
@@ -266,7 +256,6 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             ScreenshotOnFailure.screenshotWrapper(test.activity) { _attachImages(test, toAdd, toExpect) }
         }
 
-        @Throws(InterruptedException::class)
         private fun _attachImages(test: TimelineActivityTest<ActivityViewItem>, toAdd: Int, toExpect: Int) {
             val method = "attachImages$toAdd"
             MyLog.v(test, "$method started")
@@ -299,7 +288,6 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             MyLog.v(test, "$method ended")
         }
 
-        @Throws(InterruptedException::class)
         private fun attachImage(test: TimelineActivityTest<ActivityViewItem>, editorView: View, imageUri: Uri) {
             val method = "attachImage"
             TestSuite.waitForIdleSync()

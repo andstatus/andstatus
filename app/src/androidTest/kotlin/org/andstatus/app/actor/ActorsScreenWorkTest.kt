@@ -49,7 +49,6 @@ class ActorsScreenWorkTest : ActivityTest<ActorsScreen>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testFriendsList() {
         val method = "testFriendsList"
         TestSuite.waitForListLoaded(activity, 2)

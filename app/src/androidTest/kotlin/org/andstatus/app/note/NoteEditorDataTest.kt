@@ -19,11 +19,9 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-import kotlin.Throws
-
 class NoteEditorDataTest {
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithData(this)
     }

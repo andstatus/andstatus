@@ -3,12 +3,10 @@ package org.andstatus.app.net.social
 import org.andstatus.app.util.RawResourceUtils
 import org.junit.Assert
 import org.junit.Test
-import java.io.IOException
 import java.util.*
 
 class AJsonCollectionTest {
     @Test
-    @Throws(IOException::class)
     fun testDefaultPage() {
         val c1: AJsonCollection = AJsonCollection.Companion.of(RawResourceUtils.getString(
                 org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma_default))

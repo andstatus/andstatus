@@ -56,18 +56,15 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testGlobalSearchInOptionsMenu() {
         oneSearchTest("testGlobalSearchInOptionsMenu", DemoData.demoData.globalPublicNoteText, true)
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testSearch() {
         oneSearchTest("testSearch", DemoData.demoData.publicNoteText, false)
     }
 
-    @Throws(InterruptedException::class)
     private fun oneSearchTest(method: String, noteText: String, internetSearch: Boolean) {
         val menu_id: Int = R.id.search_menu_id
         Assert.assertTrue("MyService is available", MyServiceManager.Companion.isServiceAvailable())
@@ -87,7 +84,6 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
 
     @Volatile
     private var stringFound: String = ""
-    @Throws(InterruptedException::class)
     private fun waitForButtonClickedEvidence(timelineActivity: TimelineActivity<*>, caption: String?,
                                              queryString: String) {
         val method = "waitForButtonClickedEvidence"
@@ -112,7 +108,6 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
                 + "', found:'" + stringFound + "'", found)
     }
 
-    @Throws(InterruptedException::class)
     private fun assertNotesArePublic(timelineActivity: TimelineActivity<*>, publicNoteText: String) {
         val method = "assertNotesArePublic"
         var msgCount = 0

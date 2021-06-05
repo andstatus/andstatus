@@ -20,7 +20,6 @@ import io.vavr.control.Try
 import org.andstatus.app.context.MyLocale.MY_DEFAULT_LOCALE
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.ConnectionException.StatusCode
-import org.json.JSONException
 import org.json.JSONObject
 import java.net.MalformedURLException
 import java.net.URL
@@ -70,7 +69,6 @@ object UrlUtils {
         }
     }
 
-    @Throws(JSONException::class)
     fun fromJson(jso: JSONObject?, urlTag: String?): URL? {
         if (jso != null && !urlTag.isNullOrEmpty() && jso.has(urlTag)) {
             val strUrl = jso.getString(urlTag)

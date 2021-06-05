@@ -36,8 +36,8 @@ import java.util.*
 import java.util.concurrent.PriorityBlockingQueue
 
 class CommandDataTest {
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithData(this)
     }

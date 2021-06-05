@@ -24,7 +24,6 @@ import org.junit.Test
 
 class MediaMetadataTest {
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initialize(this)
     }

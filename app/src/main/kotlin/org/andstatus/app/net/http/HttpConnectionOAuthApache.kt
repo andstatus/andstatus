@@ -35,7 +35,6 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
         super.setHttpConnectionData(connectionData)
     }
 
-    @Throws(ConnectionException::class)
     override fun getProvider(): OAuthProvider {
         val provider = CommonsHttpOAuthProvider(
                 getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),
@@ -75,12 +74,10 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
         return result
     }
 
-    @Throws(IOException::class)
     override fun httpApacheGetResponse(httpGet: HttpGet): HttpResponse {
         return ApacheHttpClientUtils.getHttpClient(data.sslMode).execute(httpGet)
     }
 
-    @Throws(IOException::class)
     private fun signRequest(httpGetOrPost: Any?) {
         if (data.oauthClientKeys?.areKeysPresent() == true) {
             try {
@@ -95,7 +92,6 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
         }
     }
 
-    @Throws(IOException::class)
     override fun httpApacheSetAuthorization(httpGet: HttpGet) {
         signRequest(httpGet)
     }

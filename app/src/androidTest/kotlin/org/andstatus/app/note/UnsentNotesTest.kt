@@ -48,7 +48,6 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testEditUnsentNote() {
         val method = "testEditUnsentNote"
         var step = "Start editing a note"
@@ -80,7 +79,6 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testGnuSocialReblog() {
         val method = "testGnuSocialReblog"
         MyLog.v(this, "$method started")

@@ -42,9 +42,9 @@ import kotlin.reflect.KClass
  * @see org.apache.geode.test.junit.IgnoreCondition
  */
 class ConditionalIgnoreRule : TestRule, Serializable {
+
     override fun apply(base: Statement, description: Description): Statement {
         return object : Statement() {
-            @Throws(Throwable::class)
             override fun evaluate() {
                 passOrThrowAssumptionViolation(base, description).evaluate()
             }

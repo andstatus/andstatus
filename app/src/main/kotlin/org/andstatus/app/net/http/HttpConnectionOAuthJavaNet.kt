@@ -31,7 +31,6 @@ import org.andstatus.app.util.MyStringBuilder
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.json.JSONObject
 import java.io.BufferedOutputStream
-import java.io.IOException
 import java.io.OutputStreamWriter
 import java.io.Writer
 import java.net.HttpURLConnection
@@ -98,7 +97,6 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
         return Try.success(null)
     }
 
-    @Throws(ConnectionException::class)
     override fun getProvider(): OAuthProvider? {
         val provider: OAuthProvider
         provider = DefaultOAuthProvider(
@@ -145,7 +143,6 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     }
 
     /** This method is not legacy HTTP  */
-    @Throws(IOException::class)
     private fun writeMedia(conn: HttpURLConnection, request: HttpRequest) {
         val contentResolver: ContentResolver =  MyContextHolder.myContextHolder.getNow().context.contentResolver
         val mediaUri = request.mediaUri.get()
@@ -163,7 +160,6 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
         }
     }
 
-    @Throws(IOException::class)
     private fun writeJson(conn: HttpURLConnection, request: HttpRequest, formParams: JSONObject) {
         conn.setRequestProperty("Content-Type", data.jsonContentType(request.apiRoutine))
         signConnection(conn, getConsumer(), false)
@@ -220,7 +216,6 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
         return result
     }
 
-    @Throws(IOException::class)
     private fun setStatusCodeAndHeaders(result: HttpReadResult, conn: HttpURLConnection) {
         result.setStatusCode(conn.responseCode)
         try {
@@ -234,7 +229,6 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
         }
     }
 
-    @Throws(ConnectionException::class)
     protected open fun signConnection(conn: HttpURLConnection, consumer: OAuthConsumer, redirected: Boolean) {
         val originUrl = data.originUrl
         val urlForUserToken = data.urlForUserToken

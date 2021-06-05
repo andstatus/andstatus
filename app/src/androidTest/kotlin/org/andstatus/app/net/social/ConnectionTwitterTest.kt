@@ -35,7 +35,6 @@ import org.hamcrest.Matchers
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -43,8 +42,8 @@ class ConnectionTwitterTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var connection: Connection by Delegates.notNull()
     private var mock: ConnectionMock by Delegates.notNull()
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         mock = ConnectionMock.newFor(DemoData.demoData.twitterTestAccountName)
         connection = mock.connection
@@ -57,7 +56,6 @@ class ConnectionTwitterTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetTimeline() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline)
         val timeline = connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
@@ -143,7 +141,6 @@ class ConnectionTwitterTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNoteWithAttachment() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_media)
         val note = connection.getNote("503799441900314624").get().getNote()
@@ -156,7 +153,6 @@ class ConnectionTwitterTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNoteWithTwoAttachments() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_two_attachments)
         val note = connection.getNote("1198619196260790272").get().getNote()
@@ -171,7 +167,6 @@ class ConnectionTwitterTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNoteWithAnimatedGif() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_animated_gif)
         val activity = connection.getNote("1271153637457367042").get()
@@ -190,7 +185,6 @@ class ConnectionTwitterTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNoteWithEscapedHtmlTag() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_html_tag)
         val body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
@@ -214,7 +208,6 @@ class ConnectionTwitterTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNoteWithEscapedChars() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_chars)
         val contentToSearch = ",testing,if,and,what,is,escaped,in,a,tweet," +
@@ -234,7 +227,6 @@ class ConnectionTwitterTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun follow() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_follow)
         val actorOid = "96340134"

@@ -33,7 +33,6 @@ abstract class MyServiceTest: IgnoredInTravis2() {
     val ma: MyAccount get() = mMa
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         var ok = false
         MyLog.i(this, "setUp started")
@@ -61,7 +60,6 @@ abstract class MyServiceTest: IgnoredInTravis2() {
     }
 
     @After
-    @Throws(Exception::class)
     fun tearDown() {
         MyLog.i(this, "tearDown started" + if (mMService == null) ", mService:null" else "")
         mMService?.tearDown()

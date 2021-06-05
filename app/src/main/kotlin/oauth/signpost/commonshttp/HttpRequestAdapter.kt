@@ -4,7 +4,6 @@ import cz.msebera.android.httpclient.HttpEntity
 import cz.msebera.android.httpclient.HttpEntityEnclosingRequest
 import cz.msebera.android.httpclient.client.methods.HttpUriRequest
 import oauth.signpost.http.HttpRequest
-import java.io.IOException
 import java.io.InputStream
 import java.util.*
 
@@ -51,7 +50,6 @@ class HttpRequestAdapter(private val request: HttpUriRequest) : HttpRequest {
         return header.value
     }
 
-    @Throws(IOException::class)
     override fun getMessagePayload(): InputStream? {
         return entity?.content
     }

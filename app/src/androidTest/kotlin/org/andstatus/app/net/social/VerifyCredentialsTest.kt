@@ -32,7 +32,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -65,7 +64,6 @@ class VerifyCredentialsTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testVerifyCredentials() {
         mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()

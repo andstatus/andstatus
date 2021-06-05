@@ -49,14 +49,12 @@ class MyBackupDataOutput {
     }
 
     /** [BackupDataOutput.writeEntityHeader]  */
-    @Throws(IOException::class)
     fun writeEntityHeader(key: String, dataSize: Int, fileExtension: String): Int {
         headerOrdinalNumber++
         return backupDataOutput?.writeEntityHeader(key, dataSize)
                 ?:  writeEntityHeader2(key, dataSize, fileExtension)
     }
 
-    @Throws(IOException::class)
     private fun writeEntityHeader2(key: String, dataSize: Int, fileExtension: String): Int {
         MyLog.v(this, "Writing header for '$key', size=$dataSize")
         sizeToWrite = dataSize
@@ -66,7 +64,6 @@ class MyBackupDataOutput {
         return key.length
     }
 
-    @Throws(IOException::class)
     private fun writeHeaderFile(key: String, dataSize: Int, fileExtension: String) {
         val jso = JSONObject()
         try {
@@ -81,19 +78,16 @@ class MyBackupDataOutput {
         }
     }
 
-    @Throws(IOException::class)
     private fun createDataFile(key: String?, dataSize: Int, fileExtension: String?) {
         val childName = key + DATA_FILE_SUFFIX + fileExtension
         docFile = createDocumentIfNeeded(dataSize, childName)
     }
 
     /** [BackupDataOutput.writeEntityData]  */
-    @Throws(IOException::class)
     fun writeEntityData(data: ByteArray, size: Int): Int {
         return backupDataOutput?.writeEntityData(data, size) ?: writeEntityData2(data, size)
     }
 
-    @Throws(IOException::class)
     private fun writeEntityData2(data: ByteArray, size: Int): Int {
         if (docFile?.exists() != true) {
             throw FileNotFoundException("Output document doesn't exist " + docFile?.getUri())
@@ -117,30 +111,25 @@ class MyBackupDataOutput {
         return size
     }
 
-    @Throws(IOException::class)
     private fun appendBytesToFile(data: ByteArray, size: Int) {
         getOutputStreamAppend(size)?.use { fileOutputStream -> BufferedOutputStream(fileOutputStream).use { out -> out.write(data, 0, size) } }
     }
 
-    @Throws(IOException::class)
     private fun getOutputStreamAppend(size: Int): OutputStream? =
             docFile?.let { df ->
                 MyLog.v(this, "Appending data to document='" + df.name + "', size=" + size)
                 context.contentResolver.openOutputStream(df.uri, "wa")
             }
 
-    @Throws(IOException::class)
     private fun appendBytesToChild(childName: String, data: ByteArray, size: Int) {
         MyLog.v(this, "Appending data to file='$childName', size=$size")
         getOutputStreamAppend(childName, size)?.use { outputStream -> BufferedOutputStream(outputStream).use { out -> out.write(data, 0, size) } }
     }
 
-    @Throws(IOException::class)
     private fun getOutputStreamAppend(childName: String, size: Int): OutputStream? {
         return context.getContentResolver().openOutputStream(createDocumentIfNeeded(size, childName).getUri(), "wa")
     }
 
-    @Throws(IOException::class)
     private fun createDocumentIfNeeded(dataSize: Int, childName: String): DocumentFile {
         var documentFile = docFolder?.findFile(childName)
         if (documentFile == null) {

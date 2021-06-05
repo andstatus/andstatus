@@ -24,7 +24,6 @@ import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.MyContentType
 import org.andstatus.app.data.NoteForAnyAccount
-import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.social.Audience.Companion.fromNoteId
 import org.andstatus.app.net.social.ConnectionMock.Companion
 import org.andstatus.app.service.CommandData
@@ -40,7 +39,6 @@ import org.hamcrest.MatcherAssert
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 import java.util.*
 import java.util.function.Consumer
 import kotlin.properties.Delegates
@@ -57,7 +55,6 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetHomeTimeline() {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_home_timeline)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
@@ -105,7 +102,6 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetPrivateNotes() {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_private_notes)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.PRIVATE_NOTES,
@@ -153,7 +149,6 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testIncomingVisibility() {
         val response = RawResourceUtils.getString(org.andstatus.app.tests.R.raw.mastodon_home_timeline)
         oneVisibility(response, Visibility.PUBLIC_AND_TO_FOLLOWERS)
@@ -171,7 +166,6 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetConversation() {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_conversation)
         val timeline = mock.connection.getConversation("5596683").get()
@@ -180,7 +174,6 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetNotifications() {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_notifications)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
@@ -234,7 +227,6 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetActor() {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_actor)
         val actor = mock.connection.getActor(Actor.Companion.fromOid(accountActor.origin, "5962")).get()
@@ -249,14 +241,12 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun mentionsInANote() {
         mentionsInANoteOneLoad(1)
         mentionsInANoteOneLoad(2)
         mentionsInANoteOneLoad(3)
     }
 
-    @Throws(IOException::class)
     fun mentionsInANoteOneLoad(iteration: Int) {
         MyLog.i("mentionsInANote$iteration", "started")
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_note)
@@ -293,7 +283,6 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun reblog() {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_reblog)
         val activity = mock.connection.getNote("101100271392454703").get()
@@ -319,7 +308,6 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun tootWithVideoAttachment() {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_video)
         assertOneTootWithVideo("263975",
@@ -328,7 +316,6 @@ class ConnectionMastodonTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun originalTootWithVideoAttachment() {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_video_original)
         assertOneTootWithVideo("10496",
@@ -336,7 +323,6 @@ class ConnectionMastodonTest {
                 "https://mastodont.cat/system/media_attachments/files/000/684/914/small/7424effb937d991c.png?1550739268")
     }
 
-    @Throws(ConnectionException::class)
     private fun assertOneTootWithVideo(actorOid: String?, videoUri: String?, previewUri: String?) {
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.ACTOR_TIMELINE,
                 TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20,

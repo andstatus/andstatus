@@ -24,7 +24,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.Charset
 import java.util.*
@@ -32,7 +31,7 @@ import java.util.*
 object FileUtils {
     val ROOT_FOLDER: String = "/"
     private const val BUFFER_LENGTH = 4 * 1024
-    @Throws(IOException::class)
+
     fun getJSONArray(file: File?): JSONArray {
         var jso: JSONArray? = null
         val fileString = utf8File2String(file)
@@ -50,7 +49,6 @@ object FileUtils {
         return jso
     }
 
-    @Throws(IOException::class)
     fun getJSONObject(file: File?): JSONObject {
         var jso: JSONObject? = null
         val fileString = utf8File2String(file)
@@ -68,13 +66,11 @@ object FileUtils {
         return jso
     }
 
-    @Throws(IOException::class)
     private fun utf8File2String(file: File?): String {
         return String(getBytes(file), Charset.forName("UTF-8"))
     }
 
     /** Reads the whole file  */
-    @Throws(IOException::class)
     fun getBytes(file: File?): ByteArray {
         if (file != null) {
             FileInputStream(file).use { ins -> return getBytes(ins) }
@@ -83,7 +79,6 @@ object FileUtils {
     }
 
     /** Read the stream into an array; the stream is not closed  */
-    @Throws(IOException::class)
     fun getBytes(ins: InputStream?): ByteArray {
         if (ins != null) {
             val readBuffer = ByteArray(BUFFER_LENGTH)
@@ -103,14 +98,12 @@ object FileUtils {
     }
 
     /** Reads up to 'size' bytes, starting from 'offset'  */
-    @Throws(IOException::class)
     fun getBytes(file: File?, offset: Int, size: Int): ByteArray {
         if (file == null) return ByteArray(0)
         FileInputStream(file).use { ins -> return getBytes(ins, file.absolutePath, offset, size) }
     }
 
     /** Reads up to 'size' bytes, starting from 'offset'  */
-    @Throws(IOException::class)
     fun getBytes(ins: InputStream, path: String?, offset: Int, size: Int): ByteArray {
         val readBuffer = ByteArray(size)
         val bytesSkipped = ins.skip(offset.toLong())
@@ -181,9 +174,7 @@ object FileUtils {
      * @param src
      * @param dst
      * @return true if success
-     * @throws IOException
      */
-    @Throws(IOException::class)
     fun copyFile(objTag: Any?, src: File?, dst: File): Boolean {
         var sizeIn: Long = -1
         var sizeCopied: Long = 0
@@ -213,7 +204,6 @@ object FileUtils {
     }
 
     @JvmOverloads
-    @Throws(FileNotFoundException::class)
     fun newFileOutputStreamWithRetry(file: File?, append: Boolean = false): FileOutputStream? {
         if (file == null) return null
 

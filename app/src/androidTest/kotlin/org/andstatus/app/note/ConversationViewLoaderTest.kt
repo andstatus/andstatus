@@ -12,14 +12,12 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-import kotlin.Throws
-
 class ConversationViewLoaderTest : ProgressPublisher {
     private var origin: Origin =  Origin.EMPTY
     private var selectedNoteId: Long = 0
     private var progressCounter: Long = 0
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)

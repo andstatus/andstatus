@@ -9,7 +9,6 @@ import org.junit.Test
 
 class AttachedImageScalingTest {
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initialize(this)
     }

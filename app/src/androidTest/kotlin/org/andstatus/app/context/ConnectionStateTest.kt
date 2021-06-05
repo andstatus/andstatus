@@ -26,7 +26,6 @@ import org.junit.Test
  */
 class ConnectionStateTest {
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initialize(this)
     }

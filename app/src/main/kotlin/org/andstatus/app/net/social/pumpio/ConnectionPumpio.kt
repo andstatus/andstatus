@@ -91,7 +91,6 @@ class ConnectionPumpio : Connection() {
                 .map { jso: JSONObject -> actorFromJson(jso) }
     }
 
-    @Throws(ConnectionException::class)
     protected fun actorFromJson(jso: JSONObject): Actor {
         val groupType: GroupType
         groupType = when (PObjectType.fromJson(jso)) {
@@ -174,7 +173,6 @@ class ConnectionPumpio : Connection() {
                 }
     }
 
-    @Throws(ConnectionException::class)
     private fun jsonArrayToActors(apiRoutine: ApiRoutineEnum, uri: Uri, jArr: JSONArray?): List<Actor> {
         val actors: MutableList<Actor> = ArrayList()
         if (jArr != null) {
@@ -282,7 +280,6 @@ class ConnectionPumpio : Connection() {
         return out
     }
 
-    @Throws(ConnectionException::class)
     fun activityFromJson(jsoActivity: JSONObject?): AActivity {
         if (jsoActivity == null) return AActivity.EMPTY
         val verb: PActivityType = PActivityType.load(JsonUtils.optString(jsoActivity, "verb"))
@@ -299,7 +296,6 @@ class ConnectionPumpio : Connection() {
         }
     }
 
-    @Throws(JSONException::class, ConnectionException::class)
     private fun parseActivity(activity: AActivity, jsoActivity: JSONObject): AActivity {
         val oid = JsonUtils.optString(jsoActivity, "id")
         if (oid.isEmpty()) {
@@ -349,7 +345,6 @@ class ConnectionPumpio : Connection() {
                 if (PUBLIC_COLLECTION_ID == recipient.oid) Actor.PUBLIC else recipient)
     }
 
-    @Throws(ConnectionException::class)
     private fun parseObjectOfActivity(activity: AActivity, objectOfActivity: JSONObject): AActivity {
         if (PObjectType.PERSON.isTypeOf(objectOfActivity)) {
             activity.setObjActor(actorFromJson(objectOfActivity))
@@ -359,7 +354,6 @@ class ConnectionPumpio : Connection() {
         return activity
     }
 
-    @Throws(JSONException::class)
     private fun setVia(note: Note, activity: JSONObject) {
         if (note.via.isEmpty() && activity.has(Properties.GENERATOR.code)) {
             val generator = activity.getJSONObject(Properties.GENERATOR.code)
@@ -369,7 +363,6 @@ class ConnectionPumpio : Connection() {
         }
     }
 
-    @Throws(ConnectionException::class)
     private fun noteFromJsonComment(parentActivity: AActivity, jso: JSONObject) {
         try {
             val oid = JsonUtils.optString(jso, "id")

@@ -43,7 +43,6 @@ object ZipUtils {
         return Try.success(zipped)
     }
 
-    @Throws(IOException::class)
     private fun addToZip(file: File, zos: ZipOutputStream) {
         try {
             FileInputStream(file).use { fis ->

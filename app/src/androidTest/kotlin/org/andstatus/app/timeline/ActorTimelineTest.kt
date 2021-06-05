@@ -56,7 +56,6 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem>() {
         wrap { _openSecondAuthorTimeline() }
     }
 
-    @Throws(InterruptedException::class)
     private fun _openSecondAuthorTimeline() {
         val method = "openSecondAuthorTimeline"
         TestSuite.waitForListLoaded(activity, 10)

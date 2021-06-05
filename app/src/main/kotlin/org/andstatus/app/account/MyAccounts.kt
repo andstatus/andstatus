@@ -403,7 +403,6 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         return true
     }
 
-    @Throws(IOException::class)
     fun onBackup(data: MyBackupDataOutput, newDescriptor: MyBackupDescriptor): Long {
         try {
             val jsa = JSONArray()
@@ -419,7 +418,6 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     }
 
     /** Returns count of restores objects  */
-    @Throws(IOException::class)
     fun onRestore(data: MyBackupDataInput, newDescriptor: MyBackupDescriptor): Long {
         val restoredCount = AtomicLong()
         val method = "onRestore"

@@ -16,8 +16,8 @@ import org.junit.Before
 import org.junit.Test
 
 class NotifierTest {
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initialize(this)
         NotificationMethodType.NOTIFICATION_AREA.setEnabled(true)

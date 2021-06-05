@@ -30,7 +30,6 @@ class StringUtilTest2 {
     var context: Context by Delegates.notNull()
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         context = TestSuite.initialize(this)
     }

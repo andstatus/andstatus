@@ -28,7 +28,6 @@ import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import java.io.Closeable
-import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.OutputStreamWriter
@@ -143,7 +142,6 @@ object DbUtils {
         }
     }
 
-    @Throws(IOException::class)
     private fun closeLegacy(toClose: Any?, message: String?) {
         if (toClose is Closeable) {
             toClose.close()

@@ -21,7 +21,6 @@ import cz.msebera.android.httpclient.client.methods.HttpGet
 import cz.msebera.android.httpclient.client.methods.HttpPost
 import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.net.social.Connection
-import java.io.IOException
 import java.nio.charset.Charset
 
 class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
@@ -56,7 +55,6 @@ class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
         return result
     }
 
-    @Throws(IOException::class)
     override fun httpApacheGetResponse(httpGet: HttpGet): HttpResponse {
         val client = ApacheHttpClientUtils.getHttpClient(data.sslMode)
         return client.execute(httpGet)

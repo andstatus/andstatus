@@ -29,8 +29,8 @@ import org.junit.Test
  * @author yvolk@yurivolkov.com
  */
 class NoteViewItemTest {
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initialize(this)
     }

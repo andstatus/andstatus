@@ -32,7 +32,6 @@ import java.io.IOException
 import java.util.*
 
 internal object ApacheHttpClientUtils {
-    @Throws(ConnectionException::class)
     fun buildMultipartFormEntityBytes(request: HttpRequest): MultipartFormEntityBytes {
         val httpEntity = multiPartFormEntity(request)
         return MultipartFormEntityBytes(
@@ -41,7 +40,6 @@ internal object ApacheHttpClientUtils {
                 httpEntityToBytes(httpEntity))
     }
 
-    @Throws(ConnectionException::class)
     fun multiPartFormEntity(request: HttpRequest): HttpEntity {
         val builder = MultipartEntityBuilder.create()
         request.postParams.ifPresent { formParams: JSONObject ->
@@ -75,7 +73,6 @@ internal object ApacheHttpClientUtils {
         return builder.build()
     }
 
-    @Throws(ConnectionException::class)
     private fun httpEntityToBytes(httpEntity: HttpEntity): ByteArray {
         val out = ByteArrayOutputStream()
         try {

@@ -90,7 +90,6 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
         return connection.data.getAccountActor()
     }
 
-    @Throws(JSONException::class, ConnectionException::class)
     private fun buildActivityToSend(activityType: ActivityType): JSONObject {
         val activity = newActivityOfThisAccount(activityType)
         val obj = buildObject(activity)
@@ -114,7 +113,6 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
         return activity
     }
 
-    @Throws(ConnectionException::class, JSONException::class)
     private fun addAttachments(obj: JSONObject) {
         if (note.attachments.isEmpty) return
         val jsoAttachments = JSONArray()
@@ -141,7 +139,6 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
                         JsonUtils.optString(objPosted, ConnectionActivityPub.SUMMARY_PROPERTY).isEmpty())
     }
 
-    @Throws(JSONException::class)
     private fun newActivityOfThisAccount(activityType: ActivityType): JSONObject {
         val activity = JSONObject()
         activity.put("@context", "https://www.w3.org/ns/activitystreams")
@@ -179,7 +176,6 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
         }
     }
 
-    @Throws(ConnectionException::class)
     private fun uploadMedia(attachment: Attachment): JSONObject {
         var result: Try<HttpReadResult> = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA,
                 TimelinePosition.EMPTY, getActor())
@@ -202,7 +198,6 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
                 .getOrElseThrow { e: Throwable -> ConnectionException.of(e) }
     }
 
-    @Throws(JSONException::class)
     private fun buildObject(activity: JSONObject): JSONObject {
         val obj = JSONObject()
         if (isExisting()) {

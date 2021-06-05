@@ -13,8 +13,8 @@ import org.junit.Before
 import org.junit.Test
 
 class TimelineSyncTrackerTest {
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithData(this)
     }

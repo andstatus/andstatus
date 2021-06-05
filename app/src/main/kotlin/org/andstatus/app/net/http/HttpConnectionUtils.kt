@@ -24,7 +24,6 @@ import org.andstatus.app.service.ConnectionRequired
 import org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry
 import org.andstatus.app.util.StopWatch
 import java.io.BufferedOutputStream
-import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.UnsupportedEncodingException
@@ -34,7 +33,7 @@ import java.nio.charset.StandardCharsets
 object HttpConnectionUtils {
     private val UTF_8: String = "UTF-8"
     private const val BUFFER_LENGTH = 20000
-    @Throws(ConnectionException::class)
+
     fun encode(params: MutableMap<String, String>): String {
         return try {
             val sb = StringBuilder()
@@ -69,7 +68,6 @@ object HttpConnectionUtils {
         }
     }
 
-    @Throws(IOException::class)
     private fun readStreamToString(resultIn: HttpReadResult, inputStream: InputStream): Try<HttpReadResult> {
         val buffer = CharArray(BUFFER_LENGTH)
         val checker = ReadChecker(resultIn)
@@ -89,7 +87,6 @@ object HttpConnectionUtils {
         return Try.success(resultIn)
     }
 
-    @Throws(IOException::class)
     private fun readStreamToFile(resultIn: HttpReadResult, inputStream: InputStream): Try<HttpReadResult> {
         val buffer = ByteArray(BUFFER_LENGTH)
         val checker = ReadChecker(resultIn)

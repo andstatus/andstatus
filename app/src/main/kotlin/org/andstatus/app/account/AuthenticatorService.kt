@@ -19,7 +19,6 @@ import android.accounts.AbstractAccountAuthenticator
 import android.accounts.Account
 import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
-import android.accounts.NetworkErrorException
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -38,7 +37,6 @@ class AuthenticatorService : Service() {
         /**
          * We add account launching [AccountSettingsActivity] activity
          */
-        @Throws(NetworkErrorException::class)
         override fun addAccount(response: AccountAuthenticatorResponse?, accountType: String,
                                 authTokenType: String?, requiredFeatures: Array<String?>?, options: Bundle?): Bundle {
             // There are two cases here:
@@ -77,7 +75,6 @@ class AuthenticatorService : Service() {
             return null
         }
 
-        @Throws(NetworkErrorException::class)
         override fun getAuthToken(response: AccountAuthenticatorResponse?, account: Account?,
                                   authTokenType: String?, loginOptions: Bundle?): Bundle? {
             return null

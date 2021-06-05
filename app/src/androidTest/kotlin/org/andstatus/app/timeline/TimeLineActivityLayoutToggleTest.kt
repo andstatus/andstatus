@@ -75,31 +75,26 @@ class TimeLineActivityLayoutToggleTest : TimelineActivityTest<ActivityViewItem>(
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testToggleAttachedImages1() {
         oneIteration()
     }
 
-    @Throws(InterruptedException::class)
     private fun oneIteration() {
         Assert.assertTrue("MyService is available", MyServiceManager.Companion.isServiceAvailable())
         TestSuite.waitForListLoaded(activity, 3)
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testToggleAttachedImages2() {
         oneIteration()
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testToggleAttachedImages3() {
         oneIteration()
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testToggleAttachedImages4() {
         oneIteration()
     }
@@ -110,7 +105,6 @@ class TimeLineActivityLayoutToggleTest : TimelineActivityTest<ActivityViewItem>(
     }
 
     @After
-    @Throws(Exception::class)
     fun tearDown() {
         logStartStop("tearDown started")
         showAttachedImages = showAttachedImagesOld

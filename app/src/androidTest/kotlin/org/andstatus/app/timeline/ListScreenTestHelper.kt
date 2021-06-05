@@ -54,7 +54,6 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
     /**
      * @return success
      */
-    @Throws(InterruptedException::class)
     fun invokeContextMenuAction4ListItemId(methodExt: String, listItemId: Long, menuItem: ContextMenuItem,
                                            childViewId: Int): Boolean {
         val method = "invokeContextMenuAction4ListItemId"
@@ -85,7 +84,6 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
     }
 
     @JvmOverloads
-    @Throws(InterruptedException::class)
     fun selectListPosition(methodExt: String?, positionIn: Int,
                            listView: ListView? = mActivity?.listView,
                            listAdapter: ListAdapter? = getListAdapter()) {
@@ -114,7 +112,6 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
      * Note: This method cannot be invoked on the main thread.
      * See https://github.com/google/google-authenticator-android/blob/master/tests/src/com/google/android/apps/authenticator/TestUtilities.java
      */
-    @Throws(InterruptedException::class)
     private fun invokeContextMenuAction(methodExt: String, activity: MyBaseListActivity,
                                         position: Int, menuItemId: Int, childViewId: Int): Boolean {
         val method = "invokeContextMenuAction"
@@ -146,7 +143,6 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
         return success
     }
 
-    @Throws(InterruptedException::class)
     private fun longClickListAtPosition(methodExt: String?, position: Int, childViewId: Int): Boolean {
         val parentView = getViewByPosition(position)
         if (parentView == null) {
@@ -177,7 +173,6 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
         return true
     }
 
-    @Throws(InterruptedException::class)
     fun goToPosition(methodExt: String?, position: Int) {
         mActivity?.listView?.let { listView ->
             InstrumentationRegistry.getInstrumentation().runOnMainSync {
@@ -287,7 +282,6 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
     }
 
     @JvmOverloads
-    @Throws(InterruptedException::class)
     fun clickListAtPosition(methodExt: String?, position: Int,
                             listView: ListView? = mActivity?.listView,
                             listAdapter: ListAdapter? = getListAdapter()) {
@@ -318,7 +312,6 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
                 .addMonitor(classOfActivity.getName(), null, false)
     }
 
-    @Throws(InterruptedException::class)
     fun waitForNextActivity(methodExt: String?, timeOut: Long): Activity? {
         val nextActivity = InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(mActivityMonitor, timeOut)
         MyLog.v(methodExt, "After waitForMonitor: $nextActivity")
@@ -328,7 +321,6 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
         return nextActivity
     }
 
-    @Throws(InterruptedException::class)
     fun waitForSelectorDialog(methodExt: String?, timeout: Int): SelectorDialog? {
         val method = "waitForSelectorDialog"
         var selectorDialog: SelectorDialog? = null
@@ -367,7 +359,6 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
         return selectorDialog
     }
 
-    @Throws(InterruptedException::class)
     fun selectIdFromSelectorDialog(method: String?, id: Long) {
         val selector = waitForSelectorDialog(method, 15000)
         val position = selector?.getListAdapter()?.getPositionById(id) ?: -1
@@ -406,14 +397,12 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
         return view
     }
 
-    @Throws(InterruptedException::class)
     fun clickView(methodExt: String, resourceId: Int) {
         mActivity?.findViewById<View>(resourceId)?.let {
             clickView(methodExt, it)
         }
     }
 
-    @Throws(InterruptedException::class)
     fun clickView(methodExt: String, view: View) {
         val clicker = Runnable {
             MyLog.v(methodExt, "Before click view")

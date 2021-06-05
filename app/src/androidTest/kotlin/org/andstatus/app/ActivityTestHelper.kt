@@ -59,7 +59,6 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityMock {
         }
     }
 
-    @Throws(InterruptedException::class)
     fun waitForNextActivity(method: String, timeOut: Long): Activity {
         val nextActivity = InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, timeOut)
         MyLog.v(this, "$method-Log after waitForMonitor: $nextActivity")
@@ -68,7 +67,6 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityMock {
         return nextActivity
     }
 
-    @Throws(InterruptedException::class)
     fun clickMenuItem(method: String, menuItemResourceId: Int): Boolean {
         Assert.assertTrue(menuItemResourceId != 0)
         TestSuite.waitForIdleSync()
@@ -117,7 +115,6 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityMock {
         return clicked.get()
     }
 
-    @Throws(InterruptedException::class)
     fun waitForSelectorStart(method: String?, requestCode: Int): Intent? {
         var ok = false
         for (i in 0..19) {
@@ -149,7 +146,6 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityMock {
     }
 
     companion object {
-        @Throws(InterruptedException::class)
         fun waitViewVisible(method: String, view: View?): Boolean {
             if (view == null) throw IllegalStateException("View is null")
             var ok = false
@@ -168,7 +164,6 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityMock {
             return ok
         }
 
-        @Throws(InterruptedException::class)
         fun waitViewInvisible(method: String, view: View?): Boolean {
             if (view == null) throw IllegalStateException("View is null")
             var ok = false
@@ -187,7 +182,6 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityMock {
             return ok
         }
 
-        @Throws(InterruptedException::class)
         fun waitTextInAView(method: String, view: TextView, textToFind: String): Boolean {
             var ok = false
             var textFound = ""
@@ -206,7 +200,6 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityMock {
             return ok
         }
 
-        @Throws(InterruptedException::class)
         fun closeContextMenu(activity: Activity) {
             val runnable = Runnable { activity.closeContextMenu() }
             activity.runOnUiThread(runnable)

@@ -1,7 +1,6 @@
 package org.andstatus.app.account
 
 import android.content.SharedPreferences
-import org.json.JSONException
 import org.json.JSONObject
 
 /**
@@ -23,7 +22,6 @@ enum class CredentialsVerificationStatus(private val id: Int) {
         dw.setDataInt(KEY, id)
     }
 
-    @Throws(JSONException::class)
     fun put(jso: JSONObject) {
         jso.put(KEY, id)
     }

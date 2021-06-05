@@ -245,7 +245,6 @@ class ConnectionActivityPub : Connection() {
         return out
     }
 
-    @Throws(ConnectionException::class)
     fun activityFromJson(jsoActivity: JSONObject?): AActivity {
         if (jsoActivity == null) return AActivity.EMPTY
 
@@ -268,7 +267,6 @@ class ConnectionActivityPub : Connection() {
         else AActivity.from(data.getAccountActor(), ActivityType.UPDATE)
     }
 
-    @Throws(ConnectionException::class)
     private fun activityFromJson(objectOrId: ObjectOrId): AActivity {
         return if (objectOrId.id.isPresent) {
             newPartialNote(data.getAccountActor(), Actor.EMPTY, objectOrId.id.get())
@@ -280,7 +278,6 @@ class ConnectionActivityPub : Connection() {
         }
     }
 
-    @Throws(JSONException::class, ConnectionException::class)
     private fun parseActivity(activity: AActivity, jsoActivity: JSONObject): AActivity {
         val oid = JsonUtils.optString(jsoActivity, "id")
         if (oid.isEmpty()) {
@@ -349,7 +346,6 @@ class ConnectionActivityPub : Connection() {
         return if (dateUpdated > RelativeTime.SOME_TIME_AGO) dateUpdated else dateFromJson(jso, "published")
     }
 
-    @Throws(ConnectionException::class)
     private fun parseObjectOfActivity(activity: AActivity, objectOfActivity: JSONObject): AActivity {
         if (ApObjectType.PERSON.isTypeOf(objectOfActivity)) {
             activity.setObjActor(actorFromJson(objectOfActivity))
@@ -365,7 +361,6 @@ class ConnectionActivityPub : Connection() {
         return activity
     }
 
-    @Throws(ConnectionException::class)
     private fun noteFromJson(parentActivity: AActivity, jso: JSONObject) {
         try {
             val oid = JsonUtils.optString(jso, "id")

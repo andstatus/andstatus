@@ -43,7 +43,6 @@ import org.hamcrest.text.IsEmptyString
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 import java.util.*
 import java.util.function.Consumer
 import kotlin.properties.Delegates
@@ -53,15 +52,14 @@ class ConnectionActivityPubTest {
     private var mock: ConnectionMock by Delegates.notNull()
     var pawooActorOid: String = "https://pawoo.net/users/pawooAndStatusTester"
     var pawooNoteOid: String = "https://pawoo.net/users/pawooAndStatusTester/statuses/101727836012435643"
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
         mock = ConnectionMock.newFor(DemoData.demoData.activityPubTestAccountName)
     }
 
     @Test
-    @Throws(IOException::class)
     fun getTimeline() {
         val sinceId = ""
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma)
@@ -114,7 +112,6 @@ class ConnectionActivityPubTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNotesByActor() {
         val ACTOR_OID2 = "https://pleroma.site/users/kaniini"
         val sinceId = ""
@@ -137,7 +134,6 @@ class ConnectionActivityPubTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun noteFromPawooNet() {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_note_from_pawoo_net_pleroma)
         val activity8 = mock.connection.getNote(pawooNoteOid).get()
@@ -156,7 +152,6 @@ class ConnectionActivityPubTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getTimeline2() {
         val sinceId = ""
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma_2)
@@ -222,7 +217,6 @@ class ConnectionActivityPubTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetFriends() {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_friends_pleroma)
         val actor: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester")
@@ -235,7 +229,6 @@ class ConnectionActivityPubTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetNoteWithAudience() {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_audience_pleroma)
         val noteOid = "https://pleroma.site/objects/032e7c06-48aa-4cc9-b84a-0a36a24a7779"
@@ -273,7 +266,6 @@ class ConnectionActivityPubTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNoteWithAttachment() {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_attachment_pleroma)
         val noteOid = "https://queer.hacktivis.me/objects/afc8092f-d25e-40a5-9dfe-5a067fb2e67d"
@@ -316,7 +308,6 @@ class ConnectionActivityPubTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getActor() {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_get_actor)
         val actorOid = "https://pleroma.site/users/ActivityPubTester"

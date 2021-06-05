@@ -31,14 +31,12 @@ import org.andstatus.app.net.social.ConnectionMock
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Test
-import java.io.IOException
 import java.io.InputStream
 
 class AttachmentDownloaderTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Test
-    @Throws(IOException::class)
     fun testImageAttachmentLoad() {
         val method = "testImageAttachmentLoad"
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
@@ -57,7 +55,6 @@ class AttachmentDownloaderTest {
         testFileProvider(dd.getDownloadId())
     }
 
-    @Throws(IOException::class)
     private fun testFileProvider(downloadRowId: Long) {
         val data: DownloadData = DownloadData.Companion.fromId(downloadRowId)
         Assert.assertTrue(data.getFilename(), data.getFile().existed)

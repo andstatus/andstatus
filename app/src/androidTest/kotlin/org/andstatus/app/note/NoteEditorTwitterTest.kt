@@ -70,19 +70,16 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testEditing1() {
         Assert.assertTrue("MyService is available", MyServiceManager.Companion.isServiceAvailable())
         editingTester()
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testEditing2() {
         editingTester()
     }
 
-    @Throws(InterruptedException::class)
     private fun editingTester() {
         TestSuite.waitForListLoaded(activity, 2)
         when (editingStep.incrementAndGet()) {
@@ -96,7 +93,6 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem>() {
         MyLog.v(this, "After step $editingStep ended")
     }
 
-    @Throws(InterruptedException::class)
     private fun editingStep1() {
         val method = "editingStep1"
         MyLog.v(this, "$method started")
@@ -108,7 +104,6 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem>() {
         MyLog.v(this, "$method ended")
     }
 
-    @Throws(InterruptedException::class)
     private fun editingStep2() {
         val method = "editingStep2"
         MyLog.v(this, "$method started")
@@ -124,7 +119,6 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem>() {
         MyLog.v(this, "$method ended")
     }
 
-    @Throws(InterruptedException::class)
     private fun assertInitialText(description: String) {
         val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
         val textView = activity.findViewById<TextView?>(R.id.noteBodyEditText)

@@ -16,7 +16,6 @@
 package org.andstatus.app.util
 
 import android.database.Cursor
-import org.json.JSONException
 import org.json.JSONObject
 
 class TypedCursorValue {
@@ -89,7 +88,6 @@ class TypedCursorValue {
         value = any
     }
 
-    @Throws(JSONException::class)
     fun toJson(): JSONObject {
         val json = JSONObject()
         json.put(KEY_TYPE, type.code)

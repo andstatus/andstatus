@@ -22,7 +22,6 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyContentType
-import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.OAuthClientKeys
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.AObjectType
@@ -50,13 +49,11 @@ import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.hamcrest.core.StringStartsWith
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 import java.net.URL
 import java.util.*
 import java.util.stream.Collectors
@@ -71,7 +68,6 @@ class ConnectionPumpioTest {
     private var secretStored: String by Delegates.notNull()
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
         originUrl = UrlUtils.fromString("https://" + DemoData.demoData.pumpioMainHost) ?: throw IllegalStateException("No Url")
@@ -140,7 +136,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(ConnectionException::class)
     fun testGetConnectionAndUrl() {
         val origin = connection.data.getOrigin()
         val actors = arrayOf<Actor>(
@@ -159,7 +154,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetTimeline() {
         val sinceId = "https%3A%2F%2F" + originUrl.getHost() + "%2Fapi%2Factivity%2Ffrefq3232sf"
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_inbox)
@@ -291,7 +285,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetFriends() {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_following)
         Assert.assertTrue(connection.hasApiEndpoint(ApiRoutineEnum.GET_FRIENDS))
@@ -311,7 +304,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(JSONException::class)
     fun testReply() {
         val name = "To Peter"
         val contentPartToLookup = "Do you think it's true?"
@@ -335,7 +327,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(JSONException::class)
     fun testUpdateStatus() {
         val name = ""
         val content = "Testing the application..."
@@ -358,7 +349,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(JSONException::class)
     fun testReblog() {
         val rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv"
         connection.announce(rebloggedId)
@@ -371,7 +361,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testUndoFollowActor() {
         mock.addResponse(org.andstatus.app.tests.R.raw.unfollow_pumpio)
         val actorOid = "acct:evan@e14n.com"
@@ -390,7 +379,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testDestroyStatus() {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_delete_comment_response)
         Assert.assertTrue("Success", connection.deleteNote("https://" + DemoData.demoData.pumpioMainHost
@@ -401,7 +389,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testPostWithImage() {
         // TODO: There should be 3 responses, just like for Video
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image)
@@ -413,7 +400,6 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testPostWithVideo() {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response1)
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response2)
@@ -437,7 +423,6 @@ class ConnectionPumpioTest {
                 "https://identi.ca/uploads/andstatus/2018/4/11/7CmQmw.mp4", attachment.uri.toString())
     }
 
-    @Throws(IOException::class)
     private fun privateGetNoteWithAttachment(uniqueUid: Boolean): Note {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image)
         var note: Note = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").get().getNote()
@@ -453,13 +438,11 @@ class ConnectionPumpioTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNoteWithAttachment() {
         privateGetNoteWithAttachment(true)
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNoteWithReplies() {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_note_self)
         val noteOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA"

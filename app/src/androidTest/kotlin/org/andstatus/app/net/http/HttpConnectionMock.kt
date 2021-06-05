@@ -24,7 +24,6 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RawResourceUtils
 import org.andstatus.app.util.UrlUtils
 import org.json.JSONObject
-import java.io.IOException
 import java.io.InputStream
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
@@ -67,7 +66,6 @@ class HttpConnectionMock : HttpConnection() {
         return false
     }
 
-    @Throws(IOException::class)
     fun addResponse(@RawRes responseResourceId: Int) {
         addResponse(RawResourceUtils.getString(responseResourceId))
     }

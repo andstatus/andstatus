@@ -312,7 +312,6 @@ $activity""",
     }
 
     @Test
-    @Throws(Exception::class)
     fun testNoteWithAttachment() {
         val activity: AActivity = ConnectionGnuSocialTest.getNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().context)

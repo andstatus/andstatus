@@ -18,7 +18,6 @@ package org.andstatus.app.net.http
 import cz.msebera.android.httpclient.HttpResponse
 import cz.msebera.android.httpclient.client.methods.HttpGet
 import cz.msebera.android.httpclient.client.methods.HttpPost
-import java.io.IOException
 
 /**
  * Implementation, specific to Basic or OAuth
@@ -26,8 +25,6 @@ import java.io.IOException
  */
 interface HttpConnectionApacheSpecific : HttpConnectionInterface {
     open fun httpApachePostRequest(httpPost: HttpPost, result: HttpReadResult): HttpReadResult
-    @Throws(IOException::class)
     open fun httpApacheGetResponse(httpGet: HttpGet): HttpResponse
-    @Throws(IOException::class)
     open fun httpApacheSetAuthorization(httpGet: HttpGet)
 }

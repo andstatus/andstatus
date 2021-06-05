@@ -11,7 +11,6 @@ class BackupActivityTest : ActivityTest<BackupActivity>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testOpenActivity() {
         val method = "testOpenActivity"
         activity

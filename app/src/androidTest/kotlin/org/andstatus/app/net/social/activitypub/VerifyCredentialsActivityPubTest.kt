@@ -31,7 +31,6 @@ import org.andstatus.app.util.UriUtilsTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 import kotlin.properties.Delegates
 
 class VerifyCredentialsActivityPubTest {
@@ -47,7 +46,6 @@ class VerifyCredentialsActivityPubTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun verifyCredentials() {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_whoami_pleroma)
         val actor = mock.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID)).get()

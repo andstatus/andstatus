@@ -73,7 +73,6 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
     */
     @Ignore
     @Test
-    @Throws(InterruptedException::class)
     fun testContextMenuWhileEditing1() {
         val method = "testContextMenuWhileEditing"
         TestSuite.waitForListLoaded(activity, 2)
@@ -90,7 +89,6 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
 
     @Ignore
     @Test
-    @Throws(InterruptedException::class)
     fun testContextMenuWhileEditing2() {
         val method = "testContextMenuWhileEditing"
         TestSuite.waitForListLoaded(activity, 2)

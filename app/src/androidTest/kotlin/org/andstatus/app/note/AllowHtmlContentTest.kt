@@ -48,7 +48,6 @@ class AllowHtmlContentTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Test
-    @Throws(Exception::class)
     fun testAllowHtlContent() {
         val isAllowedInPumpIoStored: Boolean = DemoData.demoData.getPumpioConversationOrigin().isHtmlContentAllowed()
         val isAllowedInGnuSocialStored: Boolean = DemoData.demoData.getGnuSocialOrigin().isHtmlContentAllowed()
@@ -108,7 +107,6 @@ class AllowHtmlContentTest {
                 DemoData.demoData.getPumpioConversationOrigin().isHtmlContentAllowed())
     }
 
-    @Throws(Exception::class)
     private fun oneGnuSocialTest(isHtmlAllowed: Boolean) {
         Assert.assertEquals("is HTML content allowed in GnuSocial", isHtmlAllowed,
                 DemoData.demoData.getGnuSocialOrigin().isHtmlContentAllowed())

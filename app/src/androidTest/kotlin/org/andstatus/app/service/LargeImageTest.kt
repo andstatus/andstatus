@@ -14,7 +14,6 @@ import org.andstatus.app.net.social.Attachment
 import org.andstatus.app.net.social.ConnectionMock
 import org.junit.Assert
 import org.junit.Test
-import java.io.IOException
 
 /* 
  * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
@@ -37,7 +36,6 @@ class LargeImageTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testLargeImageAttachmentLoad() {
         val dd = insertNote()
         loadingTest(dd)

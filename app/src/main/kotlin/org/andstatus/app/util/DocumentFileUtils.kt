@@ -23,7 +23,6 @@ import org.andstatus.app.R
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
@@ -85,7 +84,6 @@ object DocumentFileUtils {
     }
 
     /** Reads up to 'size' bytes, starting from 'offset'  */
-    @Throws(IOException::class)
     fun getBytes(context: Context, file: DocumentFile?, offset: Int, size: Int): ByteArray = file?.let {
         context.contentResolver.openInputStream(file.uri)
                 ?.use { ins -> return FileUtils.getBytes(ins, file.uri.path, offset, size) }

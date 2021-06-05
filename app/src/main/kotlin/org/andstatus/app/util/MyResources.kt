@@ -26,7 +26,6 @@ import androidx.annotation.ColorInt
  */
 object MyResources {
     @ColorInt
-    @Throws(NotFoundException::class)
     fun getColorByAttribute(@AttrRes resId: Int, @AttrRes altResId: Int, theme: Theme): Int {
         val value = TypedValue()
         if (!theme.resolveAttribute(resId, value, true) && !theme.resolveAttribute(altResId, value, true)) {

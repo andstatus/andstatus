@@ -66,7 +66,6 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testOpeningConversationActivity() {
         val method = "testOpeningConversationActivity"
         TestSuite.waitForListLoaded(activity, 7)
@@ -89,18 +88,15 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
      * This is why we have two similar methods
      */
     @Test
-    @Throws(InterruptedException::class)
     fun testPositionOnContentChange1() {
         onePositionOnContentChange(5, 1)
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testPositionOnContentChange2() {
         onePositionOnContentChange(0, 2)
     }
 
-    @Throws(InterruptedException::class)
     private fun onePositionOnContentChange(position0: Int, iterationId: Int) {
         val method = "testPositionOnContentChange$iterationId"
         TestSuite.waitForListLoaded(activity, 1)
@@ -184,7 +180,6 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testOpeningAccountSelector() {
         val method = "testOpeningAccountSelector"
         TestSuite.waitForListLoaded(activity, 7)
@@ -196,7 +191,6 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testActAs() {
         val method = "testActAs"
         TestSuite.waitForListLoaded(activity, 2)

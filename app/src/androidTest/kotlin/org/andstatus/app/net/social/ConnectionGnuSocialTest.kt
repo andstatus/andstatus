@@ -36,7 +36,6 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -50,7 +49,6 @@ class ConnectionGnuSocialTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testGetPublicTimeline() {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_home)
         val accountActor: Actor = DemoData.demoData.getAccountActorByOid(DemoData.demoData.gnusocialTestAccountActorOid)
@@ -131,7 +129,6 @@ class ConnectionGnuSocialTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testSearch() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline)
         val timeline = mock.connection.searchNotes(true,
@@ -142,7 +139,6 @@ class ConnectionGnuSocialTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testPostWithMedia() {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment)
         val note: Note = Note.Companion.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
@@ -154,12 +150,10 @@ class ConnectionGnuSocialTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun getNoteWithAttachment() {
         privateGetNoteWithAttachment(true)
     }
 
-    @Throws(IOException::class)
     private fun privateGetNoteWithAttachment(uniqueUid: Boolean): AActivity {
         val NOTE_OID = "2215662"
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
@@ -179,7 +173,6 @@ class ConnectionGnuSocialTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testReblog() {
         val NOTE_OID = "10341561"
         mock.addResponse(org.andstatus.app.tests.R.raw.loadaverage_repost_response)
@@ -227,7 +220,6 @@ class ConnectionGnuSocialTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testFavoritingActivityInTimeline() {
         mock.addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity)
         val accountActor: Actor = DemoData.demoData.getAccountActorByOid(DemoData.demoData.gnusocialTestAccountActorOid)
@@ -268,7 +260,6 @@ class ConnectionGnuSocialTest {
     }
 
     @Test
-    @Throws(IOException::class)
     fun testMentionsInHtml() {
         oneHtmlMentionsTest("1iceloops123", "14044206",
                 org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions, 6)
@@ -284,7 +275,6 @@ class ConnectionGnuSocialTest {
                         .orElse(MyUrlSpan.Companion.EMPTY).data.getTimeline().timelineType)
     }
 
-    @Throws(IOException::class)
     private fun oneHtmlMentionsTest(actorUsername: String, noteOid: String, responseResourceId: Int, numberOfMembers: Int): AActivity {
         mock.addResponse(responseResourceId)
         val activity = mock.connection.getNote(noteOid).get()
@@ -318,7 +308,6 @@ class ConnectionGnuSocialTest {
     }
 
     companion object {
-        @Throws(Exception::class)
         fun getNoteWithAttachment(context: Context): AActivity {
             val test = ConnectionGnuSocialTest()
             test.setUp()

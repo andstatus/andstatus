@@ -22,8 +22,8 @@ import org.junit.Before
 import org.junit.Test
 
 class MyLogTest {
+
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initialize(this)
     }

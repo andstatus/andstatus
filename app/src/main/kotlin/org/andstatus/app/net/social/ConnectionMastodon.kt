@@ -55,7 +55,6 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 .map { b: Uri.Builder -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
     }
 
-    @Throws(ConnectionException::class)
     override fun activityFromTwitterLikeJson(jso: JSONObject?): AActivity {
         return when {
             jso == null -> return AActivity.EMPTY
@@ -161,7 +160,6 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 .map { jsonObject: JSONObject -> getConversationActivities(jsonObject, conversationOid) }
     }
 
-    @Throws(ConnectionException::class)
     private fun getConversationActivities(mastodonContext: JSONObject, conversationOid: String): List<AActivity> {
         if (JsonUtils.isEmpty(mastodonContext)) return emptyList()
         val timeline: MutableList<AActivity> = ArrayList()
@@ -245,7 +243,6 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 .onSuccess { jso: JSONObject -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
     }
 
-    @Throws(ConnectionException::class)
     override fun actorFromJson(jso: JSONObject?): Actor {
         if (jso == null) {
             return Actor.EMPTY
@@ -289,7 +286,6 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         return builder.toString()
     }
 
-    @Throws(ConnectionException::class)
     override fun activityFromJson2(jso: JSONObject?): AActivity {
         if (jso == null) {
             return AActivity.EMPTY
@@ -401,7 +397,6 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         }
     }
 
-    @Throws(ConnectionException::class)
     override fun rebloggedNoteFromJson(jso: JSONObject): AActivity {
         return activityFromJson2(jso.optJSONObject("reblog"))
     }

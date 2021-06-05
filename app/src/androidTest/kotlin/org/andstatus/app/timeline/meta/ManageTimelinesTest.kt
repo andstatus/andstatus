@@ -37,7 +37,6 @@ class ManageTimelinesTest : ActivityTest<ManageTimelines>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testActivityOpened() {
         val expectedCount: Int =  MyContextHolder.myContextHolder.getNow().timelines.values().size
         TestSuite.waitForListLoaded(activity, expectedCount)

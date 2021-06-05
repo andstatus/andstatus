@@ -27,7 +27,6 @@ import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.util.MyLog
 import org.json.JSONObject
-import java.io.UnsupportedEncodingException
 import java.net.URL
 import java.util.*
 
@@ -59,7 +58,6 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
         return specific.httpApachePostRequest(httpPost, result)
     }
 
-    @Throws(UnsupportedEncodingException::class)
     private fun fillSinglePartPost(httpPost: HttpPost, formParams: JSONObject) {
         val nvFormParams = ApacheHttpClientUtils.jsonToNameValuePair(formParams)
         val formEntity: HttpEntity = UrlEncodedFormEntity(nvFormParams, HTTP.UTF_8)

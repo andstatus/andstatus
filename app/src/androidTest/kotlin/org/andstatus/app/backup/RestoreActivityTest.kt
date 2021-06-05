@@ -11,7 +11,6 @@ class RestoreActivityTest : ActivityTest<RestoreActivity>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testOpenActivity() {
         val method = "testOpenActivity"
         activity

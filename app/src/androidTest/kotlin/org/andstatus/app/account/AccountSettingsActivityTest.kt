@@ -56,7 +56,6 @@ open class AccountSettingsActivityTest() : ActivityTest<AccountSettingsActivity>
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun test() {
         val method = "test"
         val addAccountOrVerifyCredentials = activity.findViewById<View?>(R.id.add_account) as Button?
@@ -82,7 +81,6 @@ open class AccountSettingsActivityTest() : ActivityTest<AccountSettingsActivity>
         assertEquals("Unique name of selected account $ma", ma.getOAccountName().getUniqueName(), uniqueNameText?.text.toString())
     }
 
-    @Throws(InterruptedException::class)
     private fun openingOriginList() {
         val method = "testOpeningOriginList"
         val activityMonitor = getInstrumentation().addMonitor(PersistentOriginList::class.java.name, null, false)

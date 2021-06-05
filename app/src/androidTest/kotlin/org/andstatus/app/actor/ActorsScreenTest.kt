@@ -57,7 +57,6 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun testActorsOfNote() {
         val method = "testActorsOfNote"
         TestSuite.waitForListLoaded(activity, 2)
@@ -88,7 +87,6 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
         DbUtils.waitMs(method, 500)
     }
 
-    @Throws(InterruptedException::class)
     private fun tryToOpenActorsScreen(method: String, helper: ListScreenTestHelper<TimelineActivity<*>>, logMsg: String): ActorsScreen {
         var item: ActivityViewItem = ActivityViewItem.Companion.EMPTY
         val timelineData = activity.getListData()

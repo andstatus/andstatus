@@ -27,7 +27,6 @@ import org.junit.Test
 
 class OAuthClientKeysTest {
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.forget()
         TestSuite.initialize(this)

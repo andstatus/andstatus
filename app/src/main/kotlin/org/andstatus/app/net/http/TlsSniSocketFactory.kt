@@ -18,7 +18,6 @@ import cz.msebera.android.httpclient.conn.ssl.BrowserCompatHostnameVerifier
 import cz.msebera.android.httpclient.protocol.HttpContext
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.util.MyLog
-import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.concurrent.ConcurrentHashMap
@@ -29,12 +28,11 @@ import javax.net.ssl.SSLSocket
 class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactory {
     private val secure: Boolean
     private var sslSocketFactory: SSLCertificateSocketFactory? = null
-    @Throws(IOException::class)
+
     override fun createSocket(context: HttpContext?): Socket? {
         return sslSocketFactory?.createSocket()
     }
 
-    @Throws(IOException::class)
     override fun connectSocket(timeout: Int, plain: Socket, host: HttpHost, remoteAddr: InetSocketAddress, localAddr: InetSocketAddress?, context: HttpContext?): Socket {
         MyLog.d(TAG, "Preparing direct SSL connection (without proxy) to $host")
 
@@ -49,7 +47,6 @@ class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactor
         return ssl
     }
 
-    @Throws(IOException::class)
     override fun createLayeredSocket(plain: Socket?, host: String, port: Int, context: HttpContext?): Socket {
         MyLog.d(TAG, "Preparing layered SSL connection (over proxy) to $host")
 
@@ -62,7 +59,6 @@ class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactor
         return ssl
     }
 
-    @Throws(SSLPeerUnverifiedException::class)
     private fun connectWithSNI(ssl: SSLSocket, host: String) {
         // set reasonable SSL/TLS settings before the handshake:
         // - enable all supported protocols

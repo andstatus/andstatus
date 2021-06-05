@@ -19,27 +19,23 @@ import org.andstatus.app.util.IgnoredInTravis2
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState
-import org.json.JSONException
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.io.FileNotFoundException
-import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
 
 class MyBackupAgentTest: IgnoredInTravis2() {
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithData(this)
         ensureOneFileExistsInDownloads()
     }
 
     @Test
-    @Throws(Throwable::class)
     fun testBackupRestore() {
         val accountsBefore: MyAccounts = MyAccounts.Companion.newEmpty( MyContextHolder.myContextHolder.getNow())
         accountsBefore.initialize()
@@ -62,7 +58,6 @@ class MyBackupAgentTest: IgnoredInTravis2() {
         deleteBackup(dataFolder)
     }
 
-    @Throws(JSONException::class)
     private fun compareOneAccount(accountsExpected: MyAccounts, accountsActual: MyAccounts, accountName: String) {
         val oldAccount = accountsExpected.fromAccountName(accountName)
         val newAccount = accountsActual.fromAccountName(accountName)
@@ -72,7 +67,6 @@ class MyBackupAgentTest: IgnoredInTravis2() {
         Assert.assertEquals(message, oldAccount.toJson().toString(2), newAccount.toJson().toString(2))
     }
 
-    @Throws(Throwable::class)
     private fun testBackup(backupFolder: DocumentFile): DocumentFile {
         MyLog.i(this,"testBackup started")
         val backupManager = MyBackupManager(null, null)
@@ -106,7 +100,6 @@ class MyBackupAgentTest: IgnoredInTravis2() {
         return dataFolder
     }
 
-    @Throws(IOException::class)
     private fun deleteApplicationData() {
         MyServiceManager.Companion.setServiceUnavailable()
         deleteAccounts()
@@ -119,7 +112,6 @@ class MyBackupAgentTest: IgnoredInTravis2() {
         TestSuite.onDataDeleted()
     }
 
-    @Throws(IOException::class)
     private fun deleteAccounts() {
         val am = AccountManager.get( MyContextHolder.myContextHolder.getNow().context)
         val aa = AccountUtils.getCurrentAccounts( MyContextHolder.myContextHolder.getNow().context)
@@ -145,7 +137,6 @@ class MyBackupAgentTest: IgnoredInTravis2() {
         FileUtils.deleteFilesRecursively(SharedPreferencesUtil.prefsDirectory(context))
     }
 
-    @Throws(Throwable::class)
     private fun testRestore(dataFolder: DocumentFile?) {
         val backupManager = MyBackupManager(null, null)
         backupManager.prepareForRestore(dataFolder)
@@ -168,7 +159,6 @@ class MyBackupAgentTest: IgnoredInTravis2() {
     }
 
     companion object {
-        @Throws(IOException::class)
         private fun ensureOneFileExistsInDownloads() {
             val downloads = MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS) ?: throw IllegalStateException("No downloads")
             if (Arrays.stream(downloads.listFiles()).noneMatch { obj: File -> obj.isFile() }) {

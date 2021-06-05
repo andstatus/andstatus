@@ -112,7 +112,6 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                 .map { jso: JSONObject? -> activityFromJson(jso) }
     }
 
-    @Throws(ConnectionException::class)
     private fun uploadMedia(attachment: Attachment): JSONObject? {
         return tryApiPath(data.getAccountActor(), ApiRoutineEnum.UPLOAD_MEDIA)
                 .map { uri: Uri ->
@@ -190,7 +189,6 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                 }
     }
 
-    @Throws(ConnectionException::class)
     override fun activityFromJson2(jso: JSONObject?): AActivity {
         if (jso == null) return AActivity.EMPTY
         val activity = super.activityFromJson2(jso)
@@ -243,7 +241,6 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
         return attachments
     }
 
-    @Throws(JSONException::class)
     override fun setNoteBodyFromJson(note: Note, jso: JSONObject) {
         var bodyFound = false
         if (!jso.isNull("full_text")) {

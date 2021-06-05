@@ -21,11 +21,10 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TriState
 import org.junit.Assert
 import org.junit.Test
-import java.net.MalformedURLException
 
 class RepeatingFailingCommandTest : MyServiceTest() {
+
     @Test
-    @Throws(MalformedURLException::class)
     fun repeatingFailingCommand() {
         for (iteration in 0 until ITERATIONS_NUMBER) oneIteration(iteration)
     }

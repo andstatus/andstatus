@@ -617,7 +617,6 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             }
         }
 
-        @Throws(ConnectionException::class)
         fun registerClient() {
             MyLog.v(this) { "Registering client application for " + myAccount.username }
             myAccount.setConnection()

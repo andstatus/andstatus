@@ -47,7 +47,6 @@ internal class MyBackupManager(private val activity: Activity?, progressListener
     private var backupAgent: MyBackupAgent? = null
     private val progressLogger: ProgressLogger = ProgressLogger(progressListener)
 
-    @Throws(IOException::class)
     fun prepareForBackup(backupFolder: DocumentFile) {
         progressLogger.logProgress("Data folder will be created inside: '"
                 + backupFolder.getUri() + "'")
@@ -93,7 +92,6 @@ internal class MyBackupManager(private val activity: Activity?, progressListener
         }
     }
 
-    @Throws(Throwable::class)
     fun prepareForRestore(dataFolder: DocumentFile?) {
         if (dataFolder == null) {
             throw FileNotFoundException("Data folder is not selected")
@@ -122,7 +120,6 @@ internal class MyBackupManager(private val activity: Activity?, progressListener
         }.getOrElseThrow(UnaryOperator.identity())
     }
 
-    @Throws(IOException::class)
     fun restore() {
         backupAgent = MyBackupAgent().also { agent ->
             agent.setActivity(activity)

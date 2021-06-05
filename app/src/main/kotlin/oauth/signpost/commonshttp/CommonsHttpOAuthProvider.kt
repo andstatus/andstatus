@@ -47,13 +47,11 @@ class CommonsHttpOAuthProvider : AbstractOAuthProvider {
         this.httpClient = httpClient
     }
 
-    @Throws(Exception::class)
     override fun createRequest(endpointUrl: String?): HttpRequest {
         val request = HttpPost(endpointUrl)
         return HttpRequestAdapter(request)
     }
 
-    @Throws(Exception::class)
     override fun sendRequest(request: HttpRequest): HttpResponse {
         val response = httpClient.execute(request.unwrap() as HttpUriRequest)
         return HttpResponseAdapter(response)

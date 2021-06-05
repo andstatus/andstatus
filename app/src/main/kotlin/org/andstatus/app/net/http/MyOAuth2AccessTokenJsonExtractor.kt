@@ -16,7 +16,6 @@
 package org.andstatus.app.net.http
 
 import android.net.Uri
-import com.github.scribejava.core.exceptions.OAuthException
 import com.github.scribejava.core.extractors.OAuth2AccessTokenJsonExtractor
 import com.github.scribejava.core.model.OAuth2AccessToken
 import com.github.scribejava.core.model.Response
@@ -24,12 +23,11 @@ import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
-import java.io.IOException
 import java.util.*
 import java.util.regex.Pattern
 
 class MyOAuth2AccessTokenJsonExtractor(private val data: HttpConnectionData) : OAuth2AccessTokenJsonExtractor() {
-    @Throws(IOException::class)
+
     override fun extract(response: Response): OAuth2AccessToken? {
         val body = response.body
         MyLog.logNetworkLevelMessage("oauthAccessToken_response",
@@ -47,7 +45,6 @@ class MyOAuth2AccessTokenJsonExtractor(private val data: HttpConnectionData) : O
                     .flatMap { obj: String? -> UriUtils.toDownloadableOptional(obj) }
         }
 
-        @Throws(OAuthException::class)
         fun extractParameter(response: String, regexPattern: Pattern): Optional<String> {
             val matcher = regexPattern.matcher(response)
             return if (matcher.find()) Optional.ofNullable(matcher.group(1)) else Optional.empty()

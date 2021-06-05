@@ -66,7 +66,6 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
         }
     }
 
-    @Throws(IOException::class)
     private fun setEmptyFields(context: Context) {
         backupSchemaVersion = BACKUP_SCHEMA_VERSION
         val pm = context.getPackageManager()
@@ -100,7 +99,6 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
         return fileDescriptor == null && docDescriptor == null
     }
 
-    @Throws(IOException::class)
     fun save(context: Context) {
         if (isEmpty()) {
             throw FileNotFoundException("MyBackupDescriptor is empty")
@@ -135,7 +133,6 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
         return jso
     }
 
-    @Throws(IOException::class)
     private fun writeStringToStream(string: String, outputStream: OutputStream) {
         val method = "writeStringToFileDescriptor"
         try {
@@ -216,7 +213,6 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
             return myBackupDescriptor
         }
 
-        @Throws(IOException::class)
         fun fromEmptyParcelFileDescriptor(parcelFileDescriptor: ParcelFileDescriptor,
                                           progressLoggerIn: ProgressLogger): MyBackupDescriptor {
             val myBackupDescriptor = MyBackupDescriptor(progressLoggerIn)
@@ -226,7 +222,6 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
             return myBackupDescriptor
         }
 
-        @Throws(IOException::class)
         fun fromEmptyDocumentFile(context: Context, documentFile: DocumentFile?,
                                   progressLoggerIn: ProgressLogger): MyBackupDescriptor {
             val myBackupDescriptor = MyBackupDescriptor(progressLoggerIn)

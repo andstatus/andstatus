@@ -8,11 +8,10 @@ import android.content.Context
 import androidx.annotation.RawRes
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.nio.charset.StandardCharsets
 
 object RawResourceUtils {
-    @Throws(IOException::class)
+
     fun getString(@RawRes id: Int): String {
         return String(getBytes(id, InstrumentationRegistry.getInstrumentation().context),
                 StandardCharsets.UTF_8)
@@ -21,7 +20,6 @@ object RawResourceUtils {
     /**
      * reads resources regardless of their size
      */
-    @Throws(IOException::class)
     fun getBytes(@RawRes id: Int, context: Context): ByteArray {
         val resources = context.resources
         val bout = ByteArrayOutputStream()

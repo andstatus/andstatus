@@ -150,7 +150,6 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
     }
 
-    @Throws(JSONException::class)
     override fun setNoteBodyFromJson(note: Note, jso: JSONObject) {
         if (data.getOrigin().isHtmlContentAllowed() && !jso.isNull(HTML_BODY_FIELD_NAME)) {
             note.setContent(jso.getString(HTML_BODY_FIELD_NAME), TextMediaType.HTML)
@@ -159,7 +158,6 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
         }
     }
 
-    @Throws(ConnectionException::class)
     override fun activityFromJson2(jso: JSONObject?): AActivity {
         if (jso == null) return AActivity.EMPTY
         val method = "activityFromJson2"

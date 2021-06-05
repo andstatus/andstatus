@@ -57,7 +57,6 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun sendingPublic() {
         val method = "sendingPublic"
         TestSuite.waitForListLoaded(activity, 2)
@@ -83,7 +82,6 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
         wrap { sendingSensitive1() }
     }
 
-    @Throws(Exception::class)
     private fun sendingSensitive1() {
         val method = "sendingSensitive"
         TestSuite.waitForListLoaded(activity, 2)
@@ -113,13 +111,11 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun attachOneImage() {
         NoteEditorTest.attachImages(this, 1, 1)
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun attachTwoImages() {
         NoteEditorTest.attachImages(this, 2, 2)
     }

@@ -41,21 +41,18 @@ class PersistentTimelinesTest {
     private var myContext: MyContext by Delegates.notNull()
 
     @Before
-    @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithData(this)
         myContext =  MyContextHolder.myContextHolder.getNow()
     }
 
     @Test
-    @Throws(Exception::class)
     fun testList() {
         val timelines = myContext.timelines.values()
         Assert.assertTrue(timelines.size > 0)
     }
 
     @Test
-    @Throws(Exception::class)
     fun testFilteredList() {
         val timelines = myContext.timelines.values()
         var count = myContext.timelines.filter(

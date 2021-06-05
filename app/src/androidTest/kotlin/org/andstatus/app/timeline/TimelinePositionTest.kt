@@ -38,24 +38,20 @@ class TimelinePositionTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun shouldStoreTimelinePosition1() {
         oneTimelineOpening(1)
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun shouldStoreTimelinePosition2() {
         oneTimelineOpening(2)
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun shouldStoreTimelinePosition3() {
         oneTimelineOpening(3)
     }
 
-    @Throws(InterruptedException::class)
     private fun oneTimelineOpening(iteration: Int) {
         val method = "oneTimelineOpening$iteration"
         TestSuite.waitForListLoaded(activity, 3)

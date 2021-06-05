@@ -88,7 +88,6 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
         return connection.data.getAccountActor()
     }
 
-    @Throws(JSONException::class, ConnectionException::class)
     private fun buildActivityToSend(activityType: PActivityType): JSONObject {
         val activity = newActivityOfThisAccount(activityType)
         var obj = buildObject(activity)
@@ -151,7 +150,6 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
                 && JsonUtils.optString(objPosted, ConnectionPumpio.NAME_PROPERTY).isEmpty())
     }
 
-    @Throws(JSONException::class, ConnectionException::class)
     private fun newActivityOfThisAccount(activityType: PActivityType): JSONObject {
         val activity = JSONObject()
         activity.put("objectType", "activity")
@@ -169,7 +167,6 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
         return activity
     }
 
-    @Throws(JSONException::class)
     private fun setAudience(activity: JSONObject, activityType: PActivityType) {
         note.audience().getRecipients().forEach { actor: Actor -> addToAudience(activity, "to", actor) }
         if (note.audience().noRecipients() && note.getInReplyTo().getOid().isEmpty()
@@ -204,7 +201,6 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
      * org.macno.puma.provider.Pumpio.postImage(String, String, boolean, Location, String, byte[])
      * We simplified it a bit...
      */
-    @Throws(ConnectionException::class)
     private fun uploadMedia(attachment: Attachment): JSONObject {
         var result: Try<HttpReadResult> = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
                 .flatMap { conu: ConnectionAndUrl -> conu.execute(conu.newRequest().withAttachmentToPost(attachment)) }
@@ -221,7 +217,6 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
                 .getOrElseThrow { e: Throwable? -> ConnectionException.of(e) }
     }
 
-    @Throws(JSONException::class)
     private fun buildObject(activity: JSONObject): JSONObject {
         val obj = JSONObject()
         if (isExisting()) {

@@ -16,7 +16,6 @@ class MySettingsActivityTest : ActivityTest<MySettingsActivity>() {
     }
 
     @Test
-    @Throws(InterruptedException::class)
     fun test() {
         val method = "test"
         val fragment = activity.getFragmentManager().findFragmentByTag(MySettingsFragment::class.java.simpleName) as PreferenceFragment?

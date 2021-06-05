@@ -24,7 +24,6 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionMock
-import java.io.IOException
 
 class ConnectionMock private constructor(val connection: Connection) {
     fun withException(e: ConnectionException?): ConnectionMock {
@@ -32,7 +31,6 @@ class ConnectionMock private constructor(val connection: Connection) {
         return this
     }
 
-    @Throws(IOException::class)
     fun addResponse(@RawRes responseResourceId: Int) {
         getHttpMock().addResponse(responseResourceId)
     }

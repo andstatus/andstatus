@@ -18,6 +18,5 @@ package org.andstatus.app.support.java.util.function
 /** @author yvolk@yurivolkov.com
  */
 fun interface SupplierWithException<T, E : Exception> {
-    @Throws(Exception::class)
     fun get(): T?
 }
