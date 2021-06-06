@@ -107,7 +107,22 @@ task<JacocoReport>("jacocoUnitTestReport") {
 sonarqube {
     // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     // and https://sonarcloud.io/documentation/analysis/scan/sonarscanner-for-gradle/
+    val login = "org.andstatus.sonar.token".let { propertyName ->
+        if (project.hasProperty(propertyName)) {
+            project.property(propertyName).let { value ->
+                value.toString().also { stringValue ->
+                    if (stringValue.length < 10) throw Exception("Too short SonarQube token: ${stringValue.length}")
+                }
+            }
+        } else {
+            println("INFO: No project.property for SonarQube token")
+        }
+    }
     properties {
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.login", login)
+        property("sonar.verbose", "true")
+
         property("sonar.organization", "default")
         property("sonar.projectName", "AndStatus")
         property("sonar.projectKey", "andstatus")
@@ -167,4 +182,10 @@ dependencies {
 // See https://stackoverflow.com/a/61162647/297710
 android.sourceSets.all {
     java.srcDir("src/$name/kotlin")
+}
+
+afterEvaluate {
+    tasks.named("jacocoUnitTestReport") {
+        dependsOn("testDebugUnitTest")
+    }
 }
