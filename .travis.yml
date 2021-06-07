@@ -83,28 +83,14 @@ install:
 
 script:
 - chmod +x gradlew
-- |
-  ./gradlew :app:testDebugUnitTest
-  retval=$?
-  if [ $retval -ne 0 ]; then
-    echo "error during Unit tests, exit code: "$retval
-    exit $retval
-  fi
 
 - |
-  travis_wait 45 ./gradlew -Pandroid.testInstrumentationRunnerArguments.executionMode=travisTest :app:createDebugCoverageReport
+  travis_wait 47 ./gradlew :app:testTravis -PhasTestCoverage -Porg.andstatus.sonar.token=$SONAR_TOKEN
   retval=$?
   if [ $retval -ne 0 ]; then
-    echo "error during createDebugCoverageReport, exit code: "$retval
+    echo "error during testTravis, exit code: "$retval
     exit $retval
   fi
-
-after_success:
-  - |
-    if [ $API = 29 ]; then
-      ./gradlew :app:jacocoUnitTestReport
-      ./gradlew sonarqube -Porg.andstatus.sonar.token=$SONAR_TOKEN
-    fi
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock

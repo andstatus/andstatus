@@ -7,6 +7,14 @@ plugins {
     id("kotlin-android")
 }
 
+val HAS_TEST_COVERAGE: String = "hasTestCoverage"
+val hasTestCoverage: Boolean get() = project.hasProperty(HAS_TEST_COVERAGE)
+fun cancelIfNoCoverage() {
+    if (!hasTestCoverage) {
+        throw BuildCancelledException("Project property '$HAS_TEST_COVERAGE' should be defined")
+    }
+}
+
 android {
     compileSdkVersion(rootProject.extra["compileSdkVersion"] as Int)
     buildToolsVersion(rootProject.extra["buildToolsVersion"] as String)
@@ -33,11 +41,9 @@ android {
                 warning("MissingTranslation", "InvalidPackage")
             }
         }
+
         getByName("debug") {
-            isTestCoverageEnabled = true
-//            if ( rootProject.hasProperty("testCoverageEnabled")) {
-//                rootProject.property("testCoverageEnabled") == "true"
-//            } else false
+            isTestCoverageEnabled = hasTestCoverage
         }
     }
 
@@ -67,8 +73,30 @@ jacoco {
     toolVersion = rootProject.extra["jacocoToolVersion"] as String
 }
 
-task<JacocoReport>("jacocoUnitTestReport") {
+tasks.register("testTravis") {
     group = "verification"
+
+    if (hasTestCoverage) {
+        project.extra["android.testInstrumentationRunnerArguments.executionMode"] = "travisTest"
+        println("Starting testing with Coverage")
+        dependsOn(
+            "createDebugCoverageReport",
+            "jacocoUnitTestReport"
+        )
+        finalizedBy("sonarqube")
+    }
+
+    doFirst {
+        cancelIfNoCoverage()
+    }
+}
+
+tasks.register<JacocoReport>("jacocoUnitTestReport") {
+    group = "verification"
+
+    if (hasTestCoverage) {
+        dependsOn("testDebugUnitTest")
+    }
 
     sourceDirectories.setFrom(fileTree(projectDir) {
         include("/src/main/java/**")
@@ -102,25 +130,46 @@ task<JacocoReport>("jacocoUnitTestReport") {
         html.isEnabled = true
         html.destination = file("$buildDir/reports/coverage/debugUnitTest/html")
     }
+
+    doFirst {
+        cancelIfNoCoverage()
+    }
+}
+
+// We cannot use built-in Result<T> here ?!
+// https://stackoverflow.com/questions/52631827/why-cant-kotlin-result-be-used-as-a-return-type
+class Result(val value: String?, val message: String?) {
+    val isFailure: Boolean = message != null
+}
+val sonarQubeToken: Result = "org.andstatus.sonar.token".let { propertyName ->
+    if (project.hasProperty(propertyName)) {
+        project.property(propertyName).toString().let { str ->
+            if (str.length < 40) {
+                Result(null, "Ignoring too short SonarQube token: ${str.length} chars")
+            } else Result(str, null)
+        }
+    } else {
+        Result(null, "No '$propertyName' project.property defined for SonarQube")
+    }
+}
+
+tasks.named("sonarqube") {
+    doFirst {
+        if (sonarQubeToken.isFailure) {
+            val msg = "SonarQube skipped: " + sonarQubeToken.message
+            println(msg)
+            throw StopExecutionException(msg)
+        }
+        println("Starting SonarQube.")
+    }
 }
 
 sonarqube {
     // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
     // and https://sonarcloud.io/documentation/analysis/scan/sonarscanner-for-gradle/
-    val login = "org.andstatus.sonar.token".let { propertyName ->
-        if (project.hasProperty(propertyName)) {
-            project.property(propertyName).let { value ->
-                value.toString().also { stringValue ->
-                    if (stringValue.length < 10) throw Exception("Too short SonarQube token: ${stringValue.length}")
-                }
-            }
-        } else {
-            println("INFO: No project.property for SonarQube token")
-        }
-    }
     properties {
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.login", login)
+        property("sonar.login", sonarQubeToken.value ?: "")
         property("sonar.verbose", "true")
 
         property("sonar.organization", "default")
@@ -182,10 +231,4 @@ dependencies {
 // See https://stackoverflow.com/a/61162647/297710
 android.sourceSets.all {
     java.srcDir("src/$name/kotlin")
-}
-
-afterEvaluate {
-    tasks.named("jacocoUnitTestReport") {
-        dependsOn("testDebugUnitTest")
-    }
 }

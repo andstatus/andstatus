@@ -25,7 +25,7 @@ enum class ExecutionMode(val code: String?, val description: String?) {
     TEST("test", "General testing, app may contain real data"),
     FIREBASE_TEST("firebaseTest", "Firebase Test Lab testing"),
     ROBO_TEST("roboTest", "Robo Test"),
-    TRAVIS_TEST("travisTest", "Travis CI testing. Screen is unavailable");
+    TRAVIS_TEST("travisTest", "Travis CI testing. With coverage");
 
     companion object {
         fun load(code: String?): ExecutionMode {
