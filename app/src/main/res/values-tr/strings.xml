@@ -490,7 +490,6 @@
   <string name="title_preference_debugging">Sorun giderme</string>
   <string name="title_preference_download_attachments_over_wifi_only">Ekleri sadece Wi-Fi üzerinde indir</string>
   <string name="title_preference_enable_android_backup">Otomatik Android yedeklemeyi etkinleştir</string>
-  <string name="title_preference_enter_sends_message">ENTER key mesaj gönderir</string>
   <string name="title_preference_frequency">Varsayılan senkron frekansı</string>
   <string name="title_preference_history_size">Tarih Boyutu</string>
   <string name="title_preference_history_time">Tarih Zamanı</string>

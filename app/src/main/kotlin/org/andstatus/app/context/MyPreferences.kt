@@ -64,7 +64,7 @@ object MyPreferences {
     // ----------------------------------------------------------
     // Gestures
     val KEY_LONG_PRESS_TO_OPEN_CONTEXT_MENU: String = "long_press_to_open_context_menu"
-    val KEY_ENTER_SENDS_NOTE: String = "enter_sends_message"
+    val KEY_SEND_IN_EDITOR_BUTTON: String = "send_in_editor_button"
 
     // ----------------------------------------------------------
     // Attachments

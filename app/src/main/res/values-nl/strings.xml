@@ -493,7 +493,6 @@
   <string name="title_preference_debugging">Probleemoplossing</string>
   <string name="title_preference_download_attachments_over_wifi_only">Bijlagen alleen via Wi-Fi downloaden</string>
   <string name="title_preference_enable_android_backup">Automatische Android-back-up inschakelen</string>
-  <string name="title_preference_enter_sends_message">Bericht versturen met Enter-toets</string>
   <string name="title_preference_frequency">Standaard synchronisatiefrequentie</string>
   <string name="title_preference_history_size">Geschiedenisgrootte</string>
   <string name="title_preference_history_time">Geschiedenisperiode</string>

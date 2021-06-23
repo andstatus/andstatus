@@ -29,10 +29,13 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="59.00" android:versionCode="344"
-        versionDate="2021-05-18"
-        versionTitle="Magnet URI as a downloadable object ID">
+    <release android:versionName="59.01" android:versionCode="345"
+        versionDate="2021-06-23"
+        versionTitle="Show Send button near the composed note">
         <changes>
+            <change>New Settings option "Show Send button near the composed note" in "Gestures" section replaces
+                the old and not working "ENTER key sends a note" option.
+                <a href="https://github.com/andstatus/andstatus/issues/533">#533</a></change>
             <change>Support Magnet URI as a "downloadable ID" of an object.
                 Intended for ActivityPub but will work for any Social network.
                 <a href="https://github.com/andstatus/andstatus/issues/535">#535</a></change>

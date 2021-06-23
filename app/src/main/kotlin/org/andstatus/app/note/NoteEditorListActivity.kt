@@ -63,8 +63,7 @@ abstract class NoteEditorListActivity<T : ViewItem<T>> : LoadableListActivity<T>
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.repeatCount == 0 && noteEditor != null &&
-                noteEditor?.isVisible() == true) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.repeatCount == 0 && noteEditor?.isVisible() == true) {
             if (getActivity().isFullScreen()) {
                 getActivity().toggleFullscreen(TriState.FALSE)
             } else noteEditor?.saveDraft()

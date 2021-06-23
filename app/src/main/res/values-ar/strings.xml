@@ -490,7 +490,6 @@ Poster, Rainbow, Quitter.se, MyInstance</string>
   <string name="title_preference_contact_developer">الاتصال بالمطور</string>
   <string name="title_preference_download_attachments_over_wifi_only">تحميل المرفقات عبر Wi-Fi فقط</string>
   <string name="title_preference_enable_android_backup">تفعيل نٌسخ أندرويد الاحتياطية التلقائية</string>
-  <string name="title_preference_enter_sends_message">زِر ENTER يرسل الرسالة</string>
   <string name="title_preference_frequency">تردد المزامنة الافتراضي</string>
   <string name="title_preference_history_size">حجم التاريخ</string>
   <string name="title_preference_history_time">توقيت التاريخ</string>

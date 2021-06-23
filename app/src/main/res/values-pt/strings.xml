@@ -485,7 +485,6 @@ toque no botão abaixo para verificar novamente as suas credenciais.</string>
   <string name="title_preference_contact_developer">Contacte o programador</string>
   <string name="title_preference_download_attachments_over_wifi_only">Apenas transferir os anexos por Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Ativar backup automático do Android</string>
-  <string name="title_preference_enter_sends_message">Tecla ENTER para enviar mensagem</string>
   <string name="title_preference_frequency">Intervalo de tempo padrão</string>
   <string name="title_preference_history_size">Tamanho de histórico</string>
   <string name="title_preference_history_time">Tempo de histórico</string>

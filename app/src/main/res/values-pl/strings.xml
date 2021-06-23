@@ -509,7 +509,6 @@
   <string name="title_preference_debugging">Rozwiązywanie problemów</string>
   <string name="title_preference_download_attachments_over_wifi_only">Pobierz załączniki tylko przez Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Włącz automatyczne tworzenie kopii zapasowej Android</string>
-  <string name="title_preference_enter_sends_message">Przycisk ENTER wysyła wiadomość</string>
   <string name="title_preference_frequency">Domyślna częstotliwość synchronizacji</string>
   <string name="title_preference_history_size">Rozmiar Historii</string>
   <string name="title_preference_history_time">Czas Historii</string>

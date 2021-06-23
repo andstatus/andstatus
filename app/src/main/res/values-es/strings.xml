@@ -472,7 +472,6 @@
   <string name="title_preference_contact_developer">Contactar con el desarrollador</string>
   <string name="title_preference_download_attachments_over_wifi_only">Descargar adjuntos solamente con Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Activar copias de seguridad automáticas</string>
-  <string name="title_preference_enter_sends_message">Enviar mensaje pulsando INTRO</string>
   <string name="title_preference_frequency">Frecuencia de sincronización por defecto</string>
   <string name="title_preference_history_size">Tamaño del historial</string>
   <string name="title_preference_history_time">Tiempo del historial</string>

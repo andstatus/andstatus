@@ -512,7 +512,6 @@ les notes et les utilisateurs associés avec (téléchargés depuis) le réseau 
   <string name="title_preference_debugging">Dépannage</string>
   <string name="title_preference_download_attachments_over_wifi_only">Télécharger les pièces jointes sur le Wi-Fi uniquement</string>
   <string name="title_preference_enable_android_backup">Activer la sauvegarde automatique de Android</string>
-  <string name="title_preference_enter_sends_message">La touche ENTRÉE envoie le message</string>
   <string name="title_preference_frequency">Fréquence de synchronisation par défaut</string>
   <string name="title_preference_history_size">Taille de l\'historique</string>
   <string name="title_preference_history_time">Durée de l\'historique</string>

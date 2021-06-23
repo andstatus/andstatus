@@ -509,7 +509,6 @@ contains://andstatus.org/</string>
   <string name="title_preference_debugging">Устранение неполадок</string>
   <string name="title_preference_download_attachments_over_wifi_only">Загружать вложения только через Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Разрешить автоматическую архивацию Android-а</string>
-  <string name="title_preference_enter_sends_message">ENTER отправляет сообщение</string>
   <string name="title_preference_frequency">Частота синхронизации по умолчанию</string>
   <string name="title_preference_history_size">Размер истории</string>
   <string name="title_preference_history_time">Длительность хранения истории</string>

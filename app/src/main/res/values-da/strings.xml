@@ -514,7 +514,6 @@
   <string name="title_preference_debugging">Fejlfinding</string>
   <string name="title_preference_download_attachments_over_wifi_only">Download kun vedhæftede filer via Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Aktivér automatisk Android-sikkerhedskopiering</string>
-  <string name="title_preference_enter_sends_message">RETUR-tast sender et notat</string>
   <string name="title_preference_frequency">Standard synkfrekvens</string>
   <string name="title_preference_history_size">Historikstørrelse</string>
   <string name="title_preference_history_time">Historiktid</string>

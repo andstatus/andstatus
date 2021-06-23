@@ -407,7 +407,6 @@
   <string name="title_preference_contact_developer">Entrar em contato com o desenvolvedor</string>
   <string name="title_preference_download_attachments_over_wifi_only">Baixar anexos somente via WiFi</string>
   <string name="title_preference_enable_android_backup">Ativar backup automático do Android</string>
-  <string name="title_preference_enter_sends_message">Tecla ENTER para enviar mensagem</string>
   <string name="title_preference_frequency">Intervalo de tempo padrão</string>
   <string name="title_preference_history_size">Tamanho de histórico</string>
   <string name="title_preference_history_time">Tempo de histórico</string>

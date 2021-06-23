@@ -516,7 +516,6 @@ Fortfahren?</string>
   <string name="title_preference_debugging">Fehlerbehebung</string>
   <string name="title_preference_download_attachments_over_wifi_only">Anhänge nur über Wi-Fi herunterladen</string>
   <string name="title_preference_enable_android_backup">Automatisches Android Backup aktivieren</string>
-  <string name="title_preference_enter_sends_message">ENTER-Taste schickt Nachricht ab</string>
   <string name="title_preference_frequency">Standard-Synchronisierungshäufigkeit</string>
   <string name="title_preference_history_size">Verlauf Größe</string>
   <string name="title_preference_history_time">Verlauf Zeitraum</string>

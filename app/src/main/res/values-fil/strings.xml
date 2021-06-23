@@ -476,7 +476,6 @@
   <string name="title_preference_debugging">Pagla-log at pagde-debug</string>
   <string name="title_preference_download_attachments_over_wifi_only">Magdownload sa mga kalakip sa Wi-Fi lamang</string>
   <string name="title_preference_enable_android_backup">Ipagana ang awtomatikong pag-back up sa Android</string>
-  <string name="title_preference_enter_sends_message">Ang susing MAGPASOK ay nagpapadala ng mensahe</string>
   <string name="title_preference_frequency">Naka-default na frekwensiya sa sync</string>
   <string name="title_preference_history_size">Laki ng Kasaysayan</string>
   <string name="title_preference_history_time">Oras ng Kasaysayan</string>

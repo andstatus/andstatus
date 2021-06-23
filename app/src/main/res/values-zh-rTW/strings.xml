@@ -500,7 +500,6 @@ Sync messages since %2$s</string>
   <string name="title_preference_contact_developer">聯絡開發者</string>
   <string name="title_preference_download_attachments_over_wifi_only">只能通過Wi-Fi下載附件</string>
   <string name="title_preference_enable_android_backup">啟用自動Android備份</string>
-  <string name="title_preference_enter_sends_message">ENTER鍵發送消息</string>
   <string name="title_preference_frequency">預設同步頻率</string>
   <string name="title_preference_history_size">歷史大小</string>
   <string name="title_preference_history_time">歷史時間</string>

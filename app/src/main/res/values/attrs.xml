@@ -45,6 +45,7 @@
 		<attr name="andStatusActionBarTheme" format="reference" />
 		<attr name="andStatusActionBarPopupTheme" format="reference" />
 
+		<!-- Action bar icons -->
 		<attr name="homeIcon" format="reference" />
         <attr name="attachIcon" format="reference" />
 		<attr name="dragHandleIcon" format="reference" />
@@ -61,6 +62,8 @@
 		<attr name="backIcon" format="reference" />
 		<attr name="arrowDropDownIcon" format="reference" />
 		<attr name="markAllAsReadIcon" format="reference" />
+
+		<attr name="sendInEditorIcon" format="reference" />
 
 		<attr name="msgCountIcon" format="reference" />
 		<attr name="followingCountIcon" format="reference" />

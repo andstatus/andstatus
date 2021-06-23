@@ -470,7 +470,6 @@ note e utenti associati con (scaricati da) questa rete sociale. Continuare?</str
   <string name="title_preference_debugging">Risoluzione</string>
   <string name="title_preference_download_attachments_over_wifi_only">Scarica gli allegati solo via Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Abilita backup automatico di Android</string>
-  <string name="title_preference_enter_sends_message">Il tasto INVIO invia una nota</string>
   <string name="title_preference_frequency">Frequenza di sincronizzazione predefinita</string>
   <string name="title_preference_history_size">Dimensione cronologia</string>
   <string name="title_preference_history_time">Tempo della cronologia</string>

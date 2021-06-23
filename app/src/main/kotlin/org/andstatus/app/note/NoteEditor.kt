@@ -31,6 +31,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
@@ -133,11 +134,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                 }
             } else false
         }
-        bodyView.setOnEditorActionListener { v: TextView?, actionId: Int, event: KeyEvent? ->
-            if (event != null && (event.isAltPressed ||
-                            !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ENTER_SENDS_NOTE, false))) {
-                return@setOnEditorActionListener false
-            }
+        bodyView.setOnEditorActionListener { _: TextView?, _: Int, _: KeyEvent? ->
             sendAndHide()
             true
         }
@@ -154,6 +151,16 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             false
         }
         bodyView.setTokenizer(noteBodyTokenizer)
+    }
+
+    private fun setupInternalButtons() {
+        if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SEND_IN_EDITOR_BUTTON, false)) {
+            val sendButton: ImageView = editorView.findViewById(R.id.sendInEditorButton)
+            sendButton.visibility = View.VISIBLE
+            sendButton.setOnClickListener {
+                sendAndHide()
+            }
+        }
     }
 
     private fun setupFullscreenToggle() {
@@ -513,6 +520,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
     private fun saveData(command: NoteEditorCommand) {
         command.acquireLock(false)
         MyPreferences.setBeingEditedNoteId(if (command.beingEdited) command.getCurrentNoteId() else 0)
+        getActivity().toggleFullscreen(TriState.FALSE)
         hide()
         if (command.nonEmpty) {
             MyLog.v(NoteEditorData.TAG) { "Requested: $command" }
@@ -700,6 +708,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         editorView = getEditorView()
         mCharsLeftText = editorView.findViewById(R.id.noteEditCharsLeftTextView)
         setupEditText()
+        setupInternalButtons()
         setupFullscreenToggle()
         hide()
     }

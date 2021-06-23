@@ -514,7 +514,6 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="title_preference_debugging">トラブルシューティング</string>
   <string name="title_preference_download_attachments_over_wifi_only">Wi-Fi 経由のみ添付ファイルをダウンロード</string>
   <string name="title_preference_enable_android_backup">Android の自動バックアップを有効にする</string>
-  <string name="title_preference_enter_sends_message">ENTER キーでメッセージを送信</string>
   <string name="title_preference_frequency">デフォルトの同期頻度</string>
   <string name="title_preference_history_size">履歴サイズ</string>
   <string name="title_preference_history_time">履歴時間</string>

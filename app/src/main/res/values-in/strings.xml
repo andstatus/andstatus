@@ -476,7 +476,6 @@
   <string name="title_preference_contact_developer">Hubungi Pengembang</string>
   <string name="title_preference_download_attachments_over_wifi_only">Download lampiran hanya melalui Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Aktifkan cadangan Android otomatis</string>
-  <string name="title_preference_enter_sends_message">Tombol ENTER mengirim pesan</string>
   <string name="title_preference_frequency">Frekuensi sinkronisasi default</string>
   <string name="title_preference_history_size">Ukuran sejarah</string>
   <string name="title_preference_history_time">Waktu Sejarah</string>

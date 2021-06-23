@@ -95,18 +95,38 @@
                     android:inputType="textShortMessage|textAutoCorrect|textAutoComplete"
                     android:hint="@string/summaryCw"/>
 
-                <org.andstatus.app.note.NoteEditorBodyView
-                    android:id="@+id/noteBodyEditText"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:completionThreshold="2"
-                    android:dropDownHeight="140dp"
-                    android:dropDownWidth="wrap_content"
-                    android:hint="@string/message_edit_hint"
-                    android:imeOptions="actionSend|flagNoEnterAction"
-                    android:inputType="textShortMessage|textAutoCorrect|textAutoComplete|textCapSentences|textMultiLine|textImeMultiLine"
-                    android:maxLength="5000"
-                    android:maxLines="8"/>
+                    android:orientation="horizontal">
+
+                    <org.andstatus.app.note.NoteEditorBodyView
+                        android:id="@+id/noteBodyEditText"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:completionThreshold="2"
+                        android:dropDownHeight="140dp"
+                        android:dropDownWidth="wrap_content"
+                        android:hint="@string/message_edit_hint"
+                        android:imeOptions="actionSend|flagNoEnterAction"
+                        android:inputType="textShortMessage|textAutoCorrect|textAutoComplete|textCapSentences|textMultiLine|textImeMultiLine"
+                        android:maxLength="5000"
+                        android:maxLines="8"/>
+
+                    <ImageView
+                        android:id="@+id/sendInEditorButton"
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:layout_gravity="bottom"
+                        android:src="?attr/sendInEditorIcon"
+                        android:layout_marginBottom="5dp"
+                        android:padding="5dp"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        />
+
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 

@@ -374,7 +374,6 @@
   <string name="title_preference_debugging">Loggning och felsökning</string>
   <string name="title_preference_download_attachments_over_wifi_only">Hämta bifogade filer endast över Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Aktivera automatisk Androidsäkerhetskopia</string>
-  <string name="title_preference_enter_sends_message">ENTER-tangenten skickar meddelandet</string>
   <string name="title_preference_history_size">Historikstorlek</string>
   <string name="title_preference_history_time">Historiktid</string>
   <string name="title_preference_is_default_account">Detta är standardkontot</string>

@@ -22,7 +22,7 @@
         android:summaryOff="@string/long_press_to_open_context_menu_off"
         android:summaryOn="@string/long_press_to_open_context_menu_on"
         android:defaultValue="false" />
-    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="enter_sends_message"
-        android:title="@string/title_preference_enter_sends_message"
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="send_in_editor_button"
+        android:title="@string/send_in_editor_button"
         android:defaultValue="false" />
 </PreferenceScreen>

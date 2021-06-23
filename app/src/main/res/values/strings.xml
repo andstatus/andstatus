@@ -406,6 +406,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="search_users">Search actors</string>
   <string name="select_backup_folder">Select backup folder</string>
   <string name="select_displayed_in_selector">Select if and when this timeline is displayed</string>
+  <string name="send_in_editor_button">Show Send button near the composed note</string>
   <string name="sensitive">Sensitive</string>
   <string name="sent">Sent</string>
   <string name="select_social_network">Select social network</string>
@@ -516,7 +517,6 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="title_preference_debugging">Troubleshooting</string>
   <string name="title_preference_download_attachments_over_wifi_only">Download attachments over Wi-Fi only</string>
   <string name="title_preference_enable_android_backup">Enable automatic Android backup</string>
-  <string name="title_preference_enter_sends_message">ENTER key sends a note</string>
   <string name="title_preference_frequency">Default sync frequency</string>
   <string name="title_preference_history_size">History Size</string>
   <string name="title_preference_history_time">History Time</string>

@@ -517,7 +517,6 @@
   <string name="title_preference_debugging">疑难解答</string>
   <string name="title_preference_download_attachments_over_wifi_only">仅通过 Wi-Fi 下载附件</string>
   <string name="title_preference_enable_android_backup">启用自动 Android 系统自带备份</string>
-  <string name="title_preference_enter_sends_message">回车键发送消息</string>
   <string name="title_preference_frequency">默认同步频率</string>
   <string name="title_preference_history_size">历史消息大小</string>
   <string name="title_preference_history_time">历史消息寿命</string>

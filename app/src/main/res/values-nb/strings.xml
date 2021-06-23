@@ -392,7 +392,6 @@
   <string name="title_preference_debugging">Feilsøking</string>
   <string name="title_preference_download_attachments_over_wifi_only">Laste ned vedlegg kun via Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Aktivere automatisk Android sikkerhetskopiering</string>
-  <string name="title_preference_enter_sends_message">ENTER tasten sender melding</string>
   <string name="title_preference_history_size">Historie størrelse</string>
   <string name="title_preference_history_time">Historie tid</string>
   <string name="title_preference_is_default_account">Dette er standardkontoen</string>

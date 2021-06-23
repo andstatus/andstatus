@@ -478,7 +478,6 @@
   <string name="title_preference_debugging">Logare și debugging</string>
   <string name="title_preference_download_attachments_over_wifi_only">Descarcă atașamentele numai prin Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Activează copii de rezervă automate pentru Android</string>
-  <string name="title_preference_enter_sends_message">Tasta enter trimite mesajul</string>
   <string name="title_preference_frequency">Frecvența de sincronizare de bază</string>
   <string name="title_preference_history_size">Mărimea Istoricului</string>
   <string name="title_preference_history_time">Timpii Istoricului</string>
