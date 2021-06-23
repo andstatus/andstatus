@@ -38,16 +38,16 @@ before_install:
   - source ~/.install-jdk-travis.sh
 
   # Set up Android SDK
-  - wget -q "${ANDROID_TOOLS_URL}" -O android-sdk-tools.zip; fi
-  - unzip -q android-sdk-tools.zip -d ${ANDROID_HOME}; fi
-  - rm android-sdk-tools.zip; fi
-  - mkdir ~/.android; fi # avoid harmless sdkmanager warning
-  - echo 'count=0' > ~/.android/repositories.cfg; fi # avoid harmless sdkmanager warning
-  - yes | sdkmanager --licenses >/dev/null; fi # accept all sdkmanager warnings
-  - echo y | sdkmanager --no_https "platform-tools" >/dev/null; fi
-  - echo y | sdkmanager --no_https "tools" >/dev/null; fi # A second time per Travis docs, gets latest versions
-  - echo y | sdkmanager --no_https "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null; fi # Implicit gradle dependency - gradle drives changes
-  - echo y | sdkmanager --no_https "platforms;android-${COMPILE_API}" >/dev/null; fi # We need the API of the current compileSdkVersion from gradle.properties
+  - wget -q "${ANDROID_TOOLS_URL}" -O android-sdk-tools.zip
+  - unzip -q android-sdk-tools.zip -d ${ANDROID_HOME}
+  - rm android-sdk-tools.zip
+  - mkdir ~/.android # avoid harmless sdkmanager warning
+  - echo 'count=0' > ~/.android/repositories.cfg # avoid harmless sdkmanager warning
+  - yes | sdkmanager --licenses >/dev/null # accept all sdkmanager warnings
+  - echo y | sdkmanager --no_https "platform-tools" >/dev/null
+  - echo y | sdkmanager --no_https "tools" >/dev/null # A second time per Travis docs, gets latest versions
+  - echo y | sdkmanager --no_https "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null # Implicit gradle dependency - gradle drives changes
+  - echo y | sdkmanager --no_https "platforms;android-${COMPILE_API}" >/dev/null # We need the API of the current compileSdkVersion from gradle.properties
 
 install:
   # In our setup, install only runs on matrix entries we want full emulator tests on
