@@ -426,7 +426,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             if (myAccount.isValid) {
                 MyLog.v(this) { "$method Loaded $this" }
             } else {
-                MyLog.i(this, "$method Load failed: Invalid account; $this ${MyLog.getStackTrace(Exception())}")
+                MyLog.i(this, "$method Load failed: Invalid account; $this \n${MyLog.currentStackTrace}")
             }
         }
 

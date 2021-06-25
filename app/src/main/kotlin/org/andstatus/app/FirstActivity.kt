@@ -246,8 +246,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
                         if (resultOfSettingDefaults.get().known) break
                     }
                 } catch (e: Exception) {
-                    MyLog.e(TAG, """$SET_DEFAULT_VALUES error:${e.message}
-${MyLog.getStackTrace(e)}""")
+                    MyLog.e(TAG, "$SET_DEFAULT_VALUES error:${e.message} \n${MyLog.getStackTrace(e)}")
                 }
             }
             return resultOfSettingDefaults.get().toBoolean(false)
@@ -261,8 +260,7 @@ ${MyLog.getStackTrace(e)}""")
                 MyLog.i(activity, SET_DEFAULT_VALUES + " completed")
                 return
             } catch (e: Exception) {
-                MyLog.w(activity, """$SET_DEFAULT_VALUES error:${e.message}
-${MyLog.getStackTrace(e)}""")
+                MyLog.w(activity, "$SET_DEFAULT_VALUES error:${e.message} \n${MyLog.getStackTrace(e)}")
             }
             resultOfSettingDefaults.set(TriState.FALSE)
         }

@@ -169,8 +169,9 @@ class HelpActivity : MyActivity() {
                 text.withSpace(MyContextHolder.myContextHolder.getNow().state.toString())
                 text.withSpace(MyContextHolder.myContextHolder.getNow().lastDatabaseError)
             }
-             MyContextHolder.myContextHolder.tryNow().onFailure({ e: Throwable ->
-                text.append(""" ${e.message} ${MyLog.getStackTrace(e)}""") })
+             MyContextHolder.myContextHolder.tryNow().onFailure { e: Throwable ->
+                 text.append(" ${e.message} \n${MyLog.getStackTrace(e)}")
+             }
             versionText.text = text.toString()
             versionText.setOnClickListener { v: View? ->
                 val intent = Intent(Intent.ACTION_VIEW)

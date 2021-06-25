@@ -169,7 +169,7 @@ object DbUtils {
             val detailMessage = ("Couldn't close silently an object of the class: "
                     + toClose?.javaClass?.canonicalName
                     + if (message.isNullOrEmpty()) "" else "; $message")
-            MyLog.w(TAG, MyLog.getStackTrace(IllegalArgumentException(detailMessage)))
+            MyLog.w(TAG, "$detailMessage \n${MyLog.currentStackTrace}")
         }
     }
 

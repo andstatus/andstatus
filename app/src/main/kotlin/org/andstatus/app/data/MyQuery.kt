@@ -711,9 +711,8 @@ object MyQuery {
             return identity
         }
         if (MyAsyncTask.isUiThread()) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG) { "$method; Database access in UI thread: " +
-                        "'$sql' ${MyLog.getStackTrace(IllegalAccessException())}" }
+            MyLog.v(TAG) {
+                "$method; Database access in UI thread: '$sql' \n${MyLog.currentStackTrace}"
             }
             return identity
         }

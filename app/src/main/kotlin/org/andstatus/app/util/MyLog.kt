@@ -328,6 +328,8 @@ object MyLog {
         initialized = false
     }
 
+    val currentStackTrace: String get() = getStackTrace(Exception())
+
     /**
      * from org.apache.commons.lang3.exception.ExceptionUtils
      */
@@ -574,7 +576,7 @@ object MyLog {
 
     fun databaseIsNull(message: Supplier<Any?>): String {
         if (!isVerboseEnabled()) return "Database is null"
-        val msgLog = "Database is null. ${message.get()}\n${getStackTrace(Exception())}"
+        val msgLog = "Database is null. ${message.get()} \n$currentStackTrace"
         v(TAG, msgLog)
         return msgLog
     }

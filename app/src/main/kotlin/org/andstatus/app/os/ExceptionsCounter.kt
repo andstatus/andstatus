@@ -49,31 +49,31 @@ object ExceptionsCounter {
     fun logSystemInfo(throwable: Throwable?) {
         val systemInfo: String = MyContextHolder.myContextHolder.getSystemInfo(MyContextHolder.myContextHolder.getNow().context, true)
         ACRA.errorReporter.putCustomData("systemInfo", systemInfo)
-        ExceptionsCounter.logError(systemInfo, throwable)
+        logError(systemInfo, throwable)
     }
 
     private fun logError(msgLog: String?, tr: Throwable?) {
-        MyLog.e(ExceptionsCounter.TAG, msgLog, tr)
-        if (!ExceptionsCounter.firstError.get().isNullOrEmpty() || tr == null) {
+        MyLog.e(TAG, msgLog, tr)
+        if (!firstError.get().isNullOrEmpty() || tr == null) {
             return
         }
-        ExceptionsCounter.firstError.set(MyLog.getStackTrace(tr))
+        firstError.set(MyLog.getStackTrace(tr))
     }
 
     fun forget() {
-        DialogFactory.dismissSafely(ExceptionsCounter.diskIoDialog)
-        ExceptionsCounter.diskIoExceptionsCount.set(0)
-        ExceptionsCounter.diskIoExceptionsCountShown.set(0)
+        DialogFactory.dismissSafely(diskIoDialog)
+        diskIoExceptionsCount.set(0)
+        diskIoExceptionsCountShown.set(0)
     }
 
     @MainThread
     fun showErrorDialogIfErrorsPresent() {
-        if (ExceptionsCounter.diskIoExceptionsCountShown.get() == diskIoExceptionsCount.get()) return
-        ExceptionsCounter.diskIoExceptionsCountShown.set(diskIoExceptionsCount.get())
-        DialogFactory.dismissSafely(ExceptionsCounter.diskIoDialog)
+        if (diskIoExceptionsCountShown.get() == diskIoExceptionsCount.get()) return
+        diskIoExceptionsCountShown.set(diskIoExceptionsCount.get())
+        DialogFactory.dismissSafely(diskIoDialog)
         val text: String = StringUtil.format( MyContextHolder.myContextHolder.getNow().context, R.string.database_disk_io_error,
                 diskIoExceptionsCount.get())
-        ExceptionsCounter.diskIoDialog = DialogFactory.showOkAlertDialog(ExceptionsCounter::class.java,  MyContextHolder.myContextHolder.getNow().context,
+        diskIoDialog = DialogFactory.showOkAlertDialog(ExceptionsCounter::class.java,  MyContextHolder.myContextHolder.getNow().context,
                 R.string.app_name, text)
     }
 }

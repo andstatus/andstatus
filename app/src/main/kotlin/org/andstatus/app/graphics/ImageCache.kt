@@ -273,9 +273,7 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
 
     private fun setMaxBounds(x: Int, y: Int) {
         if (x < 1 || y < 1) {
-            MyLog.e(this, MyLog.getStackTrace(
-                    IllegalArgumentException("setMaxBounds x=$x y=$y"))
-            )
+            MyLog.e(this, IllegalArgumentException("setMaxBounds x=$x y=$y"))
         } else {
             maxBitmapWidth = x
             maxBitmapHeight = y

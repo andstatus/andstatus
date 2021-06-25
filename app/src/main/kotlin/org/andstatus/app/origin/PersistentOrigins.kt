@@ -45,7 +45,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
                 mOrigins[origin.name] = origin
             }
         } catch (e: SQLException) {
-            MyLog.e(TAG, "Failed to initialize origins ${MyLog.getStackTrace(e)}")
+            MyLog.e(TAG, "Failed to initialize origins \n${MyLog.getStackTrace(e)}")
             return false
         } finally {
             closeSilently(cursor)
