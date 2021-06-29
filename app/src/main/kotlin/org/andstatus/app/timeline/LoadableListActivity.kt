@@ -81,6 +81,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
      */
     protected var centralItemId: Long = 0
     protected var searchView: MySearchView? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         myContext = MyContextHolder.myContextHolder.getNow()
         super.onCreate(savedInstanceState)
@@ -90,7 +91,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
         if (MyLog.isDebugEnabled()) {
             MyLog.d(
                 this, "onCreate, config changed " + RelativeTime.secondsAgo(configChangeTime) + " seconds ago"
-                        + if (MyContextHolder.myContextHolder.getNow().isReady) "" else ", MyContext is not ready"
+                        + if (myContext.isReady) "" else ", MyContext is not ready"
             )
         }
         if (myContext.isReady) {

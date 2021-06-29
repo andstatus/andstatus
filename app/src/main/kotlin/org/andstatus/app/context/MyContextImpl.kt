@@ -28,8 +28,10 @@ import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.Notifier
 import org.andstatus.app.origin.PersistentOrigins
+import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandQueue
 import org.andstatus.app.service.ConnectionState
+import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.timeline.meta.PersistentTimelines
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.user.CachedUsersAndActors
@@ -144,6 +146,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
         }
         if (state == MyContextState.READY) {
             notifier.initialize()
+            MyServiceManager.sendCommand(CommandData.EMPTY)
         }
         return this
     }

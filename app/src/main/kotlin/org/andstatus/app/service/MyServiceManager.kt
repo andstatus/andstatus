@@ -166,11 +166,13 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
          */
         fun sendCommand(commandData: CommandData) {
             if (!isServiceAvailable()) {
-                // Imitate a soft service error
-                commandData.getResult().incrementNumIoExceptions()
-                commandData.getResult().setMessage("Service is not available")
-                MyServiceEventsBroadcaster.newInstance(MyContextHolder.myContextHolder.getNow(), MyServiceState.STOPPED)
+                if (commandData != CommandData.EMPTY) {
+                    // Imitate a soft service error
+                    commandData.getResult().incrementNumIoExceptions()
+                    commandData.getResult().setMessage("Service is not available")
+                    MyServiceEventsBroadcaster.newInstance(MyContextHolder.myContextHolder.getNow(), MyServiceState.STOPPED)
                         .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
+                }
                 return
             }
             sendCommandIgnoringServiceAvailability(commandData)

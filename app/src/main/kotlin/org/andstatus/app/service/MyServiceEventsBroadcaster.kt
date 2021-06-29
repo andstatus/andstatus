@@ -42,21 +42,19 @@ class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyC
     }
 
     fun broadcast() {
-        val intent = MyAction.SERVICE_STATE.getIntent()
         if (mCommandData !== CommandData.EMPTY) {
             mCommandData.getResult().setProgress(progress)
         }
-        mCommandData.toIntent(intent)
-        intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save())
-        intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save())
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this) {
-                ("state:" + mState + ", event:" + mEvent
-                        + ", " + mCommandData.toCommandSummary( MyContextHolder.myContextHolder.getNow())
-                        + if (progress.isEmpty()) "" else ", progress:$progress")
-            }
+        MyLog.v(this) {
+            ("state:" + mState + ", event:" + mEvent
+                    + ", " + mCommandData.toCommandSummary(MyContextHolder.myContextHolder.getNow())
+                    + if (progress.isEmpty()) "" else ", progress:$progress")
         }
-        mMyContext.context.sendBroadcast(intent)
+        MyAction.SERVICE_STATE.getIntent()
+            .apply(mCommandData::toIntent)
+            .putExtra(IntentExtra.SERVICE_STATE.key, mState.save())
+            .putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save())
+            .run(mMyContext.context::sendBroadcast)
     }
 
     companion object {
