@@ -156,7 +156,7 @@ class DemoData {
             MyAsyncTask<Void?, Void?, Void?>(progressListener.getLogTag(), PoolEnum.thatCannotBeShutDown()) {
         val logTag: String = progressListener.getLogTag()
 
-        override fun doInBackground2(params: Void?): Void? {
+        override fun doInBackground(params: Void?): Void? {
             MyLog.i(logTag, "$logTag: started")
             DbUtils.waitMs(logTag, 1000)
             progressListener.onProgressMessage("Generating demo data...")

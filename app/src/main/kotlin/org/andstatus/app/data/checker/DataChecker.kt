@@ -99,7 +99,7 @@ abstract class DataChecker {
             AsyncTaskLauncher.execute(
                     logger.logTag,
                     object : MyAsyncTask<Void?, Void?, Void?>(logger.logTag, PoolEnum.thatCannotBeShutDown()) {
-                        override fun doInBackground2(aVoid: Void?): Void? {
+                        override fun doInBackground(aVoid: Void?): Void? {
                             fixData(logger, includeLong, countOnly)
                             DbUtils.waitMs(TAG, 3000)
                             MyContextHolder.myContextHolder.release { "fixDataAsync" }
@@ -111,7 +111,7 @@ abstract class DataChecker {
                             logger.logFailure()
                         }
 
-                        override fun onPostExecute2(aVoid: Void?) {
+                        override fun onPostExecute(aVoid: Void?) {
                             logger.logSuccess()
                         }
                     })

@@ -35,7 +35,7 @@ class DatabaseConverterController {
         MyAsyncTask<Void?, Void?, Void?>(PoolEnum.LONG_UI) {
         var progressLogger: ProgressLogger = ProgressLogger.getEmpty(TAG)
 
-        override fun doInBackground2(aVoid: Void?): Void? {
+        override fun doInBackground(aVoid: Void?): Void? {
             syncUpgrade()
             return null
         }

@@ -343,12 +343,12 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
     private fun executeAsync1(menu: NoteContextMenu) {
         AsyncTaskLauncher.execute(TAG,
                 object : MyAsyncTask<Void?, Void?, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
-                    override fun doInBackground2(aVoid: Void?): NoteEditorData {
+                    override fun doInBackground(aVoid: Void?): NoteEditorData {
                         MyLog.v(this@NoteContextMenuItem) { "execute async started. noteId=" + menu.getNoteId() }
                         return executeAsync(menu)
                     }
 
-                    override fun onPostExecute2(editorData: NoteEditorData) {
+                    override fun onPostExecute(editorData: NoteEditorData) {
                         MyLog.v(this@NoteContextMenuItem, "execute async ended")
                         executeOnUiThread(menu, editorData)
                     }

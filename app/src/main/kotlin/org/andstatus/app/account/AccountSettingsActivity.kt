@@ -899,7 +899,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override fun doInBackground2(params: Void?): TaskResult {
+        override fun doInBackground(params: Void?): TaskResult {
             var succeeded = false
             var connectionErrorMessage = ""
             try {
@@ -927,7 +927,7 @@ class AccountSettingsActivity : MyActivity() {
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override fun onPostExecute2(result: TaskResult?) {
+        override fun onPostExecute(result: TaskResult?) {
             DialogFactory.dismissSafely(dlg)
             if (result != null && !this@AccountSettingsActivity.isFinishing) {
                 if (result.isSuccess()) {
@@ -995,7 +995,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override fun doInBackground2(params: Void?): TaskResult {
+        override fun doInBackground(params: Void?): TaskResult {
             var stepErrorMessage = ""
             var connectionErrorMessage = ""
             var authUri = Uri.EMPTY
@@ -1067,7 +1067,7 @@ class AccountSettingsActivity : MyActivity() {
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override fun onPostExecute2(result: TaskResult?) {
+        override fun onPostExecute(result: TaskResult?) {
             DialogFactory.dismissSafely(dlg)
             if (result != null && !activity.isFinishing()) {
                 if (result.isSuccess()) {
@@ -1121,7 +1121,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override fun doInBackground2(params: Uri?): TaskResult {
+        override fun doInBackground(params: Uri?): TaskResult {
             var message = ""
             var accessToken = ""
             var accessSecret = ""
@@ -1196,7 +1196,7 @@ class AccountSettingsActivity : MyActivity() {
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override fun onPostExecute2(result: TaskResult?) {
+        override fun onPostExecute(result: TaskResult?) {
             DialogFactory.dismissSafely(dlg)
             if (result != null && !this@AccountSettingsActivity.isFinishing) {
                 if (result.isSuccess()) {
@@ -1247,7 +1247,7 @@ class AccountSettingsActivity : MyActivity() {
             }
         }
 
-        override fun doInBackground2(params: Void?): TaskResult? {
+        override fun doInBackground(params: Void?): TaskResult? {
             return if (skip) TaskResult(ResultStatus.NONE) else Try.success(state.builder)
                 .flatMap { it?.getOriginConfig() }
                 .flatMap { b: MyAccount.Builder -> b.getConnection().verifyCredentials(whoAmI) }
@@ -1284,7 +1284,7 @@ class AccountSettingsActivity : MyActivity() {
         /**
          * Credentials were verified just now!
          */
-        override fun onPostExecute2(result: TaskResult?) {
+        override fun onPostExecute(result: TaskResult?) {
             DialogFactory.dismissSafely(dlg)
             if (this@AccountSettingsActivity.isFinishing) return
             val resultOut = result ?: TaskResult(ResultStatus.NONE)

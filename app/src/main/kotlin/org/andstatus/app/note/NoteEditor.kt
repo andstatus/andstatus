@@ -551,7 +551,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                         PoolEnum.QUICK_UI) {
                     @Volatile
                     var lock: NoteEditorLock = NoteEditorLock.EMPTY
-                    override fun doInBackground2(noteId: Long?): NoteEditorData? {
+                    override fun doInBackground(noteId: Long?): NoteEditorData? {
                         MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft started, noteId=$noteId" }
                         val potentialLock = NoteEditorLock(false, noteId ?: 0)
                         if (!potentialLock.acquire(true)) {
@@ -574,7 +574,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                         lock.release()
                     }
 
-                    override fun onPostExecute2(data: NoteEditorData?) {
+                    override fun onPostExecute(data: NoteEditorData?) {
                         if (lock.acquired() && data?.isValid() == true) {
                             if (editorData.isValid()) {
                                 MyLog.v(NoteEditorData.TAG, "Loaded draft is not used: Editor data is valid")

@@ -22,7 +22,7 @@ class QueueExecutor(myService: MyService, accessorType: AccessorType) :
         return super.instanceTag() + "-" + accessorType
     }
 
-    override fun doInBackground2(aVoid: Void?): Boolean {
+    override fun doInBackground(aVoid: Void?): Boolean {
         val myService = myServiceRef?.get()
         if (myService == null) {
             MyLog.v(this) { "Didn't start, no reference to MyService" }

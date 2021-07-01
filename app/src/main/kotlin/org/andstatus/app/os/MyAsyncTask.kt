@@ -83,7 +83,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
         /** Indicates that the task is running. */
         RUNNING,
 
-        /** Indicates that [onPostExecute] has finished. */
+        /** Indicates that [onFinish] has finished. */
         FINISHED
     }
 
@@ -159,24 +159,21 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
             onPreExecute()
             job = CoroutineScope(coroutineContext).launch {
                 try {
-                    val result: Result? = doInBackground(*params)
+                    val result: Result? = doInBackground1(*params)
                     withContext(Dispatchers.Main) {
                         if (result != null) {
-                            onPostExecute(result)
+                            onPostExecute1(result)
                         }
-                        onFinish(result, result != null)
-                        status = Status.FINISHED
+                        onFinish1(result, result != null)
                     }
                 } catch (e: Exception) {
                     logError("Exception during execution", e)
-                    onFinish(null, false)
-                    status = Status.FINISHED
+                    onFinish1(null, false)
                 }
             }
         } catch (e: Exception) {
             logError("Exception during execution", e)
-            onFinish(null, false)
-            status = Status.FINISHED
+            onFinish1(null, false)
         }
         return this
     }
@@ -193,16 +190,12 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     protected open fun onPreExecute() {
     }
 
-    open fun onCancelled() {
-        ExceptionsCounter.showErrorDialogIfErrorsPresent()
-    }
-
-    fun doInBackground(vararg params: Params): Result? {
+    private fun doInBackground1(vararg params: Params): Result? {
         backgroundStartedAt = System.currentTimeMillis()
         currentlyExecutingSince = backgroundStartedAt
         try {
             if (!isCancelled) {
-                return doInBackground2(if (params.isNotEmpty()) params[0] else null)
+                return doInBackground(if (params.isNotEmpty()) params[0] else null)
             }
         } catch (e: SQLiteDiskIOException) {
             ExceptionsCounter.onDiskIoException(e)
@@ -217,25 +210,63 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
         return null
     }
 
-    protected abstract fun doInBackground2(params: Params?): Result?
+    protected abstract fun doInBackground(params: Params?): Result?
 
-    fun onPostExecute(result: Result) {
+    /**
+     * <p>Attempts to cancel execution of this task.  This attempt will
+     * fail if the task has already completed, already been cancelled,
+     * or could not be cancelled for some other reason. If successful,
+     * and this task has not started when <tt>cancel</tt> is called,
+     * this task should never run.</p>
+     *
+     * <p>Calling this method will result in [onCancelled] being
+     * invoked on the UI thread after [doInBackground] returns.
+     * Calling this method guarantees that onPostExecute(Object) is never
+     * subsequently invoked, even if <tt>cancel</tt> returns false, but
+     * [onPostExecute] has not yet run.  To finish the
+     * task as early as possible, check [isCancelled] periodically from
+     * [doInBackground].</p>
+     *
+     * <p>This only requests cancellation. It never waits for a running
+     * background task to terminate, even if <tt>mayInterruptIfRunning</tt> is
+     * true.</p>
+     *
+     * @see isCancelled
+     * @see onCancelled
+     */
+    fun cancel() {
+        if (mCancelled.compareAndSet(false, true)) {
+            cancelledAt = System.currentTimeMillis()
+            job?.cancel()
+            CoroutineScope(Dispatchers.Main).launch {
+                job?.join()
+                backgroundEndedAt = System.currentTimeMillis()
+                ExceptionsCounter.showErrorDialogIfErrorsPresent()
+                onCancelled()
+            }
+            onFinish1(null, false)
+        }
+    }
+
+    @MainThread
+    protected open fun onCancelled() {}
+
+    private fun onPostExecute1(result: Result) {
         backgroundEndedAt = System.currentTimeMillis()
         ExceptionsCounter.showErrorDialogIfErrorsPresent()
-        onPostExecute2(result)
+        onPostExecute(result)
     }
 
-    protected open fun onPostExecute2(result: Result) {}
+    @MainThread
+    protected open fun onPostExecute(result: Result) {}
 
-    fun onCancelled(result: Result) {
-        backgroundEndedAt = System.currentTimeMillis()
-        onCancelled2(result)
-        onFinish(result, false)
+    private fun onFinish1(result: Result?, success: Boolean) {
+        onFinish(result, success)
+        status = Status.FINISHED
     }
-
-    protected open fun onCancelled2(result: Result) {}
 
     /** Is called in both cases: Cancelled or not, before changing status to FINISH   */
+    @MainThread
     protected open fun onFinish(result: Result?, success: Boolean) {}
 
     override fun equals(other: Any?): Boolean {
@@ -322,41 +353,6 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     }
 
     /**
-     * <p>Attempts to cancel execution of this task.  This attempt will
-     * fail if the task has already completed, already been cancelled,
-     * or could not be cancelled for some other reason. If successful,
-     * and this task has not started when <tt>cancel</tt> is called,
-     * this task should never run. If the task has already started,
-     * then the <tt>mayInterruptIfRunning</tt> parameter determines
-     * whether the thread executing this task should be interrupted in
-     * an attempt to stop the task.</p>
-     *
-     * <p>Calling this method will result in [onCancelled] being
-     * invoked on the UI thread after [doInBackground] returns.
-     * Calling this method guarantees that onPostExecute(Object) is never
-     * subsequently invoked, even if <tt>cancel</tt> returns false, but
-     * [onPostExecute] has not yet run.  To finish the
-     * task as early as possible, check [isCancelled] periodically from
-     * [doInBackground].</p>
-     *
-     * <p>This only requests cancellation. It never waits for a running
-     * background task to terminate, even if <tt>mayInterruptIfRunning</tt> is
-     * true.</p>
-     *
-     * @see isCancelled
-     * @see onCancelled
-     */
-    fun cancel() {
-        if (cancelledAt == 0L) {
-            cancelledAt = System.currentTimeMillis()
-        }
-        mCancelled.set(true)
-        job?.cancel()
-        onCancelled()
-        status = Status.FINISHED
-    }
-
-    /**
      * This method can be invoked from [doInBackground] to
      * publish updates on the UI thread while the background computation is
      * still running. Each call to this method will trigger the execution of
@@ -424,7 +420,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 MyAsyncTask<Params, Progress, Try<Result>> {
             return object : MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.LONG_UI) {
 
-                override fun doInBackground2(params: Params?): Try<Result> {
+                override fun doInBackground(params: Params?): Try<Result> {
                     return backgroundFunc(params)
                 }
 

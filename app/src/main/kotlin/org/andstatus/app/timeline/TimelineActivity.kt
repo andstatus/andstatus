@@ -1105,12 +1105,12 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
             AsyncTaskLauncher.execute(timelineActivity,
                     object : MyAsyncTask<Void?, Void?, Void?>("clearNotifications" + timeline.getId(),
                             PoolEnum.QUICK_UI) {
-                        override fun doInBackground2(aVoid: Void?): Void? {
+                        override fun doInBackground(aVoid: Void?): Void? {
                             timelineActivity.myContext.clearNotifications(timeline)
                             return null
                         }
 
-                        override fun onPostExecute2(v: Void?) {
+                        override fun onPostExecute(v: Void?) {
                             timelineActivity.refreshFromCache()
                         }
                     }

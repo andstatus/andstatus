@@ -19,7 +19,7 @@ class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, 
 
     @Volatile
     private var mIteration: Long = 0
-    override fun doInBackground2(aVoid: Void?): Void? {
+    override fun doInBackground(aVoid: Void?): Void? {
         MyLog.v(this) { "Started" }
         var breakReason = ""
         for (iteration in 1..9999) {

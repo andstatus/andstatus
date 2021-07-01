@@ -86,7 +86,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
                 true,
                 false)
 
-        override fun doInBackground2(params: Void?): TaskResult {
+        override fun doInBackground(params: Void?): TaskResult {
             val result = TaskResult()
             MyContextHolder.myContextHolder.getBlocking()
             MyServiceManager.setServiceUnavailable()
@@ -328,7 +328,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             parentFragment.showUseExternalStorage()
         }
 
-        override fun onCancelled2(result: TaskResult?) {
+        override fun onCancelled() {
             DialogFactory.dismissSafely(dlg)
         }
     }
