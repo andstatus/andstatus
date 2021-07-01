@@ -1,8 +1,8 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    val androidGradlePluginVersion = "4.2.1"      // https://maven.google.com/web/index.html#com.android.tools.build:gradle
+    val androidGradlePluginVersion = "4.2.2"      // https://maven.google.com/web/index.html#com.android.tools.build:gradle
                                                   // https://developer.android.com/studio/releases/gradle-plugin
-    val kotlinVersion = "1.5.10"                  // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
+    val kotlinVersion = "1.5.20"                  // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
     extra["kotlinVersion"] = kotlinVersion
     val kotlinGradlePluginVersion = kotlinVersion // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-gradle-plugin
 
@@ -20,7 +20,7 @@ buildscript {
     extra["targetSdkVersion"] = 29
 
     // Lookup the latest here: https://mvnrepository.com/
-    extra["acraVersion"] = "5.8.1"                // https://github.com/ACRA/acra/wiki/AdvancedUsage
+    extra["acraVersion"] = "5.8.3"                // https://github.com/ACRA/acra/wiki/AdvancedUsage
     extra["annotationVersion"] = "1.2.0"          // https://mvnrepository.com/artifact/androidx.annotation/annotation
     extra["appCompatVersion"] = "1.2.0"           // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
     extra["commonsCodecVersion"] = "1.15"         // https://mvnrepository.com/artifact/commons-codec/commons-codec
