@@ -63,7 +63,6 @@ import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
 class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
     private val storageSwitch: StorageSwitch = StorageSwitch(this)
@@ -319,19 +318,19 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
 
     private fun showMaximumSizeOfCachedMedia() {
         showMaximumSizeOfCachedMedia(Optional.empty())
-        val backgroundFunc: (MySettingsFragment?) -> Try<Optional<Long>> = { fragment: MySettingsFragment? ->
+        val backgroundFunc: (MySettingsFragment?) -> Try<Optional<Long>> = {
             Try.success(Optional.of(MyStorage.getMediaFilesSize()))
         }
-        val uiConsumer: (MySettingsFragment?) -> Consumer<Try<Optional<Long>>> = { fragment: MySettingsFragment? ->
-            Consumer<Try<Optional<Long>>>{ size: Try<Optional<Long>> ->
+        val uiConsumer = { fragment: MySettingsFragment? ->
+            { size: Try<Optional<Long>> ->
                 size.onSuccess { optSize ->
                     fragment?.showMaximumSizeOfCachedMedia(optSize)
                 }
-
+                Unit
             }
         }
 
-        AsyncTaskLauncher.execute<MySettingsFragment, Optional<Long>>(this, backgroundFunc, uiConsumer)
+        AsyncTaskLauncher.execute(this, backgroundFunc, uiConsumer)
     }
 
     private fun showMaximumSizeOfCachedMedia(size: Optional<Long>) {

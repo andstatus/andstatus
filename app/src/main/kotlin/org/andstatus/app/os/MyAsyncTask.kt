@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2016-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.andstatus.app.os
 
 import android.database.sqlite.SQLiteDatabaseLockedException
 import android.database.sqlite.SQLiteDiskIOException
-import android.os.AsyncTask
 import android.os.Looper
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
@@ -32,21 +31,20 @@ import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.function.Consumer
-import java.util.function.Function
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
 
 /**
  * @author yvolk@yurivolkov.com
  */
-abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnum) : IdentifiableInstance {
-    private var maxCommandExecutionSeconds = MAX_COMMAND_EXECUTION_SECONDS
-    private val taskId: String?
+abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolEnum) : IdentifiableInstance {
+    constructor(pool: PoolEnum) : this(MyAsyncTask::class.java, pool)
+
+    var maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds
+    private val taskId: String = MyStringBuilder.objToTag(taskId)
     protected val createdAt = MyLog.uniqueCurrentTimeMS()
     override val instanceId = InstanceId.next()
-    private var singleInstance = true
 
     @Volatile
     var backgroundStartedAt: Long = 0
@@ -54,26 +52,25 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
     @Volatile
     var backgroundEndedAt: Long = 0
 
-    /** This allows to control execution time of single steps/commands by this AsyncTask  */
+    /** This allows to control execution time of single steps/commands by this task  */
     @Volatile
     protected var currentlyExecutingSince: Long = 0
 
     /** Description of execution or lack of it  */
     @Volatile
-    protected var currentlyExecutingDescription: String? = "(didn't start)"
-    var cancelable = true
+    protected var currentlyExecutingDescription: String = "(didn't start)"
 
+    open val cancelable = true
     @Volatile
     private var cancelledAt: Long = 0
 
     @Volatile
-    private var firstError: String? = ""
+    var firstError: String = ""
+        private set
 
+    val hasExecutor = AtomicBoolean(true)
     @Volatile
-    var hasExecutor = true
-
-    @Volatile
-    private var sDefaultExecutor: CoroutineContext = Dispatchers.Default
+    private var job: Job? = null
 
     /**
      * Indicates the current status of the task. Each status will be set only once
@@ -86,19 +83,15 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
         /** Indicates that the task is running. */
         RUNNING,
 
-        /** Indicates that [AsyncTask.onPostExecute] has finished. */
+        /** Indicates that [onPostExecute] has finished. */
         FINISHED
     }
 
-    @Volatile
-    private var mStatus = Status.PENDING
+    private val mStatus = AtomicReference(Status.PENDING)
+    var status: Status get() = mStatus.get()
+        private set(value) = mStatus.set(value)
+
     private val mCancelled = AtomicBoolean()
-    private val mTaskInvoked = AtomicBoolean()
-
-    @Volatile
-    private var job: Job? = null
-
-    val status: Status get() = mStatus
     val isCancelled: Boolean get() = mCancelled.get()
 
     enum class PoolEnum(val corePoolSize: Int, val maxCommandExecutionSeconds: Long, val mayBeShutDown: Boolean) {
@@ -118,73 +111,9 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
         }
     }
 
-    val pool: PoolEnum
-
-    fun isSingleInstance(): Boolean {
-        return singleInstance
-    }
-
-    fun setSingleInstance(singleInstance: Boolean) {
-        this.singleInstance = singleInstance
-    }
-
-    fun setMaxCommandExecutionSeconds(seconds: Long): MyAsyncTask<*, *, *> {
-        maxCommandExecutionSeconds = seconds
-        return this
-    }
-
-    fun setCancelable(cancelable: Boolean): MyAsyncTask<*, *, *> {
-        this.cancelable = cancelable
-        return this
-    }
-
-    constructor(pool: PoolEnum) : this(MyAsyncTask::class.java, pool) {}
-
     /**
      * Executes the task with the specified parameters. The task returns
      * itself (this) so that the caller can keep a reference to it.
-     *
-     *
-     * Note: this function schedules the task on a queue for a single background
-     * thread or pool of threads depending on the platform version.  When first
-     * introduced, AsyncTasks were executed serially on a single background thread.
-     * Starting with [android.os.Build.VERSION_CODES.DONUT], this was changed
-     * to a pool of threads allowing multiple tasks to operate in parallel. Starting
-     * [android.os.Build.VERSION_CODES.HONEYCOMB], tasks are back to being
-     * executed on a single thread to avoid common application errors caused
-     * by parallel execution.  If you truly want parallel execution, you can use
-     * the [.executeOnExecutor] version of this method
-     * with [.THREAD_POOL_EXECUTOR]; however, see commentary there for warnings
-     * on its use.
-     *
-     *
-     * This method must be invoked on the UI thread.
-     *
-     * @param params The parameters of the task.
-     *
-     * @return This instance of AsyncTask.
-     *
-     * @throws IllegalStateException If [.getStatus] returns either
-     * [Status.RUNNING] or [Status.FINISHED].
-     *
-     * @see executeOnExecutor
-     * @see execute
-     */
-    @MainThread
-    fun execute(vararg params: Params): MyAsyncTask<Params, Progress, Result> {
-        return executeOnExecutor(Dispatchers.Main, *params)
-    }
-
-    /**
-     * Executes the task with the specified parameters. The task returns
-     * itself (this) so that the caller can keep a reference to it.
-     *
-     *
-     * This method is typically used with [.THREAD_POOL_EXECUTOR] to
-     * allow multiple tasks to run in parallel on a pool of threads managed by
-     * AsyncTask, however you can also use your own [Executor] for custom
-     * behavior.
-     *
      *
      * *Warning:* Allowing multiple tasks to run in parallel from
      * a thread pool is generally *not* what one wants, because the order
@@ -197,26 +126,22 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
      * executed in serial; to guarantee such work is serialized regardless of
      * platform version you can use this function with [.SERIAL_EXECUTOR].
      *
-     *
      * This method must be invoked on the UI thread.
      *
-     * @param exec The executor to use.  [.THREAD_POOL_EXECUTOR] is available as a
-     * convenient process-wide thread pool for tasks that are loosely coupled.
+     * @param coroutineContext The CoroutineContext to use.
      * @param params The parameters of the task.
      *
-     * @return This instance of AsyncTask.
+     * @return This instance
      *
      * @throws IllegalStateException If [.getStatus] returns either
      * [Status.RUNNING] or [Status.FINISHED].
-     *
-     * @see execute
      */
     @MainThread
-    fun executeOnExecutor(
-        exec: CoroutineContext,
+    fun executeInContext(
+        coroutineContext: CoroutineContext,
         vararg params: Params
     ): MyAsyncTask<Params, Progress, Result> {
-        when (mStatus) {
+        when (status) {
             Status.RUNNING -> throw java.lang.IllegalStateException(
                 "Cannot execute task:"
                         + " the task is already running."
@@ -230,9 +155,9 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
             }
         }
         try {
-            mStatus = Status.RUNNING
+            status = Status.RUNNING
             onPreExecute()
-            job = CoroutineScope(exec).launch {
+            job = CoroutineScope(coroutineContext).launch {
                 try {
                     val result: Result? = doInBackground(*params)
                     withContext(Dispatchers.Main) {
@@ -240,23 +165,25 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
                             onPostExecute(result)
                         }
                         onFinish(result, result != null)
-                        mStatus = Status.FINISHED
+                        status = Status.FINISHED
                     }
                 } catch (e: Exception) {
+                    logError("Exception during execution", e)
                     onFinish(null, false)
-                    mStatus = Status.FINISHED
+                    status = Status.FINISHED
                 }
             }
         } catch (e: Exception) {
+            logError("Exception during execution", e)
             onFinish(null, false)
-            mStatus = Status.FINISHED
+            status = Status.FINISHED
         }
         return this
     }
 
     /**
-     * Runs on the UI thread before [.doInBackground].
-     * Invoked directly by [.execute] or [.executeOnExecutor].
+     * Runs on the UI thread before [doInBackground].
+     * Invoked directly by [executeInContext].
      * The default version does nothing.
      *
      * @see onPostExecute
@@ -275,7 +202,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
         currentlyExecutingSince = backgroundStartedAt
         try {
             if (!isCancelled) {
-                return doInBackground2(if (params.size > 0) params[0] else null)
+                return doInBackground2(if (params.isNotEmpty()) params[0] else null)
             }
         } catch (e: SQLiteDiskIOException) {
             ExceptionsCounter.onDiskIoException(e)
@@ -340,23 +267,28 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
     private fun stateSummary(): String {
         var summary = when (status) {
             Status.PENDING -> "PENDING " + RelativeTime.secondsAgo(createdAt) + " sec ago"
-            Status.FINISHED -> if (backgroundEndedAt == 0L) {
-                "FINISHED, but didn't complete"
-            } else {
-                "FINISHED " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago"
-            }
-            else -> if (backgroundStartedAt == 0L) {
-                "QUEUED " + RelativeTime.secondsAgo(createdAt) + " sec ago"
-            } else if (backgroundEndedAt == 0L) {
-                "RUNNING for " + RelativeTime.secondsAgo(backgroundStartedAt) + " sec"
-            } else {
-                "FINISHING " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago"
+            Status.FINISHED ->
+                if (backgroundEndedAt == 0L) {
+                    "FINISHED, but didn't complete"
+                } else {
+                    "FINISHED " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago"
+                }
+            else -> when {
+                backgroundStartedAt == 0L -> {
+                    "QUEUED " + RelativeTime.secondsAgo(createdAt) + " sec ago"
+                }
+                backgroundEndedAt == 0L -> {
+                    "RUNNING for " + RelativeTime.secondsAgo(backgroundStartedAt) + " sec"
+                }
+                else -> {
+                    "FINISHING " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago"
+                }
             }
         }
         if (isCancelled) {
             summary += ", cancelled " + RelativeTime.secondsAgo(cancelledAt) + " sec ago"
         }
-        if (!hasExecutor) summary += ", no executor"
+        if (!hasExecutor.get()) summary += ", no executor"
         return summary
     }
 
@@ -399,13 +331,13 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
      * whether the thread executing this task should be interrupted in
      * an attempt to stop the task.</p>
      *
-     * <p>Calling this method will result in {@link #onCancelled(Object)} being
-     * invoked on the UI thread after {@link #doInBackground(Object[])} returns.
+     * <p>Calling this method will result in [onCancelled] being
+     * invoked on the UI thread after [doInBackground] returns.
      * Calling this method guarantees that onPostExecute(Object) is never
      * subsequently invoked, even if <tt>cancel</tt> returns false, but
-     * {@link #onPostExecute} has not yet run.  To finish the
-     * task as early as possible, check {@link #isCancelled()} periodically from
-     * {@link #doInBackground(Object[])}.</p>
+     * [onPostExecute] has not yet run.  To finish the
+     * task as early as possible, check [isCancelled] periodically from
+     * [doInBackground].</p>
      *
      * <p>This only requests cancellation. It never waits for a running
      * background task to terminate, even if <tt>mayInterruptIfRunning</tt> is
@@ -421,16 +353,16 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
         mCancelled.set(true)
         job?.cancel()
         onCancelled()
-        mStatus = Status.FINISHED
+        status = Status.FINISHED
     }
 
     /**
-     * This method can be invoked from [.doInBackground] to
+     * This method can be invoked from [doInBackground] to
      * publish updates on the UI thread while the background computation is
      * still running. Each call to this method will trigger the execution of
-     * [.onProgressUpdate] on the UI thread.
+     * [onProgressUpdate] on the UI thread.
      *
-     * [.onProgressUpdate] will not be called if the task has been
+     * [onProgressUpdate] will not be called if the task has been
      * canceled.
      *
      * @param values The progress values to update the UI with.
@@ -448,7 +380,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
     }
 
     /**
-     * Runs on the UI thread after [.publishProgress] is invoked.
+     * Runs on the UI thread after [publishProgress] is invoked.
      * The specified values are the values passed to [.publishProgress].
      * The default version does nothing.
      *
@@ -461,21 +393,17 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
     protected open fun onProgressUpdate(vararg values: Progress) {
     }
 
-    fun getFirstError(): String? {
-        return firstError
-    }
-
-    private fun logError(msgLog: String?, tr: Throwable?) {
+    private fun logError(msgLog: String, tr: Throwable?) {
         MyLog.w(this, msgLog, tr)
-        if (!firstError.isNullOrEmpty() || tr == null) {
+        if (firstError.isNotEmpty() || tr == null) {
             return
         }
-        firstError = MyLog.getStackTrace(tr)
+        firstError = msgLog + "\n" + MyLog.getStackTrace(tr)
     }
 
     companion object {
         private const val MAX_WAITING_BEFORE_EXECUTION_SECONDS: Long = 600
-        const val MAX_COMMAND_EXECUTION_SECONDS: Long = 600
+        private const val MAX_COMMAND_EXECUTION_SECONDS: Long = 600
         private const val MAX_EXECUTION_AFTER_CANCEL_SECONDS: Long = 600
         private const val DELAY_AFTER_EXECUTOR_ENDED_SECONDS: Long = 1
 
@@ -490,30 +418,26 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
 
         fun <Params, Progress, Result> fromFunc(
             params: Params,
-            backgroundFunc: Function<Params?, Try<Result>>,
-            uiConsumer: Function<Params, Consumer<Try<Result>>>
+            backgroundFunc: (Params?) -> Try<Result>,
+            uiConsumer: (Params?) -> (Try<Result>) -> Unit
         ):
                 MyAsyncTask<Params, Progress, Try<Result>> {
             return object : MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.LONG_UI) {
 
                 override fun doInBackground2(params: Params?): Try<Result> {
-                    return backgroundFunc.apply(params)
+                    return backgroundFunc(params)
                 }
 
-                override fun onFinish(results: Try<Result>?, success: Boolean) {
-                    val results2 = if (results == null) Try.failure(Exception("No results of the Async task"))
-                    else if (success) results
-                    else if (results.isFailure) results
-                    else Try.failure(Exception("Failed to execute Async task"))
-                    uiConsumer?.apply(params)?.accept(results2)
+                override fun onFinish(result: Try<Result>?, success: Boolean) {
+                    val result2 = when {
+                        result == null -> Try.failure(Exception("No results of the Async task"))
+                        success -> result
+                        result.isFailure -> result
+                        else -> Try.failure(Exception("Failed to execute Async task"))
+                    }
+                    uiConsumer(params)(result2)
                 }
             }
         }
-    }
-
-    init {
-        this.taskId = MyStringBuilder.objToTag(taskId)
-        this.pool = pool
-        maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds
     }
 }

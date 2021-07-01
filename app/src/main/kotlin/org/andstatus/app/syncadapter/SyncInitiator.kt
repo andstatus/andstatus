@@ -21,12 +21,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.AsyncTask
 import android.os.PowerManager
 import android.os.SystemClock
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.service.ConnectionRequired
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
@@ -54,7 +54,7 @@ class SyncInitiator : BroadcastReceiver() {
     private fun initializeApp(context: Context) {
          MyContextHolder.myContextHolder
                 .initialize(context, this)
-                .whenSuccessAsync({ myContext: MyContext -> checkConnectionState(myContext) }, AsyncTask.THREAD_POOL_EXECUTOR)
+                .whenSuccessAsync({ myContext: MyContext -> checkConnectionState(myContext) }, NonUiThreadExecutor.INSTANCE)
     }
 
     private fun checkConnectionState(myContext: MyContext) {

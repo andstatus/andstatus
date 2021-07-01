@@ -35,7 +35,6 @@ import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
 import java.util.function.Consumer
-import java.util.function.Function
 
 abstract class MediaFile internal constructor(filename: String,
                                               @Volatile var contentType: MyContentType,
@@ -171,10 +170,8 @@ abstract class MediaFile internal constructor(filename: String,
         logResult("Show default", taskSuffix)
         uiConsumer.accept(null)
         AsyncTaskLauncher.execute(DrawableLoader(this, cacheName),
-            Function<DrawableLoader?, Try<Drawable>> {
-                loader: DrawableLoader? -> loader?.load()?.map(mapper) ?: TryUtils.notFound() },
-            Function {
-                loader: DrawableLoader? -> Consumer { drawableTry: Try<Drawable> -> drawableTry.onSuccess(uiConsumer) } })
+            { loader: DrawableLoader? -> loader?.load()?.map(mapper) ?: TryUtils.notFound() },
+            { { drawableTry: Try<Drawable?> -> drawableTry.onSuccess(uiConsumer) } })
     }
 
     fun logResult(msgLog: String?, taskSuffix: String) {

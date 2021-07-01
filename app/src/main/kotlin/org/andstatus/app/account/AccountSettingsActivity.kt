@@ -21,7 +21,6 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextUtils
@@ -65,6 +64,7 @@ import org.andstatus.app.origin.PersistentOriginList
 import org.andstatus.app.origin.SIMPLE_USERNAME_EXAMPLES
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.service.MyServiceState
@@ -819,7 +819,7 @@ class AccountSettingsActivity : MyActivity() {
                         FirstActivity.goHome(this@AccountSettingsActivity)
                     }
                 }
-            }, AsyncTask.THREAD_POOL_EXECUTOR)
+            }, NonUiThreadExecutor.INSTANCE)
     }
 
     /**
@@ -1223,6 +1223,8 @@ class AccountSettingsActivity : MyActivity() {
      */
     private inner class VerifyCredentialsTask(private val whoAmI: Optional<Uri>) :
         MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
+
+        override val cancelable = false // This is needed because there is initialize in the background
         private var dlg: ProgressDialog? = null
 
         @Volatile
@@ -1320,10 +1322,6 @@ class AccountSettingsActivity : MyActivity() {
             }
             updateScreen()
             appendError(errorMessage)
-        }
-
-        init {
-            setCancelable(false) // This is needed because there is initialize in the background!
         }
     }
 

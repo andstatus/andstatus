@@ -24,7 +24,6 @@ import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.util.DialogFactory
-import java.util.function.Consumer
 
 /** Send any GET requests using current account  */
 class ApiDebugger(private val myContext: MyContext, private val activityContext: Context) {
@@ -36,7 +35,7 @@ class ApiDebugger(private val myContext: MyContext, private val activityContext:
 
     private fun debugGet(text: String) {
         AsyncTaskLauncher.execute<Any?, HttpReadResult>(null, { debugApiAsync(text) },
-                { Consumer { results: Try<HttpReadResult> -> debugApiSync(results) } })
+            { { results: Try<HttpReadResult> -> debugApiSync(results) } })
     }
 
     private fun debugApiAsync(text: String): Try<HttpReadResult> {

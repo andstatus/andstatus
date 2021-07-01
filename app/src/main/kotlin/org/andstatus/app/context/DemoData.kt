@@ -145,8 +145,8 @@ class DemoData {
         }
         Assert.assertEquals("Demo data creation failed, count=" + count + ", status=" + asyncTask.status
                 + ", " + asyncTask.toString(), true, asyncTask.completedBackgroundWork())
-        Assert.assertTrue("Error during Demo data creation: " + asyncTask.getFirstError(),
-                asyncTask.getFirstError().isNullOrEmpty())
+        Assert.assertTrue("Error during Demo data creation: " + asyncTask.firstError,
+                asyncTask.firstError.isEmpty())
         MyLog.v(TAG, "$method: ended")
     }
 

@@ -49,11 +49,11 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     private fun doRestore(v: View?) {
         if (asyncTask?.completedBackgroundWork() ?: true) {
             resetProgress()
-            asyncTask = (RestoreTask(this@RestoreActivity)
-                .setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS.toLong())
-                .setCancelable(false) as RestoreTask).also {
-                AsyncTaskLauncher<DocumentFile?>().execute(this, it, getDataFolder())
-            }
+            asyncTask = RestoreTask(this@RestoreActivity)
+                .also {
+                    it.maxCommandExecutionSeconds = MAX_RESTORE_SECONDS.toLong()
+                    AsyncTaskLauncher<DocumentFile?>().execute(this, it, getDataFolder())
+                }
         }
     }
 
@@ -117,6 +117,8 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
 
     private class RestoreTask(private val activity: RestoreActivity) :
         MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.thatCannotBeShutDown()) {
+
+        override val cancelable = false
 
         override fun doInBackground2(dataFolder: DocumentFile?): Void? {
             dataFolder?.let {

@@ -32,7 +32,6 @@ import org.andstatus.app.timeline.LoadableListActivity
 import org.andstatus.app.timeline.WhichPage
 import org.andstatus.app.util.MyLog
 import java.util.*
-import java.util.function.Consumer
 
 class QueueViewer : LoadableListActivity<QueueData>() {
 
@@ -70,7 +69,7 @@ class QueueViewer : LoadableListActivity<QueueData>() {
         when (item.getItemId()) {
             R.id.clear_the_queue -> AsyncTaskLauncher.execute<QueueViewer?, Void>(this,
                     { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues.clear() },
-                    { activity: QueueViewer? -> Consumer { r: Try<Void> -> activity?.showList(WhichPage.CURRENT) } })
+                    { activity: QueueViewer? -> { activity?.showList(WhichPage.CURRENT) } })
             else -> return super.onOptionsItemSelected(item)
         }
         return false
@@ -102,7 +101,7 @@ class QueueViewer : LoadableListActivity<QueueData>() {
                         { activity: QueueViewer? ->
                             MyContextHolder.myContextHolder.getBlocking().queues.deleteCommand(data.commandData)
                         },
-                        { activity: QueueViewer? -> Consumer { r: Try<Void> -> activity?.showList(WhichPage.CURRENT) } })
+                        { activity: QueueViewer? -> { activity?.showList(WhichPage.CURRENT) } })
                 true
             }
             else -> super.onContextItemSelected(item)

@@ -17,6 +17,7 @@ package org.andstatus.app.note
 
 import android.view.View
 import org.andstatus.app.data.NoteContextMenuData
+import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.util.MyLog
 
@@ -64,11 +65,11 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
                       next: (NoteContextMenu) -> Unit) {
             val menuContainer = noteContextMenu.menuContainer
             val future = FutureNoteContextMenuData(viewItem)
-            if (menuContainer != null && view != null && future.noteId != 0L) {
+            if (view != null && future.noteId != 0L) {
                 future.loader = object : MyAsyncTask<Void?, Void?, NoteContextMenuData>(
                         TAG + future.noteId, PoolEnum.QUICK_UI) {
 
-                    override fun doInBackground2(aVoid: Void?): NoteContextMenuData? {
+                    override fun doInBackground2(params: Void?): NoteContextMenuData {
                         val selectedMyAccount = noteContextMenu.getSelectedActingAccount()
                         val currentMyAccount = menuContainer.getActivity().myContext.accounts.currentAccount
                         val accountToNote: NoteContextMenuData = NoteContextMenuData.getAccountToActOnNote(
@@ -95,8 +96,8 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
             }
             noteContextMenu.setFutureData(future)
             future.loader?.let { loader ->
-                loader.setMaxCommandExecutionSeconds(MAX_SECONDS_TO_LOAD.toLong())
-                loader.execute()
+                loader.maxCommandExecutionSeconds = MAX_SECONDS_TO_LOAD.toLong()
+                AsyncTaskLauncher.execute(this, loader)
             }
         }
     }

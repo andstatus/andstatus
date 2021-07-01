@@ -23,7 +23,6 @@ import kotlinx.coroutines.cancel
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
-import java.lang.IllegalArgumentException
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executor
@@ -32,7 +31,6 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
-import java.util.function.Function
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -43,15 +41,10 @@ class AsyncTaskLauncher<Params> {
         MyLog.v(objTag) { asyncTask.toString() + " Launching task" }
         return try {
             cancelStalledTasks()
-            if (asyncTask.isSingleInstance() && foundUnfinished(asyncTask)) {
-                skippedCount.incrementAndGet()
-                return Try.failure(IllegalStateException("Single instance and found unfinished task: $asyncTask"))
-            } else {
-                val paramsArray = arrayOf<Any?>(params) as Array<Params?>
-                asyncTask.executeOnExecutor(getExecutor(asyncTask.pool), *paramsArray)
-                launchedTasks.add(asyncTask)
-                launchedCount.incrementAndGet()
-            }
+            val paramsArray = arrayOf<Any?>(params) as Array<Params?>
+            asyncTask.executeInContext(getExecutor(asyncTask.pool), *paramsArray)
+            launchedTasks.add(asyncTask)
+            launchedCount.incrementAndGet()
             removeFinishedTasks()
             TryUtils.SUCCESS
         } catch (e: Exception) {
@@ -145,15 +138,15 @@ class AsyncTaskLauncher<Params> {
         }
 
         fun execute(backgroundFunc: Runnable): Try<Void> {
-            return execute<Any?, Any?>(null, { p: Any? ->
+            return execute<Any?, Any?>(null, {
                 backgroundFunc.run()
                 Try.success(null)
-            }, { p: Any? -> Consumer { r: Try<Any?> -> } })
+            }, { { _ -> {} } })
         }
 
         fun <Params, Result> execute(params: Params?,
-                                     backgroundFunc: Function<Params?, Try<Result>>,
-                                     uiConsumer: Function<Params?, Consumer<Try<Result>>>): Try<Void> {
+                                     backgroundFunc: (Params?) -> Try<Result>,
+                                     uiConsumer: (Params?) -> (Try<Result>) -> Unit): Try<Void> {
             val asyncTask: MyAsyncTask<Params?, Void, Try<Result>> = MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
             return AsyncTaskLauncher<Params?>().execute(params, asyncTask, params)
         }
@@ -168,7 +161,7 @@ class AsyncTaskLauncher<Params> {
             for (launched in launchedTasks) {
                 if (launched.needsBackgroundWork() && !launched.isReallyWorking()) {
                     MyLog.v(TAG) { "Found stalled task at " + launched.pool + ": " + launched }
-                    if (launched.pool.mayBeShutDown && launched.cancelledLongAgo() && launched.hasExecutor) {
+                    if (launched.pool.mayBeShutDown && launched.cancelledLongAgo() && launched.hasExecutor.get()) {
                         poolsToShutDown.add(launched.pool)
                     } else {
                         launched.cancel()
@@ -191,9 +184,14 @@ class AsyncTaskLauncher<Params> {
         }
 
         private fun onExecutorRemoval(pool: PoolEnum) {
-            MyLog.v(TAG) { "On removing executor for pool " + pool.name }
+            var count: Long = 0
             for (launched in launchedTasks) {
-                if (launched.pool == pool) launched.hasExecutor = false
+                if (launched.pool == pool && launched.hasExecutor.compareAndSet(true, false)) {
+                    count += 1
+                }
+            }
+            if (count > 0) {
+                MyLog.v(TAG) { "On removing executor of pool $pool for $count tasks" }
             }
         }
 
