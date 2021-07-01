@@ -1,8 +1,6 @@
 package org.andstatus.app.context
 
 import org.andstatus.app.data.DbUtils
-import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.util.MyLog
 import org.hamcrest.MatcherAssert
@@ -47,21 +45,17 @@ class CompletableFutureTest {
         val future1 = CompletableFuture.completedFuture(data1)
         MyLog.i(this, "$method completed future1 created")
         val future2 = future1.thenCompose { testData: TestData ->
-            CompletableFuture.supplyAsync({ testData.next() },
-                    AsyncTaskLauncher.Companion.getExecutor(PoolEnum.LONG_UI))
+            CompletableFuture.supplyAsync { testData.next() }
         }
         MyLog.i(this, "$method future2 created")
         val future3 = future2.thenCompose { testData: TestData -> CompletableFuture.supplyAsync({ testData.next() }, UiThreadExecutor.Companion.INSTANCE) }
         MyLog.i(this, "$method future3 created")
         val finalData = future3
-                .whenCompleteAsync({ testData: TestData, throwable: Throwable? -> assertFuture3("async1", testData) },
-                        AsyncTaskLauncher.Companion.getExecutor(PoolEnum.QUICK_UI))
-                .whenCompleteAsync({ testData: TestData, throwable: Throwable? -> assertFuture3("async2", testData) }, UiThreadExecutor.Companion.INSTANCE)
-                .whenCompleteAsync({ testData: TestData, throwable: Throwable? -> assertFuture3("async3", testData) },
-                        AsyncTaskLauncher.Companion.getExecutor(PoolEnum.LONG_UI))
+                .whenCompleteAsync { testData: TestData, throwable: Throwable? -> assertFuture3("async1", testData) }
+                .whenCompleteAsync { testData: TestData, throwable: Throwable? -> assertFuture3("async2", testData) }
+                .whenCompleteAsync { testData: TestData, throwable: Throwable? -> assertFuture3("async3", testData) }
                 .thenCompose { testData: TestData ->
-                    CompletableFuture.supplyAsync({ testData.next() },
-                            AsyncTaskLauncher.Companion.getExecutor(PoolEnum.SYNC))
+                    CompletableFuture.supplyAsync { testData.next() }
                 }
                 .get()
         MyLog.i(this, "$method async work completed")

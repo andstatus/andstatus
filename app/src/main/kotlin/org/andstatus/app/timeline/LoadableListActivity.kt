@@ -16,7 +16,6 @@
 package org.andstatus.app.timeline
 
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.KeyEvent
@@ -145,7 +144,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     fun isLoading(): Boolean {
         var reset = false
         synchronized(loaderLock) {
-            if (loaderIsWorking && mWorkingLoader.getStatus() == AsyncTask.Status.FINISHED) {
+            if (loaderIsWorking && mWorkingLoader.status == MyAsyncTask.Status.FINISHED) {
                 reset = true
                 loaderIsWorking = false
             }

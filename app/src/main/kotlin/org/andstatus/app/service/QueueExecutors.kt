@@ -83,7 +83,7 @@ class QueueExecutors(private val myService: MyService) {
             } else {
                 if (previous.needsBackgroundWork()) {
                     logMessageBuilder.withComma("Cancelling previous")
-                    previous.cancelLogged(true)
+                    previous.cancel()
                 }
                 logMessageBuilder.withComma(if (current == null) "Removed executor $previous" else "Replaced executor $previous with $current")
             }

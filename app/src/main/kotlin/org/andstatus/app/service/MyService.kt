@@ -29,19 +29,15 @@ import org.andstatus.app.appwidget.AppWidgets
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.context.MyContextHolder
-import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
-import java.lang.ref.WeakReference
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -66,7 +62,7 @@ class MyService : Service(), IdentifiableInstance {
     var latestActivityTime: Long = 0
 
     /** Flag to control the Service state persistence  */
-    private val initialized: AtomicBoolean = AtomicBoolean(false)
+    val initialized: AtomicBoolean = AtomicBoolean(false)
 
     @Volatile
     private var initializedTime: Long = 0
@@ -74,7 +70,7 @@ class MyService : Service(), IdentifiableInstance {
     /** We are stopping this service  */
     private val isStopping: AtomicBoolean = AtomicBoolean(false)
     val executors: QueueExecutors = QueueExecutors(this)
-    private val heartBeatRef: AtomicReference<HeartBeat> = AtomicReference()
+    val heartBeatRef: AtomicReference<MyServiceHeartBeat> = AtomicReference()
 
     /**
      * The reference to the wake lock used to keep the CPU from stopping during
@@ -190,9 +186,9 @@ class MyService : Service(), IdentifiableInstance {
             replace = true
         }
         if (replace) {
-            val current = HeartBeat(this)
+            val current = MyServiceHeartBeat(this)
             if (heartBeatRef.compareAndSet(previous, current)) {
-                previous?.cancelLogged(true)
+                previous?.cancel()
                 AsyncTaskLauncher.execute(TAG, current).onFailure { t: Throwable? ->
                     heartBeatRef.compareAndSet(current, null)
                     MyLog.w(TAG, "MyService $instanceId Failed to revive heartbeat", t)
@@ -280,7 +276,7 @@ class MyService : Service(), IdentifiableInstance {
         mForcedToStop = false
         val heartBeat = heartBeatRef.get()
         if (heartBeat != null && heartBeatRef.compareAndSet(heartBeat, null)) {
-            heartBeat.cancelLogged(true)
+            heartBeat.cancel()
         }
         AsyncTaskLauncher.cancelPoolTasks(PoolEnum.SYNC)
         releaseWakeLock()
@@ -304,90 +300,6 @@ class MyService : Service(), IdentifiableInstance {
 
     override fun instanceTag(): String {
         return TAG
-    }
-
-    private class HeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, Long?, Void?>(TAG, PoolEnum.SYNC) {
-        private val myServiceRef: WeakReference<MyService>
-
-        @Volatile
-        private var previousBeat = createdAt
-
-        @Volatile
-        private var mIteration: Long = 0
-        override fun doInBackground2(aVoid: Void?): Void? {
-            MyLog.v(this) { "Started" }
-            var breakReason = ""
-            for (iteration in 1..9999) {
-                val myService = myServiceRef.get()
-                if (myService == null) {
-                    breakReason = "No reference to MyService"
-                    break
-                }
-                val heartBeat = myService.heartBeatRef.get()
-                if (heartBeat != null && heartBeat !== this && heartBeat.isReallyWorking()) {
-                    breakReason = "Other instance found: $heartBeat"
-                    break
-                }
-                if (isCancelled) {
-                    breakReason = "Cancelled"
-                    break
-                }
-                if (DbUtils.waitMs("HeartBeatSleeping",
-                                Math.toIntExact(TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS)))) {
-                    breakReason = "InterruptedException"
-                    break
-                }
-                if (!myService.initialized.get()) {
-                    breakReason = "Not initialized"
-                    break
-                }
-                publishProgress(iteration.toLong())
-            }
-            val breakReasonVal = breakReason
-            MyLog.v(this) { "Ended $breakReasonVal; $this" }
-            val myService = myServiceRef.get()
-            myService?.heartBeatRef?.compareAndSet(this, null)
-            return null
-        }
-
-        override fun onProgressUpdate(vararg values: Long?) {
-            mIteration = values[0] ?: 0
-            previousBeat = MyLog.uniqueCurrentTimeMS()
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this) { "onProgressUpdate; $this" }
-            }
-            if (MyLog.isDebugEnabled() && RelativeTime.moreSecondsAgoThan(createdAt,
-                            QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
-                MyLog.d(this, AsyncTaskLauncher.threadPoolInfo())
-            }
-            val myService = myServiceRef.get()
-            myService?.startStopExecution()
-        }
-
-        override fun toString(): String {
-            return instanceTag() + "; " + super.toString()
-        }
-
-        override fun instanceTag(): String {
-            return super.instanceTag() + "-it" + mIteration
-        }
-
-        override fun classTag(): String {
-            return TAG
-        }
-
-        override fun isReallyWorking(): Boolean {
-            return needsBackgroundWork() && !RelativeTime.wasButMoreSecondsAgoThan(previousBeat, HEARTBEAT_PERIOD_SECONDS * 2)
-        }
-
-        companion object {
-            private val TAG: String = "HeartBeat"
-            private const val HEARTBEAT_PERIOD_SECONDS: Long = 11
-        }
-
-        init {
-            myServiceRef = WeakReference(myService)
-        }
     }
 
     override fun onBind(intent: Intent?): IBinder? {
