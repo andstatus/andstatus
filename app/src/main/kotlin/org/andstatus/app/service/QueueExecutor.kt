@@ -12,10 +12,9 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicLong
 
-class QueueExecutor(myService: MyService, accessorType: AccessorType) :
+class QueueExecutor(myService: MyService, private val accessorType: AccessorType) :
         MyAsyncTask<Void?, Void?, Boolean?>("$TAG-$accessorType", PoolEnum.SYNC), CommandExecutorParent {
-    private val myServiceRef: WeakReference<MyService>?
-    private val accessorType: AccessorType
+    private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
     private val executedCounter: AtomicLong = AtomicLong()
 
     override fun instanceTag(): String {
@@ -23,7 +22,7 @@ class QueueExecutor(myService: MyService, accessorType: AccessorType) :
     }
 
     override fun doInBackground(aVoid: Void?): Boolean {
-        val myService = myServiceRef?.get()
+        val myService = myServiceRef.get()
         if (myService == null) {
             MyLog.v(this) { "Didn't start, no reference to MyService" }
             return true
@@ -68,7 +67,7 @@ class QueueExecutor(myService: MyService, accessorType: AccessorType) :
             }
             myService.broadcastAfterExecutingCommand(commandData)
         } while (true)
-        MyLog.v(this) { "Ended, " + executedCounter.get() + " commands executed, " + accessor.countToExecuteNow() + " left" }
+        MyLog.v(this) { "Ended, cause:$breakReason, " + executedCounter.get() + " commands executed, " + accessor.countToExecuteNow() + " left" }
         myService.myContext.queues.save()
         currentlyExecutingSince = 0
         currentlyExecutingDescription = breakReason
@@ -100,8 +99,7 @@ class QueueExecutor(myService: MyService, accessorType: AccessorType) :
     }
 
     override fun isStopping(): Boolean {
-        val myService = myServiceRef?.get()
-        return myService == null || myService.isStopping() == true
+        return myServiceRef.get()?.isStopping() ?: true
     }
 
     override fun classTag(): String {
@@ -126,10 +124,5 @@ class QueueExecutor(myService: MyService, accessorType: AccessorType) :
     companion object {
         const val MAX_EXECUTION_TIME_SECONDS: Long = 60
         private val TAG: String = "QueueExecutor"
-    }
-
-    init {
-        myServiceRef = WeakReference(myService)
-        this.accessorType = accessorType
     }
 }

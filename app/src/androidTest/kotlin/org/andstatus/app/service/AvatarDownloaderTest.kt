@@ -153,9 +153,10 @@ class AvatarDownloaderTest {
         val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, actor, actor.getUsername())
         val loaded = loader.load(commandData)
         val data: DownloadData = AvatarData.Companion.getDisplayedForActor(actor)
-        val logMsg = """$description Expecting load status: $loadStatus, displayed: $displayedStatus
-  for $actor
-  (loaded $data, error message:'${commandData.getResult().getMessage()}')${if (mockNetworkError) "mocked the error" else ""}"""
+        val logMsg = "${description.toString()} Expecting load status: $loadStatus, displayed: $displayedStatus\n" +
+                "  for $actor\n" +
+                "  (loaded $data, error message:'" + commandData.getResult().getMessage() + "')" +
+                if (mockNetworkError) " mocked the error" else ""
         if (mockNetworkError || loadStatus == DownloadStatus.HARD_ERROR) {
             Assert.assertTrue("Load should be a failure: $logMsg", loaded.isFailure)
         }

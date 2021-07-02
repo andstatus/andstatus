@@ -39,13 +39,14 @@ object MyHttpClientFactory {
         // use request defaults from AndroidHttpClient
         val requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
                 .setConnectTimeout(MyPreferences.getConnectionTimeoutMs())
-                .setSocketTimeout(2 * MyPreferences.getConnectionTimeoutMs())
+                .setConnectionRequestTimeout(MyPreferences.getConnectionTimeoutMs())
+                .setSocketTimeout(MyPreferences.getConnectionTimeoutMs())
                 .setStaleConnectionCheckEnabled(false)
                 .build()
         val builder = HttpClients.custom()
                 .useSystemProperties()
                 .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(requestConfig) /* TODO maybe:  
+                .setDefaultRequestConfig(requestConfig) /* TODO maybe:
                 .setRetryHandler(DavHttpRequestRetryHandler.INSTANCE)
                 .setRedirectStrategy(DavRedirectStrategy.INSTANCE)  
                 */

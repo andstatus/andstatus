@@ -62,10 +62,7 @@ class ConnectionException : IOException {
     private constructor(result: HttpReadResult) : super(result.logMsg(), result.getException()) {
         statusCode = result.getStatusCode()
         url = result.url
-        isHardError = isHardFromStatusCode(
-            result.getException() is ConnectionException &&
-                    (result.getException() as ConnectionException).isHardError(), statusCode
-        )
+        isHardError = isHardFromStatusCode(isHardFromCause(result.getException()), statusCode)
     }
 
     constructor(throwable: Throwable?) : this(null, throwable) {}
@@ -86,7 +83,7 @@ class ConnectionException : IOException {
                         throwable: Throwable?, url: URL?, isHardIn: Boolean) : super(detailMessage, throwable) {
         this.statusCode = statusCode
         this.url = url
-        isHardError = isHardFromStatusCode(isHardIn, statusCode)
+        isHardError = isHardFromStatusCode(isHardIn || isHardFromCause(throwable), statusCode)
     }
 
     fun getStatusCode(): StatusCode? {
@@ -155,6 +152,13 @@ class ConnectionException : IOException {
 
         fun hardConnectionException(detailMessage: String?, throwable: Throwable?): ConnectionException {
             return ConnectionException(StatusCode.OK, detailMessage, throwable, null, true)
+        }
+
+        private fun isHardFromCause(cause: Throwable?): Boolean = when (cause) {
+            null -> false
+            is ConnectionException -> cause.isHardError
+            is java.net.UnknownHostException -> true
+            else -> false
         }
 
         private fun isHardFromStatusCode(isHardIn: Boolean, statusCode: StatusCode?): Boolean {

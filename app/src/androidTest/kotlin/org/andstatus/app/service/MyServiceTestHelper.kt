@@ -66,7 +66,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
             serviceConnector = MyServiceEventsReceiver(myContext, this).also {
                 it.registerReceiver(myContext.context)
             }
-            dropQueues()
+            Assert.assertTrue("Couldn't stop MyService", waitForServiceStopped(false))
             httpConnectionMock?.clearPostedData()
             Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(false))
         } catch (e: Exception) {

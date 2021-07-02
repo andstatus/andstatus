@@ -46,9 +46,9 @@ class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyC
             mCommandData.getResult().setProgress(progress)
         }
         MyLog.v(this) {
-            ("state:" + mState + ", event:" + mEvent
-                    + ", " + mCommandData.toCommandSummary(MyContextHolder.myContextHolder.getNow())
-                    + if (progress.isEmpty()) "" else ", progress:$progress")
+            "state:" + mState + ", event:" + mEvent +
+                    ", " + mCommandData.toCommandSummary(MyContextHolder.myContextHolder.getNow()) +
+                    if (progress.isEmpty()) "" else ", progress:$progress"
         }
         MyAction.SERVICE_STATE.getIntent()
             .apply(mCommandData::toIntent)

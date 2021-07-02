@@ -33,6 +33,7 @@ import cz.msebera.android.httpclient.protocol.HTTP
 import org.andstatus.app.context.MyPreferences
 
 object MisconfiguredSslHttpClientFactory {
+
     fun getHttpClient(): HttpClient {
         val schemeRegistry = SchemeRegistry()
         schemeRegistry.register(Scheme("http", PlainSocketFactory.getSocketFactory(), 80))
