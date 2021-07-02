@@ -69,7 +69,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
                 future.loader = object : MyAsyncTask<Void?, Void?, NoteContextMenuData>(
                         TAG + future.noteId, PoolEnum.QUICK_UI) {
 
-                    override fun doInBackground(params: Void?): NoteContextMenuData {
+                    override suspend fun doInBackground(params: Void?): NoteContextMenuData {
                         val selectedMyAccount = noteContextMenu.getSelectedActingAccount()
                         val currentMyAccount = menuContainer.getActivity().myContext.accounts.currentAccount
                         val accountToNote: NoteContextMenuData = NoteContextMenuData.getAccountToActOnNote(
@@ -85,7 +85,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
                         return if (accountToNote.getMyAccount().isValid) accountToNote else NoteContextMenuData.EMPTY
                     }
 
-                    override fun onFinish(menuData: NoteContextMenuData?, success: Boolean) {
+                    override suspend fun onFinish(menuData: NoteContextMenuData?, success: Boolean) {
                         future.menuData = menuData ?: NoteContextMenuData.EMPTY
                         noteContextMenu.setFutureData(future)
                         if (future.menuData.noteForAnyAccount.noteId != 0L && noteContextMenu.getViewItem().getNoteId() == future.noteId) {

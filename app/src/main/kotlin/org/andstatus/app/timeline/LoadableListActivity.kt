@@ -200,7 +200,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             return mSyncLoader ?: newSyncLoader(null)
         }
 
-        override fun doInBackground(params: Bundle?): SyncLoader<*> {
+        override suspend fun doInBackground(params: Bundle?): SyncLoader<*> {
             publishProgress("...")
             val loader: SyncLoader<*> =
                 newSyncLoader(BundleUtils.toBundle(params, IntentExtra.INSTANCE_ID.key, instanceId))
@@ -229,7 +229,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             }
         }
 
-        override fun onPostExecute(result: SyncLoader<*>?) {
+        override suspend fun onPostExecute(result: SyncLoader<*>?) {
             mSyncLoader = result
             updateCompletedLoader()
             try {
@@ -386,11 +386,11 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     private fun showSyncing(commandData: CommandData) {
         AsyncTaskLauncher<CommandData>().execute(this,
             object : MyAsyncTask<CommandData?, Void?, String?>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
-                override fun doInBackground(commandData: CommandData?): String? {
+                override suspend fun doInBackground(commandData: CommandData?): String? {
                     return commandData?.toCommandSummary(myContext)
                 }
 
-                override fun onPostExecute(result: String?) {
+                override suspend fun onPostExecute(result: String?) {
                     showSyncing(
                         "Show " + commandData?.command,
                         getText(R.string.title_preference_syncing).toString() + ": " + result

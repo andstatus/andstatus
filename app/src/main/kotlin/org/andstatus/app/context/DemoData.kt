@@ -157,7 +157,7 @@ class DemoData {
         val logTag: String = progressListener.getLogTag()
         override val cancelable: Boolean = false
 
-        override fun doInBackground(params: Void?): Void? {
+        override suspend fun doInBackground(params: Void?): Void? {
             MyLog.i(logTag, "$logTag; started")
             DbUtils.waitMs(logTag, 1000)
             progressListener.onProgressMessage("Generating demo data...")
@@ -228,7 +228,7 @@ class DemoData {
             return params
         }
 
-        override fun onFinish(result: Void?, success: Boolean) {
+        override suspend fun onFinish(result: Void?, success: Boolean) {
             FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context, true)
             progressListener.onComplete(success)
         }

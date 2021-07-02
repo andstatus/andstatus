@@ -86,7 +86,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
                 true,
                 false)
 
-        override fun doInBackground(params: Void?): TaskResult {
+        override suspend fun doInBackground(params: Void?): TaskResult {
             val result = TaskResult()
             MyContextHolder.myContextHolder.getBlocking()
             MyServiceManager.setServiceUnavailable()
@@ -312,7 +312,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override fun onFinish(result: TaskResult?, success: Boolean) {
+        override suspend fun onFinish(result: TaskResult?, success: Boolean) {
             DialogFactory.dismissSafely(dlg)
             if (result == null) {
                 MyLog.w(this, "Result is Null")

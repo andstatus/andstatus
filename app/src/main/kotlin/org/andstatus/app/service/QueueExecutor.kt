@@ -21,7 +21,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
         return super.instanceTag() + "-" + accessorType
     }
 
-    override fun doInBackground(aVoid: Void?): Boolean {
+    override suspend fun doInBackground(aVoid: Void?): Boolean {
         val myService = myServiceRef.get()
         if (myService == null) {
             MyLog.v(this) { "Didn't start, no reference to MyService" }
@@ -85,7 +85,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
                 .setInForeground(commandDataExecuted.isInForeground()))
     }
 
-    override fun onFinish(aBoolean: Boolean?, success: Boolean) {
+    override suspend fun onFinish(aBoolean: Boolean?, success: Boolean) {
         val myService = myServiceRef?.get()
         if (myService != null) {
             myService.latestActivityTime = System.currentTimeMillis()

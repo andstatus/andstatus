@@ -120,7 +120,7 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
 
         override val cancelable = false
 
-        override fun doInBackground(dataFolder: DocumentFile?): Void? {
+        override suspend fun doInBackground(dataFolder: DocumentFile?): Void? {
             dataFolder?.let {
                 MyBackupManager.restoreInteractively(dataFolder, activity, activity)
             }

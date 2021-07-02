@@ -104,7 +104,7 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
 
     private class BackupTask(private val activity: BackupActivity) :
         MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.LONG_UI) {
-        override fun doInBackground(file: DocumentFile?): Void? {
+        override suspend fun doInBackground(file: DocumentFile?): Void? {
             file?.let {
                 MyBackupManager.backupInteractively(file, activity, activity)
             }

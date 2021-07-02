@@ -889,7 +889,7 @@ class AccountSettingsActivity : MyActivity() {
     private inner class OAuthRegisterClientTask() :
         MyAsyncTask<Void?, Void?, TaskResult?>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
-        override fun onPreExecute() {
+        override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
                 this@AccountSettingsActivity,
                 getText(R.string.dialog_title_registering_client),
@@ -899,7 +899,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override fun doInBackground(params: Void?): TaskResult {
+        override suspend fun doInBackground(params: Void?): TaskResult {
             var succeeded = false
             var connectionErrorMessage = ""
             try {
@@ -927,7 +927,7 @@ class AccountSettingsActivity : MyActivity() {
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override fun onPostExecute(result: TaskResult?) {
+        override suspend fun onPostExecute(result: TaskResult?) {
             DialogFactory.dismissSafely(dlg)
             if (result != null && !this@AccountSettingsActivity.isFinishing) {
                 if (result.isSuccess()) {
@@ -985,7 +985,7 @@ class AccountSettingsActivity : MyActivity() {
     private class OAuthAcquireRequestTokenTask(private val activity: AccountSettingsActivity) :
         MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
-        override fun onPreExecute() {
+        override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
                 activity,
                 activity.getText(R.string.dialog_title_acquiring_a_request_token),
@@ -995,7 +995,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override fun doInBackground(params: Void?): TaskResult {
+        override suspend fun doInBackground(params: Void?): TaskResult {
             var stepErrorMessage = ""
             var connectionErrorMessage = ""
             var authUri = Uri.EMPTY
@@ -1067,7 +1067,7 @@ class AccountSettingsActivity : MyActivity() {
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override fun onPostExecute(result: TaskResult?) {
+        override suspend fun onPostExecute(result: TaskResult?) {
             DialogFactory.dismissSafely(dlg)
             if (result != null && !activity.isFinishing()) {
                 if (result.isSuccess()) {
@@ -1111,7 +1111,7 @@ class AccountSettingsActivity : MyActivity() {
      */
     private inner class OAuthAcquireAccessTokenTask() : MyAsyncTask<Uri?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
-        override fun onPreExecute() {
+        override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
                 this@AccountSettingsActivity,
                 getText(R.string.dialog_title_acquiring_an_access_token),
@@ -1121,7 +1121,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override fun doInBackground(params: Uri?): TaskResult {
+        override suspend fun doInBackground(params: Uri?): TaskResult {
             var message = ""
             var accessToken = ""
             var accessSecret = ""
@@ -1196,7 +1196,7 @@ class AccountSettingsActivity : MyActivity() {
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override fun onPostExecute(result: TaskResult?) {
+        override suspend fun onPostExecute(result: TaskResult?) {
             DialogFactory.dismissSafely(dlg)
             if (result != null && !this@AccountSettingsActivity.isFinishing) {
                 if (result.isSuccess()) {
@@ -1229,7 +1229,7 @@ class AccountSettingsActivity : MyActivity() {
 
         @Volatile
         private var skip = false
-        override fun onPreExecute() {
+        override suspend fun onPreExecute() {
             activityOnFinish = ActivityOnFinish.NONE
             dlg = ProgressDialog.show(
                 this@AccountSettingsActivity,
@@ -1247,7 +1247,7 @@ class AccountSettingsActivity : MyActivity() {
             }
         }
 
-        override fun doInBackground(params: Void?): TaskResult? {
+        override suspend fun doInBackground(params: Void?): TaskResult? {
             return if (skip) TaskResult(ResultStatus.NONE) else Try.success(state.builder)
                 .flatMap { it?.getOriginConfig() }
                 .flatMap { b: MyAccount.Builder -> b.getConnection().verifyCredentials(whoAmI) }
@@ -1284,7 +1284,7 @@ class AccountSettingsActivity : MyActivity() {
         /**
          * Credentials were verified just now!
          */
-        override fun onPostExecute(result: TaskResult?) {
+        override suspend fun onPostExecute(result: TaskResult?) {
             DialogFactory.dismissSafely(dlg)
             if (this@AccountSettingsActivity.isFinishing) return
             val resultOut = result ?: TaskResult(ResultStatus.NONE)

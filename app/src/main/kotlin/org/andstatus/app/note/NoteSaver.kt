@@ -37,7 +37,7 @@ class NoteSaver(private val editor: NoteEditor) : MyAsyncTask<NoteEditorCommand?
     @Volatile
     private var command: NoteEditorCommand = noteEditorCommandEmpty
 
-    override fun doInBackground(commandIn: NoteEditorCommand?): NoteEditorData? {
+    override suspend fun doInBackground(commandIn: NoteEditorCommand?): NoteEditorData? {
         command = commandIn ?: noteEditorCommandEmpty
         MyLog.v(NoteEditorData.TAG) { "Started: $command" }
         if (!command.acquireLock(true)) {
@@ -100,7 +100,7 @@ class NoteSaver(private val editor: NoteEditor) : MyAsyncTask<NoteEditorCommand?
         command.releaseLock()
     }
 
-    override fun onPostExecute(data: NoteEditorData) {
+    override suspend fun onPostExecute(data: NoteEditorData) {
         if (data.isValid()) {
             if (command.hasLock()) {
                 MyLog.v(NoteEditorData.TAG) { "Saved; Future data: $data" }

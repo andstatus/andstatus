@@ -189,10 +189,9 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      * @see doInBackground
      */
     @MainThread
-    protected open fun onPreExecute() {
-    }
+    protected open suspend fun onPreExecute() {}
 
-    private fun doInBackground1(vararg params: Params): Result? {
+    private suspend fun doInBackground1(vararg params: Params): Result? {
         backgroundStartedAt = System.currentTimeMillis()
         currentlyExecutingSince = backgroundStartedAt
         try {
@@ -212,7 +211,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
         return null
     }
 
-    protected abstract fun doInBackground(params: Params?): Result?
+    protected abstract suspend fun doInBackground(params: Params?): Result?
 
     /**
      * <p>Attempts to cancel execution of this task.  This attempt will
@@ -253,10 +252,10 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     protected open fun onCancelled() {}
 
     @MainThread
-    protected open fun onPostExecute(result: Result) {}
+    protected open suspend fun onPostExecute(result: Result) {}
 
     private val onFinishCalled = AtomicBoolean()
-    private fun onFinish1(result: Result?, success: Boolean) {
+    private suspend fun onFinish1(result: Result?, success: Boolean) {
         if (onFinishCalled.compareAndSet(false, true)) {
             try {
                 onFinish(result, success)
@@ -269,7 +268,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
 
     /** If the task was started, this method should be called, before changing status to FINISH */
     @MainThread
-    protected open fun onFinish(result: Result?, success: Boolean) {}
+    protected open suspend fun onFinish(result: Result?, success: Boolean) {}
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -422,11 +421,11 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 MyAsyncTask<Params, Progress, Try<Result>> {
             return object : MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.LONG_UI) {
 
-                override fun doInBackground(params: Params?): Try<Result> {
+                override suspend fun doInBackground(params: Params?): Try<Result> {
                     return backgroundFunc(params)
                 }
 
-                override fun onFinish(result: Try<Result>?, success: Boolean) {
+                override suspend fun onFinish(result: Try<Result>?, success: Boolean) {
                     val result2 = when {
                         result == null -> Try.failure(Exception("No results of the Async task"))
                         success -> result
