@@ -183,7 +183,7 @@ object MyQuery {
                             ActorTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId
                     OidEnum.REBLOG_OID -> {
                         if (rebloggerActorId == 0L) {
-                            MyLog.w(TAG, "$method: rebloggerActorId was not defined")
+                            MyLog.w(TAG, "$method; rebloggerActorId was not defined")
                         }
                         ("SELECT " + ActivityTable.ACTIVITY_OID + " FROM "
                                 + ActivityTable.TABLE_NAME + " WHERE "
@@ -209,7 +209,7 @@ object MyQuery {
                 closeSilently(prog)
             }
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, "$method: $oe + $entityId -> $oid")
+                MyLog.v(TAG, "$method; $oe + $entityId -> $oid")
             }
         }
         return oid
@@ -625,13 +625,13 @@ object MyQuery {
             MyLog.ignored(TAG, e)
             id = 0
         } catch (e: Exception) {
-            MyLog.e(TAG, "$method: SQL:'$sql'", e)
+            MyLog.e(TAG, "$method; SQL:'$sql'", e)
             id = 0
         } finally {
             closeSilently(prog)
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(TAG, "$method:$originId+$columnValue -> $id")
+            MyLog.v(TAG, "$method; $originId+$columnValue -> $id")
         }
         return id
     }

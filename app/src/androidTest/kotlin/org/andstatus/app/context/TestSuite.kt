@@ -225,13 +225,13 @@ object TestSuite {
     private fun ensureDataAdded() {
         if (dataAdded) return
         val method = "ensureDataAdded"
-        MyLog.v(method, "$method: started")
+        MyLog.v(method, "$method; started")
         if (!dataAdded) {
             dataAdded = true
             DemoData.demoData.createNewInstance()
             DemoData.demoData.add(getMyContextForTest(), dataPath ?: "")
         }
-        MyLog.v(method, "$method: ended")
+        MyLog.v(method, "$method; ended")
     }
 
     fun utcTime(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int): Date {

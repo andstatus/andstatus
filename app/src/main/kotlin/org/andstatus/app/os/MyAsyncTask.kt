@@ -128,7 +128,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      *
      * This method must be invoked on the UI thread.
      *
-     * @param coroutineContext The CoroutineContext to use.
+     * @param asyncCoroutineContext The CoroutineContext to use for background work.
      * @param params The parameters of the task.
      *
      * @return This instance
@@ -138,7 +138,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      */
     @MainThread
     fun executeInContext(
-        coroutineContext: CoroutineContext,
+        asyncCoroutineContext: CoroutineContext,
         vararg params: Params
     ): MyAsyncTask<Params, Progress, Result> {
         when (status) {
@@ -154,26 +154,28 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
             else -> {
             }
         }
-        try {
+        job = CoroutineScope(Dispatchers.Main).launch {
+            var result: Result? = null
+            var success = false
             status = Status.RUNNING
-            onPreExecute()
-            job = CoroutineScope(coroutineContext).launch {
-                try {
-                    val result: Result? = doInBackground1(*params)
-                    withContext(Dispatchers.Main) {
-                        if (result != null) {
-                            onPostExecute1(result)
-                        }
-                        onFinish1(result, result != null)
+            try {
+                onPreExecute()
+                withContext(asyncCoroutineContext) {
+                    try {
+                        result = doInBackground1(*params)
+                        success = true // TOD: better result type needed
+                    } catch (e: Exception) {
+                        logError("Exception during background execution", e)
                     }
-                } catch (e: Exception) {
-                    logError("Exception during execution", e)
-                    onFinish1(null, false)
+                    backgroundEndedAt = System.currentTimeMillis()
                 }
+                result?.also {
+                    onPostExecute(it)
+                }
+            } catch (e: Exception) {
+                logError("Exception during execution", e)
             }
-        } catch (e: Exception) {
-            logError("Exception during execution", e)
-            onFinish1(null, false)
+            onFinish1(result, success)
         }
         return this
     }
@@ -237,35 +239,35 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     fun cancel() {
         if (mCancelled.compareAndSet(false, true)) {
             cancelledAt = System.currentTimeMillis()
+            MyLog.v(this, "Cancelling $this")
             job?.cancel()
             CoroutineScope(Dispatchers.Main).launch {
                 job?.join()
-                backgroundEndedAt = System.currentTimeMillis()
-                ExceptionsCounter.showErrorDialogIfErrorsPresent()
                 onCancelled()
+                onFinish1(null, false)
             }
-            onFinish1(null, false)
         }
     }
 
     @MainThread
     protected open fun onCancelled() {}
 
-    private fun onPostExecute1(result: Result) {
-        backgroundEndedAt = System.currentTimeMillis()
-        ExceptionsCounter.showErrorDialogIfErrorsPresent()
-        onPostExecute(result)
-    }
-
     @MainThread
     protected open fun onPostExecute(result: Result) {}
 
+    private val onFinishCalled = AtomicBoolean()
     private fun onFinish1(result: Result?, success: Boolean) {
-        onFinish(result, success)
-        status = Status.FINISHED
+        if (onFinishCalled.compareAndSet(false, true)) {
+            try {
+                onFinish(result, success)
+                ExceptionsCounter.showErrorDialogIfErrorsPresent()
+            } finally {
+                status = Status.FINISHED
+            }
+        }
     }
 
-    /** Is called in both cases: Cancelled or not, before changing status to FINISH   */
+    /** If the task was started, this method should be called, before changing status to FINISH */
     @MainThread
     protected open fun onFinish(result: Result?, success: Boolean) {}
 
@@ -292,7 +294,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
         return (taskId + " on " + pool.name
                 + "; age " + RelativeTime.secondsAgo(createdAt) + "sec"
                 + "; " + stateSummary()
-                + "; instanceId=" + instanceId + "; " + super.toString())
+                + "; instanceId=" + instanceId)
     }
 
     private fun stateSummary(): String {

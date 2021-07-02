@@ -708,7 +708,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
             if (whichPage == WhichPage.EMPTY) TimelineParameters(myContext, Timeline.EMPTY, whichPage) else it
         } ?:  TimelineParameters(myContext, Timeline.EMPTY, whichPage)
         if (params.whichPage != WhichPage.EMPTY) {
-            MyLog.v(this) { "$method: $params" }
+            MyLog.v(this) { "$method; $params" }
             val intent = intent
             if (params.getContentUri() != intent.data) {
                 intent.data = params.getContentUri()

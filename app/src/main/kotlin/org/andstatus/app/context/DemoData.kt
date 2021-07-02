@@ -128,12 +128,12 @@ class DemoData {
     fun add(myContext: MyContext, dataPathIn: String) {
         val method = "add"
         dataPath = dataPathIn
-        MyLog.v(TAG, "$method: started")
+        MyLog.v(TAG, "$method; started")
         val asyncTask = addAsync(myContext, ProgressLogger.EMPTY_LISTENER)
         var count: Long = 200
         while (count > 0) {
             val completedWork = asyncTask.completedBackgroundWork()
-            MyLog.v(method, (if (completedWork) "Task completed " else "Waiting for task completion ") + count + " "
+            MyLog.v(this, "$method; " + (if (completedWork) "Task completed " else "Waiting for task completion ") + count + " "
                     + asyncTask.status)
             if (completedWork || DbUtils.waitMs(method, 5000)) {
                 break
@@ -144,10 +144,10 @@ class DemoData {
             Assert.fail("Error during Demo data creation: " + ExceptionsCounter.firstError.get())
         }
         Assert.assertEquals("Demo data creation failed, count=" + count + ", status=" + asyncTask.status
-                + ", " + asyncTask.toString(), true, asyncTask.completedBackgroundWork())
-        Assert.assertTrue("Error during Demo data creation: " + asyncTask.firstError,
+                + ", $asyncTask", true, asyncTask.completedBackgroundWork())
+        Assert.assertTrue("Error during Demo data creation: " + asyncTask.firstError + ", $asyncTask",
                 asyncTask.firstError.isEmpty())
-        MyLog.v(TAG, "$method: ended")
+        MyLog.v(TAG, "$method; ended")
     }
 
     private class MyAsyncTaskDemoData constructor(val progressListener: ProgressLogger.ProgressListener,
@@ -155,9 +155,10 @@ class DemoData {
                                                           val demoData: DemoData) :
             MyAsyncTask<Void?, Void?, Void?>(progressListener.getLogTag(), PoolEnum.thatCannotBeShutDown()) {
         val logTag: String = progressListener.getLogTag()
+        override val cancelable: Boolean = false
 
         override fun doInBackground(params: Void?): Void? {
-            MyLog.i(logTag, "$logTag: started")
+            MyLog.i(logTag, "$logTag; started")
             DbUtils.waitMs(logTag, 1000)
             progressListener.onProgressMessage("Generating demo data...")
             DbUtils.waitMs(logTag, 500)
@@ -171,22 +172,30 @@ class DemoData {
             accountInserter.insert()
             myContext.timelines.saveChanged()
             MyLog.v(logTag, "Before initialize 2")
-             MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
+            MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
             MyLog.v(logTag, "After initialize 2")
             MyServiceManager.setServiceUnavailable()
             progressListener.onProgressMessage("Demo accounts added...")
             DbUtils.waitMs(logTag, 500)
-            Assert.assertTrue("Context is not ready " +  MyContextHolder.myContextHolder.getNow(),  MyContextHolder.myContextHolder.getNow().isReady)
+
+            val myContext2 = MyContextHolder.myContextHolder.getBlocking()
+            Assert.assertTrue("Context is not ready " + myContext2, myContext2.isReady)
             demoData.checkDataPath()
-            val size: Int =  MyContextHolder.myContextHolder.getNow().accounts.size()
-            Assert.assertTrue("Only " + size + " accounts added: " +  MyContextHolder.myContextHolder.getNow().accounts,
-                    size > 5)
-            Assert.assertEquals("No WebfingerId", Optional.empty<Any?>(), MyContextHolder.myContextHolder.getNow().accounts
-                    .get().stream().filter { ma: MyAccount -> !ma.actor.isWebFingerIdValid() }.findFirst())
-            val size2: Int =  MyContextHolder.myContextHolder.getNow().users.size()
-            Assert.assertTrue("""Only $size2 users added: ${ MyContextHolder.myContextHolder.getNow().users}
-Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts}""",
-                    size2 >= size)
+            val size: Int = myContext2.accounts.size()
+            Assert.assertTrue(
+                "Only " + size + " accounts added: " + myContext2.accounts,
+                size > 5
+            )
+            Assert.assertEquals("No WebfingerId", Optional.empty<Any?>(), myContext2.accounts
+                .get().stream().filter { ma: MyAccount -> !ma.actor.isWebFingerIdValid() }.findFirst()
+            )
+            val size2: Int = myContext2.users.size()
+            Assert.assertTrue(
+                "Only $size2 users added: ${myContext2.users}\n" +
+                        "Accounts: ${myContext2.accounts}",
+                size2 >= size
+            )
+
             assertOriginsContext()
             DemoOriginInserter.assertDefaultTimelinesForOrigins()
             DemoAccountInserter.assertDefaultTimelinesForAccounts()
@@ -203,9 +212,9 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts}""",
                     MyContextHolder.myContextHolder.getNow().accounts.currentAccount.origin)
                     .findFirst().orElse(Timeline.EMPTY)
             MatcherAssert.assertThat(defaultTimeline.timelineType, CoreMatchers.`is`(TimelineType.EVERYTHING))
-             MyContextHolder.myContextHolder.getNow().timelines.setDefault(defaultTimeline)
+            MyContextHolder.myContextHolder.getNow().timelines.setDefault(defaultTimeline)
             MyLog.v(logTag, "Before initialize 3")
-             MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
+            MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
             MyLog.v(logTag, "After initialize 3")
             assertOriginsContext()
             DemoOriginInserter.assertDefaultTimelinesForOrigins()
@@ -215,7 +224,7 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts}""",
             MyLog.v(logTag, "After data checker")
             progressListener.onProgressMessage("Demo data is ready")
             DbUtils.waitMs(logTag, 500)
-            MyLog.i(logTag, "$logTag: ended")
+            MyLog.i(logTag, "$logTag; ended")
             return params
         }
 
@@ -228,7 +237,7 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts}""",
     fun addAsync(myContext: MyContext,
                  progressListener: ProgressLogger.ProgressListener): MyAsyncTask<Void?, Void?, Void?> {
         val asyncTask = MyAsyncTaskDemoData(progressListener, myContext, this)
-        AsyncTaskLauncher.execute(progressListener.getLogTag(), asyncTask)
+        AsyncTaskLauncher.execute(this, asyncTask)
         return asyncTask
     }
 
