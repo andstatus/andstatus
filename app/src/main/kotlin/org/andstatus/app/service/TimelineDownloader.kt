@@ -30,7 +30,7 @@ import org.andstatus.app.util.MyLog
  */
 internal abstract class TimelineDownloader(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
 
-    override fun execute(): Try<Boolean> {
+    override suspend fun execute(): Try<Boolean> {
         if (!isApiSupported(execContext.getTimeline().timelineType.connectionApiRoutine)) {
             MyLog.v(this) {
                 (execContext.getTimeline().toString() + " is not supported for "
@@ -45,7 +45,7 @@ internal abstract class TimelineDownloader(execContext: CommandExecutionContext)
                 .onFailure { e: Throwable? -> onSyncEnded() }
     }
 
-    abstract fun download(): Try<Boolean>
+    abstract suspend fun download(): Try<Boolean>
     protected fun getTimeline(): Timeline {
         return execContext.getTimeline()
     }

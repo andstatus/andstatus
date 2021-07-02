@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.service
 
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.SearchObjects
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
@@ -72,7 +73,9 @@ class CommandExecutorStrategyTest {
 
         val strategy = CommandExecutorStrategy.Companion.getStrategy(commandData2, null)
         Assert.assertEquals(TimelineDownloaderOther::class.java, strategy.javaClass)
-        strategy.execute()
+        runBlocking {
+            strategy.execute()
+        }
         Assert.assertNotNull("Requested " + commandData2 +
                 ", results: '" + httpConnectionMock.getResults() + "'",
             httpConnectionMock.getResults()
@@ -81,9 +84,9 @@ class CommandExecutorStrategyTest {
     }
 
     @Test
-    fun testUpdateDestroyStatus() {
+    fun testUpdateDestroyStatus() = runBlocking {
         var commandData = getCommandDataForUnsentNote("1")
-        mock.addResponse(org.andstatus.app.tests.R.raw.quitter_update_note_response)
+        mock.addResponse(org.andstatus.app.test.R.raw.quitter_update_note_response)
         httpConnectionMock.setSameResponse(true)
         Assert.assertEquals(0, commandData.getResult().getExecutionCount().toLong())
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
@@ -145,9 +148,9 @@ class CommandExecutorStrategyTest {
     }
 
     @Test
-    fun testDiscoverOrigins() {
+    fun testDiscoverOrigins() = runBlocking {
         val http = HttpConnectionMock()
-        http.addResponse(org.andstatus.app.tests.R.raw.get_open_instances)
+        http.addResponse(org.andstatus.app.test.R.raw.get_open_instances)
         TestSuite.setHttpConnectionMockInstance(http)
         val commandData: CommandData = CommandData.Companion.newOriginCommand(
                 CommandEnum.GET_OPEN_INSTANCES,

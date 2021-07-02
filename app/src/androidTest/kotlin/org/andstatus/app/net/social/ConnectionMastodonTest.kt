@@ -56,7 +56,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetHomeTimeline() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_home_timeline)
+        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_home_timeline)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)
@@ -103,7 +103,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetPrivateNotes() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_private_notes)
+        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_private_notes)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.PRIVATE_NOTES,
                 TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)
@@ -150,7 +150,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testIncomingVisibility() {
-        val response = RawResourceUtils.getString(org.andstatus.app.tests.R.raw.mastodon_home_timeline)
+        val response = RawResourceUtils.getString(org.andstatus.app.test.R.raw.mastodon_home_timeline)
         oneVisibility(response, Visibility.PUBLIC_AND_TO_FOLLOWERS)
         val pattern = "\"visibility\": \"public\""
         oneVisibility(response.replace(pattern, "\"visibility\": \"unlisted\""), Visibility.PUBLIC_AND_TO_FOLLOWERS)
@@ -167,7 +167,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetConversation() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_conversation)
+        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_get_conversation)
         val timeline = mock.connection.getConversation("5596683").get()
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 5, timeline.size.toLong())
@@ -175,7 +175,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetNotifications() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_notifications)
+        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_notifications)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
                 TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)
@@ -228,7 +228,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetActor() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_actor)
+        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_get_actor)
         val actor = mock.connection.getActor(Actor.Companion.fromOid(accountActor.origin, "5962")).get()
         Assert.assertTrue(actor.toString(), actor.nonEmpty)
         Assert.assertEquals("Actor's Oid", "5962", actor.oid)
@@ -249,7 +249,7 @@ class ConnectionMastodonTest {
 
     fun mentionsInANoteOneLoad(iteration: Int) {
         MyLog.i("mentionsInANote$iteration", "started")
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_note)
+        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_get_note)
         val activity = mock.connection.getNote("101064848262880936").get()
         Assert.assertEquals("Is not UPDATE $activity", ActivityType.UPDATE, activity.type)
         Assert.assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType())
@@ -284,7 +284,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun reblog() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_reblog)
+        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_get_reblog)
         val activity = mock.connection.getNote("101100271392454703").get()
         Assert.assertEquals("Is not ANNOUNCE $activity", ActivityType.ANNOUNCE, activity.type)
         Assert.assertEquals("Is not an Activity", AObjectType.ACTIVITY, activity.getObjectType())
@@ -309,7 +309,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun tootWithVideoAttachment() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_video)
+        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_video)
         assertOneTootWithVideo("263975",
                 "https://mastodon.social/media_proxy/11640109/original",
                 "https://mastodon.social/media_proxy/11640109/small")
@@ -317,7 +317,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun originalTootWithVideoAttachment() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_video_original)
+        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_video_original)
         assertOneTootWithVideo("10496",
                 "https://mastodont.cat/system/media_attachments/files/000/684/914/original/7424effb937d991c.mp4?1550739268",
                 "https://mastodont.cat/system/media_attachments/files/000/684/914/small/7424effb937d991c.png?1550739268")

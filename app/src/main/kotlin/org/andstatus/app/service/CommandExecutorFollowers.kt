@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicReference
 class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
     var commandSummary: String = ""
 
-    override fun execute(): Try<Boolean> {
+    override suspend fun execute(): Try<Boolean> {
         commandSummary = execContext.getCommandSummary()
         if (getActor().oid.isEmpty()) {
             return onParseException("No actorOid not for: ${getActor()}")

@@ -47,7 +47,7 @@ class VerifyCredentialsActivityPubTest {
 
     @Test
     fun verifyCredentials() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_whoami_pleroma)
+        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_whoami_pleroma)
         val actor = mock.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID)).get()
         Assert.assertEquals("Actor's oid is actorOid of this account", ACTOR_OID, actor.oid)
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().getAccountName())

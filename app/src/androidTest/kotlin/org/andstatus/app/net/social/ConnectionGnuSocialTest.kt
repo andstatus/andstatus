@@ -50,7 +50,7 @@ class ConnectionGnuSocialTest {
 
     @Test
     fun testGetPublicTimeline() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.quitter_home)
+        mock.addResponse(org.andstatus.app.test.R.raw.quitter_home)
         val accountActor: Actor = DemoData.demoData.getAccountActorByOid(DemoData.demoData.gnusocialTestAccountActorOid)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.PUBLIC_TIMELINE,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
@@ -130,7 +130,7 @@ class ConnectionGnuSocialTest {
 
     @Test
     fun testSearch() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline)
+        mock.addResponse(org.andstatus.app.test.R.raw.twitter_home_timeline)
         val timeline = mock.connection.searchNotes(true,
                 TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, DemoData.demoData.globalPublicNoteText).get()
         Assert.assertNotNull("timeline returned", timeline)
@@ -140,7 +140,7 @@ class ConnectionGnuSocialTest {
 
     @Test
     fun testPostWithMedia() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment)
+        mock.addResponse(org.andstatus.app.test.R.raw.quitter_note_with_attachment)
         val note: Note = Note.Companion.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setContentPosted("Test post note with media")
                 .withAttachments(Attachments().add(Attachment.Companion.fromUri(DemoData.demoData.localImageTestUri)))
@@ -157,7 +157,7 @@ class ConnectionGnuSocialTest {
     private fun privateGetNoteWithAttachment(uniqueUid: Boolean): AActivity {
         val NOTE_OID = "2215662"
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
-        mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment)
+        mock.addResponse(org.andstatus.app.test.R.raw.quitter_note_with_attachment)
         val activity = mock.connection.getNote(NOTE_OID).get()
         if (uniqueUid) {
             activity.setNote(activity.getNote().withNewOid(activity.getNote().oid + "_" + DemoData.demoData.testRunUid))
@@ -175,7 +175,7 @@ class ConnectionGnuSocialTest {
     @Test
     fun testReblog() {
         val NOTE_OID = "10341561"
-        mock.addResponse(org.andstatus.app.tests.R.raw.loadaverage_repost_response)
+        mock.addResponse(org.andstatus.app.test.R.raw.loadaverage_repost_response)
         val activity = mock.connection.announce(NOTE_OID).get()
         Assert.assertEquals(ActivityType.ANNOUNCE, activity.type)
         val note = activity.getNote()
@@ -221,7 +221,7 @@ class ConnectionGnuSocialTest {
 
     @Test
     fun testFavoritingActivityInTimeline() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity)
+        mock.addResponse(org.andstatus.app.test.R.raw.loadaverage_favoriting_activity)
         val accountActor: Actor = DemoData.demoData.getAccountActorByOid(DemoData.demoData.gnusocialTestAccountActorOid)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.SEARCH_NOTES,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
@@ -262,11 +262,11 @@ class ConnectionGnuSocialTest {
     @Test
     fun testMentionsInHtml() {
         oneHtmlMentionsTest("1iceloops123", "14044206",
-                org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions, 6)
+                org.andstatus.app.test.R.raw.loadaverage_note_with_mentions, 6)
         oneHtmlMentionsTest("andstatus", "14043873",
-                org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions2, 5)
+                org.andstatus.app.test.R.raw.loadaverage_note_with_mentions2, 5)
         val activity = oneHtmlMentionsTest("andstatus", "13421701",
-                org.andstatus.app.tests.R.raw.loadaverage_note_with_mentions3, 1)
+                org.andstatus.app.test.R.raw.loadaverage_note_with_mentions3, 1)
         val spannable = SpanUtil.textToSpannable(activity.getNote().content, TextMediaType.HTML,
                 activity.audience())
         val spans = spannable.getSpans(0, spannable.length - 1, MyUrlSpan::class.java)

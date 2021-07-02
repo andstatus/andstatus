@@ -57,7 +57,7 @@ class ConnectionTwitterTest {
 
     @Test
     fun testGetTimeline() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline)
+        mock.addResponse(org.andstatus.app.test.R.raw.twitter_home_timeline)
         val timeline = connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.Companion.of("380925803053449216"), TimelinePosition.Companion.EMPTY, 20,
                 connection.data.getAccountActor()).get()
@@ -142,7 +142,7 @@ class ConnectionTwitterTest {
 
     @Test
     fun getNoteWithAttachment() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_media)
+        mock.addResponse(org.andstatus.app.test.R.raw.twitter_note_with_media)
         val note = connection.getNote("503799441900314624").get().getNote()
         Assert.assertFalse("note returned", note.isEmpty)
         Assert.assertEquals("Should have an attachment $note", 1, note.attachments.size().toLong())
@@ -154,7 +154,7 @@ class ConnectionTwitterTest {
 
     @Test
     fun getNoteWithTwoAttachments() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_two_attachments)
+        mock.addResponse(org.andstatus.app.test.R.raw.twitter_note_with_two_attachments)
         val note = connection.getNote("1198619196260790272").get().getNote()
         Assert.assertFalse("note returned $note", note.isEmpty)
         Assert.assertEquals("Body of this note $note", "Test uploading two images via #AndStatus https://t.co/lJn9QBpWyn",
@@ -168,7 +168,7 @@ class ConnectionTwitterTest {
 
     @Test
     fun getNoteWithAnimatedGif() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_animated_gif)
+        mock.addResponse(org.andstatus.app.test.R.raw.twitter_note_with_animated_gif)
         val activity = connection.getNote("1271153637457367042").get()
         val note = activity.getNote()
         Assert.assertFalse("note returned", note.isEmpty)
@@ -186,7 +186,7 @@ class ConnectionTwitterTest {
 
     @Test
     fun getNoteWithEscapedHtmlTag() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_html_tag)
+        mock.addResponse(org.andstatus.app.test.R.raw.twitter_note_with_escaped_html_tag)
         val body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh"
         val activity = connection.getNote("834306097003581440").get()
@@ -209,7 +209,7 @@ class ConnectionTwitterTest {
 
     @Test
     fun getNoteWithEscapedChars() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_escaped_chars)
+        mock.addResponse(org.andstatus.app.test.R.raw.twitter_note_with_escaped_chars)
         val contentToSearch = ",testing,if,and,what,is,escaped,in,a,tweet," +
                 "1,less-than,sign,and,escaped,&lt," +
                 "2,greater-than,sign,and,escaped,&gt," +
@@ -228,7 +228,7 @@ class ConnectionTwitterTest {
 
     @Test
     fun follow() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_follow)
+        mock.addResponse(org.andstatus.app.test.R.raw.twitter_follow)
         val actorOid = "96340134"
         val activity = connection.follow(actorOid, true).get()
         Assert.assertEquals("No actor returned $activity", AObjectType.ACTOR, activity.getObjectType())

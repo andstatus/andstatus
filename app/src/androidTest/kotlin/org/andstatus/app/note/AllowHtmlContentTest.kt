@@ -111,7 +111,7 @@ class AllowHtmlContentTest {
         Assert.assertEquals("is HTML content allowed in GnuSocial", isHtmlAllowed,
                 DemoData.demoData.getGnuSocialOrigin().isHtmlContentAllowed())
         val mock: ConnectionMock = ConnectionMock.newFor(DemoData.demoData.gnusocialTestAccountName)
-        mock.addResponse(org.andstatus.app.tests.R.raw.gnusocial_note_with_html)
+        mock.addResponse(org.andstatus.app.test.R.raw.gnusocial_note_with_html)
         val noteOid = "4453144"
         val activity = mock.connection.getNote(noteOid).get()
         Assert.assertEquals("Received a note $activity", AObjectType.NOTE, activity.getObjectType())
@@ -120,7 +120,7 @@ class AllowHtmlContentTest {
         Assert.assertEquals("Actor Username", "vaeringjar", activity.getActor().getUsername())
         Assert.assertEquals("Author should be Actor", activity.getActor(), activity.getAuthor())
         Assert.assertTrue("inReplyTo should not be empty $activity", activity.getNote().getInReplyTo().nonEmpty)
-        val jso = JSONObject(RawResourceUtils.getString(org.andstatus.app.tests.R.raw.gnusocial_note_with_html))
+        val jso = JSONObject(RawResourceUtils.getString(org.andstatus.app.test.R.raw.gnusocial_note_with_html))
         val expectedContent = jso.getString(if (isHtmlAllowed) "statusnet_html" else "text")
         val actualContent = if (isHtmlAllowed) activity.getNote().content else MyHtml.htmlToPlainText(activity.getNote().content)
         Assert.assertEquals(if (isHtmlAllowed) "HTML content allowed" else "No HTML content", expectedContent, actualContent)

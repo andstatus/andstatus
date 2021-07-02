@@ -62,7 +62,7 @@ class ConnectionActivityPubTest {
     @Test
     fun getTimeline() {
         val sinceId = ""
-        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma)
+        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_inbox_pleroma)
         val actorForTimeline: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), VerifyCredentialsActivityPubTest.ACTOR_OID)
                 .withUniqueName(VerifyCredentialsActivityPubTest.UNIQUE_NAME_IN_ORIGIN)
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox")
@@ -115,7 +115,7 @@ class ConnectionActivityPubTest {
     fun getNotesByActor() {
         val ACTOR_OID2 = "https://pleroma.site/users/kaniini"
         val sinceId = ""
-        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_outbox_pleroma)
+        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_outbox_pleroma)
         val actorForTimeline: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), ACTOR_OID2)
                 .withUniqueName(VerifyCredentialsActivityPubTest.UNIQUE_NAME_IN_ORIGIN)
         actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, "$ACTOR_OID2/outbox")
@@ -135,7 +135,7 @@ class ConnectionActivityPubTest {
 
     @Test
     fun noteFromPawooNet() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_note_from_pawoo_net_pleroma)
+        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_note_from_pawoo_net_pleroma)
         val activity8 = mock.connection.getNote(pawooNoteOid).get()
         Assert.assertEquals("Updating $activity8", ActivityType.UPDATE, activity8.type)
         Assert.assertEquals("Acting on a Note $activity8", AObjectType.NOTE, activity8.getObjectType())
@@ -154,7 +154,7 @@ class ConnectionActivityPubTest {
     @Test
     fun getTimeline2() {
         val sinceId = ""
-        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_inbox_pleroma_2)
+        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_inbox_pleroma_2)
         val actorForTimeline: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), VerifyCredentialsActivityPubTest.ACTOR_OID)
                 .withUniqueName(VerifyCredentialsActivityPubTest.UNIQUE_NAME_IN_ORIGIN)
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox")
@@ -218,7 +218,7 @@ class ConnectionActivityPubTest {
 
     @Test
     fun testGetFriends() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_friends_pleroma)
+        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_friends_pleroma)
         val actor: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester")
         actor.endpoints.add(ActorEndpointType.API_FOLLOWING, "https://pleroma.site/users/ActivityPubTester/following")
         val page = mock.connection.getFriendsOrFollowers(ApiRoutineEnum.GET_FRIENDS,
@@ -230,7 +230,7 @@ class ConnectionActivityPubTest {
 
     @Test
     fun testGetNoteWithAudience() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_audience_pleroma)
+        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_with_audience_pleroma)
         val noteOid = "https://pleroma.site/objects/032e7c06-48aa-4cc9-b84a-0a36a24a7779"
         val activity = mock.connection.getNote(noteOid).get()
         Assert.assertEquals("Creating $activity", ActivityType.CREATE, activity.type)
@@ -267,7 +267,7 @@ class ConnectionActivityPubTest {
 
     @Test
     fun getNoteWithAttachment() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_attachment_pleroma)
+        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_with_attachment_pleroma)
         val noteOid = "https://queer.hacktivis.me/objects/afc8092f-d25e-40a5-9dfe-5a067fb2e67d"
         val activity = mock.connection.getNote(noteOid).get()
         Assert.assertEquals("Updating $activity", ActivityType.UPDATE, activity.type)
@@ -309,7 +309,7 @@ class ConnectionActivityPubTest {
 
     @Test
     fun getActor() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_get_actor)
+        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_get_actor)
         val actorOid = "https://pleroma.site/users/ActivityPubTester"
         val partial: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), actorOid)
         val received = mock.connection.getActor(partial).get()

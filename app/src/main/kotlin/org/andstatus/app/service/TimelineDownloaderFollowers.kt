@@ -19,7 +19,7 @@ import io.vavr.control.Try
 import org.andstatus.app.net.social.ApiRoutineEnum
 
 internal class TimelineDownloaderFollowers(execContext: CommandExecutionContext) : TimelineDownloader(execContext) {
-    override fun download(): Try<Boolean> {
+    override suspend fun download(): Try<Boolean> {
         val strategy: CommandExecutorStrategy = CommandExecutorFollowers(execContext)
         return strategy.execute()
     }

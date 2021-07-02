@@ -156,7 +156,7 @@ class ConnectionPumpioTest {
     @Test
     fun testGetTimeline() {
         val sinceId = "https%3A%2F%2F" + originUrl.getHost() + "%2Fapi%2Factivity%2Ffrefq3232sf"
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_inbox)
+        mock.addResponse(org.andstatus.app.test.R.raw.pumpio_actor_t131t_inbox)
         val webFingerId = "t131t@" + originUrl.getHost()
         val actor1: Actor = Actor.Companion.fromOid(connection.data.getOrigin(), "acct:$webFingerId")
                 .setWebFingerId(webFingerId)
@@ -286,7 +286,7 @@ class ConnectionPumpioTest {
 
     @Test
     fun testGetFriends() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_following)
+        mock.addResponse(org.andstatus.app.test.R.raw.pumpio_actor_t131t_following)
         Assert.assertTrue(connection.hasApiEndpoint(ApiRoutineEnum.GET_FRIENDS))
         Assert.assertTrue(connection.hasApiEndpoint(ApiRoutineEnum.GET_FRIENDS_IDS))
         val webFingerId = "t131t@" + originUrl.getHost()
@@ -362,7 +362,7 @@ class ConnectionPumpioTest {
 
     @Test
     fun testUndoFollowActor() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.unfollow_pumpio)
+        mock.addResponse(org.andstatus.app.test.R.raw.unfollow_pumpio)
         val actorOid = "acct:evan@e14n.com"
         val activity = connection.follow(actorOid, false).get()
         Assert.assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type)
@@ -380,7 +380,7 @@ class ConnectionPumpioTest {
 
     @Test
     fun testDestroyStatus() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_delete_comment_response)
+        mock.addResponse(org.andstatus.app.test.R.raw.pumpio_delete_comment_response)
         Assert.assertTrue("Success", connection.deleteNote("https://" + DemoData.demoData.pumpioMainHost
                 + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre").get())
         val tried = connection.deleteNote("")
@@ -391,7 +391,7 @@ class ConnectionPumpioTest {
     @Test
     fun testPostWithImage() {
         // TODO: There should be 3 responses, just like for Video
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image)
+        mock.addResponse(org.andstatus.app.test.R.raw.pumpio_activity_with_image)
         val note: Note = Note.Companion.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setContentPosted("Test post note with media")
                 .withAttachments(Attachments().add(Attachment.Companion.fromUriAndMimeType(DemoData.demoData.localImageTestUri,
@@ -401,9 +401,9 @@ class ConnectionPumpioTest {
 
     @Test
     fun testPostWithVideo() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response1)
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response2)
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response3)
+        mock.addResponse(org.andstatus.app.test.R.raw.pumpio_activity_with_video_response1)
+        mock.addResponse(org.andstatus.app.test.R.raw.pumpio_activity_with_video_response2)
+        mock.addResponse(org.andstatus.app.test.R.raw.pumpio_activity_with_video_response3)
         val name = "Note - Testing Video attachments in #AndStatus"
         val content = "<p dir=\"ltr\">Video attachment is here</p>"
         val note: Note = Note.Companion.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
@@ -424,7 +424,7 @@ class ConnectionPumpioTest {
     }
 
     private fun privateGetNoteWithAttachment(uniqueUid: Boolean): Note {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image)
+        mock.addResponse(org.andstatus.app.test.R.raw.pumpio_activity_with_image)
         var note: Note = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").get().getNote()
         if (uniqueUid) {
             note = note.withNewOid(note.oid + "_" + DemoData.demoData.testRunUid)
@@ -444,7 +444,7 @@ class ConnectionPumpioTest {
 
     @Test
     fun getNoteWithReplies() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_note_self)
+        mock.addResponse(org.andstatus.app.test.R.raw.pumpio_note_self)
         val noteOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA"
         val activity = connection.getNote(noteOid).get()
         val note = activity.getNote()

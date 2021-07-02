@@ -31,7 +31,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : TimelineDownloader(execContext) {
-    override fun download(): Try<Boolean> {
+    override suspend fun download(): Try<Boolean> {
         if (!getTimeline().isSyncable()) {
             return Try.failure(IllegalArgumentException("Timeline cannot be synced: ${getTimeline()}"))
         }

@@ -65,7 +65,7 @@ class VerifyCredentialsTest {
 
     @Test
     fun testVerifyCredentials() {
-        mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter)
+        mock.addResponse(org.andstatus.app.test.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()
         assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
         val origin: Origin =  myContext.origins.firstOfType(OriginType.TWITTER)

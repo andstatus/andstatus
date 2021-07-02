@@ -8,7 +8,7 @@ import org.junit.Test
 class MyOAuth2AccessTokenJsonExtractorTest {
     @Test
     fun extractWhoAmI() {
-        val response = RawResourceUtils.getString(org.andstatus.app.tests.R.raw.activitypub_oauth_access_token_pleroma)
+        val response = RawResourceUtils.getString(org.andstatus.app.test.R.raw.activitypub_oauth_access_token_pleroma)
         Assert.assertEquals(UriUtils.toDownloadableOptional("https://pleroma.site/users/ActivityPubTester"),
                 MyOAuth2AccessTokenJsonExtractor.Companion.extractWhoAmI(response))
     }

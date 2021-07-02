@@ -27,7 +27,7 @@ import java.net.URL
 import java.util.*
 
 class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
-    override fun execute(): Try<Boolean> {
+    override suspend fun execute(): Try<Boolean> {
         return Connection.fromMyAccount(execContext.getMyAccount(), TriState.UNKNOWN)
                 .getOpenInstances()
                 .map { result -> saveDiscoveredOrigins(result) }

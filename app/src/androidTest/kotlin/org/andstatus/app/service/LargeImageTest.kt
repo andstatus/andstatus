@@ -58,7 +58,7 @@ class LargeImageTest {
         val connMock: ConnectionMock = ConnectionMock.newFor(DemoData.demoData.gnusocialTestAccountName)
         connMock.getHttpMock().setResponseStreamSupplier {
             InstrumentationRegistry.getInstrumentation().context.resources
-                    .openRawResource(org.andstatus.app.tests.R.raw.large_image)
+                    .openRawResource(org.andstatus.app.test.R.raw.large_image)
         }
         loader.setConnectionMock(connMock.connection)
         loader.load(commandData)

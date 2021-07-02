@@ -23,7 +23,7 @@ fun databaseUpgradeTest() {
         FirstActivity.setDefaultValues(context)
         val file: File = MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME)
             ?: throw IOException("Failed to open target database file")
-        RawResourceUtils.rawResourceToFile(org.andstatus.app.tests.R.raw.database_old, file)
+        RawResourceUtils.rawResourceToFile(org.andstatus.app.test.R.raw.database_old, file)
             .onFailure {
                 fail("Failed to create database. " + it.message)
             }.onSuccess { dbFile ->

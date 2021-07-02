@@ -44,7 +44,7 @@ import java.util.stream.Collectors
 
 internal class CommandExecutorOther(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
 
-    override fun execute(): Try<Boolean> {
+    override suspend fun execute(): Try<Boolean> {
         return when (execContext.commandData.command) {
             CommandEnum.LIKE, CommandEnum.UNDO_LIKE -> createOrDestroyFavorite(execContext.commandData.itemId,
                     execContext.commandData.command == CommandEnum.LIKE)

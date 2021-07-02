@@ -99,7 +99,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
 
     /** @return Success and false means soft error occurred
      */
-    open fun execute(): Try<Boolean> {
+    open suspend fun execute(): Try<Boolean> {
         MyLog.d(this, "Doing nothing")
         return Try.success(true)
     }
@@ -128,7 +128,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
         private val TAG: String = CommandExecutorStrategy::class.java.simpleName
         protected const val MIN_PROGRESS_BROADCAST_PERIOD_SECONDS: Long = 1
 
-        fun executeCommand(commandData: CommandData, parent: CommandExecutorParent?) {
+        suspend fun executeCommand(commandData: CommandData, parent: CommandExecutorParent?) {
             val strategy = getStrategy(
                     CommandExecutionContext(commandData.myContext, commandData)).setParent(parent)
             commandData.getResult().prepareForLaunch()

@@ -27,7 +27,6 @@ android {
         minSdkVersion(rootProject.extra["minSdkVersion"] as Int)
         targetSdkVersion(rootProject.extra["targetSdkVersion"] as Int)
 
-        testApplicationId = "org.andstatus.app.tests"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // To test arguments:
         // testInstrumentationRunnerArgument "executionMode", "travisTest"
