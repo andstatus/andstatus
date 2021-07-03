@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit
 object ApplicationDataUtil {
 
     fun deleteApplicationData() {
-        MyServiceManager.Companion.setServiceUnavailable()
+        MyServiceManager.setServiceUnavailable()
         deleteAccounts()
         val context: Context =  MyContextHolder.myContextHolder.getNow().context
         MyContextHolder.myContextHolder.release { "deleteApplicationData" }

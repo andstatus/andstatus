@@ -40,7 +40,7 @@ class MyAppWidgetProviderTest {
 
     @Before
     fun setUp() {
-        MyServiceManager.Companion.setServiceUnavailable()
+        MyServiceManager.setServiceUnavailable()
     }
 
     @Test

@@ -135,7 +135,7 @@ object TestSuite {
         ExceptionsCounter.forget()
         MyLog.forget()
         Assert.assertTrue("Level $logLevel should be loggable", MyLog.isLoggable(TAG, logLevel))
-        MyServiceManager.Companion.setServiceUnavailable()
+        MyServiceManager.setServiceUnavailable()
         if (MyContextHolder.myContextHolder.getBlocking().state != MyContextState.READY) {
             MyLog.d(TAG, "MyContext is not ready: " + MyContextHolder.myContextHolder.getNow().state)
             if (MyContextHolder.myContextHolder.getNow().state == MyContextState.NO_PERMISSIONS) {

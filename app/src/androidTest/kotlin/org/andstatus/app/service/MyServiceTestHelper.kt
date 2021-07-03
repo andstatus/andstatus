@@ -39,8 +39,8 @@ class MyServiceTestHelper : MyServiceEventsListener {
     fun setUp(accountName: String?) {
         MyLog.i(this, "setUp started")
         try {
-            MyServiceManager.Companion.setServiceUnavailable()
-            MyServiceManager.Companion.stopService()
+            MyServiceManager.setServiceUnavailable()
+            MyServiceManager.stopService()
             MyAccountTest.fixPersistentAccounts(myContext)
             val isSingleStubbedInstance = accountName.isNullOrEmpty()
             if (isSingleStubbedInstance) {
@@ -56,8 +56,8 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 myContext = MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
                 Assert.assertEquals("Context should be ready", true, myContext.isReady)
             }
-            MyServiceManager.Companion.setServiceUnavailable()
-            MyServiceManager.Companion.stopService()
+            MyServiceManager.setServiceUnavailable()
+            MyServiceManager.stopService()
             TestSuite.getMyContextForTest().connectionState = ConnectionState.WIFI
             if (!isSingleStubbedInstance) {
                 httpConnectionStub = ConnectionStub.newFor(accountName).getHttpStub()
@@ -67,7 +67,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 it.registerReceiver(myContext.context)
             }
             Assert.assertTrue("Couldn't stop MyService", waitForServiceStopped(false))
-            httpConnectionStub?.clearPostedData()
+            httpConnectionStub?.clearData()
             Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(false))
         } catch (e: Exception) {
             MyLog.e(this, "setUp", e)
@@ -109,7 +109,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 break
             }
         }
-        val logMsgEnd = "$method ended, found=$found, count=$executionStartCount, $criteria"
+        val logMsgEnd = "$method ended, found=$found, count=$executionStartCount, $criteria; waiting ended on:$locEvent"
         MyLog.v(this, logMsgEnd)
         if (expectStarted != TriState.UNKNOWN) {
             Assert.assertEquals(logMsgEnd, expectStarted.toBoolean(false), found)
@@ -137,6 +137,11 @@ class MyServiceTestHelper : MyServiceEventsListener {
                     + " " + found + ", event:" + locEvent + ", count0=" + count0
         )
         return found
+    }
+
+    fun stopService(clearQueue: Boolean): Boolean {
+        MyServiceManager.stopService()
+        return waitForServiceStopped(clearQueue)
     }
 
     fun waitForServiceStopped(clearQueue: Boolean): Boolean {

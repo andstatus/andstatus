@@ -58,6 +58,7 @@ class HttpConnectionStub : HttpConnection() {
 
     private val networkDelayMs: Long = 1000
     private val mInstanceId = InstanceId.next()
+
     fun setSameResponse(sameResponse: Boolean) {
         this.sameResponse = sameResponse
     }
@@ -184,8 +185,12 @@ class HttpConnectionStub : HttpConnection() {
                 { a1: Int, a2: Int -> a1 + a2 })
     }
 
-    fun clearPostedData() {
+    fun clearData() {
         results.clear()
+        responses.clear()
+        responsesCounter = 0
+        setSameResponse(false)
+        setRuntimeException(null)
     }
 
     fun getInstanceId(): Long {
