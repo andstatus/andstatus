@@ -94,21 +94,12 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     private val mCancelled = AtomicBoolean()
     val isCancelled: Boolean get() = mCancelled.get()
 
-    enum class PoolEnum(val corePoolSize: Int, val maxCommandExecutionSeconds: Long, val mayBeShutDown: Boolean) {
-        SYNC(3, MAX_COMMAND_EXECUTION_SECONDS, true),
-        FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS, true),
-        QUICK_UI(0, 20, false),
-        LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS, true),
-        DATABASE_WRITE(0, 20, false);
-
-        companion object {
-            fun thatCannotBeShutDown(): PoolEnum {
-                for (pool in values()) {
-                    if (!pool.mayBeShutDown) return pool
-                }
-                throw IllegalStateException("All pools may be shut down")
-            }
-        }
+    enum class PoolEnum(val corePoolSize: Int, val maxCommandExecutionSeconds: Long) {
+        SYNC(3, MAX_COMMAND_EXECUTION_SECONDS),
+        FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS),
+        QUICK_UI(2, 20),
+        DEFAULT_POOL(0, MAX_COMMAND_EXECUTION_SECONDS),
+        DATABASE_WRITE(0, 20);
     }
 
     /**
@@ -205,6 +196,8 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
             logError("Database lock error, probably related to the application re-initialization", e)
         } catch (e: AssertionError) {
             ExceptionsCounter.logSystemInfo(e)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            // TODO: Should reflect in result somehow...
         } catch (e: Exception) {
             ExceptionsCounter.logSystemInfo(e)
         }
@@ -391,6 +384,9 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     }
 
     private fun logError(msgLog: String, tr: Throwable?) {
+        if (tr is kotlinx.coroutines.CancellationException) {
+            return
+        }
         MyLog.w(this, msgLog, tr)
         if (firstError.isNotEmpty() || tr == null) {
             return
@@ -419,7 +415,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
             uiConsumer: (Params?) -> (Try<Result>) -> Unit
         ):
                 MyAsyncTask<Params, Progress, Try<Result>> {
-            return object : MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.LONG_UI) {
+            return object : MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.DEFAULT_POOL) {
 
                 override suspend fun doInBackground(params: Params?): Try<Result> {
                     return backgroundFunc(params)

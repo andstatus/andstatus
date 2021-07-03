@@ -193,8 +193,8 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     private inner class AsyncLoader : MyAsyncTask<Bundle?, String?, SyncLoader<*>?>, ProgressPublisher {
         private var mSyncLoader: SyncLoader<*>? = null
 
-        constructor(taskId: String?) : super(taskId, PoolEnum.LONG_UI) {}
-        constructor() : super(PoolEnum.LONG_UI) {}
+        constructor(taskId: String?) : super(taskId, PoolEnum.DEFAULT_POOL) {}
+        constructor() : super(PoolEnum.DEFAULT_POOL) {}
 
         fun getSyncLoader(): SyncLoader<*> {
             return mSyncLoader ?: newSyncLoader(null)

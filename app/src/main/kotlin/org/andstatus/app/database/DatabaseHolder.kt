@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyStorage
 import org.andstatus.app.data.converter.DatabaseConverterController
+import org.andstatus.app.data.converter.DatabaseUpgradeParams
 import org.andstatus.app.util.MyLog
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -75,7 +76,10 @@ class DatabaseHolder(context: Context, private val creationEnabled: Boolean) :
      */
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (onUpgradeTriggered.compareAndSet(false, true)) {
-            DatabaseConverterController().onUpgrade(db, oldVersion, newVersion)
+            DatabaseUpgradeParams(db, oldVersion, newVersion)
+                .let {
+                    DatabaseConverterController().onUpgrade(it)
+                }
         }
     }
 

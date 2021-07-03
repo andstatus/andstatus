@@ -16,7 +16,6 @@
 package org.andstatus.app.data.converter
 
 import android.app.Activity
-import android.database.sqlite.SQLiteDatabase
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
 import org.andstatus.app.backup.DefaultProgressListener
@@ -25,6 +24,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.checker.DataChecker
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.MyAsyncTask.PoolEnum.DEFAULT_POOL
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
@@ -32,8 +32,9 @@ import java.util.concurrent.TimeUnit
 
 class DatabaseConverterController {
     private class AsyncUpgrade(val upgradeRequestor: Activity, val isRestoring: Boolean) :
-        MyAsyncTask<Void?, Void?, Void?>(PoolEnum.LONG_UI) {
+        MyAsyncTask<Void?, Void?, Void?>(DEFAULT_POOL) {
         var progressLogger: ProgressLogger = ProgressLogger.getEmpty(TAG)
+        override val cancelable: Boolean = false
 
         override suspend fun doInBackground(aVoid: Void?): Void? {
             syncUpgrade()
@@ -109,7 +110,7 @@ class DatabaseConverterController {
         }
     }
 
-    fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    fun onUpgrade(upgradeParams: DatabaseUpgradeParams) {
         if (!shouldTriggerDatabaseUpgrade) {
             MyLog.v(this, "onUpgrade - Trigger not set yet")
             throw IllegalStateException("onUpgrade - Trigger not set yet")
@@ -119,8 +120,8 @@ class DatabaseConverterController {
             stillUpgrading()
         }
         MyContextHolder.myContextHolder.getNow().isInForeground = true
-        val databaseConverter = DatabaseConverter()
-        val success = databaseConverter.execute(UpgradeParams(mProgressLogger, db, oldVersion, newVersion))
+        val databaseConverter = DatabaseConverter(mProgressLogger)
+        val success = databaseConverter.execute(upgradeParams)
         synchronized(upgradeLock) {
             upgradeEnded = true
             upgradeEndedSuccessfully = success
@@ -129,13 +130,6 @@ class DatabaseConverterController {
             throw ApplicationUpgradeException(databaseConverter.converterError)
         }
     }
-
-    internal class UpgradeParams(
-        var progressLogger: ProgressLogger,
-        var db: SQLiteDatabase,
-        var oldVersion: Int,
-        var newVersion: Int
-    )
 
     companion object {
         private val TAG: String = DatabaseConverterController::class.java.simpleName
@@ -151,6 +145,7 @@ class DatabaseConverterController {
         private var upgradeStarted = false
         private var upgradeEnded = false
         private var upgradeEndedSuccessfully = false
+        @Volatile
         private var mProgressLogger: ProgressLogger = ProgressLogger.getEmpty(TAG)
         // end ---
 
@@ -251,5 +246,7 @@ class DatabaseConverterController {
             }
             return true
         }
+
     }
+
 }

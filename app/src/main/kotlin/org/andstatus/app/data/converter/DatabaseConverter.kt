@@ -18,18 +18,15 @@ package org.andstatus.app.data.converter
 import android.database.sqlite.SQLiteDatabase
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.data.DbUtils
-import org.andstatus.app.data.converter.DatabaseConverterController.UpgradeParams
 import org.andstatus.app.util.MyLog
 import java.util.concurrent.TimeUnit
 
-internal class DatabaseConverter {
+internal class DatabaseConverter(val progressLogger: ProgressLogger) {
     var startTime = System.currentTimeMillis()
-    var progressLogger: ProgressLogger = ProgressLogger.getEmpty("DatabaseConverter")
     var converterError: String = ""
 
-    fun execute(params: UpgradeParams): Boolean {
+    fun execute(params: DatabaseUpgradeParams): Boolean {
         var success = false
-        progressLogger = params.progressLogger
         var msgLog: String
         var endTime: Long = 0
         try {

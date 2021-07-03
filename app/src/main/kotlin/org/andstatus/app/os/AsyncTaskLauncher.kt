@@ -19,7 +19,6 @@ import io.vavr.control.Try
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
-import kotlinx.coroutines.cancel
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
@@ -54,22 +53,6 @@ class AsyncTaskLauncher<Params> {
         }
     }
 
-    private fun foundUnfinished(asyncTask: MyAsyncTask<Params?, *, *>?): Boolean {
-        for (launched in launchedTasks) {
-            if (launched == asyncTask && launched.needsBackgroundWork()) {
-                MyLog.v(this) {
-                    ("Found unfinished "
-                            + (if (launched.isCancelled) "cancelled " else "")
-                            + launched)
-                }
-                if (!launched.isCancelled) {
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
     companion object {
         private val TAG: String = AsyncTaskLauncher::class.java.simpleName
         private val launchedCount: AtomicLong = AtomicLong()
@@ -80,7 +63,7 @@ class AsyncTaskLauncher<Params> {
         private var SYNC_POOL_EXECUTOR: CoroutineContext? = null
 
         @Volatile
-        private var LONG_UI_POOL_EXECUTOR: CoroutineContext? = null
+        private var QUICK_UI_EXECUTOR: CoroutineContext? = null
 
         @Volatile
         private var FILE_DOWNLOAD_EXECUTOR: CoroutineContext? = null
@@ -93,17 +76,19 @@ class AsyncTaskLauncher<Params> {
          * order.  This serialization is global to a particular process.
          * TODO: Implement serialization. See e.g. https://github.com/Kotlin/kotlinx.coroutines/issues/261
          */
-        val SERIAL_EXECUTOR: CoroutineContext = ThreadPoolExecutor(1, 1,
-            1, TimeUnit.SECONDS, LinkedBlockingQueue(512)).asCoroutineDispatcher()
+        val SERIAL_EXECUTOR: CoroutineContext = ThreadPoolExecutor(
+            1, 1,
+            1, TimeUnit.SECONDS, LinkedBlockingQueue(512)
+        ).asCoroutineDispatcher()
 
         fun getExecutor(pool: PoolEnum): CoroutineContext {
             var executor: CoroutineContext?
             executor = when (pool) {
-                PoolEnum.LONG_UI -> LONG_UI_POOL_EXECUTOR
+                PoolEnum.DEFAULT_POOL -> Dispatchers.Default
                 PoolEnum.FILE_DOWNLOAD -> FILE_DOWNLOAD_EXECUTOR
                 PoolEnum.SYNC -> SYNC_POOL_EXECUTOR
                 PoolEnum.DATABASE_WRITE -> SERIAL_EXECUTOR
-                PoolEnum.QUICK_UI -> Dispatchers.Default
+                PoolEnum.QUICK_UI -> QUICK_UI_EXECUTOR
             }
             if (executor is ExecutorCoroutineDispatcher) {
                 val tpe = executor.executor
@@ -119,8 +104,10 @@ class AsyncTaskLauncher<Params> {
             }
             if (executor == null) {
                 MyLog.v(TAG) { "Creating pool " + pool.name }
-                executor = ThreadPoolExecutor(pool.corePoolSize, pool.corePoolSize + 1,
-                        1, TimeUnit.SECONDS, LinkedBlockingQueue(512)).asCoroutineDispatcher()
+                executor = ThreadPoolExecutor(
+                    pool.corePoolSize, pool.corePoolSize + 1,
+                    1, TimeUnit.SECONDS, LinkedBlockingQueue(512)
+                ).asCoroutineDispatcher()
                 setExecutor(pool, executor)
             }
             return executor
@@ -129,7 +116,7 @@ class AsyncTaskLauncher<Params> {
         private fun setExecutor(pool: PoolEnum, executor: CoroutineContext?) {
             onExecutorRemoval(pool)
             when (pool) {
-                PoolEnum.LONG_UI -> LONG_UI_POOL_EXECUTOR = executor
+                PoolEnum.QUICK_UI -> QUICK_UI_EXECUTOR = executor
                 PoolEnum.FILE_DOWNLOAD -> FILE_DOWNLOAD_EXECUTOR = executor
                 PoolEnum.SYNC -> SYNC_POOL_EXECUTOR = executor
                 PoolEnum.DATABASE_WRITE -> DATABASE_WRITE_EXECUTOR = executor
@@ -141,13 +128,16 @@ class AsyncTaskLauncher<Params> {
             return execute<Any?, Any?>(null, {
                 backgroundFunc.run()
                 Try.success(null)
-            }, { { _ -> {} } })
+            }, { { _ ->  } })
         }
 
-        fun <Params, Result> execute(params: Params?,
-                                     backgroundFunc: (Params?) -> Try<Result>,
-                                     uiConsumer: (Params?) -> (Try<Result>) -> Unit): Try<Void> {
-            val asyncTask: MyAsyncTask<Params?, Void, Try<Result>> = MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
+        fun <Params, Result> execute(
+            params: Params?,
+            backgroundFunc: (Params?) -> Try<Result>,
+            uiConsumer: (Params?) -> (Try<Result>) -> Unit
+        ): Try<Void> {
+            val asyncTask: MyAsyncTask<Params?, Void, Try<Result>> =
+                MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
             return AsyncTaskLauncher<Params?>().execute(params, asyncTask, params)
         }
 
@@ -157,18 +147,15 @@ class AsyncTaskLauncher<Params> {
         }
 
         private fun cancelStalledTasks() {
-            val poolsToShutDown: MutableSet<PoolEnum> = HashSet()
+            var count = 0
             for (launched in launchedTasks) {
                 if (launched.needsBackgroundWork() && !launched.isReallyWorking()) {
                     MyLog.v(TAG) { "Found stalled task at " + launched.pool + ": " + launched }
-                    if (launched.pool.mayBeShutDown && launched.cancelledLongAgo() && launched.hasExecutor.get()) {
-                        poolsToShutDown.add(launched.pool)
-                    } else {
-                        launched.cancel()
-                    }
+                    count++
+                    MyLog.v(TAG) { "$count. (stalled) Cancelling task: $launched" }
+                    launched.cancel()
                 }
             }
-            shutdownExecutors(poolsToShutDown)
         }
 
         private fun removeFinishedTasks() {
@@ -218,14 +205,14 @@ class AsyncTaskLauncher<Params> {
                         builder.append("P $pendingCount. $launched\n")
                     }
                     MyAsyncTask.Status.RUNNING -> if (launched.backgroundStartedAt == 0L) {
-                            queuedCount++
-                            builder.append("Q $queuedCount. $launched\n")
-                        } else if (launched.backgroundEndedAt == 0L) {
-                            runningCount++
-                            builder.append("R $runningCount. $launched\n")
-                        } else {
-                            finishingCount++
-                            builder.append("F $finishingCount. $launched\n")
+                        queuedCount++
+                        builder.append("Q $queuedCount. $launched\n")
+                    } else if (launched.backgroundEndedAt == 0L) {
+                        runningCount++
+                        builder.append("R $runningCount. $launched\n")
+                    } else {
+                        finishingCount++
+                        builder.append("F $finishingCount. $launched\n")
                     }
                     MyAsyncTask.Status.FINISHED -> finishedCount++
                     else -> {
@@ -253,23 +240,6 @@ class AsyncTaskLauncher<Params> {
             return builder2
         }
 
-        private fun shutdownExecutors(pools: MutableCollection<PoolEnum>) {
-            for (pool in pools) {
-                val executor = getExecutor(pool)
-                if (executor is ExecutorCoroutineDispatcher) {
-                    val tpe = executor.executor
-                    if (tpe is ThreadPoolExecutor) {
-                        MyLog.v(TAG) { "Shutting down executor $pool:$tpe" }
-                        tpe.shutdownNow()
-                    }
-                } else {
-                    MyLog.v(TAG) { "Cancelling coroutine context $pool:$executor" }
-                    executor.cancel()
-                }
-                setExecutor(pool, null)
-            }
-        }
-
         fun forget() {
             Arrays.asList(*PoolEnum.values()).forEach(Consumer { pool: PoolEnum -> cancelPoolTasks(pool) })
             cancelStalledTasks()
@@ -278,10 +248,16 @@ class AsyncTaskLauncher<Params> {
 
         fun cancelPoolTasks(pool: PoolEnum) {
             MyLog.v(TAG) { "Cancelling tasks for pool " + pool.name }
+            var count = 0
             for (launched in launchedTasks) {
-                if (!launched.cancelable) continue
+                if (!launched.cancelable ||
+                    launched.isCancelled ||
+                    launched.status == MyAsyncTask.Status.FINISHED
+                ) continue
                 if (launched.pool == pool) {
                     try {
+                        count++
+                        MyLog.v(TAG) { "$count. Cancelling task: $launched" }
                         launched.cancel()
                     } catch (tr: Throwable) {
                         // Ignore

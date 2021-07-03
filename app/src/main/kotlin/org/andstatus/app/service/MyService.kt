@@ -188,7 +188,10 @@ class MyService : Service(), IdentifiableInstance {
         if (replace) {
             val current = MyServiceHeartBeat(this)
             if (heartBeatRef.compareAndSet(previous, current)) {
-                previous?.cancel()
+                previous?.let {
+                   MyLog.v(this) { "(revive heartbeat) Cancelling task: $it" }
+                   it.cancel()
+                }
                 AsyncTaskLauncher.execute(TAG, current).onFailure { t: Throwable? ->
                     heartBeatRef.compareAndSet(current, null)
                     MyLog.w(TAG, "MyService $instanceId Failed to revive heartbeat", t)
@@ -276,6 +279,7 @@ class MyService : Service(), IdentifiableInstance {
         mForcedToStop = false
         val heartBeat = heartBeatRef.get()
         if (heartBeat != null && heartBeatRef.compareAndSet(heartBeat, null)) {
+            MyLog.v(this) { "(unit) Cancelling task: $heartBeat" }
             heartBeat.cancel()
         }
         AsyncTaskLauncher.cancelPoolTasks(PoolEnum.SYNC)

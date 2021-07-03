@@ -30,6 +30,7 @@ import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.MyAsyncTask.PoolEnum.DEFAULT_POOL
 import org.andstatus.app.util.UriUtils
 
 class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
@@ -116,7 +117,7 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private class RestoreTask(private val activity: RestoreActivity) :
-        MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.thatCannotBeShutDown()) {
+        MyAsyncTask<DocumentFile?, CharSequence?, Void?>(DEFAULT_POOL) {
 
         override val cancelable = false
 

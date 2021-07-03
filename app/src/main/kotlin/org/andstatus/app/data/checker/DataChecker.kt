@@ -22,6 +22,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.MyAsyncTask.PoolEnum.DEFAULT_POOL
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
@@ -99,7 +100,7 @@ abstract class DataChecker {
         fun fixDataAsync(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean) {
             AsyncTaskLauncher.execute(
                     logger.logTag,
-                    object : MyAsyncTask<Void?, Void?, Void?>(logger.logTag, PoolEnum.thatCannotBeShutDown()) {
+                    object : MyAsyncTask<Void?, Void?, Void?>(logger.logTag, DEFAULT_POOL) {
                         override val cancelable: Boolean = false
 
                         override suspend fun doInBackground(aVoid: Void?): Void? {
