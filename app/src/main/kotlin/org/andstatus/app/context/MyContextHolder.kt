@@ -104,7 +104,7 @@ class MyContextHolder private constructor() : TaggedClass {
         return myFutureContext
     }
 
-    /** This is mainly for mocking / testing
+    /** This is mainly for stubbing / testing
      * @return true if succeeded
      */
     fun trySetCreator(contextCreatorNew: MyContext): Boolean {

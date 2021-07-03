@@ -26,7 +26,7 @@ import android.view.View
 /**
  * @author yvolk@yurivolkov.com
  */
-class MenuItemMock(itemId: Int) : MenuItem {
+class MenuItemStub(itemId: Int) : MenuItem {
     private val mItemId: Int = itemId
 
     @Volatile

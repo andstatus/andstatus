@@ -26,7 +26,7 @@ class RepeatingFailingCommandTest : MyServiceTest() {
 
     @Test
     fun repeatingFailingCommand() {
-        for (iteration in 0 until ITERATIONS_NUMBER) oneIteration(iteration)
+        for (iteration in 0..1) oneIteration(iteration)
     }
 
     private fun oneIteration(iteration: Int) {
@@ -67,9 +67,5 @@ class RepeatingFailingCommandTest : MyServiceTest() {
         }
         mService.setListenedCommand(command)
         mService.sendListenedCommand()
-    }
-
-    companion object {
-        private const val ITERATIONS_NUMBER = 2
     }
 }

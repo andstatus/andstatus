@@ -6,8 +6,8 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
-import org.andstatus.app.net.http.HttpConnectionMock
-import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.http.HttpConnectionStub
+import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState
@@ -18,7 +18,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
     private var serviceConnector: MyServiceEventsReceiver? = null
 
     @Volatile
-    private var httpConnectionMock: HttpConnectionMock? = null
+    private var httpConnectionStub: HttpConnectionStub? = null
 
     @Volatile
     var connectionInstanceId: Long = 0
@@ -42,10 +42,10 @@ class MyServiceTestHelper : MyServiceEventsListener {
             MyServiceManager.Companion.setServiceUnavailable()
             MyServiceManager.Companion.stopService()
             MyAccountTest.fixPersistentAccounts(myContext)
-            val isSingleMockedInstance = accountName.isNullOrEmpty()
-            if (isSingleMockedInstance) {
-                httpConnectionMock = HttpConnectionMock()
-                TestSuite.setHttpConnectionMockInstance(httpConnectionMock)
+            val isSingleStubbedInstance = accountName.isNullOrEmpty()
+            if (isSingleStubbedInstance) {
+                httpConnectionStub = HttpConnectionStub()
+                TestSuite.setHttpConnectionStubInstance(httpConnectionStub)
                 MyContextHolder.myContextHolder.getBlocking().setExpired { this.javaClass.simpleName + " setUp" }
             }
             myContext = MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
@@ -59,15 +59,15 @@ class MyServiceTestHelper : MyServiceEventsListener {
             MyServiceManager.Companion.setServiceUnavailable()
             MyServiceManager.Companion.stopService()
             TestSuite.getMyContextForTest().connectionState = ConnectionState.WIFI
-            if (!isSingleMockedInstance) {
-                httpConnectionMock = ConnectionMock.newFor(accountName).getHttpMock()
+            if (!isSingleStubbedInstance) {
+                httpConnectionStub = ConnectionStub.newFor(accountName).getHttpStub()
             }
-            connectionInstanceId = httpConnectionMock?.getInstanceId() ?: 0
+            connectionInstanceId = httpConnectionStub?.getInstanceId() ?: 0
             serviceConnector = MyServiceEventsReceiver(myContext, this).also {
                 it.registerReceiver(myContext.context)
             }
             Assert.assertTrue("Couldn't stop MyService", waitForServiceStopped(false))
-            httpConnectionMock?.clearPostedData()
+            httpConnectionStub?.clearPostedData()
             Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(false))
         } catch (e: Exception) {
             MyLog.e(this, "setUp", e)
@@ -186,7 +186,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
         }
         MyLog.v(
             this, "onReceive; " + locEvent + ", " + commandData + ", event:" + myServiceEvent +
-                    ", requestsCounter:" + httpConnectionMock?.getRequestsCounter()
+                    ", requestsCounter:" + httpConnectionStub?.getRequestsCounter()
         )
     }
 
@@ -195,7 +195,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
         dropQueues()
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true)
         serviceConnector?.unregisterReceiver(myContext.context)
-        TestSuite.clearHttpMocks()
+        TestSuite.clearHttpStubs()
         TestSuite.getMyContextForTest().connectionState = ConnectionState.UNKNOWN
         MyContextHolder.myContextHolder.getBlocking().accounts.initialize()
         MyContextHolder.myContextHolder.getBlocking().timelines.initialize()
@@ -212,7 +212,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
         MyLog.v(this, "setListenedCommand; " + this.listenedCommand)
     }
 
-    fun getHttp(): HttpConnectionMock? {
-        return httpConnectionMock
+    fun getHttp(): HttpConnectionStub? {
+        return httpConnectionStub
     }
 }

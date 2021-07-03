@@ -72,7 +72,7 @@ import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.service.MyServiceState
 import org.andstatus.app.service.QueueViewer
-import org.andstatus.app.test.SelectorActivityMock
+import org.andstatus.app.test.SelectorActivityStub
 import org.andstatus.app.timeline.meta.ManageTimelines
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineSelector
@@ -113,7 +113,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
     var mDrawerToggle: ActionBarDrawerToggle? = null
 
     @Volatile
-    private var selectorActivityMock: SelectorActivityMock? = null
+    private var selectorActivityStub: SelectorActivityStub? = null
     var syncYoungerView: View? = null
     var syncOlderView: View? = null
     var actorProfileViewer: ActorProfileViewer? = null
@@ -895,7 +895,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
     }
 
     override fun startActivityForResult(intent: Intent?, requestCode: Int) {
-        selectorActivityMock?.startActivityForResult(intent, requestCode)
+        selectorActivityStub?.startActivityForResult(intent, requestCode)
                 ?: super.startActivityForResult(intent, requestCode)
     }
 
@@ -1073,8 +1073,8 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
         }
     }
 
-    fun setSelectorActivityMock(selectorActivityMock: SelectorActivityMock?) {
-        this.selectorActivityMock = selectorActivityMock
+    fun setSelectorActivityStub(selectorActivityStub: SelectorActivityStub?) {
+        this.selectorActivityStub = selectorActivityStub
     }
 
     companion object {

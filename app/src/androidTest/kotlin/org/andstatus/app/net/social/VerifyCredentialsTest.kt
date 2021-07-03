@@ -38,15 +38,15 @@ import kotlin.properties.Delegates
 class VerifyCredentialsTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var connection: Connection by Delegates.notNull()
-    private var mock: ConnectionMock by Delegates.notNull()
+    private var stub: ConnectionStub by Delegates.notNull()
     private var keyStored: String? = null
     private var secretStored: String? = null
 
     @Before
     fun setUp() {
-        mock = ConnectionMock.newFor(DemoData.demoData.twitterTestAccountName)
-        connection = mock.connection
-        val data = mock.getHttp().data
+        stub = ConnectionStub.newFor(DemoData.demoData.twitterTestAccountName)
+        connection = stub.connection
+        val data = stub.getHttp().data
         data.originUrl = UrlUtils.fromString("https://twitter.com")
         data.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(data)
         keyStored = data.oauthClientKeys?.getConsumerKey()
@@ -59,17 +59,17 @@ class VerifyCredentialsTest {
     @After
     fun tearDown() {
         if (!keyStored.isNullOrEmpty()) {
-            mock.getHttp().data.oauthClientKeys?.setConsumerKeyAndSecret(keyStored, secretStored)
+            stub.getHttp().data.oauthClientKeys?.setConsumerKeyAndSecret(keyStored, secretStored)
         }
     }
 
     @Test
     fun testVerifyCredentials() {
-        mock.addResponse(org.andstatus.app.test.R.raw.verify_credentials_twitter)
+        stub.addResponse(org.andstatus.app.test.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()
         assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
         val origin: Origin =  myContext.origins.firstOfType(OriginType.TWITTER)
-        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().getAccountName())
+        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(stub.getData().getAccountName())
         builder.onCredentialsVerified(actor).onFailure { e -> AssertionError("Failed: $e" ) }
         assertTrue("Account is persistent", builder.isPersistent())
         val actorId = builder.myAccount.actorId

@@ -29,7 +29,7 @@ import org.andstatus.app.data.OidEnum
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.AObjectType
 import org.andstatus.app.net.social.ActivityType
-import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.service.CommandData
@@ -110,10 +110,10 @@ class AllowHtmlContentTest {
     private fun oneGnuSocialTest(isHtmlAllowed: Boolean) {
         Assert.assertEquals("is HTML content allowed in GnuSocial", isHtmlAllowed,
                 DemoData.demoData.getGnuSocialOrigin().isHtmlContentAllowed())
-        val mock: ConnectionMock = ConnectionMock.newFor(DemoData.demoData.gnusocialTestAccountName)
-        mock.addResponse(org.andstatus.app.test.R.raw.gnusocial_note_with_html)
+        val stub: ConnectionStub = ConnectionStub.newFor(DemoData.demoData.gnusocialTestAccountName)
+        stub.addResponse(org.andstatus.app.test.R.raw.gnusocial_note_with_html)
         val noteOid = "4453144"
-        val activity = mock.connection.getNote(noteOid).get()
+        val activity = stub.connection.getNote(noteOid).get()
         Assert.assertEquals("Received a note $activity", AObjectType.NOTE, activity.getObjectType())
         Assert.assertEquals("Should be UPDATE $activity", ActivityType.UPDATE, activity.type)
         Assert.assertEquals("Note Oid", noteOid, activity.getNote().oid)

@@ -5,6 +5,6 @@ import android.content.Intent
 /**
  * @author yvolk@yurivolkov.com
  */
-interface SelectorActivityMock {
+interface SelectorActivityStub {
     open fun startActivityForResult(intent: Intent?, requestCode: Int)
 }

@@ -210,12 +210,12 @@ object TestSuite {
         return MyContextHolder.myContextHolder.getBlocking() as MyContextTestImpl
     }
 
-    fun setHttpConnectionMockClass(httpConnectionMockClass: Class<out HttpConnection?>?) {
-        getMyContextForTest().setHttpConnectionMockClass(httpConnectionMockClass)
+    fun setHttpConnectionStubClass(httpConnectionStubClass: Class<out HttpConnection?>?) {
+        getMyContextForTest().setHttpConnectionStubClass(httpConnectionStubClass)
     }
 
-    fun setHttpConnectionMockInstance(httpConnectionMockInstance: HttpConnection?) {
-        getMyContextForTest().setHttpConnectionMockInstance(httpConnectionMockInstance)
+    fun setHttpConnectionStubInstance(httpConnectionStubInstance: HttpConnection?) {
+        getMyContextForTest().setHttpConnectionStubInstance(httpConnectionStubInstance)
     }
 
     fun onDataDeleted() {
@@ -296,9 +296,9 @@ object TestSuite {
         return false
     }
 
-    fun clearHttpMocks() {
-        setHttpConnectionMockClass(null)
-        setHttpConnectionMockInstance(null)
+    fun clearHttpStubs() {
+        setHttpConnectionStubClass(null)
+        setHttpConnectionStubInstance(null)
         MyContextHolder.myContextHolder.getBlocking().accounts.get()
             .forEach(Consumer { obj: MyAccount -> obj.setConnection() })
     }

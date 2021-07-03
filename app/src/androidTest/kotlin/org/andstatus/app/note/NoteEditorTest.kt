@@ -292,10 +292,10 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             val method = "attachImage"
             TestSuite.waitForIdleSync()
             val helper = ActivityTestHelper<TimelineActivity<*>>(test.activity)
-            test.activity.setSelectorActivityMock(helper)
+            test.activity.setSelectorActivityStub(helper)
             helper.clickMenuItem("$method clicker attach_menu_id", R.id.attach_menu_id)
             Assert.assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id))
-            test.activity.setSelectorActivityMock(null)
+            test.activity.setSelectorActivityStub(null)
             val activityMonitor = test.getInstrumentation()
                     .addMonitor(HelpActivity::class.java.name, null, false)
             val intent1 = Intent(test.activity, HelpActivity::class.java)

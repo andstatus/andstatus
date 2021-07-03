@@ -27,14 +27,14 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.NoteTable
-import org.andstatus.app.test.SelectorActivityMock
+import org.andstatus.app.test.SelectorActivityStub
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.ViewItem
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ActivityTestHelper<T : MyActivity> : SelectorActivityMock {
+class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
     private var mActivity: T
     private var activityMonitor: ActivityMonitor? = null
 
@@ -97,7 +97,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityMock {
                     val msg = "$method-Log onOptionsItemSelected"
                     MyLog.v(method, msg)
                     try {
-                        val menuItem = MenuItemMock(menuItemResourceId)
+                        val menuItem = MenuItemStub(menuItemResourceId)
                         mActivity.onOptionsItemSelected(menuItem)
                         clicked.set(menuItem.called())
                         if (clicked.get()) {

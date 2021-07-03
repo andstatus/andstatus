@@ -25,7 +25,7 @@ import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.MyContentType
 import org.andstatus.app.data.NoteForAnyAccount
 import org.andstatus.app.net.social.Audience.Companion.fromNoteId
-import org.andstatus.app.net.social.ConnectionMock.Companion
+import org.andstatus.app.net.social.ConnectionStub.Companion
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.CommandExecutionContext
@@ -45,19 +45,19 @@ import kotlin.properties.Delegates
 
 class ConnectionMastodonTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
-    private var mock: ConnectionMock by Delegates.notNull()
+    private var stub: ConnectionStub by Delegates.notNull()
     private var accountActor: Actor = Actor.EMPTY
 
     @Before
     fun setUp() {
-        mock = Companion.newFor(DemoData.demoData.mastodonTestAccountName)
-        accountActor = mock.getData().getAccountActor()
+        stub = Companion.newFor(DemoData.demoData.mastodonTestAccountName)
+        accountActor = stub.getData().getAccountActor()
     }
 
     @Test
     fun testGetHomeTimeline() {
-        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_home_timeline)
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_home_timeline)
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)
         val size = 1
@@ -77,7 +77,7 @@ class ConnectionMastodonTest {
         DemoNoteInserter.Companion.assertVisibility(note.audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS)
         val actor = activity.getActor()
         val stringDate = "2017-04-16T11:13:12.133Z"
-        val parsedDate = mock.connection.parseDate(stringDate)
+        val parsedDate = stub.connection.parseDate(stringDate)
         Assert.assertEquals("Parsing $stringDate", 4, (Date(parsedDate).month + 1).toLong())
         Assert.assertEquals("Created at", parsedDate, actor.getCreatedDate())
         Assert.assertTrue("Actor is partially defined $actor", actor.isFullyDefined())
@@ -103,8 +103,8 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetPrivateNotes() {
-        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_private_notes)
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.PRIVATE_NOTES,
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_private_notes)
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.PRIVATE_NOTES,
                 TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)
         val size = 4
@@ -126,7 +126,7 @@ class ConnectionMastodonTest {
                         .orElse("(not found)"))
         val actor3 = activity3.getActor()
         val stringDate = "2016-10-14T08:05:36.581Z"
-        val parsedDate = mock.connection.parseDate(stringDate)
+        val parsedDate = stub.connection.parseDate(stringDate)
         Assert.assertEquals("Parsing $stringDate", 10, (Date(parsedDate).month + 1).toLong())
         Assert.assertEquals("Created at", parsedDate, actor3.getCreatedDate())
         Assert.assertTrue("Actor is partially defined $actor3", actor3.isFullyDefined())
@@ -159,24 +159,24 @@ class ConnectionMastodonTest {
     }
 
     private fun oneVisibility(stringResponse: String, visibility: Visibility) {
-        mock.getHttpMock().addResponse(stringResponse)
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
+        stub.getHttpStub().addResponse(stringResponse)
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         DemoNoteInserter.Companion.assertVisibility(timeline[0]!!.getNote().audience(), visibility)
     }
 
     @Test
     fun testGetConversation() {
-        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_get_conversation)
-        val timeline = mock.connection.getConversation("5596683").get()
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_get_conversation)
+        val timeline = stub.connection.getConversation("5596683").get()
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 5, timeline.size.toLong())
     }
 
     @Test
     fun testGetNotifications() {
-        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_notifications)
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_notifications)
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
                 TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 20, timeline.size().toLong())
@@ -228,8 +228,8 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetActor() {
-        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_get_actor)
-        val actor = mock.connection.getActor(Actor.Companion.fromOid(accountActor.origin, "5962")).get()
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_get_actor)
+        val actor = stub.connection.getActor(Actor.Companion.fromOid(accountActor.origin, "5962")).get()
         Assert.assertTrue(actor.toString(), actor.nonEmpty)
         Assert.assertEquals("Actor's Oid", "5962", actor.oid)
         Assert.assertEquals("Username", "AndStatus", actor.getUsername())
@@ -249,8 +249,8 @@ class ConnectionMastodonTest {
 
     fun mentionsInANoteOneLoad(iteration: Int) {
         MyLog.i("mentionsInANote$iteration", "started")
-        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_get_note)
-        val activity = mock.connection.getNote("101064848262880936").get()
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_get_note)
+        val activity = stub.connection.getNote("101064848262880936").get()
         Assert.assertEquals("Is not UPDATE $activity", ActivityType.UPDATE, activity.type)
         Assert.assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType())
         val actor = activity.getActor()
@@ -284,8 +284,8 @@ class ConnectionMastodonTest {
 
     @Test
     fun reblog() {
-        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_get_reblog)
-        val activity = mock.connection.getNote("101100271392454703").get()
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_get_reblog)
+        val activity = stub.connection.getNote("101100271392454703").get()
         Assert.assertEquals("Is not ANNOUNCE $activity", ActivityType.ANNOUNCE, activity.type)
         Assert.assertEquals("Is not an Activity", AObjectType.ACTIVITY, activity.getObjectType())
         val actor = activity.getActor()
@@ -309,7 +309,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun tootWithVideoAttachment() {
-        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_video)
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_video)
         assertOneTootWithVideo("263975",
                 "https://mastodon.social/media_proxy/11640109/original",
                 "https://mastodon.social/media_proxy/11640109/small")
@@ -317,16 +317,16 @@ class ConnectionMastodonTest {
 
     @Test
     fun originalTootWithVideoAttachment() {
-        mock.addResponse(org.andstatus.app.test.R.raw.mastodon_video_original)
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_video_original)
         assertOneTootWithVideo("10496",
                 "https://mastodont.cat/system/media_attachments/files/000/684/914/original/7424effb937d991c.mp4?1550739268",
                 "https://mastodont.cat/system/media_attachments/files/000/684/914/small/7424effb937d991c.png?1550739268")
     }
 
     private fun assertOneTootWithVideo(actorOid: String?, videoUri: String?, previewUri: String?) {
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.ACTOR_TIMELINE,
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.ACTOR_TIMELINE,
                 TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20,
-                Actor.Companion.fromOid(mock.getData().getOrigin(), actorOid)).get()
+                Actor.Companion.fromOid(stub.getData().getOrigin(), actorOid)).get()
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 1, timeline.size().toLong())
         val activity = timeline[0] ?: throw IllegalStateException("No activity")

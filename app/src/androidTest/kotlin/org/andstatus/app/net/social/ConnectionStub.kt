@@ -23,16 +23,16 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
-import org.andstatus.app.net.http.HttpConnectionMock
+import org.andstatus.app.net.http.HttpConnectionStub
 
-class ConnectionMock private constructor(val connection: Connection) {
-    fun withException(e: ConnectionException?): ConnectionMock {
-        getHttpMock().setException(e)
+class ConnectionStub private constructor(val connection: Connection) {
+    fun withException(e: ConnectionException?): ConnectionStub {
+        getHttpStub().setException(e)
         return this
     }
 
     fun addResponse(@RawRes responseResourceId: Int) {
-        getHttpMock().addResponse(responseResourceId)
+        getHttpStub().addResponse(responseResourceId)
     }
 
     fun getData(): AccountConnectionData {
@@ -43,29 +43,29 @@ class ConnectionMock private constructor(val connection: Connection) {
         return connection.http
     }
 
-    fun getHttpMock(): HttpConnectionMock {
-        return getHttpMock(getHttp())
+    fun getHttpStub(): HttpConnectionStub {
+        return getHttpStub(getHttp())
     }
 
     companion object {
-        fun newFor(accountName: String?): ConnectionMock {
+        fun newFor(accountName: String?): ConnectionStub {
             return newFor(DemoData.demoData.getMyAccount(accountName))
         }
 
-        fun newFor(myAccount: MyAccount): ConnectionMock {
-            TestSuite.setHttpConnectionMockClass(HttpConnectionMock::class.java)
-            val mock = ConnectionMock(myAccount.setConnection())
-            TestSuite.setHttpConnectionMockClass(null)
-            return mock
+        fun newFor(myAccount: MyAccount): ConnectionStub {
+            TestSuite.setHttpConnectionStubClass(HttpConnectionStub::class.java)
+            val stub = ConnectionStub(myAccount.setConnection())
+            TestSuite.setHttpConnectionStubClass(null)
+            return stub
         }
 
-        fun getHttpMock(http: HttpConnection?): HttpConnectionMock {
-            if (http != null && HttpConnectionMock::class.java.isAssignableFrom(http.javaClass)) {
-                return http as HttpConnectionMock
+        fun getHttpStub(http: HttpConnection?): HttpConnectionStub {
+            if (http != null && HttpConnectionStub::class.java.isAssignableFrom(http.javaClass)) {
+                return http as HttpConnectionStub
             }
             checkNotNull(http) { "http is null" }
-             MyContextHolder.myContextHolder.getNow().httpConnectionMock
-            throw IllegalStateException("http is " + http.javaClass.name + ", " +  MyContextHolder.myContextHolder.getNow().toString())
+            MyContextHolder.myContextHolder.getNow().httpConnectionStub
+            throw IllegalStateException("http is " + http.javaClass.name + ", " +  MyContextHolder.myContextHolder.getNow())
         }
     }
 }

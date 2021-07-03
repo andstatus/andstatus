@@ -41,18 +41,18 @@ import kotlin.properties.Delegates
 
 class ConnectionGnuSocialTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
-    private var mock: ConnectionMock by Delegates.notNull()
+    private var stub: ConnectionStub by Delegates.notNull()
 
     @Before
     fun setUp() {
-        mock = ConnectionMock.newFor(DemoData.demoData.gnusocialTestAccountName)
+        stub = ConnectionStub.newFor(DemoData.demoData.gnusocialTestAccountName)
     }
 
     @Test
     fun testGetPublicTimeline() {
-        mock.addResponse(org.andstatus.app.test.R.raw.quitter_home)
+        stub.addResponse(org.andstatus.app.test.R.raw.quitter_home)
         val accountActor: Actor = DemoData.demoData.getAccountActorByOid(DemoData.demoData.gnusocialTestAccountActorOid)
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.PUBLIC_TIMELINE,
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.PUBLIC_TIMELINE,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)
         val size = 3
@@ -79,7 +79,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("Favorites count", 11, author.favoritesCount)
         Assert.assertEquals("Following (friends) count", 23, author.followingCount)
         Assert.assertEquals("Followers count", 21, author.followersCount)
-        Assert.assertEquals("Created at", mock.connection.parseDate("Sun Feb 09 22:33:42 +0100 2014"), author.getCreatedDate())
+        Assert.assertEquals("Created at", stub.connection.parseDate("Sun Feb 09 22:33:42 +0100 2014"), author.getCreatedDate())
         Assert.assertEquals("Updated at", 0, author.getUpdatedDate())
         ind++
         activity = timeline[ind] ?: throw IllegalStateException("No activity")
@@ -124,14 +124,14 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("Favorites count", 31, author.favoritesCount)
         Assert.assertEquals("Following (friends) count", 17, author.followingCount)
         Assert.assertEquals("Followers count", 31, author.followersCount)
-        Assert.assertEquals("Created at", mock.connection.parseDate("Wed Aug 14 10:05:28 +0200 2013"), author.getCreatedDate())
+        Assert.assertEquals("Created at", stub.connection.parseDate("Wed Aug 14 10:05:28 +0200 2013"), author.getCreatedDate())
         Assert.assertEquals("Updated at", 0, author.getUpdatedDate())
     }
 
     @Test
     fun testSearch() {
-        mock.addResponse(org.andstatus.app.test.R.raw.twitter_home_timeline)
-        val timeline = mock.connection.searchNotes(true,
+        stub.addResponse(org.andstatus.app.test.R.raw.twitter_home_timeline)
+        val timeline = stub.connection.searchNotes(true,
                 TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, DemoData.demoData.globalPublicNoteText).get()
         Assert.assertNotNull("timeline returned", timeline)
         val size = 4
@@ -140,11 +140,11 @@ class ConnectionGnuSocialTest {
 
     @Test
     fun testPostWithMedia() {
-        mock.addResponse(org.andstatus.app.test.R.raw.quitter_note_with_attachment)
-        val note: Note = Note.Companion.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
+        stub.addResponse(org.andstatus.app.test.R.raw.quitter_note_with_attachment)
+        val note: Note = Note.Companion.fromOriginAndOid(stub.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setContentPosted("Test post note with media")
                 .withAttachments(Attachments().add(Attachment.Companion.fromUri(DemoData.demoData.localImageTestUri)))
-        val activity = mock.connection.updateNote(note).get()
+        val activity = stub.connection.updateNote(note).get()
         Assert.assertEquals("Note returned",
                 privateGetNoteWithAttachment(false).getNote(), activity.getNote())
     }
@@ -157,8 +157,8 @@ class ConnectionGnuSocialTest {
     private fun privateGetNoteWithAttachment(uniqueUid: Boolean): AActivity {
         val NOTE_OID = "2215662"
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
-        mock.addResponse(org.andstatus.app.test.R.raw.quitter_note_with_attachment)
-        val activity = mock.connection.getNote(NOTE_OID).get()
+        stub.addResponse(org.andstatus.app.test.R.raw.quitter_note_with_attachment)
+        val activity = stub.connection.getNote(NOTE_OID).get()
         if (uniqueUid) {
             activity.setNote(activity.getNote().withNewOid(activity.getNote().oid + "_" + DemoData.demoData.testRunUid))
         }
@@ -175,14 +175,14 @@ class ConnectionGnuSocialTest {
     @Test
     fun testReblog() {
         val NOTE_OID = "10341561"
-        mock.addResponse(org.andstatus.app.test.R.raw.loadaverage_repost_response)
-        val activity = mock.connection.announce(NOTE_OID).get()
+        stub.addResponse(org.andstatus.app.test.R.raw.loadaverage_repost_response)
+        val activity = stub.connection.announce(NOTE_OID).get()
         Assert.assertEquals(ActivityType.ANNOUNCE, activity.type)
         val note = activity.getNote()
         Assert.assertEquals("Note oid$note", NOTE_OID, note.oid)
         Assert.assertEquals("conversationOid", "9118253", note.conversationOid)
-        Assert.assertEquals(1, mock.getHttpMock().getRequestsCounter())
-        val result = mock.getHttpMock().getResults()[0]
+        Assert.assertEquals(1, stub.getHttpStub().getRequestsCounter())
+        val result = stub.getHttpStub().getResults()[0]
         assertThat(result.url?.toExternalForm() ?: "", containsString(NOTE_OID))
         Assert.assertEquals("Activity oid; $activity", "10341833", activity.getOid())
         Assert.assertEquals("Actor; $activity", "andstatus@loadaverage.org", activity.getActor().getWebFingerId())
@@ -221,9 +221,9 @@ class ConnectionGnuSocialTest {
 
     @Test
     fun testFavoritingActivityInTimeline() {
-        mock.addResponse(org.andstatus.app.test.R.raw.loadaverage_favoriting_activity)
+        stub.addResponse(org.andstatus.app.test.R.raw.loadaverage_favoriting_activity)
         val accountActor: Actor = DemoData.demoData.getAccountActorByOid(DemoData.demoData.gnusocialTestAccountActorOid)
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.SEARCH_NOTES,
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.SEARCH_NOTES,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 2, timeline.size().toLong())
@@ -276,8 +276,8 @@ class ConnectionGnuSocialTest {
     }
 
     private fun oneHtmlMentionsTest(actorUsername: String, noteOid: String, responseResourceId: Int, numberOfMembers: Int): AActivity {
-        mock.addResponse(responseResourceId)
-        val activity = mock.connection.getNote(noteOid).get()
+        stub.addResponse(responseResourceId)
+        val activity = stub.connection.getNote(noteOid).get()
         Assert.assertEquals("Received a note $activity", AObjectType.NOTE, activity.getObjectType())
         Assert.assertEquals("Should be UPDATE $activity", ActivityType.UPDATE, activity.type)
         Assert.assertEquals("Note Oid", noteOid, activity.getNote().oid)
@@ -287,7 +287,7 @@ class ConnectionGnuSocialTest {
         activity.getNote().updatedDate = MyLog.uniqueCurrentTimeMS()
         activity.setUpdatedNow(0)
         val executionContext = CommandExecutionContext(
-                 myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, mock.getData().getMyAccount(), 123))
+                 myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, stub.getData().getMyAccount(), 123))
         DataUpdater(executionContext).onActivity(activity)
         assertAudience(activity, activity.audience(), numberOfMembers)
         val storedAudience: Audience = Audience.Companion.load(activity.getNote().origin, activity.getNote().noteId, Optional.empty())

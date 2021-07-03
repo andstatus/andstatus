@@ -16,16 +16,13 @@
 package org.andstatus.app.service
 
 import android.content.SyncResult
-import android.database.sqlite.SQLiteDiskIOException
 import org.andstatus.app.account.DemoAccountInserter
 import org.andstatus.app.account.MyAccount
-import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.os.ExceptionsCounter
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
@@ -83,42 +80,6 @@ class MyServiceTest1 : MyServiceTest() {
         Assert.assertEquals("connection instance Id", mService.connectionInstanceId, mService.getHttp()?.getInstanceId())
         Assert.assertEquals(mService.getHttp().toString(), 1, mService.getHttp()?.getRequestsCounter())
         Assert.assertTrue("Service stopped", mService.waitForServiceStopped(true))
-        MyLog.i(this, "$method ended")
-    }
-
-    @Test
-    fun testRateLimitStatus() {
-        val method = "testRateLimitStatus"
-        MyLog.i(this, "$method started")
-        mService.setListenedCommand(CommandData.Companion.newAccountCommand(
-                CommandEnum.RATE_LIMIT_STATUS,
-                DemoData.demoData.getGnuSocialAccount()))
-        val startCount = mService.executionStartCount
-        val endCount = mService.executionEndCount
-        mService.sendListenedCommand()
-        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE)
-        Assert.assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount))
-        Assert.assertTrue(mService.getHttp().toString(),
-                mService.getHttp()?.getRequestsCounter() ?: 0 > 0)
-        Assert.assertTrue("Service stopped", mService.waitForServiceStopped(true))
-        Assert.assertEquals("DiskIoException", 0, ExceptionsCounter.getDiskIoExceptionsCount())
-        MyLog.i(this, "$method ended")
-    }
-
-    @Test
-    fun testDiskIoErrorCatching() {
-        val method = "testDiskIoErrorCatching"
-        MyLog.i(this, "$method started")
-        mService.setListenedCommand(CommandData.Companion.newAccountCommand(
-                CommandEnum.RATE_LIMIT_STATUS,
-                DemoData.demoData.getGnuSocialAccount()))
-        mService.getHttp()?.setRuntimeException(SQLiteDiskIOException(method))
-        val startCount = mService.executionStartCount
-        mService.sendListenedCommand()
-        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE)
-        Assert.assertTrue("Service stopped", mService.waitForServiceStopped(true))
-        Assert.assertEquals("No DiskIoException", 1, ExceptionsCounter.getDiskIoExceptionsCount())
-        DbUtils.waitMs(method, 3000)
         MyLog.i(this, "$method ended")
     }
 }

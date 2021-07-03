@@ -27,7 +27,7 @@ import org.andstatus.app.data.FileProvider
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Attachment
-import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Test
@@ -68,16 +68,16 @@ class AttachmentDownloaderTest {
     }
 
     companion object {
-        fun loadAndAssertStatusForRow(methodExt: String, dataIn: DownloadData, status: DownloadStatus, mockNetworkError: Boolean) {
+        fun loadAndAssertStatusForRow(methodExt: String, dataIn: DownloadData, status: DownloadStatus, imitateNetworkError: Boolean) {
             val method = "loadAndAssertStatusForRow"
-            TestSuite.clearHttpMocks()
-            MyLog.i(method, methodExt + ": " + status + ", mockError:" + mockNetworkError
+            TestSuite.clearHttpStubs()
+            MyLog.i(method, methodExt + ": " + status + ", imitateError:" + imitateNetworkError
                     + ", uri:" + dataIn.getUri())
             val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
             val loader: FileDownloader = FileDownloader.Companion.newForDownloadData(ma.myContext, dataIn)
-            if (mockNetworkError) {
-                loader.setConnectionMock(ConnectionMock.newFor(ma)
-                        .withException(ConnectionException("Mocked IO exception")).connection)
+            if (imitateNetworkError) {
+                loader.setConnectionStub(ConnectionStub.newFor(ma)
+                        .withException(ConnectionException("Imitated IO exception")).connection)
             }
             val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, Actor.EMPTY, "someActor")
             loader.load(commandData)

@@ -25,8 +25,8 @@ import org.junit.Assert
 import org.junit.Before
 
 abstract class MyServiceTest: IgnoredInTravis2() {
-    private var mMService: MyServiceTestHelper? = null
-    val mService: MyServiceTestHelper get() = mMService ?: throw IllegalStateException("MyServiceTestHelper is null")
+    private var myServiceTestHelper: MyServiceTestHelper? = null
+    val mService: MyServiceTestHelper get() = myServiceTestHelper ?: throw IllegalStateException("MyServiceTestHelper is null")
 
     @Volatile
     private var mMa: MyAccount = MyAccount.EMPTY
@@ -41,12 +41,11 @@ abstract class MyServiceTest: IgnoredInTravis2() {
         }
         try {
             TestSuite.initializeWithData(this)
-            mMService = MyServiceTestHelper().also {
+            myServiceTestHelper = MyServiceTestHelper().also {
                 it.setUp(null)
                 mMa =  MyContextHolder.myContextHolder.getNow().accounts.getFirstSucceeded().also { myAccount ->
                     Assert.assertTrue("No successfully verified accounts", myAccount.isValidAndSucceeded())
                 }
-                it.waitForServiceStopped(true)
             }
             ok = true
         } finally {
@@ -55,14 +54,14 @@ abstract class MyServiceTest: IgnoredInTravis2() {
             }
             MyLog.i(this, "setUp ended " +
                     (if (ok) "successfully " else "failed") +
-                    " instanceId=" + if (mMService == null) "null" else mMService?.connectionInstanceId)
+                    " instanceId=" + if (myServiceTestHelper == null) "null" else myServiceTestHelper?.connectionInstanceId)
         }
     }
 
     @After
     fun tearDown() {
-        MyLog.i(this, "tearDown started" + if (mMService == null) ", mService:null" else "")
-        mMService?.tearDown()
+        MyLog.i(this, "tearDown started" + if (myServiceTestHelper == null) ", mService:null" else "")
+        myServiceTestHelper?.tearDown()
         MyLog.i(this, "tearDown ended")
     }
 }

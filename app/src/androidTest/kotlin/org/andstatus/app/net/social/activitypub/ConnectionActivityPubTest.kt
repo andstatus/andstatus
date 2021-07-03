@@ -26,7 +26,7 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Attachments
-import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.net.social.Visibility
@@ -49,24 +49,24 @@ import kotlin.properties.Delegates
 
 class ConnectionActivityPubTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
-    private var mock: ConnectionMock by Delegates.notNull()
+    private var stub: ConnectionStub by Delegates.notNull()
     var pawooActorOid: String = "https://pawoo.net/users/pawooAndStatusTester"
     var pawooNoteOid: String = "https://pawoo.net/users/pawooAndStatusTester/statuses/101727836012435643"
 
     @Before
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.newFor(DemoData.demoData.activityPubTestAccountName)
+        stub = ConnectionStub.newFor(DemoData.demoData.activityPubTestAccountName)
     }
 
     @Test
     fun getTimeline() {
         val sinceId = ""
-        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_inbox_pleroma)
-        val actorForTimeline: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), VerifyCredentialsActivityPubTest.ACTOR_OID)
+        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_inbox_pleroma)
+        val actorForTimeline: Actor = Actor.Companion.fromOid(stub.getData().getOrigin(), VerifyCredentialsActivityPubTest.ACTOR_OID)
                 .withUniqueName(VerifyCredentialsActivityPubTest.UNIQUE_NAME_IN_ORIGIN)
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox")
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.Companion.of(sinceId), TimelinePosition.Companion.EMPTY, 20, actorForTimeline).get()
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 5, timeline.size().toLong())
@@ -115,11 +115,11 @@ class ConnectionActivityPubTest {
     fun getNotesByActor() {
         val ACTOR_OID2 = "https://pleroma.site/users/kaniini"
         val sinceId = ""
-        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_outbox_pleroma)
-        val actorForTimeline: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), ACTOR_OID2)
+        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_outbox_pleroma)
+        val actorForTimeline: Actor = Actor.Companion.fromOid(stub.getData().getOrigin(), ACTOR_OID2)
                 .withUniqueName(VerifyCredentialsActivityPubTest.UNIQUE_NAME_IN_ORIGIN)
         actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, "$ACTOR_OID2/outbox")
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.ACTOR_TIMELINE,
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.ACTOR_TIMELINE,
                 TimelinePosition.Companion.of(sinceId), TimelinePosition.Companion.EMPTY, 20, actorForTimeline).get()
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 10, timeline.size().toLong())
@@ -135,8 +135,8 @@ class ConnectionActivityPubTest {
 
     @Test
     fun noteFromPawooNet() {
-        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_note_from_pawoo_net_pleroma)
-        val activity8 = mock.connection.getNote(pawooNoteOid).get()
+        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_note_from_pawoo_net_pleroma)
+        val activity8 = stub.connection.getNote(pawooNoteOid).get()
         Assert.assertEquals("Updating $activity8", ActivityType.UPDATE, activity8.type)
         Assert.assertEquals("Acting on a Note $activity8", AObjectType.NOTE, activity8.getObjectType())
         val note8 = activity8.getNote()
@@ -154,11 +154,11 @@ class ConnectionActivityPubTest {
     @Test
     fun getTimeline2() {
         val sinceId = ""
-        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_inbox_pleroma_2)
-        val actorForTimeline: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), VerifyCredentialsActivityPubTest.ACTOR_OID)
+        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_inbox_pleroma_2)
+        val actorForTimeline: Actor = Actor.Companion.fromOid(stub.getData().getOrigin(), VerifyCredentialsActivityPubTest.ACTOR_OID)
                 .withUniqueName(VerifyCredentialsActivityPubTest.UNIQUE_NAME_IN_ORIGIN)
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox")
-        val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
+        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.Companion.of(sinceId), TimelinePosition.Companion.EMPTY, 20, actorForTimeline).get()
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 10, timeline.size().toLong())
@@ -218,10 +218,10 @@ class ConnectionActivityPubTest {
 
     @Test
     fun testGetFriends() {
-        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_friends_pleroma)
-        val actor: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester")
+        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_friends_pleroma)
+        val actor: Actor = Actor.Companion.fromOid(stub.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester")
         actor.endpoints.add(ActorEndpointType.API_FOLLOWING, "https://pleroma.site/users/ActivityPubTester/following")
-        val page = mock.connection.getFriendsOrFollowers(ApiRoutineEnum.GET_FRIENDS,
+        val page = stub.connection.getFriendsOrFollowers(ApiRoutineEnum.GET_FRIENDS,
                 TimelinePosition.Companion.EMPTY, actor).get()
         Assert.assertEquals("Number of actors, " +
                 "who " + actor.getUniqueNameWithOrigin() + " is following " + page, 1, page.size().toLong())
@@ -230,9 +230,9 @@ class ConnectionActivityPubTest {
 
     @Test
     fun testGetNoteWithAudience() {
-        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_with_audience_pleroma)
+        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_with_audience_pleroma)
         val noteOid = "https://pleroma.site/objects/032e7c06-48aa-4cc9-b84a-0a36a24a7779"
-        val activity = mock.connection.getNote(noteOid).get()
+        val activity = stub.connection.getNote(noteOid).get()
         Assert.assertEquals("Creating $activity", ActivityType.CREATE, activity.type)
         Assert.assertEquals("Acting on a Note $activity", AObjectType.NOTE, activity.getObjectType())
         val note = activity.getNote()
@@ -256,9 +256,9 @@ class ConnectionActivityPubTest {
         oids.forEach(Consumer { oid: String? -> Assert.assertTrue("Audience should contain $oid\n $activity\n $audience", audience.containsOid(oid)) })
         val executionContext = CommandExecutionContext(
                  myContext,
-                CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT))
+                CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, stub.getData().getMyAccount(), TimelineType.SENT))
         DataUpdater(executionContext).onActivity(activity)
-        val noteStored: Note = Note.Companion.loadContentById(mock.getData().getOrigin().myContext, note.noteId)
+        val noteStored: Note = Note.Companion.loadContentById(stub.getData().getOrigin().myContext, note.noteId)
         val audienceStored = noteStored.audience()
         oids.forEach(Consumer { oid: String? -> Assert.assertTrue("Audience should contain $oid\n $activity\n $audienceStored", audienceStored.containsOid(oid)) })
         Assert.assertTrue("Audience of $activity\n $audienceStored", audienceStored.hasNonSpecial())
@@ -267,9 +267,9 @@ class ConnectionActivityPubTest {
 
     @Test
     fun getNoteWithAttachment() {
-        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_with_attachment_pleroma)
+        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_with_attachment_pleroma)
         val noteOid = "https://queer.hacktivis.me/objects/afc8092f-d25e-40a5-9dfe-5a067fb2e67d"
-        val activity = mock.connection.getNote(noteOid).get()
+        val activity = stub.connection.getNote(noteOid).get()
         Assert.assertEquals("Updating $activity", ActivityType.UPDATE, activity.type)
         Assert.assertEquals("Acting on a Note $activity", AObjectType.NOTE, activity.getObjectType())
         val note = activity.getNote()
@@ -293,14 +293,14 @@ class ConnectionActivityPubTest {
         Assert.assertTrue("Attachments of $activity", attachments.nonEmpty)
         val executionContext = CommandExecutionContext(
                  myContext,
-                CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT))
+                CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, stub.getData().getMyAccount(), TimelineType.SENT))
         DataUpdater(executionContext).onActivity(activity)
         val attachmentsStored: Attachments = Attachments.Companion.load( myContext, activity.getNote().noteId)
         Assert.assertTrue("Attachments should be stored of $activity\n $attachmentsStored\n",
                 attachmentsStored.nonEmpty)
         Assert.assertEquals("Attachment stored of $activity\n $attachmentsStored\n",
                 attachments.list, attachmentsStored.list)
-        val noteStored: Note = Note.Companion.loadContentById(mock.getData().getOrigin().myContext, note.noteId)
+        val noteStored: Note = Note.Companion.loadContentById(stub.getData().getOrigin().myContext, note.noteId)
         val audienceStored = noteStored.audience()
         oids.forEach(Consumer { oid: String? -> Assert.assertTrue("Audience should contain $oid\n $activity\n $audienceStored", audienceStored.containsOid(oid)) })
         Assert.assertTrue("Audience of $activity\n $audienceStored", audienceStored.hasNonSpecial())
@@ -309,16 +309,16 @@ class ConnectionActivityPubTest {
 
     @Test
     fun getActor() {
-        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_get_actor)
+        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_get_actor)
         val actorOid = "https://pleroma.site/users/ActivityPubTester"
-        val partial: Actor = Actor.Companion.fromOid(mock.getData().getOrigin(), actorOid)
-        val received = mock.connection.getActor(partial).get()
+        val partial: Actor = Actor.Companion.fromOid(stub.getData().getOrigin(), actorOid)
+        val received = stub.connection.getActor(partial).get()
         Assert.assertEquals("Actor's oid $received", actorOid, received.oid)
         MatcherAssert.assertThat("Note name $received", received.getUsername(), CoreMatchers.`is`("ActivityPubTester"))
         val executionContext = CommandExecutionContext(
                 myContext,
                 CommandData.Companion.newActorCommandAtOrigin(
-                        CommandEnum.GET_ACTOR, partial, "", mock.getData().getOrigin()))
+                        CommandEnum.GET_ACTOR, partial, "", stub.getData().getOrigin()))
         val activity = executionContext.getMyAccount().actor.update(received)
         DataUpdater(executionContext).onActivity(activity)
         val stored: Actor = Actor.Companion.load(executionContext.myContext, received.actorId, true, { Actor.EMPTY })

@@ -25,9 +25,9 @@ import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.ConnectionException.StatusCode
-import org.andstatus.app.net.http.HttpConnectionMock
+import org.andstatus.app.net.http.HttpConnectionStub
 import org.andstatus.app.net.social.AActivity
-import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.origin.DiscoveredOrigins
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.meta.TimelineType
@@ -39,15 +39,15 @@ import kotlin.properties.Delegates
 
 class CommandExecutorStrategyTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
-    private var mock: ConnectionMock by Delegates.notNull()
-    private var httpConnectionMock: HttpConnectionMock by Delegates.notNull()
+    private var stub: ConnectionStub by Delegates.notNull()
+    private var httpConnectionStub: HttpConnectionStub by Delegates.notNull()
     private var ma: MyAccount = MyAccount.EMPTY
 
     @Before
     fun setUp() {
         ma =  myContext.accounts.getFirstPreferablySucceededForOrigin(DemoData.demoData.getGnuSocialOrigin())
-        mock = ConnectionMock.newFor(ma)
-        httpConnectionMock = mock.getHttpMock()
+        stub = ConnectionStub.newFor(ma)
+        httpConnectionStub = stub.getHttpStub()
         Assert.assertTrue(ma.toString(), ma.isValidAndSucceeded())
     }
 
@@ -77,8 +77,8 @@ class CommandExecutorStrategyTest {
             strategy.execute()
         }
         Assert.assertNotNull("Requested " + commandData2 +
-                ", results: '" + httpConnectionMock.getResults() + "'",
-            httpConnectionMock.getResults()
+                ", results: '" + httpConnectionStub.getResults() + "'",
+            httpConnectionStub.getResults()
                 .map { it.url?.toExternalForm() ?: "" }
                 .find { it.contains(DemoData.demoData.globalPublicNoteText) })
     }
@@ -86,8 +86,8 @@ class CommandExecutorStrategyTest {
     @Test
     fun testUpdateDestroyStatus() = runBlocking {
         var commandData = getCommandDataForUnsentNote("1")
-        mock.addResponse(org.andstatus.app.test.R.raw.quitter_update_note_response)
-        httpConnectionMock.setSameResponse(true)
+        stub.addResponse(org.andstatus.app.test.R.raw.quitter_update_note_response)
+        httpConnectionStub.setSameResponse(true)
         Assert.assertEquals(0, commandData.getResult().getExecutionCount().toLong())
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
@@ -98,7 +98,7 @@ class CommandExecutorStrategyTest {
         Assert.assertTrue(noteId != 0L)
         commandData = getCommandDataForUnsentNote("2")
         var errorMessage = "Request was bad"
-        httpConnectionMock.setException(ConnectionException(StatusCode.UNKNOWN, errorMessage))
+        httpConnectionStub.setException(ConnectionException(StatusCode.UNKNOWN, errorMessage))
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
         Assert.assertEquals((CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1).toLong(), commandData.getResult().getRetriesLeft().toLong())
@@ -107,7 +107,7 @@ class CommandExecutorStrategyTest {
         Assert.assertTrue(commandData.toString(), commandData.getResult().shouldWeRetry())
         Assert.assertTrue("Error message: '" + commandData.getResult().getMessage() + "' should contain '"
                 + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage))
-        httpConnectionMock.setException(null)
+        httpConnectionStub.setException(null)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertEquals(commandData.toString(), 2, commandData.getResult().getExecutionCount().toLong())
         Assert.assertEquals(commandData.toString(), (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 2).toLong(), commandData.getResult().getRetriesLeft().toLong())
@@ -115,7 +115,7 @@ class CommandExecutorStrategyTest {
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasHardError())
         Assert.assertFalse(commandData.toString(), commandData.getResult().shouldWeRetry())
         errorMessage = "some text"
-        httpConnectionMock.setException(ConnectionException(StatusCode.AUTHENTICATION_ERROR, errorMessage))
+        httpConnectionStub.setException(ConnectionException(StatusCode.AUTHENTICATION_ERROR, errorMessage))
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertEquals(3, commandData.getResult().getExecutionCount().toLong())
         Assert.assertEquals(commandData.toString(), (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 3).toLong(), commandData.getResult().getRetriesLeft().toLong())
@@ -124,21 +124,21 @@ class CommandExecutorStrategyTest {
         Assert.assertFalse(commandData.toString(), commandData.getResult().shouldWeRetry())
         Assert.assertTrue("Error message: '" + commandData.getResult().getMessage() + "' should contain '"
                 + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage))
-        httpConnectionMock.setException(null)
+        httpConnectionStub.setException(null)
         commandData = CommandData.Companion.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                mock.getData().getMyAccount(),
+                stub.getData().getMyAccount(),
                 noteId)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasError())
         val INEXISTENT_MSG_ID: Long = -1
         commandData = CommandData.Companion.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                mock.getData().getMyAccount(),
+                stub.getData().getMyAccount(),
                 INEXISTENT_MSG_ID)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasError())
-        httpConnectionMock.setException(null)
+        httpConnectionStub.setException(null)
     }
 
     private fun getCommandDataForUnsentNote(suffix: String?): CommandData {
@@ -149,9 +149,9 @@ class CommandExecutorStrategyTest {
 
     @Test
     fun testDiscoverOrigins() = runBlocking {
-        val http = HttpConnectionMock()
+        val http = HttpConnectionStub()
         http.addResponse(org.andstatus.app.test.R.raw.get_open_instances)
-        TestSuite.setHttpConnectionMockInstance(http)
+        TestSuite.setHttpConnectionStubInstance(http)
         val commandData: CommandData = CommandData.Companion.newOriginCommand(
                 CommandEnum.GET_OPEN_INSTANCES,
                 DemoData.demoData.getGnuSocialOrigin())
@@ -165,7 +165,7 @@ class CommandExecutorStrategyTest {
 
     @After
     fun tearDown() {
-        TestSuite.clearHttpMocks()
+        TestSuite.clearHttpStubs()
         myContext.setExpired { this.toString() }
     }
 }

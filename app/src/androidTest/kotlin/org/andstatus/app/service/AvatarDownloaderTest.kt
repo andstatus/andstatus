@@ -32,7 +32,7 @@ import org.andstatus.app.database.table.DownloadTable
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.social.Actor
-import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Test
@@ -142,13 +142,13 @@ class AvatarDownloaderTest {
     }
 
     private fun loadAndAssertStatusForMa(ma: MyAccount, description: String?, loadStatus: DownloadStatus,
-                                         displayedStatus: DownloadStatus, mockNetworkError: Boolean): Long {
-        TestSuite.clearHttpMocks()
+                                         displayedStatus: DownloadStatus, imitateNetworkError: Boolean): Long {
+        TestSuite.clearHttpStubs()
         val actor: Actor = Actor.Companion.load(myContext, ma.actor.actorId)
         val loader: FileDownloader = AvatarDownloader(actor)
-        if (mockNetworkError) {
-            loader.setConnectionMock(ConnectionMock.newFor(ma)
-                    .withException(ConnectionException(StatusCode.NOT_FOUND, "Mocked IO exception")).connection)
+        if (imitateNetworkError) {
+            loader.setConnectionStub(ConnectionStub.newFor(ma)
+                    .withException(ConnectionException(StatusCode.NOT_FOUND, "Imitated IO exception")).connection)
         }
         val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, actor, actor.getUsername())
         val loaded = loader.load(commandData)
@@ -156,8 +156,8 @@ class AvatarDownloaderTest {
         val logMsg = "${description.toString()} Expecting load status: $loadStatus, displayed: $displayedStatus\n" +
                 "  for $actor\n" +
                 "  (loaded $data, error message:'" + commandData.getResult().getMessage() + "')" +
-                if (mockNetworkError) " mocked the error" else ""
-        if (mockNetworkError || loadStatus == DownloadStatus.HARD_ERROR) {
+                if (imitateNetworkError) " imitated the error" else ""
+        if (imitateNetworkError || loadStatus == DownloadStatus.HARD_ERROR) {
             Assert.assertTrue("Load should be a failure: $logMsg", loaded.isFailure)
         }
         Assert.assertEquals("Checking load status: $logMsg", loadStatus, loader.getStatus())

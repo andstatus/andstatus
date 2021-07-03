@@ -28,7 +28,7 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.social.Actor
-import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.origin.Origin
@@ -43,13 +43,13 @@ import kotlin.properties.Delegates
 
 class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
-    private var mock: ConnectionMock by Delegates.notNull()
+    private var stub: ConnectionStub by Delegates.notNull()
 
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.newFor(DemoData.demoData.activityPubTestAccountName)
-        val ma = mock.getData().getMyAccount()
+        stub = ConnectionStub.newFor(DemoData.demoData.activityPubTestAccountName)
+        val ma = stub.getData().getMyAccount()
         myContext.accounts.setCurrentAccount(ma)
         Assert.assertTrue("isValidAndSucceeded $ma", ma.isValidAndSucceeded())
         MyLog.i(this, "setUp ended")
@@ -69,7 +69,7 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.waitForIdleSync()
         ActivityTestHelper.clickSendButton(method, activity)
         val noteId: Long = ActivityTestHelper.waitAndGetIdOfStoredNote(method, content)
-        val note: Note = Note.Companion.loadContentById(mock.connection.myContext(), noteId)
+        val note: Note = Note.Companion.loadContentById(stub.connection.myContext(), noteId)
         Assert.assertEquals("Note $note", DownloadStatus.SENDING, note.getStatus())
         Assert.assertEquals("Visibility $note", Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().visibility)
         Assert.assertFalse("Not sensitive $note", note.isSensitive())
@@ -96,11 +96,11 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.waitForIdleSync()
         ActivityTestHelper.clickSendButton(method, activity)
         val noteId: Long = ActivityTestHelper.waitAndGetIdOfStoredNote(method, content)
-        val note: Note = Note.Companion.loadContentById(mock.connection.myContext(), noteId)
+        val note: Note = Note.Companion.loadContentById(stub.connection.myContext(), noteId)
         Assert.assertEquals("Note $note", DownloadStatus.SENDING, note.getStatus())
         Assert.assertEquals("Visibility $note", Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().visibility)
         Assert.assertTrue("Sensitive $note", note.isSensitive())
-        val result = mock.getHttpMock().waitForPostContaining(content)
+        val result = stub.getHttpStub().waitForPostContaining(content)
         val postedObject = result.request.postParams.get()
         val jso = postedObject.getJSONObject("object")
         Assert.assertFalse("No name $postedObject", jso.has("name"))

@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
 
 /**
- * This is kind of mock of the concrete implementation
+ * This is kind of stub of the concrete implementation
  * @author yvolk@yurivolkov.com
  */
 class MyContextTestImpl internal constructor(parent: MyContext, context: Context, initializer: Any?) :
@@ -36,10 +36,10 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
     private val assertionData: MutableMap<String, AssertionData> = ConcurrentHashMap()
 
     @Volatile
-    private var httpConnectionMockClass: Class<out HttpConnection?>? = null
+    private var httpConnectionStubClass: Class<out HttpConnection?>? = null
 
     @Volatile
-    private var httpConnectionMockInstance: HttpConnection? = null
+    private var httpConnectionStubInstance: HttpConnection? = null
 
     @Volatile
     override var connectionState: ConnectionState = parent.connectionState
@@ -50,12 +50,12 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
 
     private val androidNotifications: MutableMap<NotificationEventType, NotificationData> = ConcurrentHashMap()
 
-    fun setHttpConnectionMockClass(httpConnectionMockClass: Class<out HttpConnection?>?) {
-        this.httpConnectionMockClass = httpConnectionMockClass
+    fun setHttpConnectionStubClass(httpConnectionStubClass: Class<out HttpConnection?>?) {
+        this.httpConnectionStubClass = httpConnectionStubClass
     }
 
-    fun setHttpConnectionMockInstance(httpConnectionMockInstance: HttpConnection?) {
-        this.httpConnectionMockInstance = httpConnectionMockInstance
+    fun setHttpConnectionStubInstance(httpConnectionStubInstance: HttpConnection?) {
+        this.httpConnectionStubInstance = httpConnectionStubInstance
     }
 
     override fun newInitialized(initializer: Any): MyContext {
@@ -84,12 +84,12 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
         return assertionData.getOrDefault(key, AssertionData.getEmpty(key))
     }
 
-    override val httpConnectionMock: HttpConnection?
+    override val httpConnectionStub: HttpConnection?
         get() {
-            if (httpConnectionMockInstance != null) return httpConnectionMockInstance
-            return httpConnectionMockClass?.let { mockClass ->
+            if (httpConnectionStubInstance != null) return httpConnectionStubInstance
+            return httpConnectionStubClass?.let { stubClass ->
                 try {
-                    return mockClass.newInstance()
+                    return stubClass.newInstance()
                 } catch (e: InstantiationException) {
                     MyLog.e(this, e)
                 } catch (e: IllegalAccessException) {
@@ -114,7 +114,7 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
     }
 
     override fun toString(): String {
-        return (instanceTag() + " http=" + httpConnectionMock + ", "
+        return (instanceTag() + " http=" + httpConnectionStub + ", "
                 + super.toString())
     }
 
@@ -132,8 +132,8 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
     init {
         if (parent is MyContextTestImpl) {
             assertionData.putAll(parent.assertionData)
-            httpConnectionMockClass = parent.httpConnectionMockClass
-            httpConnectionMockInstance = parent.httpConnectionMockInstance
+            httpConnectionStubClass = parent.httpConnectionStubClass
+            httpConnectionStubInstance = parent.httpConnectionStubInstance
             androidNotifications.putAll(parent.androidNotifications)
         }
     }

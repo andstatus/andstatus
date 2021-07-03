@@ -11,7 +11,7 @@ import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.graphics.CacheName
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Attachment
-import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.social.ConnectionStub
 import org.junit.Assert
 import org.junit.Test
 
@@ -55,14 +55,14 @@ class LargeImageTest {
         val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR,
                 Actor.Companion.fromId(ma.origin, 34234), "")
         val loader = AttachmentDownloader(ma.myContext, dd)
-        val connMock: ConnectionMock = ConnectionMock.newFor(DemoData.demoData.gnusocialTestAccountName)
-        connMock.getHttpMock().setResponseStreamSupplier {
+        val connStub: ConnectionStub = ConnectionStub.newFor(DemoData.demoData.gnusocialTestAccountName)
+        connStub.getHttpStub().setResponseStreamSupplier {
             InstrumentationRegistry.getInstrumentation().context.resources
                     .openRawResource(org.andstatus.app.test.R.raw.large_image)
         }
-        loader.setConnectionMock(connMock.connection)
+        loader.setConnectionStub(connStub.connection)
         loader.load(commandData)
-        Assert.assertEquals("Requested", 1, connMock.getHttpMock().getRequestsCounter())
+        Assert.assertEquals("Requested", 1, connStub.getHttpStub().getRequestsCounter())
         val data: DownloadData = DownloadData.Companion.fromId(dd.getDownloadId())
         Assert.assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError())
         Assert.assertTrue("File exists " + data.getUri(), data.getFile().existed)

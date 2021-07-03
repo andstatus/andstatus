@@ -30,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.Consumer
 import java.util.stream.Collectors
 
-class HttpConnectionMock : HttpConnection() {
+class HttpConnectionStub : HttpConnection() {
     private val results: MutableList<HttpReadResult> = CopyOnWriteArrayList()
     private val responses: MutableList<String> = CopyOnWriteArrayList()
 
@@ -88,7 +88,7 @@ class HttpConnectionMock : HttpConnection() {
 
     override fun pathToUrlString(path: String): String {
         if (data.originUrl == null) {
-            data.originUrl = UrlUtils.buildUrl("mocked.example.com", true)
+            data.originUrl = UrlUtils.buildUrl("stubbed.example.com", true)
         }
         return super.pathToUrlString(path)
     }
@@ -213,7 +213,7 @@ class HttpConnectionMock : HttpConnection() {
 
     override fun toString(): String {
         val builder = StringBuilder()
-        builder.append("HttpConnectionMock [")
+        builder.append("HttpConnectionStub [")
         builder.append("Requests sent: " + getRequestsCounter())
         builder.append("; Data posted " + getPostedCounter() + " times")
         builder.append("\nSent $responsesCounter responses")

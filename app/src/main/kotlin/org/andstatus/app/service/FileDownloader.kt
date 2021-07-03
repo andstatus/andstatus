@@ -31,7 +31,7 @@ import org.andstatus.app.util.MyLog
 import java.io.File
 
 abstract class FileDownloader protected constructor(val myContext: MyContext, val data: DownloadData) {
-    private var connectionMock: Connection? = null
+    private var connectionStub: Connection? = null
     private var connectionRequired: ConnectionRequired = ConnectionRequired.ANY
 
     fun load(commandData: CommandData): Try<Boolean> {
@@ -70,10 +70,10 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
         val file = fileTemp.getFile()
         val ma = findBestAccountForDownload()
         if (ma.isValidAndSucceeded()) {
-            val connection = connectionMock ?: ma.connection
+            val connection = connectionStub ?: ma.connection
             MyLog.v(this) {
                 ("About to download " + data.toString() + "; connection"
-                        + (if (connectionMock == null) "" else " (mocked)")
+                        + (if (connectionStub == null) "" else " (stubbed)")
                         + ": " + connection
                         + "; account:" + ma.getAccountName())
             }
@@ -119,8 +119,8 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
     }
 
     protected abstract fun findBestAccountForDownload(): MyAccount
-    fun setConnectionMock(connectionMock: Connection?): FileDownloader {
-        this.connectionMock = connectionMock
+    fun setConnectionStub(connectionStub: Connection?): FileDownloader {
+        this.connectionStub = connectionStub
         return this
     }
 

@@ -24,7 +24,7 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
-import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UriUtilsTest
@@ -35,22 +35,22 @@ import kotlin.properties.Delegates
 
 class VerifyCredentialsActivityPubTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
-    private var mock: ConnectionMock by Delegates.notNull()
+    private var stub: ConnectionStub by Delegates.notNull()
 
     @Before
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
         val origin: Origin =  myContext.origins.fromName(DemoData.demoData.activityPubTestOriginName)
         val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN)
-        mock = ConnectionMock.newFor(MyAccount.Builder.Companion.fromAccountName(accountName).myAccount)
+        stub = ConnectionStub.newFor(MyAccount.Builder.Companion.fromAccountName(accountName).myAccount)
     }
 
     @Test
     fun verifyCredentials() {
-        mock.addResponse(org.andstatus.app.test.R.raw.activitypub_whoami_pleroma)
-        val actor = mock.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID)).get()
+        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_whoami_pleroma)
+        val actor = stub.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID)).get()
         Assert.assertEquals("Actor's oid is actorOid of this account", ACTOR_OID, actor.oid)
-        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().getAccountName())
+        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(stub.getData().getAccountName())
         builder.onCredentialsVerified(actor)
         Assert.assertTrue("Account is persistent", builder.isPersistent())
         val actorId = builder.myAccount.actorId
@@ -60,7 +60,7 @@ class VerifyCredentialsActivityPubTest {
                 actor.oid,
                 MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId, 0))
         assertActor(actor)
-        val stored: Actor = Actor.Companion.loadFromDatabase(mock.getData().getOrigin().myContext, actorId, { Actor.EMPTY }, false)
+        val stored: Actor = Actor.Companion.loadFromDatabase(stub.getData().getOrigin().myContext, actorId, { Actor.EMPTY }, false)
         assertActor(stored)
     }
 

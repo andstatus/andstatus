@@ -64,7 +64,7 @@ interface MyContext : IdentifiableInstance, IsEmpty {
     fun clearNotifications(timeline: Timeline)
     val isTestRun: Boolean get() = false
 
-    val httpConnectionMock: HttpConnection? get() = null
+    val httpConnectionStub: HttpConnection? get() = null
 
     override val isEmpty: Boolean get() = this === MyContextEmpty.EMPTY
 

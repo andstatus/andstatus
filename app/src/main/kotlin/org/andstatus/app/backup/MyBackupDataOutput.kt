@@ -28,7 +28,7 @@ import java.io.IOException
 import java.io.OutputStream
 import java.nio.charset.StandardCharsets
 
-/** Allowing to instantiate and to mock BackupDataOutput class  */
+/** Allowing to instantiate and to stub BackupDataOutput class  */
 class MyBackupDataOutput {
     private val context: Context
     private var docFolder: DocumentFile? = null
