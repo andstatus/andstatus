@@ -10,6 +10,7 @@ import org.andstatus.app.net.http.HttpConnectionStub
 import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TriState
 import org.junit.Assert
 
@@ -57,7 +58,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 Assert.assertEquals("Context should be ready", true, myContext.isReady)
             }
             MyServiceManager.setServiceUnavailable()
-            MyServiceManager.stopService()
+            Assert.assertTrue("Couldn't stop MyService", stopService(false))
             TestSuite.getMyContextForTest().connectionState = ConnectionState.WIFI
             if (!isSingleStubbedInstance) {
                 httpConnectionStub = ConnectionStub.newFor(accountName).getHttpStub()
@@ -66,7 +67,6 @@ class MyServiceTestHelper : MyServiceEventsListener {
             serviceConnector = MyServiceEventsReceiver(myContext, this).also {
                 it.registerReceiver(myContext.context)
             }
-            Assert.assertTrue("Couldn't stop MyService", waitForServiceStopped(false))
             httpConnectionStub?.clearData()
             Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(false))
         } catch (e: Exception) {
@@ -87,9 +87,10 @@ class MyServiceTestHelper : MyServiceEventsListener {
 
     /** @return true if execution started
      */
-    fun assertCommandExecutionStarted(logMsg: String?, count0: Long, expectStarted: TriState): Boolean {
-        val method = ("waitForCommandExecutionStart " + getListenedCommand().getTimelineType() + " "
+    fun waitForCommandExecutionStarted(logMsg: String?, count0: Long, expectStarted: TriState): Boolean {
+        val method = ("waitForCommandExecutionStarted " + getListenedCommand().getTimelineType() + " "
                 + logMsg + "; " + getListenedCommand().command.save())
+        val stopWatch: StopWatch = StopWatch.createStarted()
         val criteria = expectStarted.select(
             "check if count > $count0",
             "check for no new execution, count0 = $count0",
@@ -109,7 +110,8 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 break
             }
         }
-        val logMsgEnd = "$method ended, found=$found, count=$executionStartCount, $criteria; waiting ended on:$locEvent"
+        val logMsgEnd = "$method ended, found=$found, count=$executionStartCount, $criteria; " +
+                "waiting ended on:$locEvent, ${stopWatch.time} ms"
         MyLog.v(this, logMsgEnd)
         if (expectStarted != TriState.UNKNOWN) {
             Assert.assertEquals(logMsgEnd, expectStarted.toBoolean(false), found)
@@ -119,6 +121,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
 
     fun waitForCommandExecutionEnded(count0: Long): Boolean {
         val method = "waitForCommandExecutionEnded"
+        val stopWatch: StopWatch = StopWatch.createStarted()
         var found = false
         var locEvent = "none"
         for (pass in 0..999) {
@@ -133,9 +136,30 @@ class MyServiceTestHelper : MyServiceEventsListener {
             }
         }
         MyLog.v(
-            this, method + " ended " + getListenedCommand().command.save()
-                    + " " + found + ", event:" + locEvent + ", count0=" + count0
+            this, method + " ended " + getListenedCommand().command.save() +
+                    " " + found + ", event:" + locEvent + ", count0=" + count0 +
+                    ", ${stopWatch.time} ms"
         )
+        return found
+    }
+
+    fun waitForCondition(predicate: MyServiceTestHelper.() -> Boolean): Boolean {
+        val method = "waitForCondition"
+        val stopWatch: StopWatch = StopWatch.createStarted()
+        var found = false
+        var locEvent = "none"
+        for (pass in 0..999) {
+            if (predicate(this)) {
+                found = true
+                locEvent = "matched"
+                break
+            }
+            if (DbUtils.waitMs(method, 30)) {
+                locEvent = "interrupted"
+                break
+            }
+        }
+        MyLog.v(this, "$method ended, matched:$found, event:$locEvent, ${stopWatch.time} ms")
         return found
     }
 
@@ -146,9 +170,11 @@ class MyServiceTestHelper : MyServiceEventsListener {
 
     fun waitForServiceStopped(clearQueue: Boolean): Boolean {
         val method = "waitForServiceStopped"
+        val stopWatch: StopWatch = StopWatch.createStarted()
         MyLog.v(this, "$method started")
         var stopped = false
-        for (pass in 1..9999) {
+        var prevCheckTime = 0L
+        do {
             if (serviceStopped) {
                 if (clearQueue) {
                     dropQueues()
@@ -156,15 +182,17 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 stopped = true
                 break
             }
-            if (DbUtils.waitMs(method, 10)) {
-                break
+            if (DbUtils.waitMs(method, 100)) break
+            if (stopWatch.time > prevCheckTime) {
+                prevCheckTime += 1000
+                if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
+                    stopped = true
+                    break
+                }
             }
-            if (pass % 500 == 0 && MyServiceManager.Companion.getServiceState() == MyServiceState.STOPPED) {
-                stopped = true
-                break
-            }
-        }
-        MyLog.v(this, method + " ended, " + if (stopped) " stopped" else " didn't stop")
+        } while (stopWatch.notPassedSeconds(130)) // TODO: fix org.andstatus.app.net.http.MyHttpClientFactory to decrease this
+        MyLog.v(this, method + " ended, " + (if (stopped) "stopped" else "didn't stop") +
+                ", ${stopWatch.time} ms")
         return stopped
     }
 
@@ -217,7 +245,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
         MyLog.v(this, "setListenedCommand; " + this.listenedCommand)
     }
 
-    fun getHttp(): HttpConnectionStub? {
-        return httpConnectionStub
+    fun getHttp(): HttpConnectionStub {
+        return httpConnectionStub ?: throw IllegalStateException("No httpConnectionStub")
     }
 }

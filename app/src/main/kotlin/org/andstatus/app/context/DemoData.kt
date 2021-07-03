@@ -16,6 +16,7 @@
 package org.andstatus.app.context
 
 import android.net.Uri
+import kotlinx.coroutines.delay
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.account.CredentialsVerificationStatus
 import org.andstatus.app.account.DemoAccountInserter
@@ -159,9 +160,8 @@ class DemoData {
 
         override suspend fun doInBackground(params: Void?): Void? {
             MyLog.i(logTag, "$logTag; started")
-            DbUtils.waitMs(logTag, 1000)
             progressListener.onProgressMessage("Generating demo data...")
-            DbUtils.waitMs(logTag, 500)
+            delay(500)
             MyLog.v(logTag, "Before initialize 1")
              MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
             MyLog.v(logTag, "After initialize 1")
@@ -176,7 +176,7 @@ class DemoData {
             MyLog.v(logTag, "After initialize 2")
             MyServiceManager.setServiceUnavailable()
             progressListener.onProgressMessage("Demo accounts added...")
-            DbUtils.waitMs(logTag, 500)
+            delay(500)
 
             val myContext2 = MyContextHolder.myContextHolder.getBlocking()
             Assert.assertTrue("Context is not ready " + myContext2, myContext2.isReady)
@@ -202,7 +202,7 @@ class DemoData {
             demoData.insertPumpIoConversation("")
             DemoGnuSocialConversationInserter().insertConversation()
             progressListener.onProgressMessage("Demo notes added...")
-            DbUtils.waitMs(logTag, 500)
+            delay(500)
             if ( MyContextHolder.myContextHolder.getNow().accounts.size() == 0) {
                 Assert.fail("No persistent accounts")
             }
@@ -223,7 +223,7 @@ class DemoData {
                     ProgressLogger(progressListener), true, true))
             MyLog.v(logTag, "After data checker")
             progressListener.onProgressMessage("Demo data is ready")
-            DbUtils.waitMs(logTag, 500)
+            delay(500)
             MyLog.i(logTag, "$logTag; ended")
             return params
         }

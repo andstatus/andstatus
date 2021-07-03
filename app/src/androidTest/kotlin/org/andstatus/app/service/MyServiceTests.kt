@@ -99,7 +99,7 @@ class MyServiceTests: IgnoredInTravis2() {
         assertTrue("Service should stop", mService.stopService(true))
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true)
         ExceptionsCounter.forget()
-        mService.getHttp()?.clearData()
+        mService.getHttp().clearData()
         MyLog.i(this, "tearDown ended")
     }
 
@@ -121,7 +121,7 @@ class MyServiceTests: IgnoredInTravis2() {
         DbUtils.waitMs(this, 5000)
         assertEquals("Requests were sent while all timelines just synced " +
                 runner.toString() + "; " + mService.getHttp().toString(),
-            0, mService.getHttp()?.getRequestsCounter())
+            0, mService.getHttp().getRequestsCounter())
 
         val myContext2: MyContext =  MyContextHolder.myContextHolder.getNow()
         val timelineToSync: Timeline = DemoAccountInserter.Companion.getAutomaticallySyncableTimeline(myContext2, myAccount)
@@ -133,7 +133,7 @@ class MyServiceTests: IgnoredInTravis2() {
         DbUtils.waitMs(this, 5000)
         assertEquals("Timeline was not synced: " + timelineToSync + "; " +
                 runner.toString() + "; " + mService.getHttp().toString(),
-            1, mService.getHttp()?.getRequestsCounter())
+            1, mService.getHttp().getRequestsCounter())
         MyLog.i(this, "$method ended")
     }
 
@@ -146,11 +146,11 @@ class MyServiceTests: IgnoredInTravis2() {
         val startCount = mService.executionStartCount
         val endCount = mService.executionEndCount
         mService.sendListenedCommand()
-        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE)
+        mService.waitForCommandExecutionStarted("First command", startCount, TriState.TRUE)
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount))
         MyLog.i(this, method + "; " + mService.getHttp().toString())
-        assertEquals("connection instance Id", mService.connectionInstanceId, mService.getHttp()?.getInstanceId())
-        assertEquals(mService.getHttp().toString(), 1, mService.getHttp()?.getRequestsCounter())
+        assertEquals("connection instance Id", mService.connectionInstanceId, mService.getHttp().getInstanceId())
+        assertEquals(mService.getHttp().toString(), 1, mService.getHttp().getRequestsCounter())
         MyLog.i(this, "$method ended")
     }
 
@@ -167,10 +167,10 @@ class MyServiceTests: IgnoredInTravis2() {
         var endCount = mService.executionEndCount
         MyLog.i(this, "$method Sending first command")
         mService.sendListenedCommand()
-        mService.assertCommandExecutionStarted("First command should start", startCount, TriState.TRUE)
+        mService.waitForCommandExecutionStarted("First command should start", startCount, TriState.TRUE)
         assertTrue("First command should end execution", mService.waitForCommandExecutionEnded(endCount))
         assertEquals(cd1Home.toString() + " " + mService .getHttp().toString(),
-            1, mService .getHttp()?.getRequestsCounter())
+            1, mService .getHttp().getRequestsCounter())
         assertTrue(TestSuite.setAndWaitForIsInForeground(true))
         MyLog.i(this, "$method; we are in a foreground")
         val cd2Interactions: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
@@ -180,12 +180,12 @@ class MyServiceTests: IgnoredInTravis2() {
         startCount = mService.executionStartCount
         MyLog.i(this, "$method Sending second command")
         mService.sendListenedCommand()
-        mService.assertCommandExecutionStarted("Second command shouldn't start", startCount, TriState.FALSE)
+        mService.waitForCommandExecutionStarted("Second command shouldn't start", startCount, TriState.FALSE)
         MyLog.i(this, "$method; After waiting for the second command")
         assertTrue("Service should stop", mService.waitForServiceStopped(false))
         MyLog.i(this, "$method; Service stopped after the second command")
         assertEquals("No new data should be posted while in foreground",
-            1, mService .getHttp()?.getRequestsCounter())
+            1, mService .getHttp().getRequestsCounter())
         val queues: CommandQueue =  MyContextHolder.myContextHolder.getBlocking().queues
         MyLog.i(this, "$method; Queues1:$queues")
         assertEquals("First command shouldn't be in any queue $queues",
@@ -202,7 +202,7 @@ class MyServiceTests: IgnoredInTravis2() {
         endCount = mService.executionEndCount
         MyLog.i(this, "$method Sending third command")
         mService.sendListenedCommand()
-        mService.assertCommandExecutionStarted("Third (foreground) command", startCount, TriState.TRUE)
+        mService.waitForCommandExecutionStarted("Third (foreground) command", startCount, TriState.TRUE)
         assertTrue("Foreground command ended executing", mService.waitForCommandExecutionEnded(endCount))
         assertTrue("Service stopped", mService.waitForServiceStopped(false))
         MyLog.i(this, "$method; Queues2:$queues")
@@ -227,10 +227,10 @@ class MyServiceTests: IgnoredInTravis2() {
         val startCount = mService.executionStartCount
         val endCount = mService.executionEndCount
         mService.sendListenedCommand()
-        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE)
+        mService.waitForCommandExecutionStarted("First command", startCount, TriState.TRUE)
         assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount))
         assertTrue(mService.getHttp().toString(),
-            mService.getHttp()?.getRequestsCounter() ?: 0 > 0)
+            mService.getHttp().getRequestsCounter() > 0)
         assertTrue("Service should stop", mService.stopService(true))
         assertEquals("DiskIoException", 0, ExceptionsCounter.getDiskIoExceptionsCount())
         MyLog.i(this, "$method ended")
@@ -246,10 +246,10 @@ class MyServiceTests: IgnoredInTravis2() {
                 DemoData.demoData.getGnuSocialAccount()
             )
         )
-        mService.getHttp()?.setRuntimeException(SQLiteDiskIOException(method))
+        mService.getHttp().setRuntimeException(SQLiteDiskIOException(method))
         val startCount = mService.executionStartCount
         mService.sendListenedCommand()
-        mService.assertCommandExecutionStarted("First command", startCount, TriState.TRUE)
+        mService.waitForCommandExecutionStarted("First command", startCount, TriState.TRUE)
         assertTrue("Service should stop", mService.stopService(true))
         assertEquals("No DiskIoException", 1, ExceptionsCounter.getDiskIoExceptionsCount())
         MyLog.i(this, "$method ended")
@@ -271,19 +271,19 @@ class MyServiceTests: IgnoredInTravis2() {
         AvatarDownloaderTest.changeAvatarUrl(actor, urlString)
         val startCount = mService.executionStartCount
         val endCount = mService.executionEndCount
-        val requestsCounter0 = mService.getHttp()?.getRequestsCounter() ?: 0
+        val requestsCounter0 = mService.getHttp().getRequestsCounter()
         setAndSendGetAvatarCommand(actor, false)
-        mService.assertCommandExecutionStarted("First command $actor", startCount, TriState.TRUE)
+        mService.waitForCommandExecutionStarted("First command $actor", startCount, TriState.TRUE)
         setAndSendGetAvatarCommand(actor, false)
         assertTrue("First command didn't end $actor", mService.waitForCommandExecutionEnded(endCount))
         assertTrue("Request for the command wasn't sent:" +
                 " ${mService.getListenedCommand()}\n${mService.getHttp()}",
-            mService.getHttp()?.getRequestsCounter() ?: 0 > requestsCounter0)
+            mService.getHttp().getRequestsCounter() > requestsCounter0)
         setAndSendGetAvatarCommand(actor, false)
-        mService.assertCommandExecutionStarted("Duplicated command started ${mService.getListenedCommand()}\n$actor",
+        mService.waitForCommandExecutionStarted("Duplicated command started ${mService.getListenedCommand()}\n$actor",
             startCount + 1, TriState.FALSE)
         setAndSendGetAvatarCommand(actor, true)
-        mService.assertCommandExecutionStarted("Manually launched duplicated command didn't start" +
+        mService.waitForCommandExecutionStarted("Manually launched duplicated command didn't start" +
                 " ${mService.getListenedCommand()}\n$actor", startCount + 1, TriState.TRUE)
         assertTrue("The third command didn't end ${mService.getListenedCommand()}\n$actor",
             mService.waitForCommandExecutionEnded(endCount + 1))

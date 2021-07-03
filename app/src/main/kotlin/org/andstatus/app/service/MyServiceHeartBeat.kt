@@ -1,6 +1,6 @@
 package org.andstatus.app.service
 
-import org.andstatus.app.data.DbUtils
+import kotlinx.coroutines.delay
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.util.MyLog
@@ -37,14 +37,7 @@ class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, 
                 breakReason = "Cancelled"
                 break
             }
-            if (DbUtils.waitMs(
-                    "HeartBeatSleeping",
-                    Math.toIntExact(TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS))
-                )
-            ) {
-                breakReason = "InterruptedException"
-                break
-            }
+            delay(TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS))
             if (!myService.initialized.get()) {
                 breakReason = "Not initialized"
                 break

@@ -60,7 +60,9 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.waitForIdleSync()
         mService.serviceStopped = false
         ActivityTestHelper.clickSendButton(method, activity)
-        mService.waitForServiceStopped(false)
+        val found = mService.waitForCondition {
+            getHttp().substring2PostedPath("statuses/update").isNotEmpty()
+        }
         val condition = NoteTable.CONTENT + " LIKE('%" + suffix + "%')"
         val unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition)
         step = "Unsent note $unsentMsgId"
@@ -92,12 +94,12 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
                 R.id.note_wrapper))
         mService.serviceStopped = false
         TestSuite.waitForIdleSync()
-        mService.waitForServiceStopped(false)
-        val results = mService.getHttp()?.getResults() ?: emptyList()
+        val urlFound = mService.waitForCondition {
+            getHttp().getResults().map { it.url?.toExternalForm() ?: "" }
+                .any { it.contains("retweet") && it.contains(noteOid) }
+        }
+        val results = mService.getHttp().getResults()
         Assert.assertTrue("No results in ${mService.getHttp()}\n$logMsg", results.isNotEmpty())
-        val urlFound = results
-            .map { it.url?.toExternalForm() ?: "" }
-            .find { it.contains("retweet") && it.contains(noteOid) }
         Assert.assertNotNull("No URL contains note oid $logMsg\nResults: $results", urlFound)
         MyLog.v(this, "$method ended")
     }

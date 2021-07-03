@@ -120,7 +120,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
                 if (itemIdOfSelected > 0) break
             }
         }
-        Assert.assertTrue("Position should be selected: " + getCurrentListPosition(), itemIdOfSelected > 0)
+        Assert.assertTrue("Position $position0 should be selected: " + getCurrentListPosition(), itemIdOfSelected > 0)
         getCurrentListPosition().logV("$method; after selecting position $position0 itemId=$itemIdOfSelected")
         val pos1 = getCurrentListPosition().logV("$method; stored pos1 before adding new content")
         val updatedAt1 = activity.getListData().updatedAt

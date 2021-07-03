@@ -25,7 +25,6 @@ import org.andstatus.app.view.SelectorDialog
 import org.junit.After
 import org.junit.Assert
 import org.junit.Test
-import java.util.*
 import kotlin.properties.Delegates
 
 class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
@@ -69,14 +68,17 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
         val content = "Test note with a shared image " + DemoData.demoData.testRunUid
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
         TestSuite.waitForIdleSync()
-        mService.serviceStopped = false
+
         ActivityTestHelper.clickSendButton(method, activity)
-        mService.waitForServiceStopped(false)
-        val message = ("Data was posted " + mService.getHttp()?.getPostedCounter() + " times; "
-                + Arrays.toString(mService.getHttp()?.getResults()?.toTypedArray()))
+        val found = mService.waitForCondition {
+            getHttp().substring2PostedPath("statuses/update").isNotEmpty()
+        }
+        val message = ("Data was posted " + mService.getHttp().getPostedCounter() + " times; " +
+                mService.getHttp().getResults().toTypedArray().contentToString())
         MyLog.v(this, "$method; $message")
-        Assert.assertTrue(message, mService.getHttp()?.getPostedCounter() ?: 0 > 0)
-        Assert.assertTrue(message, mService.getHttp()?.substring2PostedPath("statuses/update")?.length ?: 0 > 0)
+        Assert.assertTrue(message, mService.getHttp().getPostedCounter() > 0)
+        Assert.assertTrue(message, found)
+
         val condition = NoteTable.CONTENT + "='" + content + "'"
         val unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition)
         Assert.assertTrue("Unsent note found: $condition", unsentMsgId != 0L)

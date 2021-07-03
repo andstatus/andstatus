@@ -18,6 +18,7 @@ package org.andstatus.app.context
 import android.app.ProgressDialog
 import android.content.Context
 import android.widget.Toast
+import kotlinx.coroutines.delay
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.R
 import org.andstatus.app.data.DbUtils
@@ -92,9 +93,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             MyServiceManager.setServiceUnavailable()
             MyServiceManager.stopService()
 
-            do {
-                DbUtils.waitMs(this, 500)
-            } while (MyServiceManager.getServiceState() == MyServiceState.UNKNOWN)
+            do delay(500) while (MyServiceManager.getServiceState() == MyServiceState.UNKNOWN)
             if (MyServiceManager.getServiceState() != MyServiceState.STOPPED) {
                 result.messageBuilder.append(mContext.getText(R.string.system_is_busy_try_later))
                 return result

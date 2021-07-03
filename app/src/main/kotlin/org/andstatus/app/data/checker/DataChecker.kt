@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.data.checker
 
+import kotlinx.coroutines.delay
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
@@ -99,9 +100,11 @@ abstract class DataChecker {
             AsyncTaskLauncher.execute(
                     logger.logTag,
                     object : MyAsyncTask<Void?, Void?, Void?>(logger.logTag, PoolEnum.thatCannotBeShutDown()) {
+                        override val cancelable: Boolean = false
+
                         override suspend fun doInBackground(aVoid: Void?): Void? {
                             fixData(logger, includeLong, countOnly)
-                            DbUtils.waitMs(TAG, 3000)
+                            delay(3000)
                             MyContextHolder.myContextHolder.release { "fixDataAsync" }
                             MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
                             return null

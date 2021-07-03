@@ -35,6 +35,7 @@ import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.Permissions
 import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StopWatch
 import org.junit.Assert
 import java.util.*
 import java.util.function.Consumer
@@ -249,11 +250,11 @@ object TestSuite {
 
     fun waitForListLoaded(activity: Activity, minCount: Int): Int {
         val method = "waitForListLoaded"
+        val stopWatch: StopWatch = StopWatch.createStarted()
         val list = activity.findViewById<View?>(android.R.id.list) as ViewGroup?
         Assert.assertTrue(list != null)
         var itemsCount = 0
-        for (ind in 0..39) {
-            DbUtils.waitMs(method, 2000)
+        do {
             InstrumentationRegistry.getInstrumentation().waitForIdleSync()
             val itemsCountNew = if (list is ListView) list.count else list?.childCount ?: 0
             MyLog.v(TAG, "waitForListLoaded; countNew=$itemsCountNew, prev=$itemsCount, min=$minCount")
@@ -261,12 +262,12 @@ object TestSuite {
                 break
             }
             itemsCount = itemsCountNew
-        }
-        Assert.assertTrue(
-            "There are " + itemsCount + " items (min=" + minCount + ")" +
-                    " in the list of " + activity.javaClass.simpleName,
-            itemsCount >= minCount
-        )
+        } while(stopWatch.notPassedSeconds(30))
+        DbUtils.waitMs(this, 2000) // TODO: Wait for something else to remove the delay
+        val msgLog = "There are " + itemsCount + " items (min=" + minCount + ")" +
+                " in the list of " + activity.javaClass.simpleName + ", ${stopWatch.time} ms"
+        Assert.assertTrue(msgLog, itemsCount >= minCount)
+        MyLog.v(this, method + " ended, $msgLog")
         return itemsCount
     }
 
@@ -274,7 +275,7 @@ object TestSuite {
         val method = "waitForIdleSync"
         DbUtils.waitMs(method, 200)
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-        DbUtils.waitMs(method, 2000)
+        DbUtils.waitMs(method, 1000)
     }
 
     fun isScreenLocked(context: Context): Boolean {

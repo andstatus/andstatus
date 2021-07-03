@@ -122,9 +122,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
                 ok = true
                 break
             }
-            if (DbUtils.waitMs(method, 2000)) {
-                break
-            }
+            if (DbUtils.waitMs(method, 1000)) break
         }
         MyLog.v(method, if (ok) "Request received: " + selectorIntent.toString() else "Request wasn't received")
         selectorRequestCode = 0
@@ -154,9 +152,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
                     ok = true
                     break
                 }
-                if (DbUtils.waitMs(method, 2000)) {
-                    break
-                }
+                if (DbUtils.waitMs(method, 1000)) break
             }
             MyLog.v(method, if (ok) "Visible" else "Invisible")
             Assert.assertTrue("$method; View is visible", ok)
@@ -172,9 +168,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
                     ok = true
                     break
                 }
-                if (DbUtils.waitMs(method, 2000)) {
-                    break
-                }
+                if (DbUtils.waitMs(method, 1000)) break
             }
             MyLog.v(method, if (ok) "Invisible" else "Visible")
             Assert.assertTrue("$method; View is invisible", ok)
@@ -191,9 +185,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
                     ok = true
                     break
                 }
-                if (DbUtils.waitMs(method, 2000)) {
-                    break
-                }
+                if (DbUtils.waitMs(method, 1000)) break
             }
             MyLog.v(method, (if (ok) "Found" else "Not found") + " text '" + textToFind + "' in '" + textFound + "'")
             Assert.assertTrue("$method; Not found text '$textToFind' in '$textFound'", ok)
@@ -213,7 +205,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
             for (attempt in 0..9) {
                 noteId = MyQuery.getLongs(sql).stream().findFirst().orElse(0L)
                 if (noteId != 0L) break
-                if (DbUtils.waitMs(method, 2000)) break
+                if (DbUtils.waitMs(method, 1000)) break
             }
             Assert.assertTrue("$method: Note '$content' was not saved", noteId != 0L)
             return noteId
