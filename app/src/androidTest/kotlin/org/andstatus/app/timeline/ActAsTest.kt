@@ -65,7 +65,7 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
     private fun oneAttempt(attempt: Int): Boolean {
         val method = "actAsActor"
         val listData = activity.getListData()
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity,
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity,
                 ConversationActivity::class.java)
         val listItemId = helper.getListItemIdOfLoadedReply()
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)

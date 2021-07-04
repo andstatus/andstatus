@@ -47,7 +47,7 @@ import org.andstatus.app.net.social.Audience
 import org.andstatus.app.net.social.Audience.Companion.fromNoteId
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.service.MyServiceManager
-import org.andstatus.app.timeline.ListScreenTestHelper
+import org.andstatus.app.timeline.ListActivityTestHelper
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.Timeline
@@ -166,7 +166,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
     fun editLoadedNote() {
         val method = "editLoadedNote"
         TestSuite.waitForListLoaded(activity, 2)
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity,
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity,
                 ConversationActivity::class.java)
         val listItemId = helper.findListItemId("My loaded note, actorId:" + data.getMyAccount().actorId
         ) { item: BaseNoteViewItem<*> ->
@@ -211,7 +211,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         val method = "replying"
         TestSuite.waitForListLoaded(activity, 2)
         val editorView: View = ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity,
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity,
                 ConversationActivity::class.java)
         val viewItem = helper.findListItem("Some others loaded note"
         ) { item: BaseNoteViewItem<*> ->

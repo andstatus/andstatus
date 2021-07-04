@@ -36,7 +36,7 @@ import org.andstatus.app.view.SelectorDialog
 import org.junit.Assert
 import java.util.function.Predicate
 
-class ListScreenTestHelper<T : MyBaseListActivity> {
+class ListActivityTestHelper<T : MyBaseListActivity> {
     private val mActivity: T?
     private var mActivityMonitor: ActivityMonitor? = null
     private var dialogTagToMonitor: String? = null
@@ -415,8 +415,8 @@ class ListScreenTestHelper<T : MyBaseListActivity> {
 
     companion object {
         fun <T : MyBaseListActivity> newForSelectorDialog(activity: T?,
-                                                           dialogTagToMonitor: String?): ListScreenTestHelper<T> {
-            val helper = ListScreenTestHelper(activity)
+                                                           dialogTagToMonitor: String?): ListActivityTestHelper<T> {
+            val helper = ListActivityTestHelper(activity)
             helper.dialogTagToMonitor = dialogTagToMonitor
             return helper
         }

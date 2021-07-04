@@ -55,7 +55,7 @@ class TimelinePositionTest : TimelineActivityTest<ActivityViewItem>() {
     private fun oneTimelineOpening(iteration: Int) {
         val method = "oneTimelineOpening$iteration"
         TestSuite.waitForListLoaded(activity, 3)
-        val testHelper = ListScreenTestHelper<TimelineActivity<*>>(activity)
+        val testHelper = ListActivityTestHelper<TimelineActivity<*>>(activity)
         val position1 = getFirstVisibleAdapterPosition()
         val listAdapter: BaseTimelineAdapter<*> = activity.getListAdapter()
         val item1 = listAdapter.getItem(position1)

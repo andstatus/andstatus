@@ -20,7 +20,7 @@ import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.service.MyServiceTestHelper
-import org.andstatus.app.timeline.ListScreenTestHelper
+import org.andstatus.app.timeline.ListActivityTestHelper
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.TimelineType
@@ -85,7 +85,7 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         val method = "testGnuSocialReblog"
         MyLog.v(this, "$method started")
         TestSuite.waitForListLoaded(activity, 1)
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity)
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity)
         val itemId = helper.getListItemIdOfLoadedReply { item: BaseNoteViewItem<*> -> !item.visibility.isPrivate }
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, itemId)
         val noteOid = MyQuery.idToOid(activity.myContext, OidEnum.NOTE_OID, noteId, 0)

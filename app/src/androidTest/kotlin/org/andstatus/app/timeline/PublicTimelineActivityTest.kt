@@ -127,7 +127,7 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
         for (index in 0 until list.childCount) {
             val noteView = list.getChildAt(index)
             val bodyView = noteView.findViewById<TextView?>(R.id.note_body)
-            val viewItem: BaseNoteViewItem<*> = ListScreenTestHelper.toBaseNoteViewItem(
+            val viewItem: BaseNoteViewItem<*> = ListActivityTestHelper.toBaseNoteViewItem(
                     timelineActivity.getListAdapter().getItem(noteView))
             if (bodyView != null) {
                 Assert.assertTrue("""Note #${viewItem.getId()} '${viewItem.getContent()}' contains '$publicNoteText'

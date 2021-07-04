@@ -56,9 +56,9 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
     @Test
     fun testSharingMediaToThisApp() {
         val method = "testSharingMediaToThisApp"
-        val listScreenTestHelper: ListScreenTestHelper<TimelineActivity<*>> =
-                ListScreenTestHelper.newForSelectorDialog(activity, SelectorDialog.Companion.dialogTag)
-        listScreenTestHelper.selectIdFromSelectorDialog(method, ma.actorId)
+        val listActivityTestHelper: ListActivityTestHelper<TimelineActivity<*>> =
+                ListActivityTestHelper.newForSelectorDialog(activity, SelectorDialog.Companion.dialogTag)
+        listActivityTestHelper.selectIdFromSelectorDialog(method, ma.actorId)
         val editorView = activity.findViewById<View?>(R.id.note_editor)
         ActivityTestHelper.waitViewVisible(method, editorView)
         val details = editorView.findViewById<TextView?>(R.id.noteEditDetails)

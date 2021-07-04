@@ -25,7 +25,7 @@ import org.andstatus.app.data.MatchedUri
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
 import org.andstatus.app.net.social.Actor
-import org.andstatus.app.timeline.ListScreenTestHelper
+import org.andstatus.app.timeline.ListActivityTestHelper
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Test
@@ -52,7 +52,7 @@ class ActorsScreenWorkTest : ActivityTest<ActorsScreen>() {
     fun testFriendsList() {
         val method = "testFriendsList"
         TestSuite.waitForListLoaded(activity, 2)
-        val helper = ListScreenTestHelper(activity, FollowersScreen::class.java)
+        val helper = ListActivityTestHelper(activity, FollowersScreen::class.java)
         val listItems = activity.getListLoader().getList()
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
         val actor: Actor = ActorsScreenTest.getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
@@ -62,7 +62,7 @@ class ActorsScreenWorkTest : ActivityTest<ActorsScreen>() {
         val followersScreen = helper.waitForNextActivity(method, 15000) as FollowersScreen
         TestSuite.waitForListLoaded(followersScreen, 1)
         val items = followersScreen.getListLoader().getList()
-        val followersHelper = ListScreenTestHelper(followersScreen)
+        val followersHelper = ListActivityTestHelper(followersScreen)
         followersHelper.clickListAtPosition(method,
                 followersHelper.getPositionOfListItemId(items[0].getActorId()))
         DbUtils.waitMs(method, 500)

@@ -28,7 +28,7 @@ import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.note.NoteContextMenuItem
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.timeline.ListScreenTestHelper
+import org.andstatus.app.timeline.ListActivityTestHelper
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.Timeline
@@ -60,7 +60,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
     fun testActorsOfNote() {
         val method = "testActorsOfNote"
         TestSuite.waitForListLoaded(activity, 2)
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity, ActorsScreen::class.java)
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity, ActorsScreen::class.java)
         val content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId)
         val logMsg = MyQuery.noteInfoForLog(activity.myContext, noteId)
         val actors: List<Actor> = Actor.Companion.newUnknown(DemoData.demoData.getPumpioConversationAccount().origin, GroupType.UNKNOWN)
@@ -82,12 +82,12 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
         val actorA: Actor = getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
         Assert.assertTrue("Not found " + DemoData.demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty)
         compareAttributes(actorE, actorA, false)
-        val actorsScreenHelper = ListScreenTestHelper(actorsScreen)
+        val actorsScreenHelper = ListActivityTestHelper(actorsScreen)
         actorsScreenHelper.clickListAtPosition(method, actorsScreenHelper.getPositionOfListItemId(listItems[if (listItems.size > 2) 2 else 0].getActorId()))
         DbUtils.waitMs(method, 500)
     }
 
-    private fun tryToOpenActorsScreen(method: String, helper: ListScreenTestHelper<TimelineActivity<*>>, logMsg: String): ActorsScreen {
+    private fun tryToOpenActorsScreen(method: String, helper: ListActivityTestHelper<TimelineActivity<*>>, logMsg: String): ActorsScreen {
         var item: ActivityViewItem = ActivityViewItem.Companion.EMPTY
         val timelineData = activity.getListData()
         for (position in 0 until timelineData.size()) {

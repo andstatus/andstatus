@@ -279,7 +279,7 @@ class MyService : Service(), IdentifiableInstance {
         mForcedToStop = false
         val heartBeat = heartBeatRef.get()
         if (heartBeat != null && heartBeatRef.compareAndSet(heartBeat, null)) {
-            MyLog.v(this) { "(unit) Cancelling task: $heartBeat" }
+            MyLog.v(this) { "(unInit) Cancelling task: $heartBeat" }
             heartBeat.cancel()
         }
         AsyncTaskLauncher.cancelPoolTasks(PoolEnum.SYNC)

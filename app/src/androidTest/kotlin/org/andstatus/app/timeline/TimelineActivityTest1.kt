@@ -70,7 +70,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         val method = "testOpeningConversationActivity"
         TestSuite.waitForListLoaded(activity, 7)
         Assert.assertTrue("MyService is available", MyServiceManager.Companion.isServiceAvailable())
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity,
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity,
                 ConversationActivity::class.java)
         val noteId = helper.getListItemIdOfLoadedReply()
         helper.selectListPosition(method, helper.getPositionOfListItemId(noteId))
@@ -111,7 +111,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals(collapseDuplicates, (activity.findViewById<View?>(R.id.collapseDuplicatesToggle) as CheckBox).isChecked)
         Assert.assertEquals(collapseDuplicates, activity.getListData().isCollapseDuplicates())
         getCurrentListPosition().logV("$method; before selecting position $position0")
-        ListScreenTestHelper(activity).selectListPosition(method, position0)
+        ListActivityTestHelper(activity).selectListPosition(method, position0)
         var itemIdOfSelected: Long = 0
         for (attempt in 0..9) {
             TestSuite.waitForIdleSync()
@@ -183,7 +183,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     fun testOpeningAccountSelector() {
         val method = "testOpeningAccountSelector"
         TestSuite.waitForListLoaded(activity, 7)
-        val helper: ListScreenTestHelper<TimelineActivity<*>> = ListScreenTestHelper.newForSelectorDialog<TimelineActivity<*>>(activity, SelectorDialog.Companion.dialogTag)
+        val helper: ListActivityTestHelper<TimelineActivity<*>> = ListActivityTestHelper.newForSelectorDialog<TimelineActivity<*>>(activity, SelectorDialog.Companion.dialogTag)
         helper.clickView(method, R.id.selectAccountButton)
         val selectorDialog = helper.waitForSelectorDialog(method, 15000)
         DbUtils.waitMs(method, 500)
@@ -194,7 +194,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     fun testActAs() {
         val method = "testActAs"
         TestSuite.waitForListLoaded(activity, 2)
-        val helper: ListScreenTestHelper<TimelineActivity<*>> = ListScreenTestHelper.newForSelectorDialog<TimelineActivity<*>>(activity, SelectorDialog.Companion.dialogTag)
+        val helper: ListActivityTestHelper<TimelineActivity<*>> = ListActivityTestHelper.newForSelectorDialog<TimelineActivity<*>>(activity, SelectorDialog.Companion.dialogTag)
         val listItemId = helper.getListItemIdOfLoadedReply()
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()

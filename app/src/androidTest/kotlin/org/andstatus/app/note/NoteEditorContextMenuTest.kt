@@ -30,7 +30,7 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.timeline.ListScreenTestHelper
+import org.andstatus.app.timeline.ListActivityTestHelper
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.Timeline
@@ -77,7 +77,7 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         val method = "testContextMenuWhileEditing"
         TestSuite.waitForListLoaded(activity, 2)
         ActivityTestHelper.openEditor<ActivityViewItem>(method, activity)
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity, ConversationActivity::class.java)
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity, ConversationActivity::class.java)
         val listItemId = helper.getListItemIdOfLoadedReply()
         var logMsg = "listItemId=$listItemId"
         val noteId = if (TimelineType.HOME.showsActivities()) MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId) else listItemId
@@ -93,7 +93,7 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         val method = "testContextMenuWhileEditing"
         TestSuite.waitForListLoaded(activity, 2)
         ActivityTestHelper.openEditor<ActivityViewItem>(method, activity)
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity, ConversationActivity::class.java)
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity, ConversationActivity::class.java)
         val listItemId = helper.getListItemIdOfLoadedReply()
         val logMsg = "listItemId=$listItemId"
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_AUTHOR, R.id.note_wrapper)
