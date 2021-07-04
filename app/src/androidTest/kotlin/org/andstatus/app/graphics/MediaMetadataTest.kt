@@ -31,6 +31,6 @@ class MediaMetadataTest {
     @Test
     fun testFromFilePath() {
         val mediaMetadata: MediaMetadata = MediaMetadata.Companion.fromFilePath(DemoData.demoData.localVideoTestUri.toString())
-        Assert.assertEquals(180, mediaMetadata.height.toLong())
+        Assert.assertEquals("Returned: $mediaMetadata", 180, mediaMetadata.height.toLong())
     }
 }

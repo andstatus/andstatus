@@ -56,6 +56,8 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
     @Test
     fun testSharingMediaToThisApp() {
         val method = "testSharingMediaToThisApp"
+        TestSuite.waitForListLoaded(activity, 4)
+
         val listActivityTestHelper: ListActivityTestHelper<TimelineActivity<*>> =
                 ListActivityTestHelper.newForSelectorDialog(activity, SelectorDialog.Companion.dialogTag)
         listActivityTestHelper.selectIdFromSelectorDialog(method, ma.actorId)

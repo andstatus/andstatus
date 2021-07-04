@@ -51,9 +51,13 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
 
     override fun toString(): String {
         val builder = StringBuilder()
-        if (width > 0) builder.append("width:$width,")
-        if (height > 0) builder.append("height:$height,")
-        if (duration > 0) builder.append("duration:$height,")
+        if (this === EMPTY) {
+            builder.append("EMPTY")
+        } else {
+            if (width > 0) builder.append("width:$width,")
+            if (height > 0) builder.append("height:$height,")
+            if (duration > 0) builder.append("duration:$height,")
+        }
         return MyStringBuilder.formatKeyValue(this, builder.toString())
     }
 
@@ -76,6 +80,7 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
     companion object {
         private val TAG: String = MediaMetadata::class.java.simpleName
         val EMPTY: MediaMetadata = MediaMetadata(0, 0, 0)
+
         fun fromFilePath(path: String?): MediaMetadata {
             try {
                 if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {

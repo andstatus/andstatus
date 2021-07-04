@@ -262,8 +262,8 @@ object TestSuite {
                 break
             }
             itemsCount = itemsCountNew
-        } while(stopWatch.notPassedSeconds(30))
-        DbUtils.waitMs(this, 2000) // TODO: Wait for something else to remove the delay
+            DbUtils.waitMs(this, 2000) // TODO: Wait for something else to remove the delay
+        } while(stopWatch.notPassedSeconds(40))
         val msgLog = "There are " + itemsCount + " items (min=" + minCount + ")" +
                 " in the list of " + activity.javaClass.simpleName + ", ${stopWatch.time} ms"
         Assert.assertTrue(msgLog, itemsCount >= minCount)

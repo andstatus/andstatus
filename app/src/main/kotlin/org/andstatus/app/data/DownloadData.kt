@@ -47,6 +47,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
     private var errorMessage: String = ""
     private var downloadedDate = RelativeTime.DATETIME_MILLIS_NEVER
     private var fileNew: DownloadFile = DownloadFile.EMPTY
+
     private fun loadOtherFields() {
         if (checkHardErrorBeforeLoad()) return
         val sql = "SELECT * FROM " + DownloadTable.TABLE_NAME + getWhere().getWhere()

@@ -340,10 +340,11 @@ $activity""",
         Assert.assertNotEquals("Activity added $activity", 0, activity.getId())
         Assert.assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.Companion.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note1.noteId)))
+        DbUtils.waitMs(method, 1000)
+
         val dd: DownloadData = DownloadData.Companion.getSingleAttachment(note1.noteId)
         Assert.assertEquals("Image URI stored", note1.attachments.list[0].uri, dd.getUri())
         Assert.assertEquals("Local image immediately loaded $dd", DownloadStatus.LOADED, dd.getStatus())
-        DbUtils.waitMs(method, 1000)
 
         // Emulate receiving of note
         val oid = "sentMsgOid" + DemoData.demoData.testRunUid
