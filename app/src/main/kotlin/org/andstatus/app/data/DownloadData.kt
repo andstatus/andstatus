@@ -27,15 +27,18 @@ import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
 
-open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long, actorId: Long, noteId: Long, contentType: MyContentType,
-                                              mimeType: String, downloadType: DownloadType, uri: Uri?) : IsEmpty, TaggedClass {
-    private var downloadType: DownloadType = DownloadType.UNKNOWN
-    var actorId: Long = 0
-    var noteId: Long = 0
-    private var contentType: MyContentType = MyContentType.UNKNOWN
-    private var mimeType: String = ""
+open class DownloadData protected constructor(
+    cursor: Cursor?,
+    private var downloadId: Long,
+    private var actorId: Long,
+    private var noteId: Long,
+    private var contentType: MyContentType,
+    private var mimeType: String,
+    private var downloadType: DownloadType,
+    uri: Uri?
+) : IsEmpty, TaggedClass {
+
     private var status: DownloadStatus = DownloadStatus.UNKNOWN
-    private var downloadId: Long = 0
     private var downloadNumber: Long = 0
     private var fileStored: DownloadFile = DownloadFile.EMPTY
     private var fileSize: Long = 0
@@ -47,6 +50,16 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
     private var errorMessage: String = ""
     private var downloadedDate = RelativeTime.DATETIME_MILLIS_NEVER
     private var fileNew: DownloadFile = DownloadFile.EMPTY
+
+    init {
+        this.uri = UriUtils.notNull(uri)
+        if (cursor == null) {
+            loadOtherFields()
+        } else {
+            loadFromCursor(cursor)
+        }
+        fixFieldsAfterLoad()
+    }
 
     private fun loadOtherFields() {
         if (checkHardErrorBeforeLoad()) return
@@ -175,8 +188,12 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
             return
         }
         fileSize = fileNew.getSize()
-        mediaMetadata = MediaMetadata.fromFilePath(fileNew.getFilePath())
-        downloadedDate = System.currentTimeMillis()
+        MediaMetadata.fromFilePath(fileNew.getFilePath()).onSuccess {
+            mediaMetadata = it
+            downloadedDate = System.currentTimeMillis()
+        } .onFailure {
+            MyLog.w(this, "Failed to load metadata for $this", it)
+        }
     }
 
     private fun onNoFile() {
@@ -570,21 +587,5 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
                     }
             )
         }
-    }
-
-    init {
-        this.downloadId = downloadId
-        this.actorId = actorId
-        this.noteId = noteId
-        this.downloadType = downloadType
-        this.contentType = contentType
-        this.mimeType = mimeType
-        this.uri = UriUtils.notNull(uri)
-        if (cursor == null) {
-            loadOtherFields()
-        } else {
-            loadFromCursor(cursor)
-        }
-        fixFieldsAfterLoad()
     }
 }

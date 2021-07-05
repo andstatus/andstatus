@@ -28,6 +28,7 @@ import org.andstatus.app.graphics.CachedImage
 import org.andstatus.app.graphics.IdentifiableImageView
 import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.graphics.MediaMetadata
+import org.andstatus.app.graphics.MediaMetadata.Companion.EMPTY
 import org.andstatus.app.graphics.MediaMetadata.Companion.fromFilePath
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.util.IdentifiableInstance
@@ -184,7 +185,7 @@ abstract class MediaFile internal constructor(filename: String,
 
     fun getSize(): Point {
         if (mediaMetadata.isEmpty && downloadFile.existed) {
-            mediaMetadata = fromFilePath(downloadFile.getFilePath())
+            mediaMetadata = fromFilePath(downloadFile.getFilePath()).getOrElse(EMPTY)
         }
         return mediaMetadata.size()
     }

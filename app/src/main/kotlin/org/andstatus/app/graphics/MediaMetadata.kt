@@ -21,6 +21,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import io.vavr.control.Try
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.DbUtils.closeSilently
@@ -81,16 +82,18 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
         private val TAG: String = MediaMetadata::class.java.simpleName
         val EMPTY: MediaMetadata = MediaMetadata(0, 0, 0)
 
-        fun fromFilePath(path: String?): MediaMetadata {
+        fun fromFilePath(path: String?): Try<MediaMetadata> {
             try {
                 if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
                     var retriever: MediaMetadataRetriever? = null
                     return try {
                         retriever = MediaMetadataRetriever()
                         retriever.setDataSource( MyContextHolder.myContextHolder.getNow().context, Uri.parse(path))
-                        MediaMetadata(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH).toInt(),
+                        Try.success(
+                            MediaMetadata(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH).toInt(),
                                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT).toInt(),
                                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong())
+                        )
                     } finally {
                         closeSilently(retriever)
                     }
@@ -98,11 +101,10 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
                 val options = BitmapFactory.Options()
                 options.inJustDecodeBounds = true
                 BitmapFactory.decodeFile(path, options)
-                return MediaMetadata(options.outWidth, options.outHeight, 0)
+                return Try.success(MediaMetadata(options.outWidth, options.outHeight, 0))
             } catch (e: Exception) {
-                MyLog.d(TAG, "path:'$path'", e)
+                return Try.failure(e)
             }
-            return EMPTY
         }
 
         fun fromCursor(cursor: Cursor?): MediaMetadata {
