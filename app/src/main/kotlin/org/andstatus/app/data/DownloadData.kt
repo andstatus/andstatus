@@ -30,8 +30,8 @@ import java.util.function.Function
 open class DownloadData protected constructor(
     cursor: Cursor?,
     private var downloadId: Long,
-    private var actorId: Long,
-    private var noteId: Long,
+    var actorId: Long,
+    var noteId: Long,
     private var contentType: MyContentType,
     private var mimeType: String,
     private var downloadType: DownloadType,
