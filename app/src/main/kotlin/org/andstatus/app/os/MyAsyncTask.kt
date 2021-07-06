@@ -21,7 +21,6 @@ import android.os.Looper
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import io.vavr.control.Try
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * @author yvolk@yurivolkov.com
@@ -106,26 +106,6 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
         DATABASE_WRITE(0, 20);
     }
 
-    private val exceptionHandler = CoroutineExceptionHandler { _, e ->
-        when(e) {
-            is SQLiteDiskIOException -> {
-                ExceptionsCounter.onDiskIoException(e)
-            }
-            is SQLiteDatabaseLockedException -> {
-                // see also https://github.com/greenrobot/greenDAO/issues/191
-                logError("Database lock error, probably related to the application re-initialization", e)
-            }
-            is AssertionError -> {
-                ExceptionsCounter.logSystemInfo(e)
-            }
-            else -> ExceptionsCounter.logSystemInfo(e)
-        }
-        logError("Exception during execution", e)
-        CoroutineScope(Dispatchers.Main).launch {
-            onFinish1(null, false)
-        }
-    }
-
     /**
      * Executes the task with the specified parameters. The task returns
      * itself (this) so that the caller can keep a reference to it.
@@ -165,27 +145,39 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
             )
             else -> Unit
         }
-        job = CoroutineScope(Dispatchers.Main + exceptionHandler).launch {
+        job = CoroutineScope(Dispatchers.Main).launch {
             try {
-                var result: Try<Result> = TryUtils.cancelled()
                 status = Status.RUNNING
                 onPreExecute()
                 withContext(asyncCoroutineContext) {
-                    result = doInBackground1(params[0])
-                }
-                if (result.isSuccess) {
-                    onPostExecute(result.get())
-                }
-                onFinish1(result.getOrElse(null), result.isSuccess)
-            } finally {
-                if (this.coroutineContext[Job]?.isCancelled == true) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        onCancel1()
+                    doInBackground1(params[0])
+                }.let { result ->
+                    if (result.isSuccess) {
+                        onPostExecute(result.get())
                     }
-                } else if (!onFinishCalled.get()) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        onFinish1(null, false)
+                    onFinish1(result.getOrElse(null), result.isSuccess)
+                }
+            } catch (e: CancellationException) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    onCancel1()
+                }
+            } catch (e: Exception) {
+                when(e) {
+                    is SQLiteDiskIOException -> {
+                        ExceptionsCounter.onDiskIoException(e)
                     }
+                    is SQLiteDatabaseLockedException -> {
+                        // see also https://github.com/greenrobot/greenDAO/issues/191
+                        logError("Database lock error, probably related to the application re-initialization", e)
+                    }
+                    is AssertionError -> {
+                        ExceptionsCounter.logSystemInfo(e)
+                    }
+                    else -> ExceptionsCounter.logSystemInfo(e)
+                }
+                logError("Exception during execution", e)
+                CoroutineScope(Dispatchers.Main).launch {
+                    onFinish1(null, false)
                 }
             }
         }
