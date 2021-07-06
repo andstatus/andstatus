@@ -103,7 +103,7 @@ abstract class DataChecker {
                     object : MyAsyncTask<Void?, Void?, Void?>(logger.logTag, DEFAULT_POOL) {
                         override val cancelable: Boolean = false
 
-                        override suspend fun doInBackground(aVoid: Void?): Void? {
+                        override suspend fun doInBackground(params: Void?): Void? {
                             fixData(logger, includeLong, countOnly)
                             delay(3000)
                             MyContextHolder.myContextHolder.release { "fixDataAsync" }
@@ -111,11 +111,11 @@ abstract class DataChecker {
                             return null
                         }
 
-                        override fun onCancelled() {
+                        override fun onCancel() {
                             logger.logFailure()
                         }
 
-                        override suspend fun onPostExecute(aVoid: Void?) {
+                        override suspend fun onPostExecute(result: Void?) {
                             logger.logSuccess()
                         }
                     })

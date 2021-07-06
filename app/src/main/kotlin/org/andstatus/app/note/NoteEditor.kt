@@ -551,16 +551,17 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                         PoolEnum.QUICK_UI) {
                     @Volatile
                     var lock: NoteEditorLock = NoteEditorLock.EMPTY
-                    override suspend fun doInBackground(noteId: Long?): NoteEditorData? {
-                        MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft started, noteId=$noteId" }
-                        val potentialLock = NoteEditorLock(false, noteId ?: 0)
+
+                    override suspend fun doInBackground(params: Long?): NoteEditorData {
+                        MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft started, noteId=$params" }
+                        val potentialLock = NoteEditorLock(false, params ?: 0)
                         if (!potentialLock.acquire(true)) {
                             return NoteEditorData.EMPTY
                         }
                         lock = potentialLock
                         MyLog.v(NoteEditorData.TAG, "loadCurrentDraft acquired lock")
                         val data: NoteEditorData = NoteEditorData.load(editorContainer.getActivity().myContext,
-                                noteId ?: 0)
+                                params ?: 0)
                         return if (data.mayBeEdited()) {
                             data
                         } else {
@@ -570,17 +571,17 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                         }
                     }
 
-                    override fun onCancelled() {
+                    override fun onCancel() {
                         lock.release()
                     }
 
-                    override suspend fun onPostExecute(data: NoteEditorData?) {
-                        if (lock.acquired() && data?.isValid() == true) {
+                    override suspend fun onPostExecute(result: NoteEditorData?) {
+                        if (lock.acquired() && result?.isValid() == true) {
                             if (editorData.isValid()) {
                                 MyLog.v(NoteEditorData.TAG, "Loaded draft is not used: Editor data is valid")
                                 show()
                             } else {
-                                showData(data)
+                                showData(result)
                             }
                         }
                         lock.release()

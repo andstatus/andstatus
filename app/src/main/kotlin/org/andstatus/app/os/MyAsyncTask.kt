@@ -21,6 +21,7 @@ import android.os.Looper
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import io.vavr.control.Try
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,7 +32,10 @@ import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.TryUtils.isCancelled
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
 
@@ -51,6 +55,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
 
     @Volatile
     var backgroundEndedAt: Long = 0
+    val finishedAt: AtomicLong = AtomicLong()
 
     /** This allows to control execution time of single steps/commands by this task  */
     @Volatile
@@ -70,7 +75,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
 
     val hasExecutor = AtomicBoolean(true)
     @Volatile
-    private var job: Job? = null
+    var job: Job? = null
 
     /**
      * Indicates the current status of the task. Each status will be set only once
@@ -91,8 +96,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     var status: Status get() = mStatus.get()
         private set(value) = mStatus.set(value)
 
-    private val mCancelled = AtomicBoolean()
-    val isCancelled: Boolean get() = mCancelled.get()
+    val isCancelled: Boolean get() = onCancelCalled.get()
 
     enum class PoolEnum(val corePoolSize: Int, val maxCommandExecutionSeconds: Long) {
         SYNC(3, MAX_COMMAND_EXECUTION_SECONDS),
@@ -100,6 +104,26 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
         QUICK_UI(2, 20),
         DEFAULT_POOL(0, MAX_COMMAND_EXECUTION_SECONDS),
         DATABASE_WRITE(0, 20);
+    }
+
+    private val exceptionHandler = CoroutineExceptionHandler { _, e ->
+        when(e) {
+            is SQLiteDiskIOException -> {
+                ExceptionsCounter.onDiskIoException(e)
+            }
+            is SQLiteDatabaseLockedException -> {
+                // see also https://github.com/greenrobot/greenDAO/issues/191
+                logError("Database lock error, probably related to the application re-initialization", e)
+            }
+            is AssertionError -> {
+                ExceptionsCounter.logSystemInfo(e)
+            }
+            else -> ExceptionsCounter.logSystemInfo(e)
+        }
+        logError("Exception during execution", e)
+        CoroutineScope(Dispatchers.Main).launch {
+            onFinish1(null, false)
+        }
     }
 
     /**
@@ -134,39 +158,36 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     ): MyAsyncTask<Params, Progress, Result> {
         when (status) {
             Status.RUNNING -> throw java.lang.IllegalStateException(
-                "Cannot execute task:"
-                        + " the task is already running."
+                "Cannot execute task: the task is already running."
             )
             Status.FINISHED -> throw java.lang.IllegalStateException(
-                ("Cannot execute task:"
-                        + " the task has already been executed "
-                        + "(a task can be executed only once)")
+                ("Cannot execute task: the task has already been executed (a task can be executed only once)")
             )
-            else -> {
-            }
+            else -> Unit
         }
-        job = CoroutineScope(Dispatchers.Main).launch {
-            var result: Result? = null
-            var success = false
-            status = Status.RUNNING
+        job = CoroutineScope(Dispatchers.Main + exceptionHandler).launch {
             try {
+                var result: Try<Result> = TryUtils.cancelled()
+                status = Status.RUNNING
                 onPreExecute()
                 withContext(asyncCoroutineContext) {
-                    try {
-                        result = doInBackground1(*params)
-                        success = true // TOD: better result type needed
-                    } catch (e: Exception) {
-                        logError("Exception during background execution", e)
+                    result = doInBackground1(params[0])
+                }
+                if (result.isSuccess) {
+                    onPostExecute(result.get())
+                }
+                onFinish1(result.getOrElse(null), result.isSuccess)
+            } finally {
+                if (this.coroutineContext[Job]?.isCancelled == true) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        onCancel1()
                     }
-                    backgroundEndedAt = System.currentTimeMillis()
+                } else if (!onFinishCalled.get()) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        onFinish1(null, false)
+                    }
                 }
-                result?.also {
-                    onPostExecute(it)
-                }
-            } catch (e: Exception) {
-                logError("Exception during execution", e)
             }
-            onFinish1(result, success)
         }
         return this
     }
@@ -182,30 +203,20 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     @MainThread
     protected open suspend fun onPreExecute() {}
 
-    private suspend fun doInBackground1(vararg params: Params): Result? {
+    private suspend fun doInBackground1(params: Params): Try<Result> {
         backgroundStartedAt = System.currentTimeMillis()
         currentlyExecutingSince = backgroundStartedAt
         try {
-            if (!isCancelled) {
-                return doInBackground(if (params.isNotEmpty()) params[0] else null)
-            }
-        } catch (e: SQLiteDiskIOException) {
-            ExceptionsCounter.onDiskIoException(e)
-        } catch (e: SQLiteDatabaseLockedException) {
-            // see also https://github.com/greenrobot/greenDAO/issues/191
-            logError("Database lock error, probably related to the application re-initialization", e)
-        } catch (e: AssertionError) {
-            ExceptionsCounter.logSystemInfo(e)
-        } catch (e: kotlinx.coroutines.CancellationException) {
-            // TODO: Should reflect in result somehow...
-        } catch (e: Exception) {
-            ExceptionsCounter.logSystemInfo(e)
+            return doInBackground(params)?.let { Try.success(it) }
+                ?: TryUtils.notFound()
+        } finally {
+            backgroundEndedAt = System.currentTimeMillis()
         }
-        return null
     }
 
-    protected abstract suspend fun doInBackground(params: Params?): Result?
+    protected abstract suspend fun doInBackground(params: Params): Result?
 
+    private val cancelCalled = AtomicBoolean()
     /**
      * <p>Attempts to cancel execution of this task.  This attempt will
      * fail if the task has already completed, already been cancelled,
@@ -213,7 +224,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      * and this task has not started when <tt>cancel</tt> is called,
      * this task should never run.</p>
      *
-     * <p>Calling this method will result in [onCancelled] being
+     * <p>Calling this method will result in [onCancel] being
      * invoked on the UI thread after [doInBackground] returns.
      * Calling this method guarantees that onPostExecute(Object) is never
      * subsequently invoked, even if <tt>cancel</tt> returns false, but
@@ -226,23 +237,35 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      * true.</p>
      *
      * @see isCancelled
-     * @see onCancelled
+     * @see onCancel
      */
     fun cancel() {
-        if (mCancelled.compareAndSet(false, true)) {
-            cancelledAt = System.currentTimeMillis()
+        if (cancelCalled.compareAndSet(false, true)) {
+            if (isCancelled || status == Status.FINISHED) return
+
             MyLog.v(this, "Cancelling $this")
             job?.cancel()
+            onCancel1()
+        }
+    }
+
+    private val onCancelCalled = AtomicBoolean()
+    private fun onCancel1() {
+        if (onCancelCalled.compareAndSet(false, true)) {
+            cancelledAt = System.currentTimeMillis()
             CoroutineScope(Dispatchers.Main).launch {
-                job?.join()
-                onCancelled()
-                onFinish1(null, false)
+                try {
+                    job?.join()
+                    onCancel()
+                } finally {
+                    onFinish1(null, false)
+                }
             }
         }
     }
 
     @MainThread
-    protected open fun onCancelled() {}
+    protected open fun onCancel() {}
 
     @MainThread
     protected open suspend fun onPostExecute(result: Result) {}
@@ -254,6 +277,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 onFinish(result, success)
                 ExceptionsCounter.showErrorDialogIfErrorsPresent()
             } finally {
+                finishedAt.set(System.currentTimeMillis())
                 status = Status.FINISHED
             }
         }
@@ -291,14 +315,8 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
 
     private fun stateSummary(): String {
         var summary = when (status) {
-            Status.PENDING -> "PENDING " + RelativeTime.secondsAgo(createdAt) + " sec ago"
-            Status.FINISHED ->
-                if (backgroundEndedAt == 0L) {
-                    "FINISHED, but didn't complete"
-                } else {
-                    "FINISHED " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago"
-                }
-            else -> when {
+            Status.PENDING -> "PENDING since " + RelativeTime.secondsAgo(createdAt) + " sec ago"
+            Status.RUNNING -> when {
                 backgroundStartedAt == 0L -> {
                     "QUEUED " + RelativeTime.secondsAgo(createdAt) + " sec ago"
                 }
@@ -309,6 +327,19 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                     "FINISHING " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago"
                 }
             }
+            Status.FINISHED ->
+                when {
+                    backgroundStartedAt == 0L -> {
+                        "FINISHED, but didn't start " + RelativeTime.secondsAgo(finishedAt.get()) + " sec ago"
+                    }
+                    backgroundEndedAt == 0L -> {
+                        "FINISHED, but didn't end??? " + RelativeTime.secondsAgo(finishedAt.get()) + " sec ago"
+                    }
+                    else -> {
+                        "FINISHED " + RelativeTime.secondsAgo(finishedAt.get()) + " sec ago" +
+                                ", in backround " + (backgroundEndedAt - backgroundStartedAt) + " ms"
+                    }
+                }
         }
         if (isCancelled) {
             summary += ", cancelled " + RelativeTime.secondsAgo(cancelledAt) + " sec ago"
@@ -339,6 +370,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     }
 
     fun needsBackgroundWork(): Boolean {
+        if (isCancelled && backgroundStartedAt == 0L) return false
         return when (status) {
             Status.PENDING -> true
             Status.FINISHED -> false
@@ -417,7 +449,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 MyAsyncTask<Params, Progress, Try<Result>> {
             return object : MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.DEFAULT_POOL) {
 
-                override suspend fun doInBackground(params: Params?): Try<Result> {
+                override suspend fun doInBackground(params: Params): Try<Result> {
                     return backgroundFunc(params)
                 }
 

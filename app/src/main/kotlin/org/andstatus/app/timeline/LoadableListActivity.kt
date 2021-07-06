@@ -217,7 +217,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             updateTitle(values[0])
         }
 
-        override fun onCancelled() {
+        override fun onCancel() {
             resetIsWorkingFlag()
         }
 
@@ -386,13 +386,14 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     private fun showSyncing(commandData: CommandData) {
         AsyncTaskLauncher<CommandData>().execute(this,
             object : MyAsyncTask<CommandData?, Void?, String?>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
-                override suspend fun doInBackground(commandData: CommandData?): String? {
-                    return commandData?.toCommandSummary(myContext)
+
+                override suspend fun doInBackground(params: CommandData?): String? {
+                    return params?.toCommandSummary(myContext)
                 }
 
                 override suspend fun onPostExecute(result: String?) {
                     showSyncing(
-                        "Show " + commandData?.command,
+                        "Show " + commandData.command,
                         getText(R.string.title_preference_syncing).toString() + ": " + result
                     )
                 }

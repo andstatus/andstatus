@@ -37,7 +37,7 @@ import kotlin.coroutines.CoroutineContext
  */
 class AsyncTaskLauncher<Params> {
     fun execute(objTag: Any?, asyncTask: MyAsyncTask<Params?, *, *>, params: Params?): Try<Void> {
-        MyLog.v(objTag) { asyncTask.toString() + " Launching task" }
+        MyLog.v(objTag) { "$asyncTask Launching task" }
         return try {
             cancelStalledTasks()
             val paramsArray = arrayOf<Any?>(params) as Array<Params?>

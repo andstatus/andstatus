@@ -326,7 +326,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             parentFragment.showUseExternalStorage()
         }
 
-        override fun onCancelled() {
+        override fun onCancel() {
             DialogFactory.dismissSafely(dlg)
         }
     }

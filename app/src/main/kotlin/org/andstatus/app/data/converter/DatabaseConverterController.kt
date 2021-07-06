@@ -36,7 +36,7 @@ class DatabaseConverterController {
         var progressLogger: ProgressLogger = ProgressLogger.getEmpty(TAG)
         override val cancelable: Boolean = false
 
-        override suspend fun doInBackground(aVoid: Void?): Void? {
+        override suspend fun doInBackground(params: Void?): Void? {
             syncUpgrade()
             return null
         }

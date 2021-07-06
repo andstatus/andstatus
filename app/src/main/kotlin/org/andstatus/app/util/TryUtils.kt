@@ -13,6 +13,7 @@ import java.util.concurrent.Callable
 object TryUtils {
     private val NOT_FOUND_EXCEPTION: NoSuchElementException = NoSuchElementException("Not found")
     private val NOT_FOUND: Try<*> = Try.failure<Any>(NOT_FOUND_EXCEPTION)
+    private val CANCELLED: Try<*> = Try.failure<Any>(kotlinx.coroutines.CancellationException())
     private val OPTIONAL_IS_EMPTY: NoSuchElementException = NoSuchElementException("Optional is empty")
     private val CALLABLE_IS_NULL: NoSuchElementException = NoSuchElementException("Callable is null")
     private val VALUE_IS_NULL: NoSuchElementException = NoSuchElementException("Value is null")
@@ -87,6 +88,13 @@ object TryUtils {
     fun <T> notFound(): Try<T> {
         return NOT_FOUND as Try<T>
     }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> cancelled(): Try<T> {
+        return CANCELLED as Try<T>
+    }
+
+    val Try<*>.isCancelled: Boolean get() = isFailure && cause is kotlinx.coroutines.CancellationException
 
     fun <T> failure(message: String?): Try<T> {
         return Try.failure(Exception(message))
