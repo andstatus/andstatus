@@ -36,12 +36,11 @@ import kotlin.coroutines.CoroutineContext
  * @author yvolk@yurivolkov.com
  */
 class AsyncTaskLauncher<Params> {
-    fun execute(objTag: Any?, asyncTask: MyAsyncTask<Params?, *, *>, params: Params?): Try<Void> {
+    fun execute(objTag: Any?, asyncTask: MyAsyncTask<Params, *, *>, params: Params): Try<Void> {
         MyLog.v(objTag) { "$asyncTask Launching task" }
         return try {
             cancelStalledTasks()
-            val paramsArray = arrayOf<Any?>(params) as Array<Params?>
-            asyncTask.executeInContext(getExecutor(asyncTask.pool), *paramsArray)
+            asyncTask.executeInContext(getExecutor(asyncTask.pool), params)
             launchedTasks.add(asyncTask)
             launchedCount.incrementAndGet()
             removeFinishedTasks()

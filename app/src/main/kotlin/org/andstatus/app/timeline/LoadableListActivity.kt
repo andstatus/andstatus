@@ -213,8 +213,8 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             publishProgress(progress)
         }
 
-        override fun onProgressUpdate(vararg values: String?) {
-            updateTitle(values[0])
+        override fun onProgressUpdate(values: String?) {
+            updateTitle(values)
         }
 
         override fun onCancel() {
@@ -385,10 +385,10 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
 
     private fun showSyncing(commandData: CommandData) {
         AsyncTaskLauncher<CommandData>().execute(this,
-            object : MyAsyncTask<CommandData?, Void?, String?>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
+            object : MyAsyncTask<CommandData, Void?, String?>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
 
-                override suspend fun doInBackground(params: CommandData?): String? {
-                    return params?.toCommandSummary(myContext)
+                override suspend fun doInBackground(params: CommandData): String {
+                    return params.toCommandSummary(myContext)
                 }
 
                 override suspend fun onPostExecute(result: String?) {

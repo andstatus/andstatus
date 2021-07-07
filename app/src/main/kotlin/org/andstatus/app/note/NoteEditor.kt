@@ -524,8 +524,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         hide()
         if (command.nonEmpty) {
             MyLog.v(NoteEditorData.TAG) { "Requested: $command" }
-            AsyncTaskLauncher<NoteEditorCommand?>().execute(this,
-                    NoteSaver(this), command)
+            AsyncTaskLauncher<NoteEditorCommand?>().execute(this, NoteSaver(this), command)
         } else {
             if (command.showAfterSave) {
                 command.currentData?.let { showData(it) }
@@ -546,13 +545,13 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             return
         }
         MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft requested, noteId=$noteId" }
-        AsyncTaskLauncher<Long?>().execute(this,
-                object : MyAsyncTask<Long?, Void?, NoteEditorData?>(this@NoteEditor.toString(),
+        AsyncTaskLauncher<Long>().execute(this,
+                object : MyAsyncTask<Long, Void?, NoteEditorData?>(this@NoteEditor.toString(),
                         PoolEnum.QUICK_UI) {
                     @Volatile
                     var lock: NoteEditorLock = NoteEditorLock.EMPTY
 
-                    override suspend fun doInBackground(params: Long?): NoteEditorData {
+                    override suspend fun doInBackground(params: Long): NoteEditorData {
                         MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft started, noteId=$params" }
                         val potentialLock = NoteEditorLock(false, params ?: 0)
                         if (!potentialLock.acquire(true)) {

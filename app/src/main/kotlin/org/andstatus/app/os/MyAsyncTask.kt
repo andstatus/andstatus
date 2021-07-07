@@ -129,10 +129,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      * [Status.RUNNING] or [Status.FINISHED].
      */
     @MainThread
-    fun executeInContext(
-        asyncCoroutineContext: CoroutineContext,
-        vararg params: Params
-    ): MyAsyncTask<Params, Progress, Result> {
+    fun executeInContext(asyncCoroutineContext: CoroutineContext, params: Params): MyAsyncTask<Params, Progress, Result> {
         when (status) {
             Status.RUNNING -> throw java.lang.IllegalStateException(
                 "Cannot execute task: the task is already running."
@@ -148,7 +145,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 status = Status.RUNNING
                 onPreExecute()
                 withContext(asyncCoroutineContext) {
-                    doInBackground1(params[0])
+                    doInBackground1(params)
                 }.let { result ->
                     if (result.isSuccess) {
                         onPostExecute(result.get())
@@ -391,10 +388,10 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      * @see doInBackground
      */
     @WorkerThread
-    protected fun publishProgress(vararg values: Progress) {
+    protected fun publishProgress(values: Progress) {
         if (!isCancelled) {
             CoroutineScope(Dispatchers.Main).launch {
-                onProgressUpdate(*values)
+                onProgressUpdate(values)
             }
         }
     }
@@ -410,7 +407,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      * @see doInBackground
      */
     @MainThread
-    protected open fun onProgressUpdate(vararg values: Progress) {
+    protected open fun onProgressUpdate(values: Progress) {
     }
 
     private fun logError(msgLog: String, tr: Throwable?) {
