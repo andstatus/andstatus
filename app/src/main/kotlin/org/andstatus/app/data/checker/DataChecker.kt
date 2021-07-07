@@ -111,7 +111,7 @@ abstract class DataChecker {
                             return null
                         }
 
-                        override fun onCancel() {
+                        override suspend fun onCancel() {
                             logger.logFailure()
                         }
 

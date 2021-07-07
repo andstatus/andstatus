@@ -26,6 +26,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.yield
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
@@ -156,6 +157,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 CoroutineScope(Dispatchers.Main).launch {
                     onCancel1()
                 }
+                yield()
             } catch (e: Exception) {
                 when(e) {
                     is SQLiteDiskIOException -> {
@@ -174,6 +176,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 CoroutineScope(Dispatchers.Main).launch {
                     onFinish1(null, false)
                 }
+                yield()
             }
         }
         return this
@@ -230,29 +233,29 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
         if (cancelCalled.compareAndSet(false, true)) {
             if (isCancelled || status == Status.FINISHED) return
 
-            MyLog.v(this, "Cancelling $this")
-            job?.cancel()
-            onCancel1()
+            CoroutineScope(Dispatchers.Main).launch {
+                MyLog.v(this, "Cancelling $this")
+                job?.cancel()
+                onCancel1()
+            }
         }
     }
 
     private val onCancelCalled = AtomicBoolean()
-    private fun onCancel1() {
+    private suspend fun onCancel1() {
         if (onCancelCalled.compareAndSet(false, true)) {
             cancelledAt.set(System.currentTimeMillis())
-            CoroutineScope(Dispatchers.Main).launch {
-                try {
-                    job?.join()
-                    onCancel()
-                } finally {
-                    onFinish1(null, false)
-                }
+            try {
+                job?.join()
+                onCancel()
+            } finally {
+                onFinish1(null, false)
             }
         }
     }
 
     @MainThread
-    protected open fun onCancel() {}
+    protected open suspend fun onCancel() {}
 
     @MainThread
     protected open suspend fun onPostExecute(result: Result) {}
@@ -388,9 +391,9 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      * @see doInBackground
      */
     @WorkerThread
-    protected fun publishProgress(values: Progress) {
+    protected suspend fun publishProgress(values: Progress) {
         if (!isCancelled) {
-            CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.Main) {
                 onProgressUpdate(values)
             }
         }
@@ -407,7 +410,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      * @see doInBackground
      */
     @MainThread
-    protected open fun onProgressUpdate(values: Progress) {
+    protected open suspend fun onProgressUpdate(values: Progress) {
     }
 
     private fun logError(msgLog: String, tr: Throwable?) {

@@ -570,7 +570,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                         }
                     }
 
-                    override fun onCancel() {
+                    override suspend fun onCancel() {
                         lock.release()
                     }
 

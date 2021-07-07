@@ -96,7 +96,7 @@ class NoteSaver(private val editor: NoteEditor) : MyAsyncTask<NoteEditorCommand?
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 
-    override fun onCancel() {
+    override suspend fun onCancel() {
         command.releaseLock()
     }
 

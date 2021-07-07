@@ -51,7 +51,7 @@ class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, 
         return null
     }
 
-    override fun onProgressUpdate(values: Long?) {
+    override suspend fun onProgressUpdate(values: Long?) {
         mIteration = values ?: 0
         previousBeat = MyLog.uniqueCurrentTimeMS()
         if (MyLog.isVerboseEnabled()) {

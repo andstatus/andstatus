@@ -22,6 +22,9 @@ import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
@@ -210,14 +213,16 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
         }
 
         override fun publish(progress: String?) {
-            publishProgress(progress)
+            CoroutineScope(Dispatchers.Main).launch {
+                publishProgress(progress)
+            }
         }
 
-        override fun onProgressUpdate(values: String?) {
+        override suspend fun onProgressUpdate(values: String?) {
             updateTitle(values)
         }
 
-        override fun onCancel() {
+        override suspend fun onCancel() {
             resetIsWorkingFlag()
         }
 

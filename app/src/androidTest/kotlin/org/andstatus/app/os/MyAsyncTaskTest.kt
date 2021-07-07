@@ -33,7 +33,7 @@ class MyAsyncTaskTest {
             return "done"
         }
 
-        override fun onCancel() {
+        override suspend fun onCancel() {
             onCancelVal.set(true)
         }
 
