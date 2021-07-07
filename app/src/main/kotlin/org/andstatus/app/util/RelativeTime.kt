@@ -19,6 +19,7 @@ import android.content.Context
 import org.andstatus.app.R
 import java.util.*
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * @author yvolk@yurivolkov.com
@@ -103,6 +104,19 @@ object RelativeTime {
         return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
                 - previousTime)
     }
+
+    /** Format seconds or ms for debug messages */
+    fun secMsAgo(previousTime: Long): String = secMs(System.currentTimeMillis() - previousTime)
+
+    /** Format seconds or ms for debug messages */
+    fun secMsAgo(previousTime: AtomicLong): String = secMs(System.currentTimeMillis() - previousTime.get())
+
+    /** Format seconds or ms for debug messages */
+    fun secMs(time: Long): String =
+        when (time) {
+            in 0..1999 -> "$time ms"
+            else -> "${TimeUnit.MILLISECONDS.toSeconds(time)} sec"
+        }
 
     /** Minimum, but real date  */
     fun minDate(date1: Long, date2: Long): Long {

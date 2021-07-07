@@ -50,24 +50,21 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     protected val createdAt = MyLog.uniqueCurrentTimeMS()
     override val instanceId = InstanceId.next()
 
-    @Volatile
-    var backgroundStartedAt: Long = 0
+    val startedAt: AtomicLong = AtomicLong()
+    val backgroundStartedAt: AtomicLong = AtomicLong()
 
-    @Volatile
-    var backgroundEndedAt: Long = 0
+    val backgroundEndedAt: AtomicLong = AtomicLong()
     val finishedAt: AtomicLong = AtomicLong()
 
     /** This allows to control execution time of single steps/commands by this task  */
-    @Volatile
-    protected var currentlyExecutingSince: Long = 0
+    protected val currentlyExecutingSince: AtomicLong = AtomicLong()
 
     /** Description of execution or lack of it  */
     @Volatile
     protected var currentlyExecutingDescription: String = "(didn't start)"
 
     open val cancelable = true
-    @Volatile
-    private var cancelledAt: Long = 0
+    private var cancelledAt: AtomicLong = AtomicLong()
 
     @Volatile
     var firstError: String = ""
@@ -147,6 +144,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
         }
         job = CoroutineScope(Dispatchers.Main).launch {
             try {
+                startedAt.set(System.currentTimeMillis())
                 status = Status.RUNNING
                 onPreExecute()
                 withContext(asyncCoroutineContext) {
@@ -196,13 +194,13 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     protected open suspend fun onPreExecute() {}
 
     private suspend fun doInBackground1(params: Params): Try<Result> {
-        backgroundStartedAt = System.currentTimeMillis()
-        currentlyExecutingSince = backgroundStartedAt
+        backgroundStartedAt.set(System.currentTimeMillis())
+        currentlyExecutingSince.set(backgroundStartedAt.get())
         try {
             return doInBackground(params)?.let { Try.success(it) }
                 ?: TryUtils.notFound()
         } finally {
-            backgroundEndedAt = System.currentTimeMillis()
+            backgroundEndedAt.set(System.currentTimeMillis())
         }
     }
 
@@ -244,7 +242,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     private val onCancelCalled = AtomicBoolean()
     private fun onCancel1() {
         if (onCancelCalled.compareAndSet(false, true)) {
-            cancelledAt = System.currentTimeMillis()
+            cancelledAt.set(System.currentTimeMillis())
             CoroutineScope(Dispatchers.Main).launch {
                 try {
                     job?.join()
@@ -291,50 +289,58 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     }
 
     fun isBackgroundStarted(): Boolean {
-        return backgroundStartedAt > 0
+        return backgroundStartedAt.get() > 0
     }
 
     fun isBackgroundCompleted(): Boolean {
-        return backgroundEndedAt > 0
+        return backgroundEndedAt.get() > 0
     }
 
     override fun toString(): String {
-        return (taskId + " on " + pool.name
-                + "; age " + RelativeTime.secondsAgo(createdAt) + "sec"
-                + "; " + stateSummary()
-                + "; instanceId=" + instanceId)
+        return (taskId + " on " + pool.name +
+                ", age: " + RelativeTime.secMsAgo(createdAt) +
+                ", " + stateSummary() +
+                ", instanceId: " + instanceId)
     }
 
     private fun stateSummary(): String {
         var summary = when (status) {
-            Status.PENDING -> "PENDING since " + RelativeTime.secondsAgo(createdAt) + " sec ago"
+            Status.PENDING -> "PENDING: " + RelativeTime.secMsAgo(createdAt)
             Status.RUNNING -> when {
-                backgroundStartedAt == 0L -> {
-                    "QUEUED " + RelativeTime.secondsAgo(createdAt) + " sec ago"
+                startedAt.get() == 0L -> {
+                    "QUEUED: " + RelativeTime.secMsAgo(createdAt)
                 }
-                backgroundEndedAt == 0L -> {
-                    "RUNNING for " + RelativeTime.secondsAgo(backgroundStartedAt) + " sec"
+                backgroundStartedAt.get() == 0L -> {
+                    "PRE-EXECUTING: " + RelativeTime.secMsAgo(startedAt.get())
                 }
+                backgroundEndedAt.get() == 0L ->
+                    "RUNNING in background: " + RelativeTime.secMsAgo(backgroundStartedAt.get()) +
+                            if (currentlyExecutingSince.get() > backgroundEndedAt.get()) {
+                                ", Currently executing: " + RelativeTime.secMs(finishedAt.get() - startedAt.get())
+                            } else ""
                 else -> {
-                    "FINISHING " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago"
+                    "FINISHING: " + RelativeTime.secMsAgo(backgroundEndedAt.get())
                 }
             }
             Status.FINISHED ->
                 when {
-                    backgroundStartedAt == 0L -> {
-                        "FINISHED, but didn't start " + RelativeTime.secondsAgo(finishedAt.get()) + " sec ago"
+                    startedAt.get() == 0L -> {
+                        "FINISHED but didn't start: " + RelativeTime.secMsAgo(finishedAt)
                     }
-                    backgroundEndedAt == 0L -> {
-                        "FINISHED, but didn't end??? " + RelativeTime.secondsAgo(finishedAt.get()) + " sec ago"
+                    backgroundEndedAt.get() == 0L -> {
+                        "FINISHED but didn't end: " + RelativeTime.secMsAgo(finishedAt)
                     }
                     else -> {
-                        "FINISHED " + RelativeTime.secondsAgo(finishedAt.get()) + " sec ago" +
-                                ", in backround " + (backgroundEndedAt - backgroundStartedAt) + " ms"
+                        "FINISHED: " + RelativeTime.secMsAgo(finishedAt) +
+                                ", worked: " + RelativeTime.secMs(finishedAt.get() - startedAt.get())
+                        ", in background: " + RelativeTime.secMs(
+                            backgroundEndedAt.get() - backgroundStartedAt.get()
+                        )
                     }
                 }
         }
         if (isCancelled) {
-            summary += ", cancelled " + RelativeTime.secondsAgo(cancelledAt) + " sec ago"
+            summary += ", cancelled " + RelativeTime.secMsAgo(cancelledAt) + " ago"
         }
         if (!hasExecutor.get()) summary += ", no executor"
         return summary
@@ -345,15 +351,15 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     }
 
     private fun expectedToBeFinishedNow(): Boolean {
-        return (RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt, DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
-                || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince, maxCommandExecutionSeconds)
+        return (RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt.get(), DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
+                || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince.get(), maxCommandExecutionSeconds)
                 || cancelledLongAgo()
                 || (status == Status.PENDING
                 && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS)))
     }
 
     fun cancelledLongAgo(): Boolean {
-        return RelativeTime.wasButMoreSecondsAgoThan(cancelledAt, MAX_EXECUTION_AFTER_CANCEL_SECONDS)
+        return RelativeTime.wasButMoreSecondsAgoThan(cancelledAt.get(), MAX_EXECUTION_AFTER_CANCEL_SECONDS)
     }
 
     /** If yes, the task may be not in FINISHED state yet: during execution of onPostExecute  */
@@ -362,11 +368,11 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     }
 
     fun needsBackgroundWork(): Boolean {
-        if (isCancelled && backgroundStartedAt == 0L) return false
+        if (isCancelled && backgroundStartedAt.get() == 0L) return false
         return when (status) {
             Status.PENDING -> true
             Status.FINISHED -> false
-            else -> backgroundEndedAt == 0L
+            else -> backgroundEndedAt.get() == 0L
         }
     }
 

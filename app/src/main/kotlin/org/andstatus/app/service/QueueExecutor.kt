@@ -40,7 +40,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
                 breakReason = "Cancelled"
                 break
             }
-            if (RelativeTime.secondsAgo(backgroundStartedAt) > MAX_EXECUTION_TIME_SECONDS) {
+            if (RelativeTime.secondsAgo(backgroundStartedAt.get()) > MAX_EXECUTION_TIME_SECONDS) {
                 breakReason = "Executed too long"
                 break
             }
@@ -54,7 +54,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
                 break
             }
             executedCounter.incrementAndGet()
-            currentlyExecutingSince = System.currentTimeMillis()
+            currentlyExecutingSince.set(System.currentTimeMillis())
             currentlyExecutingDescription = commandData.toString()
             myService.broadcastBeforeExecutingCommand(commandData)
             CommandExecutorStrategy.executeCommand(commandData, this)
@@ -69,7 +69,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
         } while (true)
         MyLog.v(this) { "Ended, cause:$breakReason, " + executedCounter.get() + " commands executed, " + accessor.countToExecuteNow() + " left" }
         myService.myContext.queues.save()
-        currentlyExecutingSince = 0
+        currentlyExecutingSince.set(0)
         currentlyExecutingDescription = breakReason
         return true
     }
@@ -86,12 +86,12 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
     }
 
     override suspend fun onFinish(aBoolean: Boolean?, success: Boolean) {
-        val myService = myServiceRef?.get()
+        val myService = myServiceRef.get()
         if (myService != null) {
             myService.latestActivityTime = System.currentTimeMillis()
         }
         MyLog.v(this, if (success) "onExecutorSuccess" else "onExecutorFailure")
-        currentlyExecutingSince = 0
+        currentlyExecutingSince.set(0)
         if (myService != null) {
             myService.reviveHeartBeat()
             myService.startStopExecution()
@@ -108,12 +108,6 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
 
     override fun toString(): String {
         val sb = MyStringBuilder()
-        if (currentlyExecutingSince == 0L) {
-            sb.withComma("notExecuting", currentlyExecutingDescription)
-        } else {
-            sb.withComma("executing", currentlyExecutingDescription)
-            sb.withComma("since", RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context, currentlyExecutingSince))
-        }
         if (isStopping()) {
             sb.withComma("stopping")
         }

@@ -204,10 +204,10 @@ class AsyncTaskLauncher<Params> {
                         pendingCount++
                         builder.append("P $pendingCount. $launched\n")
                     }
-                    MyAsyncTask.Status.RUNNING -> if (launched.backgroundStartedAt == 0L) {
+                    MyAsyncTask.Status.RUNNING -> if (launched.backgroundStartedAt.get() == 0L) {
                         queuedCount++
                         builder.append("Q $queuedCount. $launched\n")
-                    } else if (launched.backgroundEndedAt == 0L) {
+                    } else if (launched.backgroundEndedAt.get() == 0L) {
                         runningCount++
                         builder.append("R $runningCount. $launched\n")
                     } else {

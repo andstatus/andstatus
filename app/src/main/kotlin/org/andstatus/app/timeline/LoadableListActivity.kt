@@ -244,8 +244,8 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             MyLog.v(this) {
                 ("Load completed, " +
                         (mSyncLoader?.size()?.toString() ?: "?") + " items, " +
-                        timeTotal + "ms total, " +
-                        (endedAt - backgroundEndedAt) + "ms on UI thread")
+                        timeTotal + " ms total, " +
+                        (endedAt - backgroundEndedAt.get()) + " ms on UI thread")
             }
             resetIsWorkingFlag()
         }
