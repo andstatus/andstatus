@@ -1,5 +1,6 @@
 package org.andstatus.app.os
 
+import io.vavr.control.Try
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -42,7 +43,7 @@ class MyAsyncTaskTest {
             delay(200)
         }
 
-        override suspend fun onFinish(result: String?, success: Boolean) {
+        override suspend fun onFinish(result: Try<String>) {
             onFinishVal.set("got: $result")
             delay(200)
         }
@@ -161,7 +162,6 @@ class MyAsyncTaskTest {
 
     @Test
     fun exceptionDuringBackground() = runBlocking {
-        val stopWatch = StopWatch.createStarted()
         val task = TestTask().apply {
             exceptionDuringBackground = Exception("Something went wrong")
             executeInContext(Dispatchers.Default, "")

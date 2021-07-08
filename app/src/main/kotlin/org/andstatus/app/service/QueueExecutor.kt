@@ -1,6 +1,6 @@
 package org.andstatus.app.service
 
-import org.andstatus.app.context.MyContextHolder
+import io.vavr.control.Try
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.service.CommandQueue.AccessorType
@@ -85,12 +85,12 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
                 .setInForeground(commandDataExecuted.isInForeground()))
     }
 
-    override suspend fun onFinish(aBoolean: Boolean?, success: Boolean) {
+    override suspend fun onFinish(result: Try<Boolean?>) {
         val myService = myServiceRef.get()
         if (myService != null) {
             myService.latestActivityTime = System.currentTimeMillis()
         }
-        MyLog.v(this, if (success) "onExecutorSuccess" else "onExecutorFailure")
+        MyLog.v(this, if (result.isSuccess) "onExecutorSuccess" else "onExecutorFailure")
         currentlyExecutingSince.set(0)
         if (myService != null) {
             myService.reviveHeartBeat()

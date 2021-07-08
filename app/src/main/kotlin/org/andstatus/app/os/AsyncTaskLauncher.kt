@@ -46,7 +46,7 @@ class AsyncTaskLauncher<Params> {
             removeFinishedTasks()
             TryUtils.SUCCESS
         } catch (e: Exception) {
-            val msgLog = """${asyncTask.toString()} Launching task ${threadPoolInfo()}"""
+            val msgLog = "$asyncTask Launching task ${threadPoolInfo()}"
             MyLog.w(objTag, msgLog, e)
             Try.failure(Exception("${e.message} $msgLog", e))
         }
@@ -59,16 +59,7 @@ class AsyncTaskLauncher<Params> {
         private val launchedTasks: Queue<MyAsyncTask<*, *, *>> = ConcurrentLinkedQueue()
 
         @Volatile
-        private var SYNC_POOL_EXECUTOR: CoroutineContext? = null
-
-        @Volatile
         private var QUICK_UI_EXECUTOR: CoroutineContext? = null
-
-        @Volatile
-        private var FILE_DOWNLOAD_EXECUTOR: CoroutineContext? = null
-
-        @Volatile
-        private var DATABASE_WRITE_EXECUTOR: CoroutineContext? = null
 
         /**
          * An [Executor] that executes tasks one at a time in serial
@@ -84,9 +75,8 @@ class AsyncTaskLauncher<Params> {
             var executor: CoroutineContext?
             executor = when (pool) {
                 PoolEnum.DEFAULT_POOL -> Dispatchers.Default
-                PoolEnum.FILE_DOWNLOAD -> FILE_DOWNLOAD_EXECUTOR
-                PoolEnum.SYNC -> SYNC_POOL_EXECUTOR
-                PoolEnum.DATABASE_WRITE -> SERIAL_EXECUTOR
+                PoolEnum.FILE_DOWNLOAD -> Dispatchers.IO
+                PoolEnum.SYNC -> Dispatchers.IO
                 PoolEnum.QUICK_UI -> QUICK_UI_EXECUTOR
             }
             if (executor is ExecutorCoroutineDispatcher) {
@@ -116,9 +106,6 @@ class AsyncTaskLauncher<Params> {
             onExecutorRemoval(pool)
             when (pool) {
                 PoolEnum.QUICK_UI -> QUICK_UI_EXECUTOR = executor
-                PoolEnum.FILE_DOWNLOAD -> FILE_DOWNLOAD_EXECUTOR = executor
-                PoolEnum.SYNC -> SYNC_POOL_EXECUTOR = executor
-                PoolEnum.DATABASE_WRITE -> DATABASE_WRITE_EXECUTOR = executor
                 else -> throw IllegalArgumentException("Trying to set executor for $pool")
             }
         }
@@ -135,7 +122,7 @@ class AsyncTaskLauncher<Params> {
             backgroundFunc: (Params?) -> Try<Result>,
             uiConsumer: (Params?) -> (Try<Result>) -> Unit
         ): Try<Void> {
-            val asyncTask: MyAsyncTask<Params?, Void, Try<Result>> =
+            val asyncTask: MyAsyncTask<Params?, Void, Result> =
                 MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
             return AsyncTaskLauncher<Params?>().execute(params, asyncTask, params)
         }

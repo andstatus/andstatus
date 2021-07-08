@@ -34,6 +34,7 @@ import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.TryUtils.isCancelled
+import org.andstatus.app.util.TryUtils.onSuccessS
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -97,11 +98,10 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     val isCancelled: Boolean get() = onCancelCalled.get()
 
     enum class PoolEnum(val corePoolSize: Int, val maxCommandExecutionSeconds: Long) {
-        SYNC(3, MAX_COMMAND_EXECUTION_SECONDS),
-        FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS),
+        SYNC(0, MAX_COMMAND_EXECUTION_SECONDS),
+        FILE_DOWNLOAD(0, MAX_COMMAND_EXECUTION_SECONDS),
         QUICK_UI(2, 20),
-        DEFAULT_POOL(0, MAX_COMMAND_EXECUTION_SECONDS),
-        DATABASE_WRITE(0, 20);
+        DEFAULT_POOL(0, MAX_COMMAND_EXECUTION_SECONDS)
     }
 
     /**
@@ -145,14 +145,9 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 startedAt.set(System.currentTimeMillis())
                 status = Status.RUNNING
                 onPreExecute()
-                withContext(asyncCoroutineContext) {
-                    doInBackground1(params)
-                }.let { result ->
-                    if (result.isSuccess) {
-                        onPostExecute(result.get())
-                    }
-                    onFinish1(result.getOrElse(null), result.isSuccess)
-                }
+                withContext(asyncCoroutineContext) { doInBackground1(params) }
+                    .onSuccessS { onPostExecute(it) }
+                    .also { onFinish1(it) }
             } catch (e: CancellationException) {
                 CoroutineScope(Dispatchers.Main).launch {
                     onCancel1()
@@ -174,7 +169,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 }
                 logError("Exception during execution", e)
                 CoroutineScope(Dispatchers.Main).launch {
-                    onFinish1(null, false)
+                    onFinish1(Try.failure(e))
                 }
                 yield()
             }
@@ -249,7 +244,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 job?.join()
                 onCancel()
             } finally {
-                onFinish1(null, false)
+                onFinish1(TryUtils.cancelled())
             }
         }
     }
@@ -261,10 +256,10 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
     protected open suspend fun onPostExecute(result: Result) {}
 
     private val onFinishCalled = AtomicBoolean()
-    private suspend fun onFinish1(result: Result?, success: Boolean) {
+    private suspend fun onFinish1(result: Try<Result>) {
         if (onFinishCalled.compareAndSet(false, true)) {
             try {
-                onFinish(result, success)
+                onFinish(result)
                 ExceptionsCounter.showErrorDialogIfErrorsPresent()
             } finally {
                 finishedAt.set(System.currentTimeMillis())
@@ -275,7 +270,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
 
     /** If the task was started, this method should be called, before changing status to FINISH */
     @MainThread
-    protected open suspend fun onFinish(result: Result?, success: Boolean) {}
+    protected open suspend fun onFinish(result: Try<Result>) {}
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -444,21 +439,16 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
             backgroundFunc: (Params?) -> Try<Result>,
             uiConsumer: (Params?) -> (Try<Result>) -> Unit
         ):
-                MyAsyncTask<Params, Progress, Try<Result>> {
-            return object : MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.DEFAULT_POOL) {
+                MyAsyncTask<Params, Progress, Result> {
+            return object : MyAsyncTask<Params, Progress, Result>(params, PoolEnum.DEFAULT_POOL) {
 
-                override suspend fun doInBackground(params: Params): Try<Result> {
-                    return backgroundFunc(params)
+                override suspend fun doInBackground(params: Params): Result {
+                    // TODO: revert to Try!
+                    return backgroundFunc(params).getOrElse(null)
                 }
 
-                override suspend fun onFinish(result: Try<Result>?, success: Boolean) {
-                    val result2 = when {
-                        result == null -> Try.failure(Exception("No results of the Async task"))
-                        success -> result
-                        result.isFailure -> result
-                        else -> Try.failure(Exception("Failed to execute Async task"))
-                    }
-                    uiConsumer(params)(result2)
+                override suspend fun onFinish(result: Try<Result>) {
+                    uiConsumer(params)(result)
                 }
             }
         }

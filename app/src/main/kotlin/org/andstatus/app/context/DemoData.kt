@@ -16,6 +16,7 @@
 package org.andstatus.app.context
 
 import android.net.Uri
+import io.vavr.control.Try
 import kotlinx.coroutines.delay
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.account.CredentialsVerificationStatus
@@ -229,9 +230,9 @@ class DemoData {
             return params
         }
 
-        override suspend fun onFinish(result: Void?, success: Boolean) {
+        override suspend fun onFinish(result: Try<Void?>) {
             FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context, true)
-            progressListener.onComplete(success)
+            progressListener.onComplete(result.isSuccess)
         }
     }
 

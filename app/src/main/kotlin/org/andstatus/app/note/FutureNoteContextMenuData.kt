@@ -16,6 +16,7 @@
 package org.andstatus.app.note
 
 import android.view.View
+import io.vavr.control.Try
 import org.andstatus.app.data.NoteContextMenuData
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
@@ -85,8 +86,8 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
                         return if (accountToNote.getMyAccount().isValid) accountToNote else NoteContextMenuData.EMPTY
                     }
 
-                    override suspend fun onFinish(menuData: NoteContextMenuData?, success: Boolean) {
-                        future.menuData = menuData ?: NoteContextMenuData.EMPTY
+                    override suspend fun onFinish(result: Try<NoteContextMenuData>) {
+                        future.menuData = result.getOrElse(null) ?: NoteContextMenuData.EMPTY
                         noteContextMenu.setFutureData(future)
                         if (future.menuData.noteForAnyAccount.noteId != 0L && noteContextMenu.getViewItem().getNoteId() == future.noteId) {
                             next(noteContextMenu)

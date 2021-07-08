@@ -103,4 +103,19 @@ object TryUtils {
     fun <T> emptyList(): Try<List<T>> {
         return Try.success(kotlin.collections.emptyList<T>())
     }
+
+    suspend fun <T> Try<T>.onSuccessS(action: suspend (T) -> Unit): Try<T> {
+        if (isSuccess) {
+            action(get())
+        }
+        return this
+    }
+
+    suspend fun <T> Try<T>.onFailureS(action: suspend (T) -> Unit): Try<T> {
+        if (isFailure) {
+            action(get())
+        }
+        return this
+    }
+
 }

@@ -18,6 +18,7 @@ package org.andstatus.app.context
 import android.app.ProgressDialog
 import android.content.Context
 import android.widget.Toast
+import io.vavr.control.Try
 import kotlinx.coroutines.delay
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.R
@@ -78,7 +79,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
      *
      * @author yvolk@yurivolkov.com
      */
-    private inner class MoveDataBetweenStoragesTask : MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.DEFAULT_POOL) {
+    private inner class MoveDataBetweenStoragesTask : MyAsyncTask<Void?, Void?, TaskResult>(PoolEnum.DEFAULT_POOL) {
         // indeterminate duration, not cancelable
         private val dlg: ProgressDialog = ProgressDialog.show(mContext,
                 mContext.getText(R.string.dialog_title_external_storage),
@@ -310,19 +311,20 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override suspend fun onFinish(result: TaskResult?, success: Boolean) {
+        override suspend fun onFinish(result: Try<TaskResult>) {
             DialogFactory.dismissSafely(dlg)
-            if (result == null) {
-                MyLog.w(this, "Result is Null")
+            if (result.isFailure) {
+                MyLog.w(this, "Result is $result")
                 Toast.makeText(mContext, mContext.getString(R.string.error), Toast.LENGTH_LONG).show()
                 return
             }
+            val taskResult = result.get()
             MyLog.d(this, this.javaClass.simpleName + " ended, "
-                    + if (result.success) if (result.moved) "moved" else "didn't move" else "failed")
-            if (!result.success) {
-                result.messageBuilder.insert(0, mContext.getString(R.string.error) + ": ")
+                    + if (taskResult.success) if (taskResult.moved) "moved" else "didn't move" else "failed")
+            if (!taskResult.success) {
+                taskResult.messageBuilder.insert(0, mContext.getString(R.string.error) + ": ")
             }
-            Toast.makeText(mContext, result.getMessage(), Toast.LENGTH_LONG).show()
+            Toast.makeText(mContext, taskResult.getMessage(), Toast.LENGTH_LONG).show()
             parentFragment.showUseExternalStorage()
         }
 
