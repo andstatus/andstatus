@@ -21,6 +21,7 @@ import org.andstatus.app.data.NoteContextMenuData
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
 
 class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*>?) {
     enum class StateForSelectedViewItem {
@@ -70,7 +71,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
                 future.loader = object : MyAsyncTask<Void?, Void?, NoteContextMenuData>(
                         TAG + future.noteId, PoolEnum.QUICK_UI) {
 
-                    override suspend fun doInBackground(params: Void?): NoteContextMenuData {
+                    override suspend fun doInBackground(params: Void?): Try<NoteContextMenuData> {
                         val selectedMyAccount = noteContextMenu.getSelectedActingAccount()
                         val currentMyAccount = menuContainer.getActivity().myContext.accounts.currentAccount
                         val accountToNote: NoteContextMenuData = NoteContextMenuData.getAccountToActOnNote(
@@ -83,11 +84,13 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
                                     "${if (accountToNote.getMyAccount() == currentMyAccount || currentMyAccount.nonValid) "" 
                                     else ", current:" + currentMyAccount.getAccountName()} $accountToNote")
                         }
-                        return if (accountToNote.getMyAccount().isValid) accountToNote else NoteContextMenuData.EMPTY
+                        return if (accountToNote.getMyAccount().isValid) Try.success(accountToNote)
+                            else TryUtils.notFound()
+
                     }
 
                     override suspend fun onFinish(result: Try<NoteContextMenuData>) {
-                        future.menuData = result.getOrElse(null) ?: NoteContextMenuData.EMPTY
+                        future.menuData = result.getOrElse(NoteContextMenuData.EMPTY)
                         noteContextMenu.setFutureData(future)
                         if (future.menuData.noteForAnyAccount.noteId != 0L && noteContextMenu.getViewItem().getNoteId() == future.noteId) {
                             next(noteContextMenu)

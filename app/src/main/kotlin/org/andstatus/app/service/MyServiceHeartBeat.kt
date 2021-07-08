@@ -1,25 +1,25 @@
 package org.andstatus.app.service
 
+import io.vavr.control.Try
 import kotlinx.coroutines.delay
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.TryUtils
 import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 
-class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, Long?, Void?>(
-    TAG,
-    PoolEnum.SYNC
-) {
-    private val myServiceRef: WeakReference<MyService>
+class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, Long, Void>(TAG, PoolEnum.SYNC) {
+    private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
 
     @Volatile
     private var previousBeat = createdAt
 
     @Volatile
     private var mIteration: Long = 0
-    override suspend fun doInBackground(params: Void?): Void? {
+
+    override suspend fun doInBackground(params: Void?): Try<Void> {
         MyLog.v(this) { "Started" }
         var breakReason = ""
         for (iteration in 1..9999) {
@@ -48,11 +48,11 @@ class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, 
         MyLog.v(this) { "Ended $breakReasonVal; $this" }
         val myService = myServiceRef.get()
         myService?.heartBeatRef?.compareAndSet(this, null)
-        return null
+        return TryUtils.SUCCESS
     }
 
-    override suspend fun onProgressUpdate(values: Long?) {
-        mIteration = values ?: 0
+    override suspend fun onProgressUpdate(values: Long) {
+        mIteration = values
         previousBeat = MyLog.uniqueCurrentTimeMS()
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this) { "onProgressUpdate; $this" }
@@ -88,11 +88,8 @@ class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, 
     }
 
     companion object {
-        private val TAG: String = "HeartBeat"
+        private const val TAG: String = "HeartBeat"
         private const val HEARTBEAT_PERIOD_SECONDS: Long = 11
     }
 
-    init {
-        myServiceRef = WeakReference(myService)
-    }
 }

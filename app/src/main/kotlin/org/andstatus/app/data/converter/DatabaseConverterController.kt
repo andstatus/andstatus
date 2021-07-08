@@ -16,6 +16,7 @@
 package org.andstatus.app.data.converter
 
 import android.app.Activity
+import io.vavr.control.Try
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
 import org.andstatus.app.backup.DefaultProgressListener
@@ -28,24 +29,25 @@ import org.andstatus.app.os.MyAsyncTask.PoolEnum.DEFAULT_POOL
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.TryUtils
 import java.util.concurrent.TimeUnit
 
 class DatabaseConverterController {
-    private class AsyncUpgrade(val upgradeRequestor: Activity, val isRestoring: Boolean) :
-        MyAsyncTask<Void?, Void?, Void?>(DEFAULT_POOL) {
+    private class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) :
+        MyAsyncTask<Void?, Void?, Void>(DEFAULT_POOL) {
         var progressLogger: ProgressLogger = ProgressLogger.getEmpty(TAG)
         override val cancelable: Boolean = false
 
-        override suspend fun doInBackground(params: Void?): Void? {
+        override suspend fun doInBackground(params: Void?): Try<Void> {
             syncUpgrade()
-            return null
+            return TryUtils.SUCCESS
         }
 
         fun syncUpgrade() {
             var success = false
-            success = try {
-                progressLogger.logProgress(upgradeRequestor.getText(R.string.label_upgrading))
-                doUpgrade()
+            try {
+                progressLogger.logProgress(upgradeRequester.getText(R.string.label_upgrading))
+                success = doUpgrade()
             } finally {
                 progressLogger.onComplete(success)
             }
@@ -56,12 +58,12 @@ class DatabaseConverterController {
             var locUpgradeStarted = false
             try {
                 synchronized(upgradeLock) { mProgressLogger = progressLogger }
-                MyLog.i(TAG, "Upgrade triggered by " + MyStringBuilder.objToTag(upgradeRequestor))
+                MyLog.i(TAG, "Upgrade triggered by " + MyStringBuilder.objToTag(upgradeRequester))
                 MyServiceManager.setServiceUnavailable()
                 MyContextHolder.myContextHolder.release { "doUpgrade" }
                 // Upgrade will occur inside this call synchronously
                 // TODO: Add completion stage instead of blocking...
-                MyContextHolder.myContextHolder.initializeDuringUpgrade(upgradeRequestor).getBlocking()
+                MyContextHolder.myContextHolder.initializeDuringUpgrade(upgradeRequester).getBlocking()
                 synchronized(upgradeLock) { shouldTriggerDatabaseUpgrade = false }
             } catch (e: Exception) {
                 MyLog.i(TAG, "Failed to trigger database upgrade, will try later", e)
@@ -88,21 +90,21 @@ class DatabaseConverterController {
             MyServiceManager.setServiceUnavailable()
             if (!MyContextHolder.myContextHolder.getNow().isReady) {
                 MyContextHolder.myContextHolder.release { "onUpgradeSucceeded1" }
-                MyContextHolder.myContextHolder.initialize(upgradeRequestor).getBlocking()
+                MyContextHolder.myContextHolder.initialize(upgradeRequester).getBlocking()
             }
             MyServiceManager.setServiceUnavailable()
             MyServiceManager.stopService()
             if (isRestoring) return
             DataChecker.fixData(progressLogger, false, false)
             MyContextHolder.myContextHolder.release { "onUpgradeSucceeded2" }
-            MyContextHolder.myContextHolder.initialize(upgradeRequestor).getBlocking()
+            MyContextHolder.myContextHolder.initialize(upgradeRequester).getBlocking()
             MyServiceManager.setServiceAvailable()
         }
 
         init {
-            progressLogger = if (upgradeRequestor is MyActivity) {
+            progressLogger = if (upgradeRequester is MyActivity) {
                 val progressListener: ProgressLogger.ProgressListener =
-                    DefaultProgressListener(upgradeRequestor, R.string.label_upgrading, "ConvertDatabase")
+                    DefaultProgressListener(upgradeRequester, R.string.label_upgrading, "ConvertDatabase")
                 ProgressLogger(progressListener)
             } else {
                 ProgressLogger.getEmpty("ConvertDatabase")

@@ -23,6 +23,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.BaseColumns
 import android.view.Menu
+import io.vavr.control.Try
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.MyAction
 import org.andstatus.app.account.AccountSelector
@@ -343,9 +344,9 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
     private fun executeAsync1(menu: NoteContextMenu) {
         AsyncTaskLauncher.execute(TAG,
                 object : MyAsyncTask<Void?, Void?, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
-                    override suspend fun doInBackground(params: Void?): NoteEditorData {
+                    override suspend fun doInBackground(params: Void?): Try<NoteEditorData> {
                         MyLog.v(this@NoteContextMenuItem) { "execute async started. noteId=" + menu.getNoteId() }
-                        return executeAsync(menu)
+                        return Try.success(executeAsync(menu))
                     }
 
                     override suspend fun onPostExecute(result: NoteEditorData) {

@@ -96,9 +96,9 @@ object TryUtils {
 
     val Try<*>.isCancelled: Boolean get() = isFailure && cause is kotlinx.coroutines.CancellationException
 
-    fun <T> failure(message: String?): Try<T> {
-        return Try.failure(Exception(message))
-    }
+    fun <T> failure(message: CharSequence?): Try<T> =
+        if (message.isNullOrEmpty()) notFound<T>()
+        else Try.failure<T>(Exception(message.toString()))
 
     fun <T> emptyList(): Try<List<T>> {
         return Try.success(kotlin.collections.emptyList<T>())

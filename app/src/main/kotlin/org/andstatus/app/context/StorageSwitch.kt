@@ -33,6 +33,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
 import java.io.File
 
 class StorageSwitch(private val parentFragment: MySettingsFragment) {
@@ -87,7 +88,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
                 true,
                 false)
 
-        override suspend fun doInBackground(params: Void?): TaskResult {
+        override suspend fun doInBackground(params: Void?): Try<TaskResult> {
             val result = TaskResult()
             MyContextHolder.myContextHolder.getBlocking()
             MyServiceManager.setServiceUnavailable()
@@ -95,11 +96,10 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
 
             do delay(500) while (MyServiceManager.getServiceState() == MyServiceState.UNKNOWN)
             if (MyServiceManager.getServiceState() != MyServiceState.STOPPED) {
-                result.messageBuilder.append(mContext.getText(R.string.system_is_busy_try_later))
-                return result
+                return TryUtils.failure(mContext.getText(R.string.system_is_busy_try_later))
             }
             if (!checkAndSetDataBeingMoved()) {
-                return result
+                return TryUtils.failure("")
             }
             try {
                 moveAll(result)
@@ -108,7 +108,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             }
             result.messageBuilder.insert(0, " Move " + strSucceeded(result.success))
             MyLog.v(this) { result.getMessage() }
-            return result
+            return if (result.success) Try.success(result) else TryUtils.failure(result.getMessage())
         }
 
         private fun moveAll(result: TaskResult) {
@@ -310,26 +310,20 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             }
         }
 
-        // This is in the UI thread, so we can mess with the UI
         override suspend fun onFinish(result: Try<TaskResult>) {
             DialogFactory.dismissSafely(dlg)
-            if (result.isFailure) {
+            result.onFailure {
                 MyLog.w(this, "Result is $result")
                 Toast.makeText(mContext, mContext.getString(R.string.error), Toast.LENGTH_LONG).show()
-                return
+            }.onSuccess { taskResult ->
+                MyLog.d(this, this.javaClass.simpleName + " ended, "
+                        + if (taskResult.success) if (taskResult.moved) "moved" else "didn't move" else "failed")
+                if (!taskResult.success) {
+                    taskResult.messageBuilder.insert(0, mContext.getString(R.string.error) + ": ")
+                }
+                Toast.makeText(mContext, taskResult.getMessage(), Toast.LENGTH_LONG).show()
+                parentFragment.showUseExternalStorage()
             }
-            val taskResult = result.get()
-            MyLog.d(this, this.javaClass.simpleName + " ended, "
-                    + if (taskResult.success) if (taskResult.moved) "moved" else "didn't move" else "failed")
-            if (!taskResult.success) {
-                taskResult.messageBuilder.insert(0, mContext.getString(R.string.error) + ": ")
-            }
-            Toast.makeText(mContext, taskResult.getMessage(), Toast.LENGTH_LONG).show()
-            parentFragment.showUseExternalStorage()
-        }
-
-        override suspend fun onCancel() {
-            DialogFactory.dismissSafely(dlg)
         }
     }
 

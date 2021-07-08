@@ -36,6 +36,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import io.vavr.control.Try
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
@@ -59,6 +60,7 @@ import org.andstatus.app.util.MyUrlSpan
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.ViewUtils
 import java.util.*
@@ -546,45 +548,43 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         }
         MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft requested, noteId=$noteId" }
         AsyncTaskLauncher<Long>().execute(this,
-                object : MyAsyncTask<Long, Void?, NoteEditorData?>(this@NoteEditor.toString(),
+                object : MyAsyncTask<Long, Void?, NoteEditorData>(this@NoteEditor.toString(),
                         PoolEnum.QUICK_UI) {
                     @Volatile
                     var lock: NoteEditorLock = NoteEditorLock.EMPTY
 
-                    override suspend fun doInBackground(params: Long): NoteEditorData {
+                    override suspend fun doInBackground(params: Long): Try<NoteEditorData> {
                         MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft started, noteId=$params" }
-                        val potentialLock = NoteEditorLock(false, params ?: 0)
+                        val potentialLock = NoteEditorLock(false, params)
                         if (!potentialLock.acquire(true)) {
-                            return NoteEditorData.EMPTY
+                            return TryUtils.notFound()
                         }
                         lock = potentialLock
                         MyLog.v(NoteEditorData.TAG, "loadCurrentDraft acquired lock")
-                        val data: NoteEditorData = NoteEditorData.load(editorContainer.getActivity().myContext,
-                                params ?: 0)
+                        val data: NoteEditorData = NoteEditorData.load(editorContainer.getActivity().myContext, params)
                         return if (data.mayBeEdited()) {
-                            data
+                            Try.success(data)
                         } else {
                             MyLog.v(NoteEditorData.TAG) { "Cannot be edited $data" }
                             MyPreferences.setBeingEditedNoteId(0)
-                            NoteEditorData.EMPTY
+                            TryUtils.notFound()
                         }
                     }
 
-                    override suspend fun onCancel() {
-                        lock.release()
-                    }
-
-                    override suspend fun onPostExecute(result: NoteEditorData?) {
-                        if (lock.acquired() && result?.isValid() == true) {
-                            if (editorData.isValid()) {
-                                MyLog.v(NoteEditorData.TAG, "Loaded draft is not used: Editor data is valid")
-                                show()
-                            } else {
-                                showData(result)
+                    override suspend fun onFinish(result: Try<NoteEditorData>) {
+                        result.onSuccess {
+                            if (lock.acquired() && it.isValid() == true) {
+                                if (editorData.isValid()) {
+                                    MyLog.v(NoteEditorData.TAG, "Loaded draft is not used: Editor data is valid")
+                                    show()
+                                } else {
+                                    showData(it)
+                                }
                             }
                         }
                         lock.release()
                     }
+
                 }, noteId)
     }
 

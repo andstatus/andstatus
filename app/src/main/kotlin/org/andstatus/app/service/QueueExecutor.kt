@@ -9,11 +9,12 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.TryUtils
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicLong
 
 class QueueExecutor(myService: MyService, private val accessorType: AccessorType) :
-        MyAsyncTask<Void?, Void?, Boolean?>("$TAG-$accessorType", PoolEnum.SYNC), CommandExecutorParent {
+        MyAsyncTask<Void?, Void?, Boolean>("$TAG-$accessorType", PoolEnum.SYNC), CommandExecutorParent {
     private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
     private val executedCounter: AtomicLong = AtomicLong()
 
@@ -21,11 +22,11 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
         return super.instanceTag() + "-" + accessorType
     }
 
-    override suspend fun doInBackground(params: Void?): Boolean {
+    override suspend fun doInBackground(params: Void?): Try<Boolean> {
         val myService = myServiceRef.get()
         if (myService == null) {
             MyLog.v(this) { "Didn't start, no reference to MyService" }
-            return true
+            return TryUtils.TRUE
         }
         val accessor = myService.myContext.queues.getAccessor(accessorType)
         accessor.moveCommandsFromSkippedToMainQueue()
@@ -58,12 +59,14 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
             currentlyExecutingDescription = commandData.toString()
             myService.broadcastBeforeExecutingCommand(commandData)
             CommandExecutorStrategy.executeCommand(commandData, this)
-            if (commandData.getResult().shouldWeRetry()) {
-                myService.myContext.queues.addToQueue(QueueType.RETRY, commandData)
-            } else if (commandData.getResult().hasError()) {
-                myService.myContext.queues.addToQueue(QueueType.ERROR, commandData)
-            } else {
-                addSyncAfterNoteWasSent(myService, commandData)
+            when {
+                commandData.getResult().shouldWeRetry() -> {
+                    myService.myContext.queues.addToQueue(QueueType.RETRY, commandData)
+                }
+                commandData.getResult().hasError() -> {
+                    myService.myContext.queues.addToQueue(QueueType.ERROR, commandData)
+                }
+                else -> addSyncAfterNoteWasSent(myService, commandData)
             }
             myService.broadcastAfterExecutingCommand(commandData)
         } while (true)
@@ -71,7 +74,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
         myService.myContext.queues.save()
         currentlyExecutingSince.set(0)
         currentlyExecutingDescription = breakReason
-        return true
+        return TryUtils.TRUE
     }
 
     private fun addSyncAfterNoteWasSent(myService: MyService, commandDataExecuted: CommandData) {
@@ -85,7 +88,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
                 .setInForeground(commandDataExecuted.isInForeground()))
     }
 
-    override suspend fun onFinish(result: Try<Boolean?>) {
+    override suspend fun onFinish(result: Try<Boolean>) {
         val myService = myServiceRef.get()
         if (myService != null) {
             myService.latestActivityTime = System.currentTimeMillis()
@@ -117,6 +120,6 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
 
     companion object {
         const val MAX_EXECUTION_TIME_SECONDS: Long = 60
-        private val TAG: String = "QueueExecutor"
+        private const val TAG: String = "QueueExecutor"
     }
 }

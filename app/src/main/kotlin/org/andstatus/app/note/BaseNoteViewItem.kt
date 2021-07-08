@@ -156,9 +156,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
     }
 
     private fun setCollapsedStatus(noteDetails: MyStringBuilder) {
-        if (isCollapsed()) {
-            noteDetails.withSpace("(+${getChildrenCount()}")
-        }
+        if (isCollapsed()) noteDetails.withSpace("(+${childrenCount})")
     }
 
     override fun duplicates(timeline: Timeline, preferredOrigin: Origin, other: T): DuplicationLink {

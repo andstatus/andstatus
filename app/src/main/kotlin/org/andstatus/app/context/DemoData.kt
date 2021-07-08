@@ -42,6 +42,7 @@ import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.Assert
@@ -116,11 +117,11 @@ class DemoData {
     val globalPublicNoteText: String = "Public_in_AndStatus_$testRunUid"
 
     /** See http://stackoverflow.com/questions/6602417/get-the-uri-of-an-image-stored-in-drawable  */
-    val localImageTestUri = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon")
-    val localImageTestUri2 = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo")
-    val localVideoTestUri = Uri.parse("android.resource://org.andstatus.app.tests/raw/video320_mp4")
-    val localGifTestUri = Uri.parse("android.resource://org.andstatus.app.tests/raw/sample_gif")
-    val image1Url = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png")
+    val localImageTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon")
+    val localImageTestUri2: Uri = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo")
+    val localVideoTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.tests/raw/video320_mp4")
+    val localGifTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.tests/raw/sample_gif")
+    val image1Url: Uri = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png")
 
     @Volatile
     private var dataPath: String = ""
@@ -156,11 +157,11 @@ class DemoData {
     private class GenerateDemoData constructor(val progressListener: ProgressLogger.ProgressListener,
                                                val myContext: MyContext,
                                                val demoData: DemoData) :
-        MyAsyncTask<Void?, Void?, Void?>(this::class.java, DEFAULT_POOL) {
+        MyAsyncTask<Void?, Void?, Void>(this::class.java, DEFAULT_POOL) {
         val logTag: String = progressListener.getLogTag()
         override val cancelable: Boolean = false
 
-        override suspend fun doInBackground(params: Void?): Void? {
+        override suspend fun doInBackground(params: Void?): Try<Void> {
             MyLog.i(logTag, "$logTag; started")
             progressListener.onProgressMessage("Generating demo data...")
             delay(500)
@@ -227,17 +228,17 @@ class DemoData {
             progressListener.onProgressMessage("Demo data is ready")
             delay(500)
             MyLog.i(logTag, "$logTag; ended")
-            return params
+            return TryUtils.SUCCESS
         }
 
-        override suspend fun onFinish(result: Try<Void?>) {
+        override suspend fun onFinish(result: Try<Void>) {
             FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context, true)
             progressListener.onComplete(result.isSuccess)
         }
     }
 
     fun addAsync(myContext: MyContext,
-                 progressListener: ProgressLogger.ProgressListener): MyAsyncTask<Void?, Void?, Void?> {
+                 progressListener: ProgressLogger.ProgressListener): MyAsyncTask<Void?, Void?, Void> {
         val asyncTask = GenerateDemoData(progressListener, myContext, this)
         AsyncTaskLauncher.execute(this, asyncTask)
         return asyncTask
@@ -278,7 +279,8 @@ class DemoData {
     fun checkDataPath() {
         if (dataPath.isNotEmpty()) {
             Assert.assertEquals("Data path. " +  MyContextHolder.myContextHolder.getNow(), dataPath,
-                     MyContextHolder.myContextHolder.getNow().context.getDatabasePath("andstatus")?.getPath())
+                     MyContextHolder.myContextHolder.getNow().context.getDatabasePath("andstatus")?.path
+            )
         }
     }
 
@@ -318,9 +320,9 @@ class DemoData {
         @Volatile
         var demoData: DemoData = DemoData()
         private val TAG: String = DemoData::class.java.simpleName
-        private val HTTP: String = "http://"
+        private const val HTTP: String = "http://"
         fun crashTest(supplier: BooleanSupplier) {
-            if (MyLog.isVerboseEnabled() && supplier.getAsBoolean()) {
+            if (MyLog.isVerboseEnabled() && supplier.asBoolean) {
                 MyLog.e(supplier, "Initiating crash test exception")
                 throw NullPointerException("This is a test crash event")
             }

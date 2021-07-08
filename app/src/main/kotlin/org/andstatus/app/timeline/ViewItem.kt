@@ -50,7 +50,7 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmptyIn
     }
 
     fun isCollapsed(): Boolean {
-        return getChildrenCount() > 0
+        return childrenCount > 0
     }
 
     fun collapse(child: T) {
@@ -72,9 +72,7 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmptyIn
             return isEmptyIn
         }
 
-    protected fun getChildrenCount(): Int {
-        return if (isEmpty) 0 else Integer.max(getParent().getChildrenCount(), getChildren().size)
-    }
+    protected val childrenCount: Int get() = if (isEmpty) 0 else Integer.max(getParent().childrenCount, getChildren().size)
 
     fun setParent(parent: ViewItem<*>?) {
         this.parent = parent

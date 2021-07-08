@@ -22,6 +22,7 @@ import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import io.vavr.control.Try
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -193,7 +194,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     /** Called not in UI thread  */
     protected abstract fun newSyncLoader(args: Bundle?): SyncLoader<T>
 
-    private inner class AsyncLoader : MyAsyncTask<Bundle?, String?, SyncLoader<*>?>, ProgressPublisher {
+    private inner class AsyncLoader : MyAsyncTask<Bundle?, String?, SyncLoader<*>>, ProgressPublisher {
         private var mSyncLoader: SyncLoader<*>? = null
 
         constructor(taskId: String?) : super(taskId, PoolEnum.DEFAULT_POOL) {}
@@ -203,13 +204,13 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             return mSyncLoader ?: newSyncLoader(null)
         }
 
-        override suspend fun doInBackground(params: Bundle?): SyncLoader<*> {
+        override suspend fun doInBackground(params: Bundle?): Try<SyncLoader<*>> {
             publishProgress("...")
             val loader: SyncLoader<*> =
                 newSyncLoader(BundleUtils.toBundle(params, IntentExtra.INSTANCE_ID.key, instanceId))
             loader.allowLoadingFromInternet()
             loader.load(this)
-            return loader
+            return Try.success(loader)
         }
 
         override fun publish(progress: String?) {
@@ -222,10 +223,6 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             updateTitle(values)
         }
 
-        override suspend fun onCancel() {
-            resetIsWorkingFlag()
-        }
-
         private fun resetIsWorkingFlag() {
             synchronized(loaderLock) {
                 if (mWorkingLoader === this) {
@@ -234,23 +231,25 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             }
         }
 
-        override suspend fun onPostExecute(result: SyncLoader<*>?) {
-            mSyncLoader = result
-            updateCompletedLoader()
-            try {
-                if (isMyResumed()) {
-                    onLoadFinished(getCurrentListPosition())
+        override suspend fun onFinish(result: Try<SyncLoader<*>>) {
+            result.onSuccess {
+                mSyncLoader = it
+                updateCompletedLoader()
+                try {
+                    if (isMyResumed()) {
+                        onLoadFinished(getCurrentListPosition())
+                    }
+                } catch (e: Exception) {
+                    MyLog.d(this, "onPostExecute", e)
                 }
-            } catch (e: Exception) {
-                MyLog.d(this, "onPostExecute", e)
-            }
-            val endedAt = System.currentTimeMillis()
-            val timeTotal = endedAt - createdAt
-            MyLog.v(this) {
-                ("Load completed, " +
-                        (mSyncLoader?.size()?.toString() ?: "?") + " items, " +
-                        timeTotal + " ms total, " +
-                        (endedAt - backgroundEndedAt.get()) + " ms on UI thread")
+                val endedAt = System.currentTimeMillis()
+                val timeTotal = endedAt - createdAt
+                MyLog.v(this) {
+                    ("Load completed, " +
+                            (mSyncLoader?.size()?.toString() ?: "?") + " items, " +
+                            timeTotal + " ms total, " +
+                            (endedAt - backgroundEndedAt.get()) + " ms on UI thread")
+                }
             }
             resetIsWorkingFlag()
         }
@@ -390,17 +389,19 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
 
     private fun showSyncing(commandData: CommandData) {
         AsyncTaskLauncher<CommandData>().execute(this,
-            object : MyAsyncTask<CommandData, Void?, String?>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
+            object : MyAsyncTask<CommandData, Void?, String>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
 
-                override suspend fun doInBackground(params: CommandData): String {
-                    return params.toCommandSummary(myContext)
+                override suspend fun doInBackground(params: CommandData): Try<String> {
+                    return Try.success(params.toCommandSummary(myContext))
                 }
 
-                override suspend fun onPostExecute(result: String?) {
-                    showSyncing(
-                        "Show " + commandData.command,
-                        getText(R.string.title_preference_syncing).toString() + ": " + result
-                    )
+                override suspend fun onFinish(result: Try<String>) {
+                    result.onSuccess {
+                        showSyncing(
+                            "Show " + commandData.command,
+                            getText(R.string.title_preference_syncing).toString() + ": " + it
+                        )
+                    }
                 }
 
                 override fun toString(): String {

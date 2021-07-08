@@ -78,6 +78,7 @@ import org.andstatus.app.util.MyUrlSpan
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.ViewUtils
 import org.andstatus.app.view.EnumSelector
@@ -887,7 +888,7 @@ class AccountSettingsActivity : MyActivity() {
      * Needed in a case we don't have the AndStatus Client keys for this Microblogging system
      */
     private inner class OAuthRegisterClientTask() :
-        MyAsyncTask<Void?, Void?, TaskResult?>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
+        MyAsyncTask<Void?, Void?, Boolean>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -899,7 +900,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override suspend fun doInBackground(params: Void?): TaskResult {
+        override suspend fun doInBackground(params: Void?): Try<Boolean> {
             var succeeded = false
             var connectionErrorMessage = ""
             try {
@@ -923,14 +924,13 @@ class AccountSettingsActivity : MyActivity() {
                 }
                 MyLog.d(this, stepErrorMessage)
             }
-            return TaskResult(if (succeeded) ResultStatus.SUCCESS else ResultStatus.NONE, stepErrorMessage)
+            return if (succeeded) TryUtils.TRUE else TryUtils.failure(stepErrorMessage)
         }
 
-        // This is in the UI thread, so we can mess with the UI
-        override suspend fun onPostExecute(result: TaskResult?) {
+        override suspend fun onFinish(result: Try<Boolean>) {
             DialogFactory.dismissSafely(dlg)
-            if (result != null && !this@AccountSettingsActivity.isFinishing) {
-                if (result.isSuccess()) {
+            if (!this@AccountSettingsActivity.isFinishing) {
+                result.onSuccess {
                     state.builder.myAccount.myContext.setExpired { "Client registered" }
                     MyContextHolder.myContextHolder
                         .initialize(this@AccountSettingsActivity, this)
@@ -941,16 +941,16 @@ class AccountSettingsActivity : MyActivity() {
                                 this,
                                 OAuthAcquireRequestTokenTask(this@AccountSettingsActivity)
                             )
-                                .onFailure({ e: Throwable -> appendError(e.message) })
+                                .onFailure { e: Throwable -> appendError(e.message) }
                             activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
                         }, UiThreadExecutor.INSTANCE)
-                } else {
-                    appendError(result.message)
+                }.onFailure {
+                    appendError(it.message)
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
                     updateScreen()
                 }
             }
-            MyLog.v(this, I18n.succeededText(result != null && result.isSuccess()))
+            MyLog.v(this, I18n.succeededText(result.isSuccess))
         }
     }
 
@@ -983,7 +983,7 @@ class AccountSettingsActivity : MyActivity() {
      * ProgressDialog and to get rid of any "Black blank screens"
      */
     private class OAuthAcquireRequestTokenTask(private val activity: AccountSettingsActivity) :
-        MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
+        MyAsyncTask<Void?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -995,7 +995,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override suspend fun doInBackground(params: Void?): TaskResult {
+        override suspend fun doInBackground(params: Void?): Try<TaskResult> {
             var stepErrorMessage = ""
             var connectionErrorMessage = ""
             var authUri = Uri.EMPTY
@@ -1063,31 +1063,34 @@ class AccountSettingsActivity : MyActivity() {
                 MyLog.d(this, stepErrorMessage)
                 activity.state.builder.clearClientKeys()
             }
-            return TaskResult.withAuthUri(resultStatus, stepErrorMessage, authUri)
+            return if (resultStatus == ResultStatus.SUCCESS)
+                Try.success(TaskResult.withAuthUri(resultStatus, stepErrorMessage, authUri))
+            else Try.failure(ConnectionException(stepErrorMessage))
+
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override suspend fun onPostExecute(result: TaskResult?) {
+        override suspend fun onFinish(result: Try<TaskResult>) {
             DialogFactory.dismissSafely(dlg)
-            if (result != null && !activity.isFinishing()) {
-                if (result.isSuccess()) {
+            if (!activity.isFinishing()) {
+                result.onSuccess {
                     activity.activityOnFinish = ActivityOnFinish.NONE
-                    MyLog.d(activity, "Starting Web view at " + result.authUri)
+                    MyLog.d(activity, "Starting Web view at " + it.authUri)
                     val i = Intent(activity, AccountSettingsWebActivity::class.java)
-                    i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, result.authUri.toString())
+                    i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, it.authUri.toString())
                     activity.startActivity(i)
 
                     // Finish this activity in order to start properly
                     // after redirection from Browser
                     // Because of initializations in onCreate...
                     activity.finish()
-                } else {
-                    activity.appendError(result.message)
+                }.onFailure {
+                    activity.appendError(it.message)
                     activity.state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
                     activity.updateScreen()
                 }
             }
-            MyLog.v(this, I18n.succeededText(result != null && result.isSuccess()))
+            MyLog.v(this, I18n.succeededText(result.isSuccess()))
         }
     }
 
@@ -1109,7 +1112,7 @@ class AccountSettingsActivity : MyActivity() {
      * for "Access Token".
      * 2. Stores the Access token for all future interactions with Twitter.
      */
-    private inner class OAuthAcquireAccessTokenTask() : MyAsyncTask<Uri?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
+    private inner class OAuthAcquireAccessTokenTask() : MyAsyncTask<Uri?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -1121,7 +1124,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override suspend fun doInBackground(params: Uri?): TaskResult {
+        override suspend fun doInBackground(params: Uri?): Try<TaskResult> {
             var message = ""
             var accessToken = ""
             var accessSecret = ""
@@ -1188,32 +1191,29 @@ class AccountSettingsActivity : MyActivity() {
                     }
                 }
             }
-            return TaskResult.withWhoAmI(
-                if (!accessToken.isEmpty() && !accessSecret.isEmpty()) ResultStatus.SUCCESS else ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT,
-                message,
-                whoAmI
-            )
+            return if (!accessToken.isEmpty() && !accessSecret.isEmpty()) Try.success(
+                TaskResult.withWhoAmI(ResultStatus.SUCCESS, message, whoAmI)
+            ) else TryUtils.failure(message)
         }
 
-        // This is in the UI thread, so we can mess with the UI
-        override suspend fun onPostExecute(result: TaskResult?) {
+        override suspend fun onFinish(result: Try<TaskResult>) {
             DialogFactory.dismissSafely(dlg)
-            if (result != null && !this@AccountSettingsActivity.isFinishing) {
-                if (result.isSuccess()) {
+            if (!this@AccountSettingsActivity.isFinishing) {
+                result.onSuccess {
                     // Credentials are present, so we may verify them
                     // This is needed even for OAuth - to know Twitter Username
-                    AsyncTaskLauncher.execute(this, VerifyCredentialsTask(result.whoAmI))
+                    AsyncTaskLauncher.execute(this, VerifyCredentialsTask(it.whoAmI))
                         .onFailure { e: Throwable -> appendError(e.message) }
-                } else {
+                }.onFailure {
                     val stepErrorMessage = this@AccountSettingsActivity
                         .getString(R.string.acquiring_an_access_token_failed) +
-                            if (!result.message.isNullOrEmpty()) ": " + result.message else ""
+                            if (!it.message.isNullOrEmpty()) ": " + it.message else ""
                     appendError(stepErrorMessage)
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
                     updateScreen()
                 }
             }
-            MyLog.v(this, I18n.succeededText(result != null && result.isSuccess()))
+            MyLog.v(this, I18n.succeededText(result.isSuccess()))
         }
     }
 
@@ -1222,7 +1222,7 @@ class AccountSettingsActivity : MyActivity() {
      * @author yvolk@yurivolkov.com
      */
     private inner class VerifyCredentialsTask(private val whoAmI: Optional<Uri>) :
-        MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
+        MyAsyncTask<Void?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
 
         override val cancelable = false // This is needed because there is initialize in the background
         private var dlg: ProgressDialog? = null
@@ -1247,8 +1247,9 @@ class AccountSettingsActivity : MyActivity() {
             }
         }
 
-        override suspend fun doInBackground(params: Void?): TaskResult? {
-            return if (skip) TaskResult(ResultStatus.NONE) else Try.success(state.builder)
+        override suspend fun doInBackground(params: Void?): Try<TaskResult> {
+            return if (skip) Try.success(TaskResult(ResultStatus.NONE))
+            else Try.success(state.builder)
                 .flatMap { it?.getOriginConfig() }
                 .flatMap { b: MyAccount.Builder -> b.getConnection().verifyCredentials(whoAmI) }
                 .flatMap { actor: Actor -> state.builder.onCredentialsVerified(actor) }
@@ -1278,37 +1279,40 @@ class AccountSettingsActivity : MyActivity() {
                 .recover(Exception::class.java) { e: Exception ->
                     TaskResult(ResultStatus.CONNECTION_EXCEPTION, "${e.message} (${e.javaClass.name})")
                 }
-                .get()
         }
 
         /**
          * Credentials were verified just now!
          */
-        override suspend fun onPostExecute(result: TaskResult?) {
+        override suspend fun onFinish(result: Try<TaskResult>) {
             DialogFactory.dismissSafely(dlg)
             if (this@AccountSettingsActivity.isFinishing) return
-            val resultOut = result ?: TaskResult(ResultStatus.NONE)
             var errorMessage: CharSequence = ""
-            when (resultOut.status) {
-                ResultStatus.SUCCESS -> Toast.makeText(
-                    this@AccountSettingsActivity, R.string.authentication_successful,
-                    Toast.LENGTH_SHORT
-                ).show()
-                ResultStatus.ACCOUNT_INVALID -> errorMessage = getText(R.string.dialog_summary_authentication_failed)
-                ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT -> errorMessage =
-                    getText(R.string.error_credentials_of_other_user)
-                ResultStatus.CONNECTION_EXCEPTION -> {
-                    errorMessage = "${getText(R.string.error_connection_error)} ${resultOut.message}"
-                    MyLog.i(this, errorMessage.toString())
+            result.onSuccess {
+                // Note: Actual failure is in Try.Success yet...
+                when (it.status) {
+                    ResultStatus.SUCCESS -> Toast.makeText(
+                        this@AccountSettingsActivity, R.string.authentication_successful,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    ResultStatus.ACCOUNT_INVALID -> errorMessage = getText(R.string.dialog_summary_authentication_failed)
+                    ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT -> errorMessage =
+                        getText(R.string.error_credentials_of_other_user)
+                    ResultStatus.CONNECTION_EXCEPTION -> {
+                        errorMessage = "${getText(R.string.error_connection_error)} ${it.message}"
+                        MyLog.i(this, errorMessage.toString())
+                    }
+                    else -> Unit
                 }
-                else -> {
-                }
+            }.onFailure {
+                errorMessage = it.message ?: ""
+                MyLog.i(this, errorMessage.toString())
             }
             if (!skip) {
                 // Note: MyAccount was already saved inside MyAccount.verifyCredentials
                 // Now we only have to deal with the state
-                state.actionSucceeded = resultOut.isSuccess()
-                if (resultOut.isSuccess()) {
+                state.actionSucceeded = result.isSuccess() && errorMessage.isEmpty()
+                if (result.isSuccess() && errorMessage.isEmpty()) {
                     state.actionCompleted = true
                     if (state.accountAction == Intent.ACTION_INSERT) {
                         state.accountAction = Intent.ACTION_EDIT

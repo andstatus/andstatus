@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.data.checker
 
+import io.vavr.control.Try
 import kotlinx.coroutines.delay
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContext
@@ -26,6 +27,7 @@ import org.andstatus.app.os.MyAsyncTask.PoolEnum.DEFAULT_POOL
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
+import org.andstatus.app.util.TryUtils
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
@@ -100,23 +102,23 @@ abstract class DataChecker {
         fun fixDataAsync(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean) {
             AsyncTaskLauncher.execute(
                     logger.logTag,
-                    object : MyAsyncTask<Void?, Void?, Void?>(logger.logTag, DEFAULT_POOL) {
+                    object : MyAsyncTask<Void?, Void?, Void>(logger.logTag, DEFAULT_POOL) {
                         override val cancelable: Boolean = false
 
-                        override suspend fun doInBackground(params: Void?): Void? {
+                        override suspend fun doInBackground(params: Void?): Try<Void> {
                             fixData(logger, includeLong, countOnly)
                             delay(3000)
                             MyContextHolder.myContextHolder.release { "fixDataAsync" }
                             MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
-                            return null
+                            return TryUtils.SUCCESS
                         }
 
-                        override suspend fun onCancel() {
-                            logger.logFailure()
-                        }
-
-                        override suspend fun onPostExecute(result: Void?) {
-                            logger.logSuccess()
+                        override suspend fun onFinish(result: Try<Void>) {
+                            result.onSuccess {
+                                logger.logSuccess()
+                            }.onFailure {
+                                logger.logFailure()
+                            }
                         }
                     })
         }

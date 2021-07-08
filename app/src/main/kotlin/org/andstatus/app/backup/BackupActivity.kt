@@ -23,6 +23,7 @@ import android.provider.DocumentsContract
 import android.view.View
 import android.widget.TextView
 import androidx.documentfile.provider.DocumentFile
+import io.vavr.control.Try
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
@@ -30,6 +31,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.util.TryUtils
 
 class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     private var backupFolder: DocumentFile? = null
@@ -103,13 +105,13 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private class BackupTask(private val activity: BackupActivity) :
-        MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.DEFAULT_POOL) {
+        MyAsyncTask<DocumentFile?, CharSequence?, Void>(PoolEnum.DEFAULT_POOL) {
 
-        override suspend fun doInBackground(params: DocumentFile?): Void? {
+        override suspend fun doInBackground(params: DocumentFile?): Try<Void> {
             params?.let {
                 MyBackupManager.backupInteractively(params, activity, activity)
             }
-            return null
+            return TryUtils.SUCCESS
         }
     }
 

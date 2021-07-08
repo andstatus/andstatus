@@ -17,6 +17,7 @@ package org.andstatus.app.actor
 
 import android.net.Uri
 import android.view.Menu
+import io.vavr.control.Try
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.MyAction
 import org.andstatus.app.account.AccountSelector
@@ -34,16 +35,18 @@ import org.andstatus.app.util.MyLog
 
 enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = false) : ContextMenuItem {
     GET_ACTOR(true) {
-        override fun executeAsync(params: Params): NoteEditorData {
+        override fun executeAsync(params: Params): Try<NoteEditorData> {
             params.menu.getViewItem().actor.requestDownload(true)
             return super.executeAsync(params)
         }
     },
     POST_TO(true) {
-        override fun executeAsync(params: Params): NoteEditorData {
-            return NoteEditorData.newEmpty(params.menu.getActingAccount())
+        override fun executeAsync(params: Params): Try<NoteEditorData> {
+            return Try.success(
+                NoteEditorData.newEmpty(params.menu.getActingAccount())
                     .setPublicAndFollowers(false, false)
                     .addActorsBeforeText(mutableListOf(params.menu.getViewItem().actor))
+            )
         }
 
         override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
@@ -56,7 +59,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         }
     },
     NOTES_BY_ACTOR(true) {
-        override fun executeAsync(params: Params): NoteEditorData {
+        override fun executeAsync(params: Params): Try<NoteEditorData> {
             startForTimeline(
                     params.menu.getActivity().myContext,
                     params.menu.getActivity(),
@@ -67,7 +70,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         }
     },
     GROUP_NOTES(true) {
-        override fun executeAsync(params: Params): NoteEditorData {
+        override fun executeAsync(params: Params): Try<NoteEditorData> {
             startForTimeline(
                     params.menu.getActivity().myContext,
                     params.menu.getActivity(),
@@ -101,7 +104,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         }
     },
     FOLLOWERS(true) {
-        override fun executeAsync(params: Params): NoteEditorData {
+        override fun executeAsync(params: Params): Try<NoteEditorData> {
             setActingAccountForActor(params)
             return super.executeAsync(params)
         }
@@ -111,7 +114,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         }
     },
     FRIENDS(true) {
-        override fun executeAsync(params: Params): NoteEditorData {
+        override fun executeAsync(params: Params): Try<NoteEditorData> {
             setActingAccountForActor(params)
             return super.executeAsync(params)
         }
@@ -152,15 +155,17 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
     private fun executeAsync1(params2: Params) {
         AsyncTaskLauncher.execute(TAG,
                 object : MyAsyncTask<Void?, Void?, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
-                    override suspend fun doInBackground(params: Void?): NoteEditorData {
+                    override suspend fun doInBackground(params: Void?): Try<NoteEditorData> {
                         MyLog.v(this, "execute async started. "
                                 + params2.menu.getViewItem().actor.getUniqueNameWithOrigin())
                         return executeAsync(params2)
                     }
 
-                    override suspend fun onPostExecute(result: NoteEditorData) {
+                    override suspend fun onFinish(result: Try<NoteEditorData>) {
                         MyLog.v(this, "execute async ended")
-                        executeOnUiThread(params2.menu, result)
+                        result.onSuccess {
+                            executeOnUiThread(params2.menu, it)
+                        }
                     }
 
                     override fun toString(): String {
@@ -170,8 +175,8 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         )
     }
 
-    open fun executeAsync(params: Params): NoteEditorData {
-        return NoteEditorData.newEmpty(params.menu.getActingAccount())
+    open fun executeAsync(params: Params): Try<NoteEditorData> {
+        return Try.success(NoteEditorData.newEmpty(params.menu.getActingAccount()))
     }
 
     open fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {

@@ -31,6 +31,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.os.MyAsyncTask.PoolEnum.DEFAULT_POOL
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 
 class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
@@ -117,15 +118,15 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private class RestoreTask(private val activity: RestoreActivity) :
-        MyAsyncTask<DocumentFile?, CharSequence?, Void?>(DEFAULT_POOL) {
+        MyAsyncTask<DocumentFile?, CharSequence?, Void>(DEFAULT_POOL) {
 
         override val cancelable = false
 
-        override suspend fun doInBackground(params: DocumentFile?): Void? {
+        override suspend fun doInBackground(params: DocumentFile?): Try<Void> {
             params?.let {
                 MyBackupManager.restoreInteractively(params, activity, activity)
             }
-            return null
+            return TryUtils.SUCCESS
         }
     }
 

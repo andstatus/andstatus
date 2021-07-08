@@ -192,14 +192,13 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
         backgroundStartedAt.set(System.currentTimeMillis())
         currentlyExecutingSince.set(backgroundStartedAt.get())
         try {
-            return doInBackground(params)?.let { Try.success(it) }
-                ?: TryUtils.notFound()
+            return doInBackground(params)
         } finally {
             backgroundEndedAt.set(System.currentTimeMillis())
         }
     }
 
-    protected abstract suspend fun doInBackground(params: Params): Result?
+    protected abstract suspend fun doInBackground(params: Params): Try<Result>
 
     private val cancelCalled = AtomicBoolean()
     /**
@@ -442,9 +441,8 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
                 MyAsyncTask<Params, Progress, Result> {
             return object : MyAsyncTask<Params, Progress, Result>(params, PoolEnum.DEFAULT_POOL) {
 
-                override suspend fun doInBackground(params: Params): Result {
-                    // TODO: revert to Try!
-                    return backgroundFunc(params).getOrElse(null)
+                override suspend fun doInBackground(params: Params): Try<Result> {
+                    return backgroundFunc(params)
                 }
 
                 override suspend fun onFinish(result: Try<Result>) {

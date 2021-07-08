@@ -127,7 +127,7 @@ class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem
     fun getDetails(context: Context, showReceivedTime: Boolean): String {
         val builder = getMyStringBuilderWithTime(context, showReceivedTime)
         if (isCollapsed()) {
-            builder.withSpace("(+${getChildrenCount()})")
+            builder.withSpace("(+${childrenCount})")
         }
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             builder.withSpace("(actId=$id)")

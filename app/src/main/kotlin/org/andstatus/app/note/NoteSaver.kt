@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.note
 
+import io.vavr.control.Try
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DownloadStatus
@@ -27,6 +28,7 @@ import org.andstatus.app.service.MyServiceEventsBroadcaster
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.service.MyServiceState
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
 
 /**
  * Asynchronously save, delete and send a note, prepared by [NoteEditor]
@@ -37,20 +39,22 @@ class NoteSaver(private val editor: NoteEditor) : MyAsyncTask<NoteEditorCommand?
     @Volatile
     private var command: NoteEditorCommand = noteEditorCommandEmpty
 
-    override suspend fun doInBackground(params: NoteEditorCommand?): NoteEditorData? {
+    override suspend fun doInBackground(params: NoteEditorCommand?): Try<NoteEditorData> {
         command = params ?: noteEditorCommandEmpty
         MyLog.v(NoteEditorData.TAG) { "Started: $command" }
         if (!command.acquireLock(true)) {
-            return command.currentData
+            return TryUtils.ofNullable(command.currentData)
         }
         savePreviousData()
         if (command.currentData?.isValid() == false) {
             command.loadCurrent()
         }
         saveCurrentData()
-        return if (command.showAfterSave)
-            NoteEditorData.load( MyContextHolder.myContextHolder.getNow(), command.currentData?.getNoteId() ?: 0)
-        else NoteEditorData.EMPTY
+        return Try.success(
+            if (command.showAfterSave)
+                NoteEditorData.load(MyContextHolder.myContextHolder.getNow(), command.currentData?.getNoteId() ?: 0)
+            else NoteEditorData.EMPTY
+        )
     }
 
     private fun savePreviousData() {
@@ -96,19 +100,19 @@ class NoteSaver(private val editor: NoteEditor) : MyAsyncTask<NoteEditorCommand?
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 
-    override suspend fun onCancel() {
-        command.releaseLock()
-    }
-
-    override suspend fun onPostExecute(data: NoteEditorData) {
-        if (data.isValid()) {
-            if (command.hasLock()) {
-                MyLog.v(NoteEditorData.TAG) { "Saved; Future data: $data" }
-                editor.showData(data)
+    override suspend fun onFinish(result: Try<NoteEditorData>) {
+        result.onSuccess { data ->
+            if (data.isValid()) {
+                if (command.hasLock()) {
+                    MyLog.v(NoteEditorData.TAG) { "Saved; Future data: $result" }
+                    editor.showData(data)
+                } else {
+                    MyLog.v(NoteEditorData.TAG) { "Saved; Result skipped: no lock" }
+                }
             } else {
-                MyLog.v(NoteEditorData.TAG) { "Saved; Result skipped: no lock" }
+                MyLog.v(NoteEditorData.TAG, "Saved; No future data")
             }
-        } else {
+        }.onFailure {
             MyLog.v(NoteEditorData.TAG, "Saved; No future data")
         }
         command.releaseLock()

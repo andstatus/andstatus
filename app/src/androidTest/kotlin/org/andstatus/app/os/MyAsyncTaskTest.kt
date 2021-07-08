@@ -26,12 +26,12 @@ class MyAsyncTaskTest {
             delay(200)
         }
 
-        override suspend fun doInBackground(params: String): String {
+        override suspend fun doInBackground(params: String): Try<String> {
             inBackgroundVal.set(true)
             delay(250)
             exceptionDuringBackground?.let { throw it }
             delay(250)
-            return "done"
+            return Try.success("done")
         }
 
         override suspend fun onCancel() {

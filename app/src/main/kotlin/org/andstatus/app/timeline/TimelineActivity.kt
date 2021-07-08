@@ -35,6 +35,7 @@ import android.widget.CheckBox
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.drawerlayout.widget.DrawerLayout
+import io.vavr.control.Try
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.HelpActivity
@@ -86,6 +87,7 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.ViewUtils
 import org.andstatus.app.view.MyContextMenu
 import java.util.*
@@ -1103,14 +1105,14 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
         private fun <T : ViewItem<T>> clearNotifications(timelineActivity: TimelineActivity<T>) {
             val timeline = timelineActivity.getParamsLoaded().timeline
             AsyncTaskLauncher.execute(timelineActivity,
-                    object : MyAsyncTask<Void?, Void?, Void?>("clearNotifications" + timeline.getId(),
+                    object : MyAsyncTask<Void?, Void?, Void>("clearNotifications" + timeline.getId(),
                             PoolEnum.QUICK_UI) {
-                        override suspend fun doInBackground(params: Void?): Void? {
+                        override suspend fun doInBackground(params: Void?): Try<Void> {
                             timelineActivity.myContext.clearNotifications(timeline)
-                            return null
+                            return TryUtils.SUCCESS
                         }
 
-                        override suspend fun onPostExecute(result: Void?) {
+                        override suspend fun onFinish(result: Try<Void>) {
                             timelineActivity.refreshFromCache()
                         }
                     }
