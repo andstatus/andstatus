@@ -113,7 +113,7 @@ abstract class DataChecker {
                             return TryUtils.SUCCESS
                         }
 
-                        override suspend fun onFinish(result: Try<Void>) {
+                        override suspend fun onPostExecute(result: Try<Void>) {
                             result.onSuccess {
                                 logger.logSuccess()
                             }.onFailure {

@@ -571,7 +571,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                         }
                     }
 
-                    override suspend fun onFinish(result: Try<NoteEditorData>) {
+                    override suspend fun onPostExecute(result: Try<NoteEditorData>) {
                         result.onSuccess {
                             if (lock.acquired() && it.isValid() == true) {
                                 if (editorData.isValid()) {

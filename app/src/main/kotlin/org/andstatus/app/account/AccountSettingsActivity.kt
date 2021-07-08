@@ -927,7 +927,7 @@ class AccountSettingsActivity : MyActivity() {
             return if (succeeded) TryUtils.TRUE else TryUtils.failure(stepErrorMessage)
         }
 
-        override suspend fun onFinish(result: Try<Boolean>) {
+        override suspend fun onPostExecute(result: Try<Boolean>) {
             DialogFactory.dismissSafely(dlg)
             if (!this@AccountSettingsActivity.isFinishing) {
                 result.onSuccess {
@@ -1070,7 +1070,7 @@ class AccountSettingsActivity : MyActivity() {
         }
 
         // This is in the UI thread, so we can mess with the UI
-        override suspend fun onFinish(result: Try<TaskResult>) {
+        override suspend fun onPostExecute(result: Try<TaskResult>) {
             DialogFactory.dismissSafely(dlg)
             if (!activity.isFinishing()) {
                 result.onSuccess {
@@ -1196,7 +1196,7 @@ class AccountSettingsActivity : MyActivity() {
             ) else TryUtils.failure(message)
         }
 
-        override suspend fun onFinish(result: Try<TaskResult>) {
+        override suspend fun onPostExecute(result: Try<TaskResult>) {
             DialogFactory.dismissSafely(dlg)
             if (!this@AccountSettingsActivity.isFinishing) {
                 result.onSuccess {
@@ -1284,7 +1284,7 @@ class AccountSettingsActivity : MyActivity() {
         /**
          * Credentials were verified just now!
          */
-        override suspend fun onFinish(result: Try<TaskResult>) {
+        override suspend fun onPostExecute(result: Try<TaskResult>) {
             DialogFactory.dismissSafely(dlg)
             if (this@AccountSettingsActivity.isFinishing) return
             var errorMessage: CharSequence = ""

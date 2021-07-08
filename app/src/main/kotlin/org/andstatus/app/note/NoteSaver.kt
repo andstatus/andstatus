@@ -100,7 +100,7 @@ class NoteSaver(private val editor: NoteEditor) : MyAsyncTask<NoteEditorCommand?
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 
-    override suspend fun onFinish(result: Try<NoteEditorData>) {
+    override suspend fun onPostExecute(result: Try<NoteEditorData>) {
         result.onSuccess { data ->
             if (data.isValid()) {
                 if (command.hasLock()) {

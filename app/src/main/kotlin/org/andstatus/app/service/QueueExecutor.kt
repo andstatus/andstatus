@@ -88,7 +88,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
                 .setInForeground(commandDataExecuted.isInForeground()))
     }
 
-    override suspend fun onFinish(result: Try<Boolean>) {
+    override suspend fun onPostExecute(result: Try<Boolean>) {
         val myService = myServiceRef.get()
         if (myService != null) {
             myService.latestActivityTime = System.currentTimeMillis()

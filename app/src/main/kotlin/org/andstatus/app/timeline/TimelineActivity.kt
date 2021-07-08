@@ -1112,7 +1112,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
                             return TryUtils.SUCCESS
                         }
 
-                        override suspend fun onFinish(result: Try<Void>) {
+                        override suspend fun onPostExecute(result: Try<Void>) {
                             timelineActivity.refreshFromCache()
                         }
                     }

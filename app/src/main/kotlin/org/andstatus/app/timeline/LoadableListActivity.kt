@@ -231,7 +231,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             }
         }
 
-        override suspend fun onFinish(result: Try<SyncLoader<*>>) {
+        override suspend fun onPostExecute(result: Try<SyncLoader<*>>) {
             result.onSuccess {
                 mSyncLoader = it
                 updateCompletedLoader()
@@ -395,7 +395,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
                     return Try.success(params.toCommandSummary(myContext))
                 }
 
-                override suspend fun onFinish(result: Try<String>) {
+                override suspend fun onPostExecute(result: Try<String>) {
                     result.onSuccess {
                         showSyncing(
                             "Show " + commandData.command,

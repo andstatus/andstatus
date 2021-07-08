@@ -18,7 +18,6 @@ class MyAsyncTaskTest {
         val inBackgroundVal = AtomicBoolean()
         val onCancelVal = AtomicBoolean()
         val onPostExecuteVal = AtomicReference<String?>()
-        val onFinishVal = AtomicReference<String?>()
         var exceptionDuringBackground: Exception? = null
 
         override suspend fun onPreExecute() {
@@ -38,13 +37,8 @@ class MyAsyncTaskTest {
             onCancelVal.set(true)
         }
 
-        override suspend fun onPostExecute(result: String) {
+        override suspend fun onPostExecute(result: Try<String>) {
             onPostExecuteVal.set("got: $result")
-            delay(200)
-        }
-
-        override suspend fun onFinish(result: Try<String>) {
-            onFinishVal.set("got: $result")
             delay(200)
         }
     }
@@ -69,8 +63,7 @@ class MyAsyncTaskTest {
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertFalse("inBackground $task", task.inBackgroundVal.get())
         Assert.assertTrue("onCancel $task", task.onCancelVal.get())
-        Assert.assertNull("onPostExecute $task", task.onPostExecuteVal.get())
-        Assert.assertNotNull("onFinish $task", task.onFinishVal.get())
+        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
     @Test
@@ -93,8 +86,7 @@ class MyAsyncTaskTest {
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
         Assert.assertTrue("onCancel $task", task.onCancelVal.get())
-        Assert.assertNull("onPostExecute $task", task.onPostExecuteVal.get())
-        Assert.assertNotNull("onFinish $task", task.onFinishVal.get())
+        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
     @Test
@@ -118,8 +110,7 @@ class MyAsyncTaskTest {
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
         Assert.assertTrue("onCancel $task", task.onCancelVal.get())
-        Assert.assertNull("onPostExecute $task", task.onPostExecuteVal.get())
-        Assert.assertNotNull("onFinish $task", task.onFinishVal.get())
+        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
     @Test
@@ -143,7 +134,6 @@ class MyAsyncTaskTest {
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
         Assert.assertTrue("onCancel $task", task.onCancelVal.get())
         Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
-        Assert.assertNotNull("onFinish $task", task.onFinishVal.get())
     }
 
     @Test
@@ -157,7 +147,6 @@ class MyAsyncTaskTest {
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
         Assert.assertFalse("onCancel $task", task.onCancelVal.get())
         Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
-        Assert.assertNotNull("onFinish $task", task.onFinishVal.get())
     }
 
     @Test
@@ -173,8 +162,7 @@ class MyAsyncTaskTest {
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
         Assert.assertFalse("onCancel $task", task.onCancelVal.get())
-        Assert.assertNull("onPostExecute $task", task.onPostExecuteVal.get())
-        Assert.assertNotNull("onFinish $task", task.onFinishVal.get())
+        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
 }

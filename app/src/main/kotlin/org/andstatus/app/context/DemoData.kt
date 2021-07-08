@@ -231,7 +231,7 @@ class DemoData {
             return TryUtils.SUCCESS
         }
 
-        override suspend fun onFinish(result: Try<Void>) {
+        override suspend fun onPostExecute(result: Try<Void>) {
             FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context, true)
             progressListener.onComplete(result.isSuccess)
         }

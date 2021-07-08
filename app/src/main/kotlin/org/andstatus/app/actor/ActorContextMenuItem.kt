@@ -161,7 +161,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
                         return executeAsync(params2)
                     }
 
-                    override suspend fun onFinish(result: Try<NoteEditorData>) {
+                    override suspend fun onPostExecute(result: Try<NoteEditorData>) {
                         MyLog.v(this, "execute async ended")
                         result.onSuccess {
                             executeOnUiThread(params2.menu, it)

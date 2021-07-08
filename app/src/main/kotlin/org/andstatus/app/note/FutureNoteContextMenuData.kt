@@ -89,7 +89,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
 
                     }
 
-                    override suspend fun onFinish(result: Try<NoteContextMenuData>) {
+                    override suspend fun onPostExecute(result: Try<NoteContextMenuData>) {
                         future.menuData = result.getOrElse(NoteContextMenuData.EMPTY)
                         noteContextMenu.setFutureData(future)
                         if (future.menuData.noteForAnyAccount.noteId != 0L && noteContextMenu.getViewItem().getNoteId() == future.noteId) {

@@ -310,7 +310,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             }
         }
 
-        override suspend fun onFinish(result: Try<TaskResult>) {
+        override suspend fun onPostExecute(result: Try<TaskResult>) {
             DialogFactory.dismissSafely(dlg)
             result.onFailure {
                 MyLog.w(this, "Result is $result")
