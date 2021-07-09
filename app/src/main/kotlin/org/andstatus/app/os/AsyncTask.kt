@@ -36,7 +36,6 @@ import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.TryUtils.isCancelled
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -53,6 +52,8 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
     protected val createdAt = MyLog.uniqueCurrentTimeMS()
     override val instanceId = InstanceId.next()
 
+    val isPending: Boolean get() = startedAt.get() == 0L && !isFinished
+    val isRunning: Boolean get() = startedAt.get() > 0 && !isFinished
     val startedAt: AtomicLong = AtomicLong()
     val backgroundStartedAt: AtomicLong = AtomicLong()
     val backgroundEndedAt: AtomicLong = AtomicLong()
@@ -75,28 +76,8 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
     var firstError: String = ""
         private set
 
-    val hasExecutor = AtomicBoolean(true)
     @Volatile
     var job: Job? = null
-
-    /**
-     * Indicates the current status of the task. Each status will be set only once
-     * during the lifetime of a task.
-     */
-    enum class Status {
-        /** Indicates that the task has not been executed yet. */
-        PENDING,
-
-        /** Indicates that the task is running. */
-        RUNNING,
-
-        /** Indicates that [onPostExecute] has finished. */
-        FINISHED
-    }
-
-    private val mStatus = AtomicReference(Status.PENDING)
-    var status: Status get() = mStatus.get()
-        private set(value) = mStatus.set(value)
 
     enum class PoolEnum(val corePoolSize: Int, val maxCommandExecutionSeconds: Long) {
         SYNC(0, MAX_COMMAND_EXECUTION_SECONDS),
@@ -127,16 +108,15 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
      *
      * @return This instance
      *
-     * @throws IllegalStateException If [.getStatus] returns either
-     * [Status.RUNNING] or [Status.FINISHED].
+     * @throws IllegalStateException If the task isRunning or isFinished
      */
     @MainThread
     fun executeInContext(asyncCoroutineContext: CoroutineContext, params: Params): AsyncTask<Params, Progress, Result> {
-        when (status) {
-            Status.RUNNING -> throw java.lang.IllegalStateException(
+        when {
+            isRunning -> throw java.lang.IllegalStateException(
                 "Cannot execute task: the task is already running."
             )
-            Status.FINISHED -> throw java.lang.IllegalStateException(
+            isFinished -> throw java.lang.IllegalStateException(
                 ("Cannot execute task: the task has already been executed (a task can be executed only once)")
             )
             else -> Unit
@@ -144,7 +124,6 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
         job = CoroutineScope(Dispatchers.Main).launch {
             try {
                 startedAt.set(System.currentTimeMillis())
-                status = Status.RUNNING
                 onPreExecute()
                 withContext(asyncCoroutineContext) { doInBackground1(params) }
                     .also { onPostExecute1(it) }
@@ -256,7 +235,6 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
                 ExceptionsCounter.showErrorDialogIfErrorsPresent()
             } finally {
                 finishedAt.set(System.currentTimeMillis())
-                status = Status.FINISHED
             }
         }
     }
@@ -277,7 +255,6 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
     }
 
     val isBackgroundStarted: Boolean get() = backgroundStartedAt.get() > 0
-
     val isBackgroundEnded: Boolean get() = backgroundEndedAt.get() > 0
 
     override fun toString(): String {
@@ -288,48 +265,43 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
     }
 
     private val stateSummary: String
-        get() {
-            var summary = when (status) {
-                Status.PENDING -> "PENDING: " + RelativeTime.secMsAgo(createdAt)
-                Status.RUNNING -> when {
-                    startedAt.get() == 0L -> {
-                        "QUEUED: " + RelativeTime.secMsAgo(createdAt)
-                    }
-                    backgroundStartedAt.get() == 0L -> {
-                        "PRE-EXECUTING: " + RelativeTime.secMsAgo(startedAt.get())
-                    }
-                    backgroundEndedAt.get() == 0L ->
-                        "RUNNING in background: " + RelativeTime.secMsAgo(backgroundStartedAt.get()) +
-                                if (currentlyExecutingSince.get() > backgroundEndedAt.get()) {
-                                    ", Currently executing: " + RelativeTime.secMs(finishedAt.get() - startedAt.get())
-                                } else ""
-                    else -> {
-                        "FINISHING: " + RelativeTime.secMsAgo(backgroundEndedAt.get())
-                    }
-                }
-                Status.FINISHED ->
-                    when {
-                        startedAt.get() == 0L -> {
-                            "FINISHED but didn't start: " + RelativeTime.secMsAgo(finishedAt)
-                        }
-                        backgroundEndedAt.get() == 0L -> {
-                            "FINISHED but didn't end: " + RelativeTime.secMsAgo(finishedAt)
-                        }
-                        else -> {
-                            "FINISHED: " + RelativeTime.secMsAgo(finishedAt) +
-                                    ", worked: " + RelativeTime.secMs(finishedAt.get() - startedAt.get())
-                            ", in background: " + RelativeTime.secMs(
-                                backgroundEndedAt.get() - backgroundStartedAt.get()
-                            )
-                        }
-                    }
+        get() = (if (isCancelled) "Cancelled " + RelativeTime.secMsAgo(cancelledAt) + ", " else "") +
+                stateSummary2()
+
+    private fun stateSummary2() = when {
+        isPending -> "PENDING: " + RelativeTime.secMsAgo(createdAt)
+        isFinished -> when {
+            startedAt.get() == 0L -> {
+                "FINISHED but didn't start: " + RelativeTime.secMsAgo(finishedAt)
             }
-            if (isCancelled) {
-                summary += ", cancelled " + RelativeTime.secMsAgo(cancelledAt) + " ago"
+            backgroundEndedAt.get() == 0L -> {
+                "FINISHED but didn't complete background work: " + RelativeTime.secMsAgo(finishedAt)
             }
-            if (!hasExecutor.get()) summary += ", no executor"
-            return summary
+            else -> {
+                "FINISHED: " + RelativeTime.secMsAgo(finishedAt) +
+                        ", worked: " + RelativeTime.secMs(finishedAt.get() - startedAt.get())
+                ", in background: " + RelativeTime.secMs(
+                    backgroundEndedAt.get() - backgroundStartedAt.get()
+                )
+            }
         }
+        else -> when {
+            startedAt.get() == 0L -> {
+                "QUEUED: " + RelativeTime.secMsAgo(createdAt)
+            }
+            !isBackgroundStarted -> {
+                "PRE-EXECUTING: " + RelativeTime.secMsAgo(startedAt.get())
+            }
+            !isBackgroundEnded ->
+                "RUNNING in background: " + RelativeTime.secMsAgo(backgroundStartedAt.get()) +
+                        if (currentlyExecutingSince.get() > backgroundEndedAt.get()) {
+                            ", Currently executing: " + RelativeTime.secMs(finishedAt.get() - startedAt.get())
+                        } else ""
+            else -> {
+                "FINISHING: " + RelativeTime.secMsAgo(backgroundEndedAt.get())
+            }
+        }
+    }
 
     open val isReallyWorking: Boolean get() = needsBackgroundWork && !expectedToBeFinishedNow
 
@@ -337,8 +309,8 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
         get() = (RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt.get(), DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
                 || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince.get(), maxCommandExecutionSeconds)
                 || cancelledLongAgo
-                || (status == Status.PENDING
-                && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS)))
+                || isPending
+                && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS))
 
     val cancelledLongAgo: Boolean
         get() = RelativeTime.wasButMoreSecondsAgoThan(cancelledAt.get(), MAX_EXECUTION_AFTER_CANCEL_SECONDS)
@@ -347,13 +319,11 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
     val noMoreBackgroundWork: Boolean get() = !needsBackgroundWork
 
     val needsBackgroundWork: Boolean
-        get() {
-            if (isCancelled && backgroundStartedAt.get() == 0L) return false
-            return when (status) {
-                Status.PENDING -> true
-                Status.FINISHED -> false
-                else -> backgroundEndedAt.get() == 0L
-            }
+        get() = when {
+            isCancelled && !isBackgroundStarted -> false
+            isPending -> true
+            isFinished -> false
+            else -> backgroundEndedAt.get() == 0L
         }
 
     /**

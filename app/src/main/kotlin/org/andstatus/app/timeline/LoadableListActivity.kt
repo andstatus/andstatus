@@ -148,7 +148,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     fun isLoading(): Boolean {
         var reset = false
         synchronized(loaderLock) {
-            if (loaderIsWorking && mWorkingLoader.status == AsyncTask.Status.FINISHED) {
+            if (loaderIsWorking && mWorkingLoader.isFinished) {
                 reset = true
                 loaderIsWorking = false
             }

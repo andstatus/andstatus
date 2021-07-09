@@ -117,7 +117,6 @@ class AsyncTaskLauncher {
         }
 
         private fun setExecutor(pool: PoolEnum, executor: CoroutineContext?) {
-            onExecutorRemoval(pool)
             when (pool) {
                 PoolEnum.QUICK_UI -> QUICK_UI_EXECUTOR = executor
                 else -> throw IllegalArgumentException("Trying to set executor for $pool")
@@ -146,24 +145,12 @@ class AsyncTaskLauncher {
         private fun removeFinishedTasks() {
             var count: Long = 0
             for (launched in launchedTasks) {
-                if (launched.status == AsyncTask.Status.FINISHED) {
+                if (launched.isFinished) {
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(TAG, (++count).toString() + ". Removing finished " + launched)
                     }
                     launchedTasks.remove(launched)
                 }
-            }
-        }
-
-        private fun onExecutorRemoval(pool: PoolEnum) {
-            var count: Long = 0
-            for (launched in launchedTasks) {
-                if (launched.pool == pool && launched.hasExecutor.compareAndSet(true, false)) {
-                    count += 1
-                }
-            }
-            if (count > 0) {
-                MyLog.v(TAG) { "On removing executor of pool $pool for $count tasks" }
             }
         }
 
@@ -184,12 +171,12 @@ class AsyncTaskLauncher {
             var finishingCount: Long = 0
             var finishedCount: Long = 0
             for (launched in launchedTasks) {
-                when (val s = launched.status) {
-                    AsyncTask.Status.PENDING -> {
+                when {
+                    launched.isPending -> {
                         pendingCount++
                         builder.append("P $pendingCount. $launched\n")
                     }
-                    AsyncTask.Status.RUNNING -> if (launched.backgroundStartedAt.get() == 0L) {
+                    launched.isRunning -> if (launched.backgroundStartedAt.get() == 0L) {
                         queuedCount++
                         builder.append("Q $queuedCount. $launched\n")
                     } else if (launched.backgroundEndedAt.get() == 0L) {
@@ -199,9 +186,9 @@ class AsyncTaskLauncher {
                         finishingCount++
                         builder.append("F $finishingCount. $launched\n")
                     }
-                    AsyncTask.Status.FINISHED -> finishedCount++
+                    launched.isFinished -> finishedCount++
                     else -> {
-                        builder.append("$s ??. $launched\n")
+                        builder.append("Unexpected state of $launched\n")
                     }
                 }
             }
@@ -237,7 +224,7 @@ class AsyncTaskLauncher {
             for (launched in launchedTasks) {
                 if (!launched.cancelable ||
                     launched.isCancelled ||
-                    launched.status == AsyncTask.Status.FINISHED
+                    launched.isFinished
                 ) continue
                 if (launched.pool == pool) {
                     try {

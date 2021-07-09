@@ -33,10 +33,10 @@ import org.andstatus.app.origin.DemoOriginInserter
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginPumpio
 import org.andstatus.app.origin.OriginType
-import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.ExceptionsCounter
 import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.os.AsyncTask.PoolEnum.DEFAULT_POOL
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.ExceptionsCounter
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
@@ -136,8 +136,7 @@ class DemoData {
         val asyncTask = addAsync(myContext, ProgressLogger.EMPTY_LISTENER)
         var count: Long = 200
         while (count > 0) {
-            MyLog.v(this, "$method; " + (if (asyncTask.isFinished) "Task completed " else "Waiting for task completion ") + count + " "
-                    + asyncTask.status)
+            MyLog.v(this, "$method; " + (if (asyncTask.isFinished) "Task completed " else "Waiting for task completion ") + count)
             if (asyncTask.isFinished || DbUtils.waitMs(method, 5000)) {
                 break
             }
@@ -146,8 +145,8 @@ class DemoData {
         if (ExceptionsCounter.firstError.get() != null) {
             Assert.fail("Error during Demo data creation: " + ExceptionsCounter.firstError.get())
         }
-        Assert.assertEquals("Demo data creation failed, count=" + count + ", status=" + asyncTask.status
-                + ", $asyncTask", true, asyncTask.noMoreBackgroundWork
+        Assert.assertEquals("Demo data creation failed, count=" + count +
+                ", $asyncTask", true, asyncTask.noMoreBackgroundWork
         )
         Assert.assertTrue("Error during Demo data creation: " + asyncTask.firstError + ", $asyncTask",
                 asyncTask.firstError.isEmpty())
