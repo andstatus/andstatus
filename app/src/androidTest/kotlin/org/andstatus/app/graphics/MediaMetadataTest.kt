@@ -17,7 +17,7 @@ package org.andstatus.app.graphics
 
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.TestSuite
-import org.andstatus.app.graphics.MediaMetadata
+import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -32,7 +32,9 @@ class MediaMetadataTest {
     fun testFromFilePath() {
         val path = DemoData.demoData.localVideoTestUri.toString()
         MediaMetadata.Companion.fromFilePath(path).let {
-            Assert.assertEquals("For path '$path' returned: $it",
+            Assert.assertEquals(
+                "For path '$path' returned: $it" +
+                        (if (it.isFailure) "\n" + MyLog.getStackTrace(it.cause) else ""),
                 180, it.getOrElse(MediaMetadata.EMPTY).height.toLong()
             )
         }
