@@ -36,7 +36,7 @@ import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginPumpio
 import org.andstatus.app.origin.OriginType
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
@@ -793,7 +793,7 @@ class Actor private constructor(// In our system
         fun load(myContext: MyContext, actorId: Long, reloadFirst: Boolean, supplier: Supplier<Actor>): Actor {
             if (actorId == 0L) return supplier.get()
             val cached = myContext.users.actors.getOrDefault(actorId, EMPTY)
-            return if (MyAsyncTask.nonUiThread && (reloadFirst || cached.isNotFullyDefined()))
+            return if (AsyncTask.nonUiThread && (reloadFirst || cached.isNotFullyDefined()))
                     loadFromDatabase(myContext, actorId, supplier, true).betterToCache(cached)
                 else cached
         }

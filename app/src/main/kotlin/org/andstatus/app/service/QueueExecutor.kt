@@ -2,7 +2,7 @@ package org.andstatus.app.service
 
 import io.vavr.control.Try
 import org.andstatus.app.context.MyPreferences
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.service.CommandQueue.AccessorType
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicLong
 
 class QueueExecutor(myService: MyService, private val accessorType: AccessorType) :
-        MyAsyncTask<Void?, Void?, Boolean>("$TAG-$accessorType", PoolEnum.SYNC), CommandExecutorParent {
+        AsyncTask<Void?, Void?, Boolean>("$TAG-$accessorType", PoolEnum.SYNC), CommandExecutorParent {
     private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
     private val executedCounter: AtomicLong = AtomicLong()
 

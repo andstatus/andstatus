@@ -30,7 +30,7 @@ import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.util.TryUtils
 
 class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
@@ -105,7 +105,7 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private class BackupTask(private val activity: BackupActivity) :
-        MyAsyncTask<DocumentFile?, CharSequence?, Void>(PoolEnum.DEFAULT_POOL) {
+        AsyncTask<DocumentFile?, CharSequence?, Void>(PoolEnum.DEFAULT_POOL) {
 
         override suspend fun doInBackground(params: DocumentFile?): Try<Void> {
             params?.let {

@@ -23,7 +23,7 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.TimelineTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.util.TriState
 import java.util.concurrent.CompletableFuture
@@ -50,7 +50,7 @@ class TimelineSaver {
     }
 
     fun execute(myContext: MyContext): CompletableFuture<MyContext> {
-        return if (MyAsyncTask.isUiThread) {
+        return if (AsyncTask.isUiThread) {
             CompletableFuture.supplyAsync({ executeSynchronously(myContext) }, NonUiThreadExecutor.INSTANCE)
         } else {
             CompletableFuture.completedFuture(executeSynchronously(myContext))

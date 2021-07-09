@@ -31,7 +31,7 @@ import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.social.ActivityType
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
@@ -710,7 +710,7 @@ object MyQuery {
             MyLog.databaseIsNull { method }
             return identity
         }
-        if (MyAsyncTask.isUiThread) {
+        if (AsyncTask.isUiThread) {
             MyLog.v(TAG) {
                 "$method; Database access in UI thread: '$sql' \n${MyLog.currentStackTrace}"
             }

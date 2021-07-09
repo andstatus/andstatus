@@ -19,7 +19,7 @@ import io.vavr.control.Try
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
-import org.andstatus.app.os.MyAsyncTask.PoolEnum
+import org.andstatus.app.os.AsyncTask.PoolEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
 import java.util.*
@@ -41,7 +41,7 @@ class AsyncTaskLauncher {
         private val TAG: String = AsyncTaskLauncher::class.java.simpleName
         private val launchedCount: AtomicLong = AtomicLong()
         private val skippedCount: AtomicLong = AtomicLong()
-        private val launchedTasks: Queue<MyAsyncTask<*, *, *>> = ConcurrentLinkedQueue()
+        private val launchedTasks: Queue<AsyncTask<*, *, *>> = ConcurrentLinkedQueue()
 
         @Volatile
         private var QUICK_UI_EXECUTOR: CoroutineContext? = null
@@ -61,15 +61,15 @@ class AsyncTaskLauncher {
             backgroundFunc: (Params?) -> Try<Result>,
             uiConsumer: (Params?) -> (Try<Result>) -> Unit
         ): Try<Void> {
-            val asyncTask: MyAsyncTask<Params?, Void, Result> =
-                MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
+            val asyncTask: AsyncTask<Params?, Void, Result> =
+                AsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
             return execute(params, asyncTask, params)
         }
 
-        fun execute(objTag: Any?, asyncTask: MyAsyncTask<Void?, *, *>): Try<Void> =
+        fun execute(objTag: Any?, asyncTask: AsyncTask<Void?, *, *>): Try<Void> =
             execute(objTag, asyncTask, null)
 
-        fun  <Params> execute(objTag: Any?, asyncTask: MyAsyncTask<Params, *, *>, params: Params): Try<Void> {
+        fun  <Params> execute(objTag: Any?, asyncTask: AsyncTask<Params, *, *>, params: Params): Try<Void> {
             MyLog.v(objTag) { "Launching $asyncTask" }
             return try {
                 cancelStalledTasks()
@@ -146,7 +146,7 @@ class AsyncTaskLauncher {
         private fun removeFinishedTasks() {
             var count: Long = 0
             for (launched in launchedTasks) {
-                if (launched.status == MyAsyncTask.Status.FINISHED) {
+                if (launched.status == AsyncTask.Status.FINISHED) {
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(TAG, (++count).toString() + ". Removing finished " + launched)
                     }
@@ -185,11 +185,11 @@ class AsyncTaskLauncher {
             var finishedCount: Long = 0
             for (launched in launchedTasks) {
                 when (val s = launched.status) {
-                    MyAsyncTask.Status.PENDING -> {
+                    AsyncTask.Status.PENDING -> {
                         pendingCount++
                         builder.append("P $pendingCount. $launched\n")
                     }
-                    MyAsyncTask.Status.RUNNING -> if (launched.backgroundStartedAt.get() == 0L) {
+                    AsyncTask.Status.RUNNING -> if (launched.backgroundStartedAt.get() == 0L) {
                         queuedCount++
                         builder.append("Q $queuedCount. $launched\n")
                     } else if (launched.backgroundEndedAt.get() == 0L) {
@@ -199,7 +199,7 @@ class AsyncTaskLauncher {
                         finishingCount++
                         builder.append("F $finishingCount. $launched\n")
                     }
-                    MyAsyncTask.Status.FINISHED -> finishedCount++
+                    AsyncTask.Status.FINISHED -> finishedCount++
                     else -> {
                         builder.append("$s ??. $launched\n")
                     }
@@ -237,7 +237,7 @@ class AsyncTaskLauncher {
             for (launched in launchedTasks) {
                 if (!launched.cancelable ||
                     launched.isCancelled ||
-                    launched.status == MyAsyncTask.Status.FINISHED
+                    launched.status == AsyncTask.Status.FINISHED
                 ) continue
                 if (launched.pool == pool) {
                     try {

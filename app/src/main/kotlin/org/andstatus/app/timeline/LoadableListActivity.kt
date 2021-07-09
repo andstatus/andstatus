@@ -34,7 +34,7 @@ import org.andstatus.app.data.ParsedUri
 import org.andstatus.app.list.MyBaseListActivity
 import org.andstatus.app.list.SyncLoader
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceEvent
@@ -148,7 +148,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     fun isLoading(): Boolean {
         var reset = false
         synchronized(loaderLock) {
-            if (loaderIsWorking && mWorkingLoader.status == MyAsyncTask.Status.FINISHED) {
+            if (loaderIsWorking && mWorkingLoader.status == AsyncTask.Status.FINISHED) {
                 reset = true
                 loaderIsWorking = false
             }
@@ -194,7 +194,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     /** Called not in UI thread  */
     protected abstract fun newSyncLoader(args: Bundle?): SyncLoader<T>
 
-    private inner class AsyncLoader : MyAsyncTask<Bundle?, String?, SyncLoader<*>>, ProgressPublisher {
+    private inner class AsyncLoader : AsyncTask<Bundle?, String?, SyncLoader<*>>, ProgressPublisher {
         private var mSyncLoader: SyncLoader<*>? = null
 
         constructor(taskId: String?) : super(taskId, PoolEnum.DEFAULT_POOL) {}
@@ -389,7 +389,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
 
     private fun showSyncing(commandData: CommandData) {
         AsyncTaskLauncher.execute(this,
-            object : MyAsyncTask<CommandData, Void?, String>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
+            object : AsyncTask<CommandData, Void?, String>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
 
                 override suspend fun doInBackground(params: CommandData): Try<String> {
                     return Try.success(params.toCommandSummary(myContext))

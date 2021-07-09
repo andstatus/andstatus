@@ -33,7 +33,7 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask.PoolEnum
+import org.andstatus.app.os.AsyncTask.PoolEnum
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog

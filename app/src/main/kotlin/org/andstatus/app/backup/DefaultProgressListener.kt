@@ -23,7 +23,7 @@ import org.andstatus.app.MyActivity
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyContextState
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.util.DialogFactory
 import org.andstatus.app.util.MyLog
 import java.util.*
@@ -156,7 +156,7 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
     }
 
     private fun freeResources() {
-        if (!activity.isPresent() || MyAsyncTask.isUiThread) {
+        if (!activity.isPresent() || AsyncTask.isUiThread) {
             DialogFactory.dismissSafely(progressDialog)
         } else {
             try {

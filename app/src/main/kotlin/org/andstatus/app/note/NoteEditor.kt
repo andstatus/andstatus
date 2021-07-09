@@ -47,7 +47,7 @@ import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.graphics.IdentifiableImageView
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
@@ -548,7 +548,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         }
         MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft requested, noteId=$noteId" }
         AsyncTaskLauncher.execute(this,
-                object : MyAsyncTask<Long, Void?, NoteEditorData>(this@NoteEditor.toString(),
+                object : AsyncTask<Long, Void?, NoteEditorData>(this@NoteEditor.toString(),
                         PoolEnum.QUICK_UI) {
                     @Volatile
                     var lock: NoteEditorLock = NoteEditorLock.EMPTY

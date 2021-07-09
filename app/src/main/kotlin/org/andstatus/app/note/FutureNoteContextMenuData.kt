@@ -19,7 +19,7 @@ import android.view.View
 import io.vavr.control.Try
 import org.andstatus.app.data.NoteContextMenuData
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
 
@@ -35,7 +35,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
     var menuData: NoteContextMenuData = NoteContextMenuData.EMPTY
 
     @Volatile
-    private var loader: MyAsyncTask<Void?, Void?, NoteContextMenuData>? = null
+    private var loader: AsyncTask<Void?, Void?, NoteContextMenuData>? = null
 
     fun getNoteId(): Long {
         return noteId
@@ -68,7 +68,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
             val menuContainer = noteContextMenu.menuContainer
             val future = FutureNoteContextMenuData(viewItem)
             if (view != null && future.noteId != 0L) {
-                future.loader = object : MyAsyncTask<Void?, Void?, NoteContextMenuData>(
+                future.loader = object : AsyncTask<Void?, Void?, NoteContextMenuData>(
                         TAG + future.noteId, PoolEnum.QUICK_UI) {
 
                     override suspend fun doInBackground(params: Void?): Try<NoteContextMenuData> {

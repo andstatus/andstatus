@@ -25,7 +25,7 @@ import org.andstatus.app.data.MatchedUri
 import org.andstatus.app.list.ContextMenuItem
 import org.andstatus.app.note.NoteEditorData
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
@@ -154,7 +154,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
 
     private fun executeAsync1(params2: Params) {
         AsyncTaskLauncher.execute(TAG,
-                object : MyAsyncTask<Void?, Void?, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
+                object : AsyncTask<Void?, Void?, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
                     override suspend fun doInBackground(params: Void?): Try<NoteEditorData> {
                         MyLog.v(this, "execute async started. "
                                 + params2.menu.getViewItem().actor.getUniqueNameWithOrigin())

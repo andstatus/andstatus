@@ -41,10 +41,12 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
+ * AsyncTask implementation using Kotlin Coroutines.
+ * No dependencies on (deprecated in API 30) Android's AsyncTask
  * @author yvolk@yurivolkov.com
  */
-abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolEnum) : IdentifiableInstance {
-    constructor(pool: PoolEnum) : this(MyAsyncTask::class.java, pool)
+abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolEnum) : IdentifiableInstance {
+    constructor(pool: PoolEnum) : this(AsyncTask::class.java, pool)
 
     var maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds
     private val taskId: String = MyStringBuilder.objToTag(taskId)
@@ -129,7 +131,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
      * [Status.RUNNING] or [Status.FINISHED].
      */
     @MainThread
-    fun executeInContext(asyncCoroutineContext: CoroutineContext, params: Params): MyAsyncTask<Params, Progress, Result> {
+    fun executeInContext(asyncCoroutineContext: CoroutineContext, params: Params): AsyncTask<Params, Progress, Result> {
         when (status) {
             Status.RUNNING -> throw java.lang.IllegalStateException(
                 "Cannot execute task: the task is already running."
@@ -265,7 +267,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other == null || other !is MyAsyncTask<*, *, *>) return false
+        if (other == null || other !is AsyncTask<*, *, *>) return false
 
         return taskId == other.taskId
     }
@@ -417,8 +419,8 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, val pool: Poo
             backgroundFunc: (Params?) -> Try<Result>,
             uiConsumer: (Params?) -> (Try<Result>) -> Unit
         ):
-                MyAsyncTask<Params, Progress, Result> {
-            return object : MyAsyncTask<Params, Progress, Result>(params, PoolEnum.DEFAULT_POOL) {
+                AsyncTask<Params, Progress, Result> {
+            return object : AsyncTask<Params, Progress, Result>(params, PoolEnum.DEFAULT_POOL) {
 
                 override suspend fun doInBackground(params: Params): Try<Result> {
                     return backgroundFunc(params)

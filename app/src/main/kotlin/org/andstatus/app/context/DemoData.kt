@@ -35,8 +35,8 @@ import org.andstatus.app.origin.OriginPumpio
 import org.andstatus.app.origin.OriginType
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.ExceptionsCounter
-import org.andstatus.app.os.MyAsyncTask
-import org.andstatus.app.os.MyAsyncTask.PoolEnum.DEFAULT_POOL
+import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncTask.PoolEnum.DEFAULT_POOL
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
@@ -157,7 +157,7 @@ class DemoData {
     private class GenerateDemoData constructor(val progressListener: ProgressLogger.ProgressListener,
                                                val myContext: MyContext,
                                                val demoData: DemoData) :
-        MyAsyncTask<Void?, Void?, Void>(this::class.java, DEFAULT_POOL) {
+        AsyncTask<Void?, Void?, Void>(this::class.java, DEFAULT_POOL) {
         val logTag: String = progressListener.getLogTag()
         override val cancelable: Boolean = false
 
@@ -238,7 +238,7 @@ class DemoData {
     }
 
     fun addAsync(myContext: MyContext,
-                 progressListener: ProgressLogger.ProgressListener): MyAsyncTask<Void?, Void?, Void> {
+                 progressListener: ProgressLogger.ProgressListener): AsyncTask<Void?, Void?, Void> {
         val asyncTask = GenerateDemoData(progressListener, myContext, this)
         AsyncTaskLauncher.execute(this, asyncTask)
         return asyncTask

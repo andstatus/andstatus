@@ -23,7 +23,7 @@ import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyProvider
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.ActorEndpointTable
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.util.UriUtils
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -65,7 +65,7 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
                 state.set(State.ADDING)
             }
         }
-        while (state.get() == State.LAZYLOAD && myContext.isReady && MyAsyncTask.nonUiThread) {
+        while (state.get() == State.LAZYLOAD && myContext.isReady && AsyncTask.nonUiThread) {
             if (initialized.compareAndSet(false, true)) {
                 return load()
             }

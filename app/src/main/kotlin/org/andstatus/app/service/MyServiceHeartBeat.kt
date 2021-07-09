@@ -3,14 +3,14 @@ package org.andstatus.app.service
 import io.vavr.control.Try
 import kotlinx.coroutines.delay
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TryUtils
 import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 
-class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, Long, Void>(TAG, PoolEnum.SYNC) {
+class MyServiceHeartBeat constructor(myService: MyService) : AsyncTask<Void?, Long, Void>(TAG, PoolEnum.SYNC) {
     private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
 
     @Volatile

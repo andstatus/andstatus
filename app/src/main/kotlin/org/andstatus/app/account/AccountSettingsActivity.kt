@@ -63,7 +63,7 @@ import org.andstatus.app.origin.OriginType
 import org.andstatus.app.origin.PersistentOriginList
 import org.andstatus.app.origin.SIMPLE_USERNAME_EXAMPLES
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.service.MyServiceManager
@@ -888,7 +888,7 @@ class AccountSettingsActivity : MyActivity() {
      * Needed in a case we don't have the AndStatus Client keys for this Microblogging system
      */
     private inner class OAuthRegisterClientTask() :
-        MyAsyncTask<Void?, Void?, Boolean>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
+        AsyncTask<Void?, Void?, Boolean>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -983,7 +983,7 @@ class AccountSettingsActivity : MyActivity() {
      * ProgressDialog and to get rid of any "Black blank screens"
      */
     private class OAuthAcquireRequestTokenTask(private val activity: AccountSettingsActivity) :
-        MyAsyncTask<Void?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
+        AsyncTask<Void?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -1112,7 +1112,7 @@ class AccountSettingsActivity : MyActivity() {
      * for "Access Token".
      * 2. Stores the Access token for all future interactions with Twitter.
      */
-    private inner class OAuthAcquireAccessTokenTask() : MyAsyncTask<Uri?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
+    private inner class OAuthAcquireAccessTokenTask() : AsyncTask<Uri?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -1222,7 +1222,7 @@ class AccountSettingsActivity : MyActivity() {
      * @author yvolk@yurivolkov.com
      */
     private inner class VerifyCredentialsTask(private val whoAmI: Optional<Uri>) :
-        MyAsyncTask<Void?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
+        AsyncTask<Void?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
 
         override val cancelable = false // This is needed because there is initialize in the background
         private var dlg: ProgressDialog? = null

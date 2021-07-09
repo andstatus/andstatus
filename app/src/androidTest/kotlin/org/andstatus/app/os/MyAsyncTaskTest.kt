@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 class MyAsyncTaskTest {
 
-    class TestTask : MyAsyncTask<String, String, String>(PoolEnum.DEFAULT_POOL) {
+    class TestTask : AsyncTask<String, String, String>(PoolEnum.DEFAULT_POOL) {
         val onPreExecuteVal = AtomicBoolean()
         val inBackgroundVal = AtomicBoolean()
         val onCancelVal = AtomicBoolean()

@@ -40,7 +40,7 @@ import org.andstatus.app.list.ContextMenuItem
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
@@ -343,7 +343,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
 
     private fun executeAsync1(menu: NoteContextMenu) {
         AsyncTaskLauncher.execute(TAG,
-                object : MyAsyncTask<Void?, Void?, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
+                object : AsyncTask<Void?, Void?, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
                     override suspend fun doInBackground(params: Void?): Try<NoteEditorData> {
                         MyLog.v(this@NoteContextMenuItem) { "execute async started. noteId=" + menu.getNoteId() }
                         return Try.success(executeAsync(menu))
