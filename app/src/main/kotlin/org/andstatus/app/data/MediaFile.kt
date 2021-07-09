@@ -133,7 +133,7 @@ abstract class MediaFile internal constructor(filename: String,
     fun preloadImageAsync(cacheName: CacheName) {
         val image = getImageFromCache(cacheName)
         if (image == null && downloadFile.existed) {
-            AsyncTaskLauncher.execute { preloadImage(this, cacheName) }
+            AsyncTaskLauncher.execute(true) { preloadImage(this, cacheName) }
         }
     }
 

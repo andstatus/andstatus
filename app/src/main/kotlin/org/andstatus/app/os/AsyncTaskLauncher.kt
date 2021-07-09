@@ -123,11 +123,15 @@ class AsyncTaskLauncher {
             }
         }
 
-        fun execute(backgroundFunc: Runnable): Try<Void> {
-            return execute<Any?, Any?>(null, {
-                backgroundFunc.run()
-                Try.success(null)
-            }, { { _ ->  } })
+        fun execute(cancelable: Boolean, backgroundFunc: () -> Any?): Try<Void> {
+            val asyncTask: AsyncTask<Unit, Unit, Void> =
+                object: AsyncTask<Unit, Unit, Void>(backgroundFunc, PoolEnum.FILE_DOWNLOAD, cancelable) {
+                    override suspend fun doInBackground(params: Unit): Try<Void> {
+                        backgroundFunc()
+                        return TryUtils.SUCCESS
+                    }
+                }
+            return execute(backgroundFunc, asyncTask, Unit)
         }
 
         private fun cancelStalledTasks() {

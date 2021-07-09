@@ -44,7 +44,12 @@ import kotlin.coroutines.cancellation.CancellationException
  * No dependencies on (deprecated in API 30) Android's AsyncTask
  * @author yvolk@yurivolkov.com
  */
-abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolEnum) : IdentifiableInstance {
+abstract class AsyncTask<Params, Progress, Result>(
+    taskId: Any?,
+    val pool: PoolEnum,
+    open val cancelable: Boolean = true
+) : IdentifiableInstance {
+
     constructor(pool: PoolEnum) : this(AsyncTask::class.java, pool)
 
     var maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds
@@ -66,7 +71,6 @@ abstract class AsyncTask<Params, Progress, Result>(taskId: Any?, val pool: PoolE
     protected var currentlyExecutingDescription: String = "(didn't start)"
 
     val isCancelled: Boolean get() = cancelledAt.get() > 0
-    open val cancelable = true
     private var cancelledAt: AtomicLong = AtomicLong()
 
     val isFinished: Boolean get() = finishedAt.get() > 0

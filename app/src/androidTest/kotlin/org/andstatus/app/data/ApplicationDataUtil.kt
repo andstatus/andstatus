@@ -30,7 +30,6 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState
 import org.junit.Assert
 import java.io.File
-import java.io.FileNotFoundException
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -49,8 +48,8 @@ object ApplicationDataUtil {
     }
 
     private fun deleteAccounts() {
-        val am = AccountManager.get( MyContextHolder.myContextHolder.getNow().context)
-        val aa = AccountUtils.getCurrentAccounts( MyContextHolder.myContextHolder.getNow().context)
+        val am = AccountManager.get(MyContextHolder.myContextHolder.getNow().context)
+        val aa = AccountUtils.getCurrentAccounts(MyContextHolder.myContextHolder.getNow().context)
         for (androidAccount in aa) {
             val logMsg = "Removing old account: " + androidAccount.name
             MyLog.i(this, logMsg)
@@ -58,11 +57,9 @@ object ApplicationDataUtil {
             try {
                 amf.getResult(10, TimeUnit.SECONDS)
             } catch (e: OperationCanceledException) {
-                MyLog.e(this, logMsg, e)
-                throw FileNotFoundException(logMsg + ", " + e.message)
+                throw Exception(logMsg + ", " + e.message, e)
             } catch (e: AuthenticatorException) {
-                MyLog.e(this, logMsg, e)
-                throw FileNotFoundException(logMsg + ", " + e.message)
+                throw Exception(logMsg + ", " + e.message, e)
             }
         }
     }

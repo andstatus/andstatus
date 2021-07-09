@@ -414,7 +414,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val pruner = DataPruner( MyContextHolder.myContextHolder.getNow())
                 .setLogger(ProgressLogger(progressListener))
                 .setPruneNow()
-        AsyncTaskLauncher.execute { pruner.prune() }
+        AsyncTaskLauncher.execute(false) { pruner.prune() }
     }
 
     private fun pickRingtone() {
