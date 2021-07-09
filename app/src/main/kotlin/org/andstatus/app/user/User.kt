@@ -76,11 +76,11 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
                         userId = idAdded
                         MyLog.v(this) { "Added $this" }
                     }
-                    .onFailure { e: Throwable? -> MyLog.w(this, "Failed to add $this", e) }
+                    .onFailure { e: Throwable -> MyLog.w(this, "Failed to add $this", e) }
         } else {
             DbUtils.updateRowWithRetry(myContext, UserTable.TABLE_NAME, userId, values, 3)
-                    .onSuccess { o: Void? -> MyLog.v(this) { "Updated $this" } }
-                    .onFailure { e: Throwable? -> MyLog.w(this, "Failed to update $this", e) }
+                    .onSuccess { MyLog.v(this) { "Updated $this" } }
+                    .onFailure { e: Throwable -> MyLog.w(this, "Failed to update $this", e) }
         }
     }
 

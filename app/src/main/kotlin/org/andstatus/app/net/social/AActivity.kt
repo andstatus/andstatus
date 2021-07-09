@@ -292,7 +292,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
                     .onFailure { e: Throwable? -> MyLog.w(this, "Failed to add $this", e) }
         } else {
             DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, getId(), toContentValues(), 3)
-                    .onSuccess { o: Void? -> MyLog.v(this) { "Updated $this" } }
+                    .onSuccess { _ -> MyLog.v(this) { "Updated $this" } }
                     .onFailure { e: Throwable? -> MyLog.w(this, "Failed to update $this", e) }
         }
         afterSave(myContext)

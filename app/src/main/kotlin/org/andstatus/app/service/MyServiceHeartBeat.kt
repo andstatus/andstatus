@@ -2,15 +2,15 @@ package org.andstatus.app.service
 
 import io.vavr.control.Try
 import kotlinx.coroutines.delay
-import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TryUtils
 import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 
-class MyServiceHeartBeat constructor(myService: MyService) : AsyncTask<Void?, Long, Void>(TAG, PoolEnum.SYNC) {
+class MyServiceHeartBeat constructor(myService: MyService) : AsyncTask<Unit, Long, Unit>(TAG, PoolEnum.SYNC) {
     private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
 
     @Volatile
@@ -19,7 +19,7 @@ class MyServiceHeartBeat constructor(myService: MyService) : AsyncTask<Void?, Lo
     @Volatile
     private var mIteration: Long = 0
 
-    override suspend fun doInBackground(params: Void?): Try<Void> {
+    override suspend fun doInBackground(params: Unit): Try<Unit> {
         MyLog.v(this) { "Started" }
         var breakReason = ""
         for (iteration in 1..9999) {

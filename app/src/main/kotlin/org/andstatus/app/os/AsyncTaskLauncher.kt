@@ -60,16 +60,16 @@ class AsyncTaskLauncher {
             params: Params?,
             backgroundFunc: (Params?) -> Try<Result>,
             uiConsumer: (Params?) -> (Try<Result>) -> Unit
-        ): Try<Void> {
-            val asyncTask: AsyncTask<Params?, Void, Result> =
+        ): Try<Unit> {
+            val asyncTask: AsyncTask<Params?, Unit, Result> =
                 AsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
             return execute(params, asyncTask, params)
         }
 
-        fun execute(objTag: Any?, asyncTask: AsyncTask<Void?, *, *>): Try<Void> =
-            execute(objTag, asyncTask, null)
+        fun execute(objTag: Any?, asyncTask: AsyncTask<Unit, *, *>): Try<Unit> =
+            execute(objTag, asyncTask, Unit)
 
-        fun  <Params> execute(objTag: Any?, asyncTask: AsyncTask<Params, *, *>, params: Params): Try<Void> {
+        fun  <Params> execute(objTag: Any?, asyncTask: AsyncTask<Params, *, *>, params: Params): Try<Unit> {
             MyLog.v(objTag) { "Launching $asyncTask" }
             return try {
                 cancelStalledTasks()
@@ -123,10 +123,10 @@ class AsyncTaskLauncher {
             }
         }
 
-        fun execute(cancelable: Boolean, backgroundFunc: () -> Any?): Try<Void> {
-            val asyncTask: AsyncTask<Unit, Unit, Void> =
-                object: AsyncTask<Unit, Unit, Void>(backgroundFunc, PoolEnum.FILE_DOWNLOAD, cancelable) {
-                    override suspend fun doInBackground(params: Unit): Try<Void> {
+        fun execute(cancelable: Boolean, backgroundFunc: () -> Any?): Try<Unit> {
+            val asyncTask: AsyncTask<Unit, Unit, Unit> =
+                object: AsyncTask<Unit, Unit, Unit>(backgroundFunc, PoolEnum.FILE_DOWNLOAD, cancelable) {
+                    override suspend fun doInBackground(params: Unit): Try<Unit> {
                         backgroundFunc()
                         return TryUtils.SUCCESS
                     }
@@ -180,15 +180,19 @@ class AsyncTaskLauncher {
                         pendingCount++
                         builder.append("P $pendingCount. $launched\n")
                     }
-                    launched.isRunning -> if (launched.backgroundStartedAt.get() == 0L) {
-                        queuedCount++
-                        builder.append("Q $queuedCount. $launched\n")
-                    } else if (launched.backgroundEndedAt.get() == 0L) {
-                        runningCount++
-                        builder.append("R $runningCount. $launched\n")
-                    } else {
-                        finishingCount++
-                        builder.append("F $finishingCount. $launched\n")
+                    launched.isRunning -> when {
+                        launched.backgroundStartedAt.get() == 0L -> {
+                            queuedCount++
+                            builder.append("Q $queuedCount. $launched\n")
+                        }
+                        launched.backgroundEndedAt.get() == 0L -> {
+                            runningCount++
+                            builder.append("R $runningCount. $launched\n")
+                        }
+                        else -> {
+                            finishingCount++
+                            builder.append("F $finishingCount. $launched\n")
+                        }
                     }
                     launched.isFinished -> finishedCount++
                     else -> {
@@ -217,7 +221,7 @@ class AsyncTaskLauncher {
         }
 
         fun forget() {
-            Arrays.asList(*PoolEnum.values()).forEach(Consumer { pool: PoolEnum -> cancelPoolTasks(pool) })
+            listOf(*PoolEnum.values()).forEach(Consumer { pool: PoolEnum -> cancelPoolTasks(pool) })
             cancelStalledTasks()
             removeFinishedTasks()
         }

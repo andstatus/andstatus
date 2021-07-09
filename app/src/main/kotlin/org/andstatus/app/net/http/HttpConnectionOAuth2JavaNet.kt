@@ -33,6 +33,7 @@ import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyLogVerboseStream
 import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.TryUtils
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -43,7 +44,7 @@ import java.nio.charset.StandardCharsets
  */
 open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
 
-    override fun registerClient(): Try<Void> {
+    override fun registerClient(): Try<Unit> {
         val uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT)
         val logmsg: MyStringBuilder = MyStringBuilder.of("registerClient; for " + data.originUrl
                 + "; URL='" + uri + "'")
@@ -68,7 +69,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
                     .flatMap { keysArePresent: Boolean ->
                         if (keysArePresent) {
                             MyLog.v(this) { "Completed $logmsg" }
-                            Try.success<Void>(null)
+                            TryUtils.SUCCESS
                         } else {
                             Try.failure(ConnectionException.fromStatusCodeAndHost(
                                     StatusCode.NO_CREDENTIALS_FOR_HOST,

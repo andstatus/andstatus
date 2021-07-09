@@ -888,7 +888,7 @@ class AccountSettingsActivity : MyActivity() {
      * Needed in a case we don't have the AndStatus Client keys for this Microblogging system
      */
     private inner class OAuthRegisterClientTask() :
-        AsyncTask<Void?, Void?, Boolean>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
+        AsyncTask<Unit, Void?, Boolean>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -900,7 +900,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override suspend fun doInBackground(params: Void?): Try<Boolean> {
+        override suspend fun doInBackground(params: Unit): Try<Boolean> {
             var succeeded = false
             var connectionErrorMessage = ""
             try {
@@ -983,7 +983,7 @@ class AccountSettingsActivity : MyActivity() {
      * ProgressDialog and to get rid of any "Black blank screens"
      */
     private class OAuthAcquireRequestTokenTask(private val activity: AccountSettingsActivity) :
-        AsyncTask<Void?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
+        AsyncTask<Unit, Void?, TaskResult>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -995,7 +995,7 @@ class AccountSettingsActivity : MyActivity() {
             )
         }
 
-        override suspend fun doInBackground(params: Void?): Try<TaskResult> {
+        override suspend fun doInBackground(params: Unit): Try<TaskResult> {
             var stepErrorMessage = ""
             var connectionErrorMessage = ""
             var authUri = Uri.EMPTY
@@ -1222,7 +1222,7 @@ class AccountSettingsActivity : MyActivity() {
      * @author yvolk@yurivolkov.com
      */
     private inner class VerifyCredentialsTask(private val whoAmI: Optional<Uri>) :
-        AsyncTask<Void?, Void?, TaskResult>(PoolEnum.QUICK_UI) {
+        AsyncTask<Unit, Void?, TaskResult>(PoolEnum.QUICK_UI) {
 
         override val cancelable = false // This is needed because there is initialize in the background
         private var dlg: ProgressDialog? = null
@@ -1247,7 +1247,7 @@ class AccountSettingsActivity : MyActivity() {
             }
         }
 
-        override suspend fun doInBackground(params: Void?): Try<TaskResult> {
+        override suspend fun doInBackground(params: Unit): Try<TaskResult> {
             return if (skip) Try.success(TaskResult(ResultStatus.NONE))
             else Try.success(state.builder)
                 .flatMap { it?.getOriginConfig() }

@@ -18,7 +18,7 @@ object TryUtils {
     private val CALLABLE_IS_NULL: NoSuchElementException = NoSuchElementException("Callable is null")
     private val VALUE_IS_NULL: NoSuchElementException = NoSuchElementException("Value is null")
     val TRUE: Try<Boolean> = Try.success(true)
-    val SUCCESS: Try<Void> = Try.success(null)
+    val SUCCESS: Try<Unit> = Try.success(Unit)
 
     fun <T> failure(exception: Throwable?): Try<T> {
         return failure("", exception)

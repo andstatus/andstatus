@@ -42,7 +42,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     /**
      * Partially borrowed from the "Impeller" code !
      */
-    override fun registerClient(): Try<Void> {
+    override fun registerClient(): Try<Unit> {
         val uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT)
         val logmsg: MyStringBuilder = MyStringBuilder.of("registerClient; for " + data.originUrl
                 + "; URL='" + uri + "'")

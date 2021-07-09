@@ -22,7 +22,6 @@ import android.view.ContextMenu.ContextMenuInfo
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import io.vavr.control.Try
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.list.SyncLoader
@@ -67,7 +66,7 @@ class QueueViewer : LoadableListActivity<QueueData>() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
-            R.id.clear_the_queue -> AsyncTaskLauncher.execute<QueueViewer?, Void>(this,
+            R.id.clear_the_queue -> AsyncTaskLauncher.execute<QueueViewer?, Unit>(this,
                     { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues.clear() },
                     { activity: QueueViewer? -> { activity?.showList(WhichPage.CURRENT) } })
             else -> return super.onOptionsItemSelected(item)
@@ -97,7 +96,7 @@ class QueueViewer : LoadableListActivity<QueueData>() {
                 true
             }
             R.id.menuItemDelete -> {
-                AsyncTaskLauncher.execute<QueueViewer?, Void>(this,
+                AsyncTaskLauncher.execute<QueueViewer?, Unit>(this,
                         { activity: QueueViewer? ->
                             MyContextHolder.myContextHolder.getBlocking().queues.deleteCommand(data.commandData)
                         },

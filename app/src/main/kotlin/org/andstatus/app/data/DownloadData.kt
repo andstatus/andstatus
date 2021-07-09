@@ -168,7 +168,7 @@ open class DownloadData protected constructor(
         }
         if (contentType == MyContentType.UNKNOWN) {
             contentType = MyContentType.fromUri(DownloadType.ATTACHMENT,
-                     MyContextHolder.myContextHolder.getNow().context?.getContentResolver(), uri, mimeType)
+                     MyContextHolder.myContextHolder.getNow().context.getContentResolver(), uri, mimeType)
         }
     }
 
@@ -270,8 +270,8 @@ open class DownloadData protected constructor(
     private fun update() {
         val values = toContentValues()
         DbUtils.updateRowWithRetry( MyContextHolder.myContextHolder.getNow(), DownloadTable.TABLE_NAME, downloadId, values, 3)
-                .onSuccess { o: Void? -> MyLog.v(this) { "Updated " + actorNoteUriToString() } }
-                .onFailure { e: Throwable? -> softError = true }
+                .onSuccess { _ -> MyLog.v(this) { "Updated " + actorNoteUriToString() } }
+                .onFailure { _ -> softError = true }
         val filenameChanged = (!isError() && fileNew.existsNow()
                 && fileStored.getFilename() != fileNew.getFilename())
         if (filenameChanged) {

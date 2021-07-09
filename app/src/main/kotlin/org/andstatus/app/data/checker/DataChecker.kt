@@ -21,14 +21,13 @@ import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.DbUtils
-import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.os.AsyncTask.PoolEnum.DEFAULT_POOL
+import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TryUtils
-import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import kotlin.properties.Delegates
@@ -102,10 +101,10 @@ abstract class DataChecker {
         fun fixDataAsync(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean) {
             AsyncTaskLauncher.execute(
                     logger.logTag,
-                    object : AsyncTask<Void?, Void?, Void>(logger.logTag, DEFAULT_POOL) {
+                    object : AsyncTask<Unit, Void?, Unit>(logger.logTag, DEFAULT_POOL) {
                         override val cancelable: Boolean = false
 
-                        override suspend fun doInBackground(params: Void?): Try<Void> {
+                        override suspend fun doInBackground(params: Unit): Try<Unit> {
                             fixData(logger, includeLong, countOnly)
                             delay(3000)
                             MyContextHolder.myContextHolder.release { "fixDataAsync" }
@@ -113,7 +112,7 @@ abstract class DataChecker {
                             return TryUtils.SUCCESS
                         }
 
-                        override suspend fun onPostExecute(result: Try<Void>) {
+                        override suspend fun onPostExecute(result: Try<Unit>) {
                             result.onSuccess {
                                 logger.logSuccess()
                             }.onFailure {
@@ -133,7 +132,7 @@ abstract class DataChecker {
             val stopWatch: StopWatch = StopWatch.createStarted()
             try {
                 MyLog.i(TAG, "fixData started" + if (includeLong) ", including long tasks" else "")
-                val allCheckers = Arrays.asList(
+                val allCheckers = listOf(
                         CheckTimelines(),
                         CheckDownloads(),
                         MergeActors(),

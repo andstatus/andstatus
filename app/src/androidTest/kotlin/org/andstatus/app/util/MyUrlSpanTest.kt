@@ -71,41 +71,39 @@ class MyUrlSpanTest : ActivityTest<HelpActivity>() {
         audience2.add(actor2)
         forOneString(part0 + part1, audience2) { spannedString: SpannedString ->
             val regions = SpanUtil.regionsOf(spannedString)
-            if (regions.size != 2) return@forOneString TryUtils.failure<Void>("Two regions expected $regions")
+            if (regions.size != 2) return@forOneString TryUtils.failure<Unit>("Two regions expected $regions")
             if (part0 != regions[0].text.toString()) {
-                return@forOneString TryUtils.failure<Void>("Region(0) is wrong. $regions")
+                return@forOneString TryUtils.failure<Unit>("Region(0) is wrong. $regions")
             }
             if (part1 != regions[1].text.toString()) {
-                return@forOneString TryUtils.failure<Void>("Region(1) is wrong. $regions")
+                return@forOneString TryUtils.failure<Unit>("Region(1) is wrong. $regions")
             }
             TryUtils.SUCCESS
         }.onFailure { t: Throwable -> Assert.fail(t.message) }
     }
 
     private fun forOneString(text: String, audience: Audience,
-                             spannedStringChecker: Function<SpannedString, Try<Void>>): Try<Void> {
+                             spannedStringChecker: Function<SpannedString, Try<Unit>>): Try<Unit> {
         val method = "forOneString"
         DbUtils.waitMs(method, 1000)
         val pager = activity.findViewById<ViewPager?>(R.id.help_flipper)
         Assert.assertNotNull(pager)
         val textView = activity.findViewById<TextView?>(R.id.splash_payoff_line)
-        val result = AtomicReference(TryUtils.notFound<Void>())
-        activity.runOnUiThread(object : Runnable {
-            override fun run() {
-                pager.currentItem = HelpActivity.Companion.PAGE_LOGO
-                MyUrlSpan.Companion.showSpannable(textView,
-                        SpanUtil.textToSpannable(text, TextMediaType.UNKNOWN, audience), false)
-                val text1 = textView.text
-                if (text1 is SpannedString) {
-                    result.set(spannedStringChecker.apply(text1))
-                    val spans = text1.getSpans(0, text1.length, URLSpan::class.java)
-                    for (span in spans) {
-                        MyLog.i(this, "Clicking on: " + span.url)
-                        span.onClick(textView)
-                    }
+        val result = AtomicReference(TryUtils.notFound<Unit>())
+        activity.runOnUiThread {
+            pager.currentItem = HelpActivity.Companion.PAGE_LOGO
+            MyUrlSpan.Companion.showSpannable(textView,
+                    SpanUtil.textToSpannable(text, TextMediaType.UNKNOWN, audience), false)
+            val text1 = textView.text
+            if (text1 is SpannedString) {
+                result.set(spannedStringChecker.apply(text1))
+                val spans = text1.getSpans(0, text1.length, URLSpan::class.java)
+                for (span in spans) {
+                    MyLog.i(this, "Clicking on: " + span.url)
+                    span.onClick(textView)
                 }
             }
-        })
+        }
         DbUtils.waitMs(method, 1000)
         return result.get()
     }

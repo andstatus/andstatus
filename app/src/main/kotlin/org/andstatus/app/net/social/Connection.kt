@@ -56,8 +56,8 @@ import kotlin.properties.Delegates
  * @author yvolk@yurivolkov.com
  */
 abstract class Connection protected constructor() : IsEmpty {
-    var http: HttpConnection by Delegates.notNull<HttpConnection>()
-    var data: AccountConnectionData by Delegates.notNull<AccountConnectionData>()
+    var http: HttpConnection by Delegates.notNull()
+    var data: AccountConnectionData by Delegates.notNull()
 
     /**
      * @return an empty string in case the API routine is not supported
@@ -306,7 +306,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return if (http is OAuthService) http as OAuthService? else null
     }
 
-    fun registerClientForAccount(): Try<Void> {
+    fun registerClientForAccount(): Try<Unit> {
         return http.registerClient()
     }
 
@@ -420,8 +420,8 @@ abstract class Connection protected constructor() : IsEmpty {
     }
 
     override fun toString(): String {
-        return ((if (data == null) "(empty data)" else data.toString())
-                + ", http: " + if (http == null) "(empty" else http.toString())
+        return (if (data == null) "(empty data)" else data.toString()) +
+                ", http: " + if (http == null) "(empty" else http.toString()
     }
 
     override val isEmpty: Boolean

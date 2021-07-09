@@ -36,9 +36,9 @@ interface HttpConnectionInterface {
 
     val data: HttpConnectionData
 
-    fun registerClient(): Try<Void> {
+    fun registerClient(): Try<Unit> {
         // Do nothing in the default implementation
-        return Try.success(null)
+        return TryUtils.SUCCESS
     }
 
     fun setHttpConnectionData(data: HttpConnectionData)

@@ -194,9 +194,10 @@ class CommandQueue(private val myContext: MyContext) {
                 .flatMap { i1: Int -> save(db, QueueType.SKIPPED).map { i2: Int -> i1 + i2 } }
                 .flatMap { i1: Int -> save(db, QueueType.RETRY).map { i2: Int -> i1 + i2 } }
         val countError = save(db, QueueType.ERROR)
-        MyLog.d(TAG, (if (loaded) "Queues saved" else "Saved new queued commands only") + ", "
-                + if (countNotError.isFailure || countError.isFailure()) " Error saving commands!" else (if (countNotError.get() > 0) Integer.toString(countNotError.get()) else "no") + " commands"
-                + if (countError.get() > 0) ", plus " + countError.get() + " in Error queue" else ""
+        MyLog.d(TAG, (if (loaded) "Queues saved" else "Saved new queued commands only") + ", " +
+            if (countNotError.isFailure || countError.isFailure()) " Error saving commands!"
+            else (if (countNotError.get() > 0) Integer.toString(countNotError.get()) else "no") + " commands" +
+                    if (countError.get() > 0) ", plus " + countError.get() + " in Error queue" else ""
         )
         changed = false
     }
@@ -243,7 +244,7 @@ class CommandQueue(private val myContext: MyContext) {
     }
 
     @Synchronized
-    private fun clearQueuesInDatabase(db: SQLiteDatabase): Try<Void> {
+    private fun clearQueuesInDatabase(db: SQLiteDatabase): Try<Unit> {
         val method = "clearQueuesInDatabase"
         try {
             val sql = "DELETE FROM " + CommandTable.TABLE_NAME
@@ -255,7 +256,7 @@ class CommandQueue(private val myContext: MyContext) {
         return TryUtils.SUCCESS
     }
 
-    fun clear(): Try<Void> {
+    fun clear(): Try<Unit> {
         loaded = true
         for ((_, value) in queues) {
             value.clear()
@@ -267,7 +268,7 @@ class CommandQueue(private val myContext: MyContext) {
         return TryUtils.SUCCESS
     }
 
-    fun deleteCommand(commandData: CommandData): Try<Void> {
+    fun deleteCommand(commandData: CommandData): Try<Unit> {
         for (oneQueue in queues.values) {
             if (commandData.deleteFromQueue(oneQueue)) {
                 changed = true

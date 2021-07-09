@@ -76,7 +76,7 @@ object DbUtils {
     /**
      * @return Number of rows updated
      */
-    fun updateRowWithRetry(myContext: MyContext, tableName: String?, rowId: Long, values: ContentValues?, nRetries: Int): Try<Void> {
+    fun updateRowWithRetry(myContext: MyContext, tableName: String?, rowId: Long, values: ContentValues?, nRetries: Int): Try<Unit> {
         val method = "updateRowWithRetry"
         var rowsUpdated = 0
         val db = myContext.database

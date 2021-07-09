@@ -442,7 +442,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
         }
     }
 
-    fun downloadOneNoteBy(actor: Actor): Try<Void> {
+    fun downloadOneNoteBy(actor: Actor): Try<Unit> {
         return execContext.getConnection()
                 .getTimeline(true, TimelineType.SENT.connectionApiRoutine, TimelinePosition.EMPTY,
                         TimelinePosition.EMPTY, 1, actor)
@@ -451,7 +451,6 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                         onActivity(item, false)
                     }
                     saveLum()
-                    null
                 }
     }
 

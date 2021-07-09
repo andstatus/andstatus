@@ -440,7 +440,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
                     }
         } else {
             DbUtils.updateRowWithRetry(myContext, TimelineTable.TABLE_NAME, getId(), contentValues, 3)
-                    .onSuccess { o: Void? -> changed = false }
+                    .onSuccess { changed = false }
         }
         return getId()
     }
@@ -956,7 +956,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     companion object {
         val EMPTY: Timeline = Timeline()
         private val MIN_RETRY_PERIOD_MS = TimeUnit.SECONDS.toMillis(30)
-        val TIMELINE_CLICK_HOST: String = "timeline.app.andstatus.org"
+        const val TIMELINE_CLICK_HOST: String = "timeline.app.andstatus.org"
 
         fun fromCursor(myContext: MyContext, cursor: Cursor): Timeline {
             val timeline = Timeline(

@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicLong
 
 class QueueExecutor(myService: MyService, private val accessorType: AccessorType) :
-        AsyncTask<Void?, Void?, Boolean>("$TAG-$accessorType", PoolEnum.SYNC), CommandExecutorParent {
+        AsyncTask<Unit, Void?, Boolean>("$TAG-$accessorType", PoolEnum.SYNC), CommandExecutorParent {
     private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
     private val executedCounter: AtomicLong = AtomicLong()
 
@@ -22,7 +22,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
         return super.instanceTag() + "-" + accessorType
     }
 
-    override suspend fun doInBackground(params: Void?): Try<Boolean> {
+    override suspend fun doInBackground(params: Unit): Try<Boolean> {
         val myService = myServiceRef.get()
         if (myService == null) {
             MyLog.v(this) { "Didn't start, no reference to MyService" }

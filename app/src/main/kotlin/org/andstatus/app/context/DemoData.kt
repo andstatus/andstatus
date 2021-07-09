@@ -156,11 +156,11 @@ class DemoData {
     private class GenerateDemoData constructor(val progressListener: ProgressLogger.ProgressListener,
                                                val myContext: MyContext,
                                                val demoData: DemoData) :
-        AsyncTask<Void?, Void?, Void>(this::class.java, DEFAULT_POOL) {
+        AsyncTask<Unit, Void?, Unit>(this::class.java, DEFAULT_POOL) {
         val logTag: String = progressListener.getLogTag()
         override val cancelable: Boolean = false
 
-        override suspend fun doInBackground(params: Void?): Try<Void> {
+        override suspend fun doInBackground(params: Unit): Try<Unit> {
             MyLog.i(logTag, "$logTag; started")
             progressListener.onProgressMessage("Generating demo data...")
             delay(500)
@@ -181,7 +181,7 @@ class DemoData {
             delay(500)
 
             val myContext2 = MyContextHolder.myContextHolder.getBlocking()
-            Assert.assertTrue("Context is not ready " + myContext2, myContext2.isReady)
+            Assert.assertTrue("Context is not ready $myContext2", myContext2.isReady)
             demoData.checkDataPath()
             val size: Int = myContext2.accounts.size()
             Assert.assertTrue(
@@ -230,14 +230,14 @@ class DemoData {
             return TryUtils.SUCCESS
         }
 
-        override suspend fun onPostExecute(result: Try<Void>) {
+        override suspend fun onPostExecute(result: Try<Unit>) {
             FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context, true)
             progressListener.onComplete(result.isSuccess)
         }
     }
 
     fun addAsync(myContext: MyContext,
-                 progressListener: ProgressLogger.ProgressListener): AsyncTask<Void?, Void?, Void> {
+                 progressListener: ProgressLogger.ProgressListener): AsyncTask<Unit, Void?, Unit> {
         val asyncTask = GenerateDemoData(progressListener, myContext, this)
         AsyncTaskLauncher.execute(this, asyncTask)
         return asyncTask
