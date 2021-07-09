@@ -58,8 +58,8 @@ class AsyncTaskLauncher {
 
         fun <Params, Result> execute(
             params: Params,
-            backgroundFunc: (Params) -> Try<Result>,
-            uiConsumer: (Params) -> (Try<Result>) -> Unit
+            backgroundFunc: suspend (Params) -> Try<Result>,
+            uiConsumer: (Params) -> suspend (Try<Result>) -> Unit
         ): Try<Unit> {
             val asyncTask: AsyncTask<Params, Unit, Result> =
                 AsyncTask.fromFunc(params, backgroundFunc, uiConsumer)

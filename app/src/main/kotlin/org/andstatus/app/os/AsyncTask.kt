@@ -36,6 +36,7 @@ import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.TryUtils.isCancelled
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -44,7 +45,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * No dependencies on (deprecated in API 30) Android's AsyncTask
  * @author yvolk@yurivolkov.com
  */
-abstract class AsyncTask<Params, Progress, Result>(
+open class AsyncTask<Params, Progress, Result>(
     taskId: Any?,
     val pool: PoolEnum,
     open val cancelable: Boolean = true
@@ -174,14 +175,21 @@ abstract class AsyncTask<Params, Progress, Result>(
     private suspend fun doInBackground1(params: Params): Try<Result> {
         backgroundStartedAt.set(System.currentTimeMillis())
         currentlyExecutingSince.set(backgroundStartedAt.get())
+        postExecuteHiFun.get()?.let { postExecuteFun.set(it(params)) }
         try {
-            return doInBackground(params)
+            return backgroundFun.get()?.let { it(params) } ?: doInBackground(params)
         } finally {
             backgroundEndedAt.set(System.currentTimeMillis())
         }
     }
 
-    protected abstract suspend fun doInBackground(params: Params): Try<Result>
+    protected open suspend fun doInBackground(params: Params): Try<Result> = TryUtils.notFound()
+
+    private val backgroundFun: AtomicReference<suspend (Params) -> Try<Result>> = AtomicReference()
+    fun doInBackground(backgroundFun: suspend (Params) -> Try<Result>): AsyncTask<Params, Progress, Result> {
+        this.backgroundFun.set(backgroundFun)
+        return this
+    }
 
     private val cancelCalled = AtomicBoolean()
     /**
@@ -235,7 +243,7 @@ abstract class AsyncTask<Params, Progress, Result>(
     private suspend fun onPostExecute1(result: Try<Result>) {
         if (onPostExecuteCalled.compareAndSet(false, true)) {
             try {
-                onPostExecute(result)
+                postExecuteFun.get()?.let { it(result) } ?: onPostExecute(result)
                 ExceptionsCounter.showErrorDialogIfErrorsPresent()
             } finally {
                 finishedAt.set(System.currentTimeMillis())
@@ -246,6 +254,13 @@ abstract class AsyncTask<Params, Progress, Result>(
     /** If the task was started, this method should be called, before changing status to FINISH */
     @MainThread
     protected open suspend fun onPostExecute(result: Try<Result>) {}
+
+    private val postExecuteHiFun: AtomicReference<(Params) -> suspend (Try<Result>) -> Unit> = AtomicReference()
+    private val postExecuteFun: AtomicReference<suspend (Try<Result>) -> Unit> = AtomicReference()
+    fun onPostExecute(postExecuteFun: (Params) -> suspend (Try<Result>) -> Unit): AsyncTask<Params, Progress, Result> {
+        this.postExecuteHiFun.set(postExecuteFun)
+        return this
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -390,20 +405,10 @@ abstract class AsyncTask<Params, Progress, Result>(
 
         fun <Params, Progress, Result> fromFunc(
             params: Params,
-            backgroundFunc: (Params) -> Try<Result>,
-            uiConsumer: (Params) -> (Try<Result>) -> Unit
-        ):
-                AsyncTask<Params, Progress, Result> {
-            return object : AsyncTask<Params, Progress, Result>(params, PoolEnum.DEFAULT_POOL) {
-
-                override suspend fun doInBackground(params: Params): Try<Result> {
-                    return backgroundFunc(params)
-                }
-
-                override suspend fun onPostExecute(result: Try<Result>) {
-                    uiConsumer(params)(result)
-                }
-            }
-        }
+            backgroundFunc: suspend (Params) -> Try<Result>,
+            onPostExecuteHiFun: (Params) -> suspend (Try<Result>) -> Unit
+        ): AsyncTask<Params, Progress, Result> = AsyncTask<Params, Progress, Result>(params, PoolEnum.DEFAULT_POOL)
+            .doInBackground(backgroundFunc)
+            .onPostExecute(onPostExecuteHiFun)
     }
 }
