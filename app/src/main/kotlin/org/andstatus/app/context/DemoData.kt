@@ -117,10 +117,10 @@ class DemoData {
     val globalPublicNoteText: String = "Public_in_AndStatus_$testRunUid"
 
     /** See http://stackoverflow.com/questions/6602417/get-the-uri-of-an-image-stored-in-drawable  */
-    val localImageTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon")
+    val localImageTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.test/drawable/icon")
     val localImageTestUri2: Uri = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo")
-    val localVideoTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.tests/raw/video320_mp4")
-    val localGifTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.tests/raw/sample_gif")
+    val localVideoTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.test/raw/video320_mp4")
+    val localGifTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.test/raw/sample_gif")
     val image1Url: Uri = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png")
 
     @Volatile
