@@ -33,8 +33,9 @@ class MediaMetadataTest {
         val path = DemoData.demoData.localVideoTestUri.toString()
         MediaMetadata.Companion.fromFilePath(path).let {
             Assert.assertEquals(
-                "For path '$path' returned: $it" +
-                        (if (it.isFailure) "\n" + MyLog.getStackTrace(it.cause) else ""),
+                "For path '$path' returned: " +
+                        (if (it.isFailure) MyLog.getStackTrace(it.cause).replace("\n", " ")
+                        else it.toString()),
                 180, it.getOrElse(MediaMetadata.EMPTY).height.toLong()
             )
         }

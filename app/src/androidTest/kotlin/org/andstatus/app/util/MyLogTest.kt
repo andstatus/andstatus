@@ -17,6 +17,9 @@ package org.andstatus.app.util
 
 import android.util.Log
 import org.andstatus.app.context.TestSuite
+import org.hamcrest.CoreMatchers
+import org.hamcrest.CoreMatchers.not
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -106,6 +109,15 @@ class MyLogTest {
         } finally {
             level1.onSuccess { obj: Int -> MyLog.setMinLogLevel(obj) }
         }
+    }
+
+    @Test
+    fun testGetStackTrace() {
+        val st: String = MyLog.getStackTrace(Exception("TheTest"))
+        assertThat(st, CoreMatchers.containsString("testGetStackTrace"))
+        assertThat(st, CoreMatchers.containsString("\n"))
+        val stOneLine = st.replace("\n"," ")
+        assertThat(stOneLine, not(CoreMatchers.containsString("\n")))
     }
 
     companion object {
