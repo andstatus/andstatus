@@ -258,7 +258,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
             var myContext = MyContextHolder.myContextHolder.getNow()
             if (!myContext.isReady) {
                 if (serviceAvailability.get().isAvailable()
-                        && MyAsyncTask.nonUiThread() // Don't block on UI thread
+                        && MyAsyncTask.nonUiThread // Don't block on UI thread
                         && !MyContextHolder.myContextHolder.getNow().initialized
                 ) {
                     myContext = MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()

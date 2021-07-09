@@ -1,5 +1,7 @@
 package org.andstatus.app.util
 
+import kotlinx.coroutines.delay
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -26,6 +28,14 @@ class StopWatch : org.apache.commons.lang3.time.StopWatch() {
             val sw = StopWatch()
             sw.start()
             return sw
+        }
+
+        suspend inline fun tillPassedSeconds(seconds: Int, block: () -> Boolean) {
+            val stopWatch = createStarted()
+            do {
+                if (block()) break
+                delay(10)
+            } while (stopWatch.notPassedSeconds(seconds))
         }
     }
 }

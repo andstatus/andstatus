@@ -119,7 +119,7 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
         }
 
         private fun loadInternal(myContext: MyContext, actorId: Long): User {
-            if (actorId == 0L || MyAsyncTask.isUiThread()) return EMPTY
+            if (actorId == 0L || MyAsyncTask.isUiThread) return EMPTY
             val sql = ("SELECT " + ActorSql.select(fullProjection = false, userOnly = true)
                     + " FROM " + ActorSql.tables(isFullProjection = false, userOnly = true, userIsOptional = false)
                     + " WHERE " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + "=" + actorId)

@@ -305,7 +305,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             MyLog.v(this) { "Won't save $this" }
             return true
         }
-        check(!MyAsyncTask.isUiThread()) { "Saving activity on the Main thread " + toString() }
+        check(!MyAsyncTask.isUiThread) { "Saving activity on the Main thread " + toString() }
         check(accountActor.actorId != 0L) { "Account is unknown " + toString() }
         if (getId() == 0L) {
             findExisting(myContext)

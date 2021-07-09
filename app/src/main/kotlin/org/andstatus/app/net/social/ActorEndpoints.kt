@@ -65,7 +65,7 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
                 state.set(State.ADDING)
             }
         }
-        while (state.get() == State.LAZYLOAD && myContext.isReady && MyAsyncTask.nonUiThread()) {
+        while (state.get() == State.LAZYLOAD && myContext.isReady && MyAsyncTask.nonUiThread) {
             if (initialized.compareAndSet(false, true)) {
                 return load()
             }

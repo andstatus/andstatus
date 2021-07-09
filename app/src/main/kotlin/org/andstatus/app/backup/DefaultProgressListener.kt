@@ -156,7 +156,7 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
     }
 
     private fun freeResources() {
-        if (!activity.isPresent() || MyAsyncTask.isUiThread()) {
+        if (!activity.isPresent() || MyAsyncTask.isUiThread) {
             DialogFactory.dismissSafely(progressDialog)
         } else {
             try {

@@ -349,9 +349,9 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
                         return Try.success(executeAsync(menu))
                     }
 
-                    override suspend fun onPostExecute(result: NoteEditorData) {
+                    override suspend fun onPostExecute(result: Try<NoteEditorData>) {
                         MyLog.v(this@NoteContextMenuItem, "execute async ended")
-                        executeOnUiThread(menu, result)
+                        result.onSuccess { executeOnUiThread(menu, it) }
                     }
                 }
         )

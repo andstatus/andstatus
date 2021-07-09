@@ -381,7 +381,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     fun save(myContext: MyContext): Timeline {
-        if (MyAsyncTask.isUiThread()) return this
+        if (MyAsyncTask.isUiThread) return this
         if (needToLoadActorInTimeline()) {
             setChanged()
         }

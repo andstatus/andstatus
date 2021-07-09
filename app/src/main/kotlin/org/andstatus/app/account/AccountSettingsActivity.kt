@@ -702,7 +702,7 @@ class AccountSettingsActivity : MyActivity() {
                 intent.data = null
                 // This activity was started by Twitter ("Service Provider")
                 // so start second step of OAuth Authentication process
-                AsyncTaskLauncher<Uri?>().execute(this, OAuthAcquireAccessTokenTask(), uri)
+                AsyncTaskLauncher.execute(this, OAuthAcquireAccessTokenTask(), uri)
                 activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
             }
         }

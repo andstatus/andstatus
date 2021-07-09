@@ -35,22 +35,7 @@ import kotlin.coroutines.CoroutineContext
 /**
  * @author yvolk@yurivolkov.com
  */
-class AsyncTaskLauncher<Params> {
-    fun execute(objTag: Any?, asyncTask: MyAsyncTask<Params, *, *>, params: Params): Try<Void> {
-        MyLog.v(objTag) { "$asyncTask Launching task" }
-        return try {
-            cancelStalledTasks()
-            asyncTask.executeInContext(getExecutor(asyncTask.pool), params)
-            launchedTasks.add(asyncTask)
-            launchedCount.incrementAndGet()
-            removeFinishedTasks()
-            TryUtils.SUCCESS
-        } catch (e: Exception) {
-            val msgLog = "$asyncTask Launching task ${threadPoolInfo()}"
-            MyLog.w(objTag, msgLog, e)
-            Try.failure(Exception("${e.message} $msgLog", e))
-        }
-    }
+class AsyncTaskLauncher {
 
     companion object {
         private val TAG: String = AsyncTaskLauncher::class.java.simpleName
@@ -70,6 +55,35 @@ class AsyncTaskLauncher<Params> {
             1, 1,
             1, TimeUnit.SECONDS, LinkedBlockingQueue(512)
         ).asCoroutineDispatcher()
+
+        fun <Params, Result> execute(
+            params: Params?,
+            backgroundFunc: (Params?) -> Try<Result>,
+            uiConsumer: (Params?) -> (Try<Result>) -> Unit
+        ): Try<Void> {
+            val asyncTask: MyAsyncTask<Params?, Void, Result> =
+                MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
+            return execute(params, asyncTask, params)
+        }
+
+        fun execute(objTag: Any?, asyncTask: MyAsyncTask<Void?, *, *>): Try<Void> =
+            execute(objTag, asyncTask, null)
+
+        fun  <Params> execute(objTag: Any?, asyncTask: MyAsyncTask<Params, *, *>, params: Params): Try<Void> {
+            MyLog.v(objTag) { "Launching $asyncTask" }
+            return try {
+                cancelStalledTasks()
+                asyncTask.executeInContext(getExecutor(asyncTask.pool), params)
+                launchedTasks.add(asyncTask)
+                launchedCount.incrementAndGet()
+                removeFinishedTasks()
+                TryUtils.SUCCESS
+            } catch (e: Exception) {
+                val msgLog = "$asyncTask Launching task ${threadPoolInfo()}"
+                MyLog.w(objTag, msgLog, e)
+                Try.failure(Exception("${e.message} $msgLog", e))
+            }
+        }
 
         fun getExecutor(pool: PoolEnum): CoroutineContext {
             var executor: CoroutineContext?
@@ -117,25 +131,10 @@ class AsyncTaskLauncher<Params> {
             }, { { _ ->  } })
         }
 
-        fun <Params, Result> execute(
-            params: Params?,
-            backgroundFunc: (Params?) -> Try<Result>,
-            uiConsumer: (Params?) -> (Try<Result>) -> Unit
-        ): Try<Void> {
-            val asyncTask: MyAsyncTask<Params?, Void, Result> =
-                MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
-            return AsyncTaskLauncher<Params?>().execute(params, asyncTask, params)
-        }
-
-        fun execute(objTag: Any?, asyncTask: MyAsyncTask<Void?, *, *>): Try<Void> {
-            val launcher = AsyncTaskLauncher<Void?>()
-            return launcher.execute(objTag, asyncTask, null)
-        }
-
         private fun cancelStalledTasks() {
             var count = 0
             for (launched in launchedTasks) {
-                if (launched.needsBackgroundWork() && !launched.isReallyWorking()) {
+                if (launched.needsBackgroundWork && !launched.isReallyWorking) {
                     MyLog.v(TAG) { "Found stalled task at " + launched.pool + ": " + launched }
                     count++
                     MyLog.v(TAG) { "$count. (stalled) Cancelling task: $launched" }

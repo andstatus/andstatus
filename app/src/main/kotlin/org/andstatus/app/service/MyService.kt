@@ -182,7 +182,7 @@ class MyService : Service(), IdentifiableInstance {
     fun reviveHeartBeat() {
         val previous = heartBeatRef.get()
         var replace = previous == null
-        if (!replace && !previous.isReallyWorking()) {
+        if (!replace && !previous.isReallyWorking) {
             replace = true
         }
         if (replace) {

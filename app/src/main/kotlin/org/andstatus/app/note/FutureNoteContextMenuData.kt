@@ -45,14 +45,14 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
         if (noteId == 0L || currentItem == null || loader == null || currentItem.getNoteId() != noteId) {
             return StateForSelectedViewItem.NEW
         }
-        if (loader?.isReallyWorking() == true) {
+        if (loader?.isReallyWorking == true) {
             return StateForSelectedViewItem.LOADING
         }
         return if (currentItem.getNoteId() == menuData.noteForAnyAccount.noteId) StateForSelectedViewItem.READY else StateForSelectedViewItem.NEW
     }
 
     fun isFor(noteId: Long): Boolean {
-        return (noteId != 0L && loader?.needsBackgroundWork() == false
+        return (noteId != 0L && loader?.needsBackgroundWork == false
                 && noteId == menuData.noteForAnyAccount.noteId)
     }
 

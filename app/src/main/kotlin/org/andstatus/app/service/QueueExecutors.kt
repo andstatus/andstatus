@@ -36,11 +36,11 @@ class QueueExecutors(private val myService: MyService) {
         val logMessageBuilder = MyStringBuilder()
         val previous = getRef(accessorType).get()
         var replace = previous == null
-        if (!replace && previous.completedBackgroundWork()) {
+        if (!replace && previous.noMoreBackgroundWork) {
             logMessageBuilder.withComma("Removing completed Executor $previous")
             replace = true
         }
-        if (!replace && !previous.isReallyWorking()) {
+        if (!replace && !previous.isReallyWorking) {
             logMessageBuilder.withComma("Cancelling stalled Executor $previous")
             replace = true
         }
@@ -81,7 +81,7 @@ class QueueExecutors(private val myService: MyService) {
             if (previous == null) {
                 logMessageBuilder.withComma(if (current == null) "No executor" else "Executor set to $current")
             } else {
-                if (previous.needsBackgroundWork()) {
+                if (previous.needsBackgroundWork) {
                     logMessageBuilder.withComma("Cancelling previous")
                     MyLog.v(this) { "(previous) Cancelling task: $previous" }
                     previous.cancel()
@@ -105,7 +105,7 @@ class QueueExecutors(private val myService: MyService) {
         val previous = executorRef.get()
         var success = previous == null
         var doStop = !success
-        if (doStop && previous.needsBackgroundWork() && previous.isReallyWorking()) {
+        if (doStop && previous.needsBackgroundWork && previous.isReallyWorking) {
             if (forceNow) {
                 logMessageBuilder.withComma("Cancelling working Executor$previous")
             } else {
@@ -125,8 +125,8 @@ class QueueExecutors(private val myService: MyService) {
     fun isReallyWorking(): Boolean {
         val gExecutor = general.get()
         val dExecutor = downloads.get()
-        return gExecutor != null && (gExecutor.isReallyWorking()
-                || dExecutor != null && dExecutor.isReallyWorking())
+        return gExecutor != null && (gExecutor.isReallyWorking
+                || dExecutor != null && dExecutor.isReallyWorking)
     }
 
     override fun toString(): String {

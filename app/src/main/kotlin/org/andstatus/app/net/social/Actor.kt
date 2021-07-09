@@ -793,7 +793,7 @@ class Actor private constructor(// In our system
         fun load(myContext: MyContext, actorId: Long, reloadFirst: Boolean, supplier: Supplier<Actor>): Actor {
             if (actorId == 0L) return supplier.get()
             val cached = myContext.users.actors.getOrDefault(actorId, EMPTY)
-            return if (MyAsyncTask.nonUiThread() && (reloadFirst || cached.isNotFullyDefined()))
+            return if (MyAsyncTask.nonUiThread && (reloadFirst || cached.isNotFullyDefined()))
                     loadFromDatabase(myContext, actorId, supplier, true).betterToCache(cached)
                 else cached
         }

@@ -45,108 +45,69 @@ class MyAsyncTaskTest {
 
     @Test
     fun cancelBeforeBackground() = runBlocking {
-        val stopWatch = StopWatch.createStarted()
         val task = TestTask().apply { executeInContext(Dispatchers.Default, "") }
         MyLog.i(this, "Executing $task")
-        do {
-            if (task.onPreExecuteVal.get()) {
-                MyLog.i(this, "Pre-executing $task")
-                task.cancel()
-                MyLog.i(this, "After cancel() $task")
-                break
-            }
-        } while (stopWatch.notPassedSeconds(5))
-        MyLog.i(this, "Before join() $task")
-        task.job?.join()
-        MyLog.i(this, "After join() $task")
+        StopWatch.tillPassedSeconds(5) {
+            task.onPreExecuteVal.get()
+        }
+        cancelAndWaitTillFinished(task)
 
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertFalse("inBackground $task", task.inBackgroundVal.get())
         Assert.assertTrue("onCancel $task", task.onCancelVal.get())
-        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
     @Test
     fun cancelDuringBackground() = runBlocking {
-        val stopWatch = StopWatch.createStarted()
         val task = TestTask().apply { executeInContext(Dispatchers.Default, "") }
         MyLog.i(this, "Executing $task")
-        do {
-            if (task.inBackgroundVal.get()) {
-                MyLog.i(this, "In background $task")
-                task.cancel()
-                MyLog.i(this, "After cancel() $task")
-                break
-            }
-        } while (stopWatch.notPassedSeconds(5))
-        MyLog.i(this, "Before join() $task")
-        task.job?.join()
-        MyLog.i(this, "After join() $task")
+        StopWatch.tillPassedSeconds(5) {
+            task.inBackgroundVal.get()
+        }
+        cancelAndWaitTillFinished(task)
 
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
         Assert.assertTrue("onCancel $task", task.onCancelVal.get())
-        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
     @Test
     fun externallyCancelledDuringBackground() = runBlocking {
-        val stopWatch = StopWatch.createStarted()
         val task = TestTask().apply { executeInContext(Dispatchers.Default, "") }
         MyLog.i(this, "Executing $task")
-        do {
-            if (task.inBackgroundVal.get()) {
-                MyLog.i(this, "In background $task")
-                task.job?.cancel()
-                MyLog.i(this, "After cancel() $task")
-                break
-            }
-        } while (stopWatch.notPassedSeconds(5))
-        MyLog.i(this, "Before join() $task")
-        task.job?.join()
-        delay(500)
-        MyLog.i(this, "After join() $task")
+        StopWatch.tillPassedSeconds(5) {
+            task.inBackgroundVal.get()
+        }
+        cancelAndWaitTillFinished(task, true)
 
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
         Assert.assertTrue("onCancel $task", task.onCancelVal.get())
-        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
     @Test
     fun cancelDuringPostExecute() = runBlocking {
-        val stopWatch = StopWatch.createStarted()
         val task = TestTask().apply { executeInContext(Dispatchers.Default, "") }
         MyLog.i(this, "Executing $task")
-        do {
-            if (task.onPostExecuteVal.get() != null) {
-                MyLog.i(this, "In post executing $task")
-                task.cancel()
-                MyLog.i(this, "After cancel() $task")
-                break
-            }
-        } while (stopWatch.notPassedSeconds(5))
-        MyLog.i(this, "Before join() $task")
-        task.job?.join()
-        MyLog.i(this, "After join() $task")
+        StopWatch.tillPassedSeconds(5) {
+            task.onPostExecuteVal.get() != null
+        }
+        cancelAndWaitTillFinished(task)
 
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
-        Assert.assertTrue("onCancel $task", task.onCancelVal.get())
-        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
+        Assert.assertFalse("onCancel $task", task.onCancelVal.get())
     }
 
     @Test
     fun normalExecution() = runBlocking {
         val task = TestTask().apply { executeInContext(Dispatchers.Default, "") }
         MyLog.i(this, "Executing $task")
-        task.job?.join()
-        MyLog.i(this, "After join() $task")
+        waitTillFinished(task)
 
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
         Assert.assertFalse("onCancel $task", task.onCancelVal.get())
-        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
     @Test
@@ -156,13 +117,29 @@ class MyAsyncTaskTest {
             executeInContext(Dispatchers.Default, "")
         }
         MyLog.i(this, "Executing $task")
-        task.job?.join()
-        MyLog.i(this, "After join() $task")
+        waitTillFinished(task)
 
         Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
         Assert.assertFalse("onCancel $task", task.onCancelVal.get())
+    }
+
+    private suspend fun cancelAndWaitTillFinished(task: TestTask, cancelJob: Boolean = false) {
+        MyLog.i(this, "Before cancel of $task")
+        if (cancelJob) task.job?.cancel()
+        else task.cancel()
+        waitTillFinished(task)
+    }
+
+    private suspend fun waitTillFinished(task: TestTask) {
+        MyLog.i(this, "Waiting till finished $task")
+        StopWatch.tillPassedSeconds(5) {
+            task.isFinished
+        }
+        MyLog.i(this, "After waiting for isFinished $task")
         Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
+        task.job?.join()
+        MyLog.i(this, "After join() $task")
     }
 
 }

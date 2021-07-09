@@ -48,10 +48,10 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private fun doBackup(v: View?) {
-        if (asyncTask == null || asyncTask?.completedBackgroundWork() == true) {
+        if (asyncTask?.isFinished ?: true) {
             resetProgress()
             asyncTask = BackupTask(this@BackupActivity).also {
-                AsyncTaskLauncher<DocumentFile?>().execute(this, it, getBackupFolder())
+                AsyncTaskLauncher.execute(this, it, getBackupFolder())
             }
         }
     }

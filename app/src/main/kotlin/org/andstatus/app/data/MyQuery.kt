@@ -710,7 +710,7 @@ object MyQuery {
             MyLog.databaseIsNull { method }
             return identity
         }
-        if (MyAsyncTask.isUiThread()) {
+        if (MyAsyncTask.isUiThread) {
             MyLog.v(TAG) {
                 "$method; Database access in UI thread: '$sql' \n${MyLog.currentStackTrace}"
             }

@@ -50,7 +50,7 @@ class TimelineSaver {
     }
 
     fun execute(myContext: MyContext): CompletableFuture<MyContext> {
-        return if (MyAsyncTask.isUiThread()) {
+        return if (MyAsyncTask.isUiThread) {
             CompletableFuture.supplyAsync({ executeSynchronously(myContext) }, NonUiThreadExecutor.INSTANCE)
         } else {
             CompletableFuture.completedFuture(executeSynchronously(myContext))

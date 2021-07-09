@@ -136,10 +136,9 @@ class DemoData {
         val asyncTask = addAsync(myContext, ProgressLogger.EMPTY_LISTENER)
         var count: Long = 200
         while (count > 0) {
-            val completedWork = asyncTask.completedBackgroundWork()
-            MyLog.v(this, "$method; " + (if (completedWork) "Task completed " else "Waiting for task completion ") + count + " "
+            MyLog.v(this, "$method; " + (if (asyncTask.isFinished) "Task completed " else "Waiting for task completion ") + count + " "
                     + asyncTask.status)
-            if (completedWork || DbUtils.waitMs(method, 5000)) {
+            if (asyncTask.isFinished || DbUtils.waitMs(method, 5000)) {
                 break
             }
             count--
@@ -148,7 +147,8 @@ class DemoData {
             Assert.fail("Error during Demo data creation: " + ExceptionsCounter.firstError.get())
         }
         Assert.assertEquals("Demo data creation failed, count=" + count + ", status=" + asyncTask.status
-                + ", $asyncTask", true, asyncTask.completedBackgroundWork())
+                + ", $asyncTask", true, asyncTask.noMoreBackgroundWork
+        )
         Assert.assertTrue("Error during Demo data creation: " + asyncTask.firstError + ", $asyncTask",
                 asyncTask.firstError.isEmpty())
         MyLog.v(TAG, "$method; ended")

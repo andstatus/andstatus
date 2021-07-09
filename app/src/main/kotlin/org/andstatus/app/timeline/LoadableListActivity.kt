@@ -130,7 +130,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
                     msgLog.append(", Ignored $mWorkingLoader")
                 } else {
                     val newLoader = AsyncLoader(instanceTag())
-                    if (AsyncTaskLauncher<Bundle?>().execute(this, newLoader, args).isSuccess) {
+                    if (AsyncTaskLauncher.execute(this, newLoader, args).isSuccess) {
                         mWorkingLoader = newLoader
                         loaderIsWorking = true
                         refreshNeededSince.set(0)
@@ -388,7 +388,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     }
 
     private fun showSyncing(commandData: CommandData) {
-        AsyncTaskLauncher<CommandData>().execute(this,
+        AsyncTaskLauncher.execute(this,
             object : MyAsyncTask<CommandData, Void?, String>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
 
                 override suspend fun doInBackground(params: CommandData): Try<String> {

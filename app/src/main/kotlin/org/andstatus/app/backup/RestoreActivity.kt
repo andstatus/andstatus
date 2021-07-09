@@ -49,12 +49,12 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private fun doRestore(v: View?) {
-        if (asyncTask?.completedBackgroundWork() ?: true) {
+        if (asyncTask?.isFinished ?: true) {
             resetProgress()
             asyncTask = RestoreTask(this@RestoreActivity)
                 .also {
                     it.maxCommandExecutionSeconds = MAX_RESTORE_SECONDS.toLong()
-                    AsyncTaskLauncher<DocumentFile?>().execute(this, it, getDataFolder())
+                    AsyncTaskLauncher.execute(this, it, getDataFolder())
                 }
         }
     }

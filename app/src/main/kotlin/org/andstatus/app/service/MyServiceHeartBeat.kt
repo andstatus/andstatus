@@ -29,7 +29,7 @@ class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, 
                 break
             }
             val heartBeat = myService.heartBeatRef.get()
-            if (heartBeat != null && heartBeat !== this && heartBeat.isReallyWorking()) {
+            if (heartBeat != null && heartBeat !== this && heartBeat.isReallyWorking) {
                 breakReason = "Other instance found: $heartBeat"
                 break
             }
@@ -80,12 +80,13 @@ class MyServiceHeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, 
         return TAG
     }
 
-    override fun isReallyWorking(): Boolean {
-        return needsBackgroundWork() && !RelativeTime.wasButMoreSecondsAgoThan(
-            previousBeat,
-            HEARTBEAT_PERIOD_SECONDS * 2
-        )
-    }
+    override val isReallyWorking: Boolean
+        get() {
+            return needsBackgroundWork && !RelativeTime.wasButMoreSecondsAgoThan(
+                previousBeat,
+                HEARTBEAT_PERIOD_SECONDS * 2
+            )
+        }
 
     companion object {
         private const val TAG: String = "HeartBeat"
