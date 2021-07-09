@@ -46,7 +46,7 @@ class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
             val httpResponse = client.execute(postMethod)
             HttpConnectionApacheCommon.setStatusCodeAndHeaders(result, httpResponse)
             val httpEntity = httpResponse.entity
-            result.readStream("") { o: Void? -> httpEntity?.content }
+            result.readStream("") { httpEntity?.content }
         } catch (e: Exception) {
             result.setException(e)
         } finally {

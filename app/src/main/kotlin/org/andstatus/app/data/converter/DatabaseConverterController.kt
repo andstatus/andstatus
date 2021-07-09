@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit
 
 class DatabaseConverterController {
     private class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) :
-        AsyncTask<Unit, Void?, Unit>(DEFAULT_POOL) {
+        AsyncTask<Unit, Unit, Unit>(DEFAULT_POOL) {
         var progressLogger: ProgressLogger = ProgressLogger.getEmpty(TAG)
         override val cancelable: Boolean = false
 

@@ -1105,7 +1105,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
         private fun <T : ViewItem<T>> clearNotifications(timelineActivity: TimelineActivity<T>) {
             val timeline = timelineActivity.getParamsLoaded().timeline
             AsyncTaskLauncher.execute(timelineActivity,
-                    object : AsyncTask<Unit, Void?, Unit>("clearNotifications" + timeline.getId(),
+                    object : AsyncTask<Unit, Unit, Unit>("clearNotifications" + timeline.getId(),
                             PoolEnum.QUICK_UI) {
                         override suspend fun doInBackground(params: Unit): Try<Unit> {
                             timelineActivity.myContext.clearNotifications(timeline)

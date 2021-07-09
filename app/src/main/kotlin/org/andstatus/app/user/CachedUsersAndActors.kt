@@ -68,19 +68,17 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     private fun initializeMyFriendsOrFollowers(groupType: GroupType, groupMembers: MutableMap<Long, MutableSet<Long>>) {
         val MY_ACTOR_ID = "myActorId"
         groupMembers.clear()
-        val sql = ("SELECT DISTINCT " + ActorSql.selectFullProjection()
-                + ", friends." + ActorTable.PARENT_ACTOR_ID + " AS " + MY_ACTOR_ID
-                + " FROM (" + ActorSql.allTables() + ")"
-                + " INNER JOIN (" + GroupMembership.selectMemberIds(myActors.keys, groupType, true)
-                + " ) as friends ON friends." + GroupMembersTable.MEMBER_ID +
+        val sql = ("SELECT DISTINCT " + ActorSql.selectFullProjection() +
+                ", friends." + ActorTable.PARENT_ACTOR_ID + " AS " + MY_ACTOR_ID +
+                " FROM (" + ActorSql.allTables() + ")" +
+                " INNER JOIN (" + GroupMembership.selectMemberIds(myActors.keys, groupType, true) +
+                " ) as friends ON friends." + GroupMembersTable.MEMBER_ID +
                 "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID)
-        val function = Function<Cursor, Void> { cursor: Cursor ->
+        MyQuery.get(myContext, sql) { cursor: Cursor ->
             val other: Actor = Actor.fromCursor(myContext, cursor, true)
             val me: Actor = Actor.load(myContext, DbUtils.getLong(cursor, MY_ACTOR_ID))
             groupMembers.compute(other.actorId, CollectionsUtil.addValue(me.actorId))
-            null
         }
-        MyQuery.get(myContext, sql, function)
     }
 
     fun reload(actor: Actor): Actor {

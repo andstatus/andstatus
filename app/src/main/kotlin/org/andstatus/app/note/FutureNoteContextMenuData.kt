@@ -35,7 +35,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
     var menuData: NoteContextMenuData = NoteContextMenuData.EMPTY
 
     @Volatile
-    private var loader: AsyncTask<Unit, Void?, NoteContextMenuData>? = null
+    private var loader: AsyncTask<Unit, Unit, NoteContextMenuData>? = null
 
     fun getNoteId(): Long {
         return noteId
@@ -68,7 +68,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
             val menuContainer = noteContextMenu.menuContainer
             val future = FutureNoteContextMenuData(viewItem)
             if (view != null && future.noteId != 0L) {
-                future.loader = object : AsyncTask<Unit, Void?, NoteContextMenuData>(
+                future.loader = object : AsyncTask<Unit, Unit, NoteContextMenuData>(
                         TAG + future.noteId, PoolEnum.QUICK_UI) {
 
                     override suspend fun doInBackground(params: Unit): Try<NoteContextMenuData> {

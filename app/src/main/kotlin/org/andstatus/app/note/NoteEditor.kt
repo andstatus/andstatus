@@ -548,7 +548,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         }
         MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft requested, noteId=$noteId" }
         AsyncTaskLauncher.execute(this,
-                object : AsyncTask<Long, Void?, NoteEditorData>(this@NoteEditor.toString(),
+                object : AsyncTask<Long, Unit, NoteEditorData>(this@NoteEditor.toString(),
                         PoolEnum.QUICK_UI) {
                     @Volatile
                     var lock: NoteEditorLock = NoteEditorLock.EMPTY

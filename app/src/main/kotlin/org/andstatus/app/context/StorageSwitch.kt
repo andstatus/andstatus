@@ -80,7 +80,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
      *
      * @author yvolk@yurivolkov.com
      */
-    private inner class MoveDataBetweenStoragesTask : AsyncTask<Unit, Void?, TaskResult>(PoolEnum.DEFAULT_POOL) {
+    private inner class MoveDataBetweenStoragesTask : AsyncTask<Unit, Unit, TaskResult>(PoolEnum.DEFAULT_POOL) {
         // indeterminate duration, not cancelable
         private val dlg: ProgressDialog = ProgressDialog.show(mContext,
                 mContext.getText(R.string.dialog_title_external_storage),

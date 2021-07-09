@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicLong
 
 class QueueExecutor(myService: MyService, private val accessorType: AccessorType) :
-        AsyncTask<Unit, Void?, Boolean>("$TAG-$accessorType", PoolEnum.SYNC), CommandExecutorParent {
+        AsyncTask<Unit, Unit, Boolean>("$TAG-$accessorType", PoolEnum.SYNC), CommandExecutorParent {
     private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
     private val executedCounter: AtomicLong = AtomicLong()
 

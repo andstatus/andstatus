@@ -390,8 +390,8 @@ abstract class AsyncTask<Params, Progress, Result>(
 
         fun <Params, Progress, Result> fromFunc(
             params: Params,
-            backgroundFunc: (Params?) -> Try<Result>,
-            uiConsumer: (Params?) -> (Try<Result>) -> Unit
+            backgroundFunc: (Params) -> Try<Result>,
+            uiConsumer: (Params) -> (Try<Result>) -> Unit
         ):
                 AsyncTask<Params, Progress, Result> {
             return object : AsyncTask<Params, Progress, Result>(params, PoolEnum.DEFAULT_POOL) {

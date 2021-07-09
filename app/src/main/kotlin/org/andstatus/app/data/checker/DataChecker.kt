@@ -101,7 +101,7 @@ abstract class DataChecker {
         fun fixDataAsync(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean) {
             AsyncTaskLauncher.execute(
                     logger.logTag,
-                    object : AsyncTask<Unit, Void?, Unit>(logger.logTag, DEFAULT_POOL) {
+                    object : AsyncTask<Unit, Unit, Unit>(logger.logTag, DEFAULT_POOL) {
                         override val cancelable: Boolean = false
 
                         override suspend fun doInBackground(params: Unit): Try<Unit> {

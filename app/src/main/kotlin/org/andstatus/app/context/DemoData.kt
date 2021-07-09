@@ -156,7 +156,7 @@ class DemoData {
     private class GenerateDemoData constructor(val progressListener: ProgressLogger.ProgressListener,
                                                val myContext: MyContext,
                                                val demoData: DemoData) :
-        AsyncTask<Unit, Void?, Unit>(this::class.java, DEFAULT_POOL) {
+        AsyncTask<Unit, Unit, Unit>(this::class.java, DEFAULT_POOL) {
         val logTag: String = progressListener.getLogTag()
         override val cancelable: Boolean = false
 
@@ -237,7 +237,7 @@ class DemoData {
     }
 
     fun addAsync(myContext: MyContext,
-                 progressListener: ProgressLogger.ProgressListener): AsyncTask<Unit, Void?, Unit> {
+                 progressListener: ProgressLogger.ProgressListener): AsyncTask<Unit, Unit, Unit> {
         val asyncTask = GenerateDemoData(progressListener, myContext, this)
         AsyncTaskLauncher.execute(this, asyncTask)
         return asyncTask

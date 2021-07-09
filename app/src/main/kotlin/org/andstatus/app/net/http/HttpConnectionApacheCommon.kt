@@ -81,7 +81,7 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
                     StatusCode.OK, StatusCode.UNKNOWN -> {
                         val entity = response.entity
                         if (entity != null) {
-                            result.readStream("") { o: Void? -> entity.content }
+                            result.readStream("") { entity.content }
                         }
                         stop = true
                     }
@@ -89,7 +89,7 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
                     else -> {
                         val entity = response.entity
                         if (entity != null) {
-                            result.readStream("") { o: Void? -> entity.getContent() }
+                            result.readStream("") { entity.content }
                         }
                         stop = result.noMoreHttpRetries()
                     }

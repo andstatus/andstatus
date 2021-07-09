@@ -33,7 +33,7 @@ import org.andstatus.app.util.TryUtils
 /**
  * Asynchronously save, delete and send a note, prepared by [NoteEditor]
  */
-class NoteSaver(private val editor: NoteEditor) : AsyncTask<NoteEditorCommand?, Void?, NoteEditorData>(PoolEnum.QUICK_UI) {
+class NoteSaver(private val editor: NoteEditor) : AsyncTask<NoteEditorCommand?, Unit, NoteEditorData>(PoolEnum.QUICK_UI) {
     val noteEditorCommandEmpty = NoteEditorCommand(NoteEditorData.EMPTY)
 
     @Volatile
@@ -68,7 +68,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncTask<NoteEditorCommand?, 
     private fun saveCurrentData() {
         val currentData = command.currentData ?: return
 
-        MyLog.v(NoteEditorData.TAG) { "Saving current data:" + currentData }
+        MyLog.v(NoteEditorData.TAG) { "Saving current data: $currentData" }
         if (currentData.activity.getNote().getStatus() == DownloadStatus.DELETED) {
             MyProvider.deleteNoteAndItsActivities( MyContextHolder.myContextHolder.getNow(), currentData.getNoteId())
         } else {

@@ -154,7 +154,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
 
     private fun executeAsync1(params2: Params) {
         AsyncTaskLauncher.execute(TAG,
-                object : AsyncTask<Unit, Void?, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
+                object : AsyncTask<Unit, Unit, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
                     override suspend fun doInBackground(params: Unit): Try<NoteEditorData> {
                         MyLog.v(this, "execute async started. "
                                 + params2.menu.getViewItem().actor.getUniqueNameWithOrigin())

@@ -51,7 +51,7 @@ object HttpConnectionUtils {
         }
     }
 
-    fun readStream(result: HttpReadResult, msgLog: String?, supplier: CheckedFunction<Void, InputStream>): Try<HttpReadResult> {
+    fun readStream(result: HttpReadResult, msgLog: String?, supplier: CheckedFunction<Unit, InputStream>): Try<HttpReadResult> {
         try {
             supplier.apply(null).use { inputStream ->
                 if (inputStream == null) {

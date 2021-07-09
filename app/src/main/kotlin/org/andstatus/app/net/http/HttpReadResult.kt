@@ -316,7 +316,7 @@ class HttpReadResult(val request: HttpRequest) {
         MyLog.v(this) { this.toString() }
     }
 
-    fun readStream(msgLog: String?, supplier: CheckedFunction<Void, InputStream>): Try<HttpReadResult> {
+    fun readStream(msgLog: String?, supplier: CheckedFunction<Unit, InputStream>): Try<HttpReadResult> {
         return HttpConnectionUtils.readStream(this, msgLog, supplier)
     }
 

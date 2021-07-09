@@ -39,7 +39,7 @@ class HttpConnectionStub : HttpConnection() {
     private var sameResponse = false
 
     @Volatile
-    private var responseStreamSupplier: CheckedFunction<Void, InputStream>? = null
+    private var responseStreamSupplier: CheckedFunction<Unit, InputStream>? = null
 
     @Volatile
     private var runtimeException: RuntimeException? = null
@@ -75,7 +75,7 @@ class HttpConnectionStub : HttpConnection() {
         responses.add(responseString)
     }
 
-    fun setResponseStreamSupplier(responseStreamSupplier: CheckedFunction<Void, InputStream>?) {
+    fun setResponseStreamSupplier(responseStreamSupplier: CheckedFunction<Unit, InputStream>?) {
         this.responseStreamSupplier = responseStreamSupplier
     }
 
