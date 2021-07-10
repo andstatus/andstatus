@@ -22,6 +22,7 @@ import oauth.signpost.OAuthProvider
 import oauth.signpost.basic.DefaultOAuthConsumer
 import oauth.signpost.basic.DefaultOAuthProvider
 import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
 import org.andstatus.app.net.http.ConnectionException.StatusCode
@@ -113,6 +114,8 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
             conn.doOutput = true
             conn.doInput = true
             conn.requestMethod = "POST"
+            conn.readTimeout = MyPreferences.getConnectionTimeoutMs()
+            conn.connectTimeout = MyPreferences.getConnectionTimeoutMs()
             try {
                 if (result.request.mediaUri.isPresent) {
                     writeMedia(conn, result.request)
@@ -185,6 +188,8 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
             do {
                 connCopy = result.requiredUrl("GetOAuth")?.openConnection() as HttpURLConnection? ?: return result
                 val conn = connCopy
+                conn.readTimeout = MyPreferences.getConnectionTimeoutMs()
+                conn.connectTimeout = MyPreferences.getConnectionTimeoutMs()
                 data.optOriginContentType().ifPresent { value: String -> conn.addRequestProperty("Accept", value) }
                 conn.instanceFollowRedirects = false
                 if (result.authenticate()) {
@@ -214,19 +219,6 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
             closeSilently(connCopy)
         }
         return result
-    }
-
-    private fun setStatusCodeAndHeaders(result: HttpReadResult, conn: HttpURLConnection) {
-        result.setStatusCode(conn.responseCode)
-        try {
-            result.setHeaders(
-                    conn.headerFields.entries.stream().flatMap { entry ->
-                        entry.value.stream()
-                                .map { value: String -> ImmutablePair(entry.key, value) }
-                    }, {it.key}, {it.value})
-        } catch (ignored: Exception) {
-            // ignore
-        }
     }
 
     protected open fun signConnection(conn: HttpURLConnection, consumer: OAuthConsumer, redirected: Boolean) {
@@ -261,5 +253,18 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
 
     companion object {
         private val UTF_8: String = "UTF-8"
+
+        fun setStatusCodeAndHeaders(result: HttpReadResult, conn: HttpURLConnection) {
+            result.setStatusCode(conn.responseCode)
+            try {
+                result.setHeaders(
+                    conn.headerFields.entries.stream().flatMap { entry ->
+                        entry.value.stream()
+                            .map { value: String -> ImmutablePair(entry.key, value) }
+                    }, {it.key}, {it.value})
+            } catch (ignored: Exception) {
+                // ignore
+            }
+        }
     }
 }

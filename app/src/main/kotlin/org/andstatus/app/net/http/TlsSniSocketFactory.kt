@@ -26,7 +26,7 @@ import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.SSLSocket
 
 class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactory {
-    private val secure: Boolean
+    private val secure: Boolean = sslMode == SslModeEnum.SECURE
     private var sslSocketFactory: SSLCertificateSocketFactory? = null
 
     override fun createSocket(context: HttpContext?): Socket? {
@@ -34,7 +34,7 @@ class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactor
     }
 
     override fun connectSocket(timeout: Int, plain: Socket, host: HttpHost, remoteAddr: InetSocketAddress, localAddr: InetSocketAddress?, context: HttpContext?): Socket {
-        MyLog.d(TAG, "Preparing direct SSL connection (without proxy) to $host")
+        MyLog.d(TAG, "Preparing direct SSL connection (without proxy) to $host, timeout:$timeout")
 
         // we'll rather use an SSLSocket directly
         plain.close()
@@ -112,7 +112,6 @@ class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactor
            active by Android's defaults, which it isn't at the moment).
     */
     init {
-        secure = sslMode == SslModeEnum.SECURE
         if (secure) {
             sslSocketFactory = SSLCertificateSocketFactory
                     .getDefault(MyPreferences.getConnectionTimeoutMs()) as SSLCertificateSocketFactory

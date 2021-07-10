@@ -146,6 +146,11 @@ object MyPreferences {
                         KEY_CONNECTION_TIMEOUT_SECONDS, CONNECTION_TIMEOUT_DEFAULT_SECONDS)).toInt()
     }
 
+    fun setConnectionTimeoutMs(value: Int) {
+        val stringValue = TimeUnit.MILLISECONDS.toSeconds(value.toLong()).coerceAtLeast(1).toString()
+        SharedPreferencesUtil.putString(KEY_CONNECTION_TIMEOUT_SECONDS, stringValue)
+    }
+
     /**
      * @return the number of seconds between two sync ("fetch"...) actions.
      */

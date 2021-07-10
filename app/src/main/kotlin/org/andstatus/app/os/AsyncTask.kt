@@ -321,7 +321,7 @@ open class AsyncTask<Params, Progress, Result>(
             !isBackgroundEnded ->
                 "RUNNING in background: " + RelativeTime.secMsAgo(backgroundStartedAt.get()) +
                         if (currentlyExecutingSince.get() > backgroundEndedAt.get()) {
-                            ", Currently executing: " + RelativeTime.secMs(finishedAt.get() - startedAt.get())
+                            ", Currently executing: " + RelativeTime.secMsAgo(currentlyExecutingSince.get())
                         } else ""
             else -> {
                 "FINISHING: " + RelativeTime.secMsAgo(backgroundEndedAt.get())

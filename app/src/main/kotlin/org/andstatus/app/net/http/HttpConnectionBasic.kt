@@ -20,7 +20,11 @@ import cz.msebera.android.httpclient.HttpResponse
 import cz.msebera.android.httpclient.client.methods.HttpGet
 import cz.msebera.android.httpclient.client.methods.HttpPost
 import org.andstatus.app.account.AccountDataWriter
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet.Companion.setStatusCodeAndHeaders
 import org.andstatus.app.net.social.Connection
+import java.net.HttpURLConnection
 import java.nio.charset.Charset
 
 class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
@@ -97,7 +101,46 @@ class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
         }
     }
 
+    /** Almost like [org.andstatus.app.net.http.HttpConnectionOAuthJavaNet.getRequest] */
     override fun getRequest(result: HttpReadResult): HttpReadResult {
-        return HttpConnectionApacheCommon(this, data).getRequest(result)
+        var connCopy: HttpURLConnection? = null
+        try {
+            var redirected = false
+            var stop: Boolean
+            do {
+                connCopy = result.requiredUrl("GetBasic")?.openConnection() as HttpURLConnection? ?: return result
+                val conn = connCopy
+                conn.readTimeout = MyPreferences.getConnectionTimeoutMs()
+                conn.connectTimeout = MyPreferences.getConnectionTimeoutMs()
+                data.optOriginContentType().ifPresent { value: String -> conn.addRequestProperty("Accept", value) }
+                conn.instanceFollowRedirects = false
+                if (result.authenticate()) {
+                    conn.addRequestProperty("Authorization", "Basic " + getCredentials())
+                }
+                conn.connect()
+                setStatusCodeAndHeaders(result, conn)
+                when (result.getStatusCode()) {
+                    ConnectionException.StatusCode.OK -> {
+                        result.readStream("") { conn.inputStream }
+                        stop = true
+                    }
+                    ConnectionException.StatusCode.MOVED -> {
+                        redirected = true
+                        stop = onMoved(result)
+                    }
+                    else -> {
+                        result.readStream("") { conn.errorStream }
+                        stop = result.noMoreHttpRetries()
+                    }
+                }
+                DbUtils.closeSilently(conn)
+            } while (!stop)
+        } catch (e: Exception) {
+            result.setException(e)
+        } finally {
+            DbUtils.closeSilently(connCopy)
+        }
+        return result
     }
+
 }
