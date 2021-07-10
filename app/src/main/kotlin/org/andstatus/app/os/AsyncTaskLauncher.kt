@@ -58,18 +58,16 @@ class AsyncTaskLauncher {
 
         fun <Params, Result> execute(
             params: Params,
-            backgroundFunc: suspend (Params) -> Try<Result>,
-            uiConsumer: (Params) -> suspend (Try<Result>) -> Unit
+            backgroundFun: suspend (Params) -> Try<Result>,
+            postExecuteFun: suspend (Params, Try<Result>) -> Unit
         ): Try<Unit> {
-            val asyncTask: AsyncTask<Params, Unit, Result> =
-                AsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
-            return execute(params, asyncTask, params)
+            return AsyncTask<Params, Unit, Result>(taskId = params, pool = PoolEnum.DEFAULT_POOL)
+                .doInBackground(backgroundFun)
+                .onPostExecute(postExecuteFun)
+                .execute(params)
         }
 
-        fun execute(objTag: Any?, asyncTask: AsyncTask<Unit, *, *>): Try<Unit> =
-            execute(objTag, asyncTask, Unit)
-
-        fun  <Params> execute(objTag: Any?, asyncTask: AsyncTask<Params, *, *>, params: Params): Try<Unit> {
+        fun <Params> execute(objTag: Any?, asyncTask: AsyncTask<Params, *, *>, params: Params): Try<Unit> {
             MyLog.v(objTag) { "Launching $asyncTask" }
             return try {
                 cancelStalledTasks()
@@ -79,7 +77,7 @@ class AsyncTaskLauncher {
                 removeFinishedTasks()
                 TryUtils.SUCCESS
             } catch (e: Exception) {
-                val msgLog = "$asyncTask Launching task ${threadPoolInfo()}"
+                val msgLog = "Launching $asyncTask in ${threadPoolInfo()}"
                 MyLog.w(objTag, msgLog, e)
                 Try.failure(Exception("${e.message} $msgLog", e))
             }

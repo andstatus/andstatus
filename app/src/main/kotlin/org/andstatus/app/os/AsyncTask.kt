@@ -91,6 +91,9 @@ open class AsyncTask<Params, Progress, Result>(
         DEFAULT_POOL(0, MAX_COMMAND_EXECUTION_SECONDS)
     }
 
+    fun execute(params: Params): Try<Unit> = execute(params, params)
+    fun execute(objTag: Any?, params: Params): Try<Unit> = AsyncTaskLauncher.execute(objTag, this, params)
+
     /**
      * Executes the task with the specified parameters. The task returns
      * itself (this) so that the caller can keep a reference to it.
@@ -126,6 +129,7 @@ open class AsyncTask<Params, Progress, Result>(
             )
             else -> Unit
         }
+        paramsRef.set(Try.success(params))
         job = CoroutineScope(Dispatchers.Main).launch {
             try {
                 startedAt.set(System.currentTimeMillis())
@@ -160,6 +164,7 @@ open class AsyncTask<Params, Progress, Result>(
         }
         return this
     }
+    private val paramsRef: AtomicReference<Try<Params>> = AtomicReference(TryUtils.notFound())
 
     /**
      * Runs on the UI thread before [doInBackground].
@@ -175,13 +180,14 @@ open class AsyncTask<Params, Progress, Result>(
     private suspend fun doInBackground1(params: Params): Try<Result> {
         backgroundStartedAt.set(System.currentTimeMillis())
         currentlyExecutingSince.set(backgroundStartedAt.get())
-        postExecuteHiFun.get()?.let { postExecuteFun.set(it(params)) }
         try {
-            return backgroundFun.get()?.let { it(params) } ?: doInBackground(params)
+            return (backgroundFun.get()?.let { it(params) } ?: doInBackground(params))
+                .also { resultRef.set(it) }
         } finally {
             backgroundEndedAt.set(System.currentTimeMillis())
         }
     }
+    val resultRef: AtomicReference<Try<Result>> = AtomicReference(TryUtils.notFound())
 
     protected open suspend fun doInBackground(params: Params): Try<Result> = TryUtils.notFound()
 
@@ -243,7 +249,12 @@ open class AsyncTask<Params, Progress, Result>(
     private suspend fun onPostExecute1(result: Try<Result>) {
         if (onPostExecuteCalled.compareAndSet(false, true)) {
             try {
-                postExecuteFun.get()?.let { it(result) } ?: onPostExecute(result)
+                postExecuteFun.get()?.let {
+                    it(
+                        paramsRef.get().getOrElseThrow { IllegalStateException("No params in $this") },
+                        result
+                    )
+                } ?: onPostExecute(result)
                 ExceptionsCounter.showErrorDialogIfErrorsPresent()
             } finally {
                 finishedAt.set(System.currentTimeMillis())
@@ -255,10 +266,9 @@ open class AsyncTask<Params, Progress, Result>(
     @MainThread
     protected open suspend fun onPostExecute(result: Try<Result>) {}
 
-    private val postExecuteHiFun: AtomicReference<(Params) -> suspend (Try<Result>) -> Unit> = AtomicReference()
-    private val postExecuteFun: AtomicReference<suspend (Try<Result>) -> Unit> = AtomicReference()
-    fun onPostExecute(postExecuteFun: (Params) -> suspend (Try<Result>) -> Unit): AsyncTask<Params, Progress, Result> {
-        this.postExecuteHiFun.set(postExecuteFun)
+    private val postExecuteFun: AtomicReference<suspend (Params, Try<Result>) -> Unit> = AtomicReference()
+    fun onPostExecute(postExecuteFun: suspend (Params, Try<Result>) -> Unit): AsyncTask<Params, Progress, Result> {
+        this.postExecuteFun.set(postExecuteFun)
         return this
     }
 
@@ -402,13 +412,5 @@ open class AsyncTask<Params, Progress, Result>(
 
         // See http://stackoverflow.com/questions/11411022/how-to-check-if-current-thread-is-not-main-thread
         val isUiThread: Boolean get() = Looper.myLooper() == Looper.getMainLooper()
-
-        fun <Params, Progress, Result> fromFunc(
-            params: Params,
-            backgroundFunc: suspend (Params) -> Try<Result>,
-            onPostExecuteHiFun: (Params) -> suspend (Try<Result>) -> Unit
-        ): AsyncTask<Params, Progress, Result> = AsyncTask<Params, Progress, Result>(params, PoolEnum.DEFAULT_POOL)
-            .doInBackground(backgroundFunc)
-            .onPostExecute(onPostExecuteHiFun)
     }
 }

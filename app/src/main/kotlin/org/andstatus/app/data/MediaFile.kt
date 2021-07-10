@@ -172,7 +172,7 @@ abstract class MediaFile internal constructor(filename: String,
         uiConsumer.accept(null)
         AsyncTaskLauncher.execute(DrawableLoader(this, cacheName),
             { loader: DrawableLoader? -> loader?.load()?.map(mapper) ?: TryUtils.notFound() },
-            { { drawableTry: Try<Drawable?> -> drawableTry.onSuccess(uiConsumer) } })
+            { _, drawableTry: Try<Drawable?> -> drawableTry.onSuccess(uiConsumer) })
     }
 
     fun logResult(msgLog: String?, taskSuffix: String) {

@@ -342,19 +342,17 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
     }
 
     private fun executeAsync1(menu: NoteContextMenu) {
-        AsyncTaskLauncher.execute(TAG,
-                object : AsyncTask<Unit, Unit, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
-                    override suspend fun doInBackground(params: Unit): Try<NoteEditorData> {
-                        MyLog.v(this@NoteContextMenuItem) { "execute async started. noteId=" + menu.getNoteId() }
-                        return Try.success(executeAsync(menu))
-                    }
+        object : AsyncTask<Unit, Unit, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
+            override suspend fun doInBackground(params: Unit): Try<NoteEditorData> {
+                MyLog.v(this@NoteContextMenuItem) { "execute async started. noteId=" + menu.getNoteId() }
+                return Try.success(executeAsync(menu))
+            }
 
-                    override suspend fun onPostExecute(result: Try<NoteEditorData>) {
-                        MyLog.v(this@NoteContextMenuItem, "execute async ended")
-                        result.onSuccess { executeOnUiThread(menu, it) }
-                    }
-                }
-        )
+            override suspend fun onPostExecute(result: Try<NoteEditorData>) {
+                MyLog.v(this@NoteContextMenuItem, "execute async ended")
+                result.onSuccess { executeOnUiThread(menu, it) }
+            }
+        }.execute(TAG, Unit)
     }
 
     open fun executeAsync(menu: NoteContextMenu): NoteEditorData {

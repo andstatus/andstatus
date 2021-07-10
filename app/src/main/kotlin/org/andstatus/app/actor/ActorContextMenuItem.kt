@@ -153,26 +153,23 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
     }
 
     private fun executeAsync1(params2: Params) {
-        AsyncTaskLauncher.execute(TAG,
-                object : AsyncTask<Unit, Unit, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
-                    override suspend fun doInBackground(params: Unit): Try<NoteEditorData> {
-                        MyLog.v(this, "execute async started. "
-                                + params2.menu.getViewItem().actor.getUniqueNameWithOrigin())
-                        return executeAsync(params2)
-                    }
+        object : AsyncTask<Unit, Unit, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
+            override suspend fun doInBackground(params: Unit): Try<NoteEditorData> {
+                MyLog.v(
+                    this, "execute async started. "
+                            + params2.menu.getViewItem().actor.getUniqueNameWithOrigin()
+                )
+                return executeAsync(params2)
+            }
 
-                    override suspend fun onPostExecute(result: Try<NoteEditorData>) {
-                        MyLog.v(this, "execute async ended")
-                        result.onSuccess {
-                            executeOnUiThread(params2.menu, it)
-                        }
-                    }
-
-                    override fun toString(): String {
-                        return TAG + "; " + super.toString()
-                    }
+            override suspend fun onPostExecute(result: Try<NoteEditorData>) {
+                MyLog.v(this, "execute async ended")
+                result.onSuccess {
+                    executeOnUiThread(params2.menu, it)
                 }
-        )
+            }
+        }
+            .execute(TAG, Unit)
     }
 
     open fun executeAsync(params: Params): Try<NoteEditorData> {

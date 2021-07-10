@@ -239,7 +239,7 @@ class DemoData {
     fun addAsync(myContext: MyContext,
                  progressListener: ProgressLogger.ProgressListener): AsyncTask<Unit, Unit, Unit> {
         val asyncTask = GenerateDemoData(progressListener, myContext, this)
-        AsyncTaskLauncher.execute(this, asyncTask)
+        asyncTask.execute(this, Unit)
         return asyncTask
     }
 

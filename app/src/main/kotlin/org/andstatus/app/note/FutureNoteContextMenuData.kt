@@ -101,7 +101,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
             noteContextMenu.setFutureData(future)
             future.loader?.let { loader ->
                 loader.maxCommandExecutionSeconds = MAX_SECONDS_TO_LOAD.toLong()
-                AsyncTaskLauncher.execute(this, loader)
+                loader.execute(this, Unit)
             }
         }
     }

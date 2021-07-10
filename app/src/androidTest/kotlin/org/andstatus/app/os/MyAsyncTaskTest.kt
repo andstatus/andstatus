@@ -6,7 +6,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -30,7 +34,7 @@ class MyAsyncTaskTest {
             delay(250)
             exceptionDuringBackground?.let { throw it }
             delay(250)
-            return Try.success("done")
+            return Try.success("done $params")
         }
 
         override suspend fun onCancel() {
@@ -52,9 +56,10 @@ class MyAsyncTaskTest {
         }
         cancelAndWaitTillFinished(task)
 
-        Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
-        Assert.assertFalse("inBackground $task", task.inBackgroundVal.get())
-        Assert.assertTrue("onCancel $task", task.onCancelVal.get())
+        assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
+        assertFalse("inBackground $task", task.inBackgroundVal.get())
+        assertTrue("onCancel $task", task.onCancelVal.get())
+        assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
     @Test
@@ -66,9 +71,11 @@ class MyAsyncTaskTest {
         }
         cancelAndWaitTillFinished(task)
 
-        Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
-        Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
-        Assert.assertTrue("onCancel $task", task.onCancelVal.get())
+        assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
+        assertTrue("inBackground $task", task.inBackgroundVal.get())
+        assertTrue("onCancel $task", task.onCancelVal.get())
+        assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
+
     }
 
     @Test
@@ -80,9 +87,11 @@ class MyAsyncTaskTest {
         }
         cancelAndWaitTillFinished(task, true)
 
-        Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
-        Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
-        Assert.assertTrue("onCancel $task", task.onCancelVal.get())
+        assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
+        assertTrue("inBackground $task", task.inBackgroundVal.get())
+        assertTrue("onCancel $task", task.onCancelVal.get())
+        assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
+
     }
 
     @Test
@@ -94,20 +103,67 @@ class MyAsyncTaskTest {
         }
         cancelAndWaitTillFinished(task)
 
-        Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
-        Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
-        Assert.assertFalse("onCancel $task", task.onCancelVal.get())
+        assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
+        assertTrue("inBackground $task", task.inBackgroundVal.get())
+        assertFalse("onCancel $task", task.onCancelVal.get())
+        assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
+
     }
 
     @Test
     fun normalExecution() = runBlocking {
-        val task = TestTask().apply { executeInContext(Dispatchers.Default, "") }
+        val task = TestTask().apply { executeInContext(Dispatchers.Default, "normal") }
         MyLog.i(this, "Executing $task")
         waitTillFinished(task)
 
-        Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
-        Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
-        Assert.assertFalse("onCancel $task", task.onCancelVal.get())
+        assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
+        assertTrue("inBackground $task", task.inBackgroundVal.get())
+        assertFalse("onCancel $task", task.onCancelVal.get())
+        assertEquals("done normal", task.resultRef.get().getOrElse("(none)"))
+        assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
+    }
+
+    @Test
+    fun normalExecutionWithBackgroundFun() = runBlocking {
+        val task = TestTask().apply {
+            doInBackground {
+                Try.success("$it fun")
+            }
+            executeInContext(Dispatchers.Default, "normal")
+        }
+        MyLog.i(this, "Executing $task")
+        waitTillFinished(task)
+
+        assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
+        assertFalse("inBackground $task", task.inBackgroundVal.get())
+        assertFalse("onCancel $task", task.onCancelVal.get())
+        assertEquals("normal fun", task.resultRef.get().getOrElse("(none)"))
+        assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
+    }
+
+    @Test
+    fun normalExecutionWithBackgroundAndPostExecuteFun() = runBlocking {
+        var onPostExecuteVal: Boolean = false
+        val task = TestTask().apply {
+            doInBackground {
+                Try.success("$it fun")
+            }
+            onPostExecute { params, result ->
+                onPostExecuteVal = true
+                assertEquals("normal", params)
+                assertEquals("normal fun", result.getOrElse("(none)"))
+            }
+            executeInContext(Dispatchers.Default, "normal")
+        }
+        MyLog.i(this, "Executing $task")
+        waitTillFinished(task)
+
+        assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
+        assertFalse("inBackground $task", task.inBackgroundVal.get())
+        assertFalse("onCancel $task", task.onCancelVal.get())
+        assertEquals("normal fun", task.resultRef.get().getOrElse("(none)"))
+        assertNull("onPostExecute $task", task.onPostExecuteVal.get())
+        assertTrue("onPostExecute local $task", onPostExecuteVal)
     }
 
     @Test
@@ -116,12 +172,14 @@ class MyAsyncTaskTest {
             exceptionDuringBackground = Exception("Something went wrong")
             executeInContext(Dispatchers.Default, "")
         }
+
         MyLog.i(this, "Executing $task")
         waitTillFinished(task)
 
-        Assert.assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
-        Assert.assertTrue("inBackground $task", task.inBackgroundVal.get())
-        Assert.assertFalse("onCancel $task", task.onCancelVal.get())
+        assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
+        assertTrue("inBackground $task", task.inBackgroundVal.get())
+        assertFalse("onCancel $task", task.onCancelVal.get())
+        assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
     private suspend fun cancelAndWaitTillFinished(task: TestTask, cancelJob: Boolean = false) {
@@ -137,7 +195,6 @@ class MyAsyncTaskTest {
             task.isFinished
         }
         MyLog.i(this, "After waiting for isFinished $task")
-        Assert.assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
         task.job?.join()
         MyLog.i(this, "After join() $task")
     }

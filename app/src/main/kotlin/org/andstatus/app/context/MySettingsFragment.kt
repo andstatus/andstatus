@@ -49,6 +49,7 @@ import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.note.KeywordsFilter
 import org.andstatus.app.notification.NotificationMethodType
 import org.andstatus.app.origin.PersistentOriginList
+import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.service.QueueViewer
 import org.andstatus.app.timeline.meta.ManageTimelines
@@ -317,21 +318,16 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     }
 
     private fun showMaximumSizeOfCachedMedia() {
-        showMaximumSizeOfCachedMedia(Optional.empty())
-        val backgroundFunc: suspend (MySettingsFragment?) -> Try<Optional<Long>> = {
-            Try.success(Optional.of(MyStorage.getMediaFilesSize()))
-        }
-        val uiConsumer: (MySettingsFragment?) -> suspend (Try<Optional<Long>>) -> Unit =
-            { fragment: MySettingsFragment? ->
-                { size: Try<Optional<Long>> ->
-                    size.onSuccess { optSize ->
-                        fragment?.showMaximumSizeOfCachedMedia(optSize)
-                    }
-                    Unit
+        AsyncTask<MySettingsFragment, Unit, Optional<Long>>(this, AsyncTask.PoolEnum.DEFAULT_POOL)
+            .doInBackground {
+                Try.success(Optional.of(MyStorage.getMediaFilesSize()))
+            }
+            .onPostExecute { fragment, size: Try<Optional<Long>> ->
+                size.onSuccess { optSize ->
+                    fragment.showMaximumSizeOfCachedMedia(optSize)
                 }
             }
-
-        AsyncTaskLauncher.execute(this, backgroundFunc, uiConsumer)
+            .execute(this)
     }
 
     private fun showMaximumSizeOfCachedMedia(size: Optional<Long>) {
@@ -341,7 +337,6 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
                             MyPreferences.getMaximumSizeOfCachedMediaBytes()) +
                             size.map { s: Long -> " (" + getText(R.string.reltime_just_now) + ": " + I18n.formatBytes(s) + ")" }
                                     .orElse(""))
-                    true
                 }
     }
 

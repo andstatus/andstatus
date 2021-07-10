@@ -192,10 +192,11 @@ class MyService : Service(), IdentifiableInstance {
                    MyLog.v(this) { "(revive heartbeat) Cancelling task: $it" }
                    it.cancel()
                 }
-                AsyncTaskLauncher.execute(TAG, current).onFailure { t: Throwable? ->
-                    heartBeatRef.compareAndSet(current, null)
-                    MyLog.w(TAG, "MyService $instanceId Failed to revive heartbeat", t)
-                }
+                current.execute(TAG, Unit)
+                    .onFailure { t: Throwable? ->
+                        heartBeatRef.compareAndSet(current, null)
+                        MyLog.w(TAG, "MyService $instanceId Failed to revive heartbeat", t)
+                    }
             }
         }
     }

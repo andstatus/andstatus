@@ -49,7 +49,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
     }
 
     fun move() {
-        AsyncTaskLauncher.execute(this, MoveDataBetweenStoragesTask())
+        MoveDataBetweenStoragesTask().execute(this, Unit)
     }
 
     private fun checkAndSetDataBeingMoved(): Boolean {

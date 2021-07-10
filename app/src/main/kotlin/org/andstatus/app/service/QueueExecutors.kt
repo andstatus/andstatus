@@ -55,11 +55,11 @@ class QueueExecutors(private val myService: MyService) {
                         logMessageBuilder.withComma("Nothing to execute")
                     } else {
                         logMessageBuilder.withComma("Starting new Executor $current")
-                        AsyncTaskLauncher.execute(myService.classTag() + "-" + accessorType, current)
-                                .onFailure { throwable: Throwable? ->
-                                    logMessageBuilder.withComma("Failed to start new executor: $throwable")
-                                    replaceExecutor(logMessageBuilder, accessorType, current, null)
-                                }
+                        current.execute(myService.classTag() + "-" + accessorType, Unit)
+                            .onFailure { throwable: Throwable? ->
+                                logMessageBuilder.withComma("Failed to start new executor: $throwable")
+                                replaceExecutor(logMessageBuilder, accessorType, current, null)
+                            }
                     }
                 }
             }

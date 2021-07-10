@@ -35,7 +35,7 @@ class ApiDebugger(private val myContext: MyContext, private val activityContext:
 
     private fun debugGet(text: String) {
         AsyncTaskLauncher.execute<Any?, HttpReadResult>(null, { debugApiAsync(text) },
-            { { results: Try<HttpReadResult> -> debugApiSync(results) } })
+            { _, results: Try<HttpReadResult> -> debugApiSync(results) })
     }
 
     private fun debugApiAsync(text: String): Try<HttpReadResult> {

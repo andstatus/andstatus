@@ -176,7 +176,7 @@ class DatabaseConverterController {
                 if (MyContextHolder.myContextHolder.isOnRestore()) {
                     asyncUpgrade.syncUpgrade()
                 } else {
-                    AsyncTaskLauncher.execute(TAG, asyncUpgrade)
+                    asyncUpgrade.execute(TAG, Unit)
                 }
             }
         }

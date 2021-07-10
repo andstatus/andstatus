@@ -728,19 +728,19 @@ class AccountSettingsActivity : MyActivity() {
             if (myAccount.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
                 // This is needed even for OAuth - to know Username
-                AsyncTaskLauncher.execute(
-                    this,
-                    VerifyCredentialsTask(myAccount.actor.getEndpoint(ActorEndpointType.API_PROFILE))
-                )
+                VerifyCredentialsTask(myAccount.actor.getEndpoint(ActorEndpointType.API_PROFILE))
+                    .execute(this, Unit)
                     .onFailure { e: Throwable -> appendError(e.message) }
             } else if (state.builder.isOAuth() && reVerify) {
                 // Credentials are not present,
                 // so start asynchronous OAuth Authentication process
                 if (!myAccount.areClientKeysPresent()) {
-                    AsyncTaskLauncher.execute(this, OAuthRegisterClientTask())
+                    OAuthRegisterClientTask()
+                        .execute(this, Unit)
                         .onFailure { e: Throwable -> appendError(e.message) }
                 } else {
-                    AsyncTaskLauncher.execute(this, OAuthAcquireRequestTokenTask(this))
+                    OAuthAcquireRequestTokenTask(this)
+                        .execute(this, Unit)
                         .onFailure { e: Throwable -> appendError(e.message) }
                     activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
                 }
@@ -937,10 +937,8 @@ class AccountSettingsActivity : MyActivity() {
                         .whenSuccessAsync({ myContext: MyContext ->
                             state.builder.rebuildMyAccount(myContext)
                             updateScreen()
-                            AsyncTaskLauncher.execute(
-                                this,
-                                OAuthAcquireRequestTokenTask(this@AccountSettingsActivity)
-                            )
+                            OAuthAcquireRequestTokenTask(this@AccountSettingsActivity)
+                                .execute(this, Unit)
                                 .onFailure { e: Throwable -> appendError(e.message) }
                             activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
                         }, UiThreadExecutor.INSTANCE)
@@ -1202,7 +1200,8 @@ class AccountSettingsActivity : MyActivity() {
                 result.onSuccess {
                     // Credentials are present, so we may verify them
                     // This is needed even for OAuth - to know Twitter Username
-                    AsyncTaskLauncher.execute(this, VerifyCredentialsTask(it.whoAmI))
+                    VerifyCredentialsTask(it.whoAmI)
+                        .execute(this, Unit)
                         .onFailure { e: Throwable -> appendError(e.message) }
                 }.onFailure {
                     val stepErrorMessage = this@AccountSettingsActivity

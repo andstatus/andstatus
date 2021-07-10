@@ -23,7 +23,6 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.os.AsyncTask.PoolEnum.DEFAULT_POOL
-import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
@@ -99,27 +98,24 @@ abstract class DataChecker {
         }
 
         fun fixDataAsync(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean) {
-            AsyncTaskLauncher.execute(
-                    logger.logTag,
-                    object : AsyncTask<Unit, Unit, Unit>(logger.logTag, DEFAULT_POOL) {
-                        override val cancelable: Boolean = false
+            object : AsyncTask<Unit, Unit, Unit>(logger.logTag, DEFAULT_POOL, cancelable = false) {
 
-                        override suspend fun doInBackground(params: Unit): Try<Unit> {
-                            fixData(logger, includeLong, countOnly)
-                            delay(3000)
-                            MyContextHolder.myContextHolder.release { "fixDataAsync" }
-                            MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
-                            return TryUtils.SUCCESS
-                        }
+                override suspend fun doInBackground(params: Unit): Try<Unit> {
+                    fixData(logger, includeLong, countOnly)
+                    delay(3000)
+                    MyContextHolder.myContextHolder.release { "fixDataAsync" }
+                    MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
+                    return TryUtils.SUCCESS
+                }
 
-                        override suspend fun onPostExecute(result: Try<Unit>) {
-                            result.onSuccess {
-                                logger.logSuccess()
-                            }.onFailure {
-                                logger.logFailure()
-                            }
-                        }
-                    })
+                override suspend fun onPostExecute(result: Try<Unit>) {
+                    result.onSuccess {
+                        logger.logSuccess()
+                    }.onFailure {
+                        logger.logFailure()
+                    }
+                }
+            }.execute(logger.logTag, Unit)
         }
 
         fun fixData(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean): Long {

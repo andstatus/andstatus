@@ -66,9 +66,9 @@ class QueueViewer : LoadableListActivity<QueueData>() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
-            R.id.clear_the_queue -> AsyncTaskLauncher.execute<QueueViewer?, Unit>(this,
-                    { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues.clear() },
-                    { activity: QueueViewer? -> { activity?.showList(WhichPage.CURRENT) } })
+            R.id.clear_the_queue -> AsyncTaskLauncher.execute(this,
+                    { MyContextHolder.myContextHolder.getBlocking().queues.clear() },
+                    { activity: QueueViewer?, _ -> activity?.showList(WhichPage.CURRENT) })
             else -> return super.onOptionsItemSelected(item)
         }
         return false
@@ -96,11 +96,9 @@ class QueueViewer : LoadableListActivity<QueueData>() {
                 true
             }
             R.id.menuItemDelete -> {
-                AsyncTaskLauncher.execute<QueueViewer?, Unit>(this,
-                        { activity: QueueViewer? ->
-                            MyContextHolder.myContextHolder.getBlocking().queues.deleteCommand(data.commandData)
-                        },
-                        { activity: QueueViewer? -> { activity?.showList(WhichPage.CURRENT) } })
+                AsyncTaskLauncher.execute<QueueViewer, Unit>(this,
+                        { MyContextHolder.myContextHolder.getBlocking().queues.deleteCommand(data.commandData) },
+                        { activity: QueueViewer?, _ -> activity?.showList(WhichPage.CURRENT) })
                 true
             }
             else -> super.onContextItemSelected(item)
