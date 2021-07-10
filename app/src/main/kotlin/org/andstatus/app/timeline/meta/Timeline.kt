@@ -35,7 +35,7 @@ import org.andstatus.app.data.SqlWhere
 import org.andstatus.app.database.table.TimelineTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncUtil
 import org.andstatus.app.service.CommandResult
 import org.andstatus.app.timeline.ListScope
 import org.andstatus.app.util.BundleUtils
@@ -381,7 +381,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     fun save(myContext: MyContext): Timeline {
-        if (AsyncTask.isUiThread) return this
+        if (AsyncUtil.isUiThread) return this
         if (needToLoadActorInTimeline()) {
             setChanged()
         }

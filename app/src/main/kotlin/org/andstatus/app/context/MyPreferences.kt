@@ -283,10 +283,9 @@ object MyPreferences {
                 * BYTES_IN_MB)
     }
 
-    fun getMaximumSizeOfCachedMediaBytes(): Long {
-        return (Math.max(SharedPreferencesUtil.getLongStoredAsString(KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000), 1)
-                * BYTES_IN_MB)
-    }
+    val maximumSizeOfCachedMediaBytes: Long get() = SharedPreferencesUtil.getLongStoredAsString(
+        KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000)
+        .coerceAtLeast(1) * BYTES_IN_MB
 
     fun isBackupDownloads(): Boolean {
         return SharedPreferencesUtil.getBoolean(KEY_BACKUP_DOWNLOADS, false)

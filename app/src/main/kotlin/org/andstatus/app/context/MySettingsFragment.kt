@@ -49,8 +49,9 @@ import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.note.KeywordsFilter
 import org.andstatus.app.notification.NotificationMethodType
 import org.andstatus.app.origin.PersistentOriginList
-import org.andstatus.app.os.AsyncTask
-import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.AsyncResult
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.service.QueueViewer
 import org.andstatus.app.timeline.meta.ManageTimelines
 import org.andstatus.app.timeline.meta.Timeline
@@ -62,7 +63,6 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
@@ -318,26 +318,21 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     }
 
     private fun showMaximumSizeOfCachedMedia() {
-        AsyncTask<MySettingsFragment, Unit, Optional<Long>>(this, AsyncTask.PoolEnum.DEFAULT_POOL)
+        AsyncResult<MySettingsFragment, Long>(this, AsyncEnum.DEFAULT_POOL)
             .doInBackground {
-                Try.success(Optional.of(MyStorage.getMediaFilesSize()))
+                Try.success(MyStorage.getMediaFilesSize())
             }
-            .onPostExecute { fragment, size: Try<Optional<Long>> ->
-                size.onSuccess { optSize ->
-                    fragment.showMaximumSizeOfCachedMedia(optSize)
-                }
+            .onPostExecute { fragment, result: Try<Long> ->
+                result.onSuccess { fragment.showMaximumSizeOfCachedMedia(it) }
             }
             .execute(this)
     }
 
-    private fun showMaximumSizeOfCachedMedia(size: Optional<Long>) {
-        TryUtils.ofNullable(findPreference<Preference?>(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB))
-                .map { preference: Preference ->
-                    preference.setSummary(Formatter.formatShortFileSize(activity,
-                            MyPreferences.getMaximumSizeOfCachedMediaBytes()) +
-                            size.map { s: Long -> " (" + getText(R.string.reltime_just_now) + ": " + I18n.formatBytes(s) + ")" }
-                                    .orElse(""))
-                }
+    private fun showMaximumSizeOfCachedMedia(size: Long) {
+        TryUtils.ofNullable(findPreference<Preference?>(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB)).map {
+            it.summary = Formatter.formatShortFileSize(activity, MyPreferences.maximumSizeOfCachedMediaBytes) +
+                    " (" + getText(R.string.reltime_just_now) + ": " + I18n.formatBytes(size) + ")"
+        }
     }
 
     private fun showImageAnimations() {
@@ -405,12 +400,15 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         if (!doLaunch) return
         val activity = activity as MyActivity? ?: return
 
-        val progressListener = DefaultProgressListener(activity, R.string.delete_old_data, "DataPruner")
-        progressListener.setCancelable(true)
-        val pruner = DataPruner( MyContextHolder.myContextHolder.getNow())
+        AsyncRunnable(taskId = this, AsyncEnum.FILE_DOWNLOAD, cancelable = false).doInBackground {
+            val progressListener = DefaultProgressListener(activity, R.string.delete_old_data, "DataPruner")
+            progressListener.setCancelable(true)
+            DataPruner(MyContextHolder.myContextHolder.getNow())
                 .setLogger(ProgressLogger(progressListener))
                 .setPruneNow()
-        AsyncTaskLauncher.execute(false) { pruner.prune() }
+                .prune()
+            TryUtils.SUCCESS
+        }.execute(this, Unit)
     }
 
     private fun pickRingtone() {

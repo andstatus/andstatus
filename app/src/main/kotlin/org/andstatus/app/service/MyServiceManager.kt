@@ -23,7 +23,7 @@ import android.os.Build
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContextHolder
-import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncUtil
 import org.andstatus.app.syncadapter.SyncInitiator
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.InstanceId
@@ -258,7 +258,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
             var myContext = MyContextHolder.myContextHolder.getNow()
             if (!myContext.isReady) {
                 if (serviceAvailability.get().isAvailable()
-                        && AsyncTask.nonUiThread // Don't block on UI thread
+                        && AsyncUtil.nonUiThread // Don't block on UI thread
                         && !MyContextHolder.myContextHolder.getNow().initialized
                 ) {
                     myContext = MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()

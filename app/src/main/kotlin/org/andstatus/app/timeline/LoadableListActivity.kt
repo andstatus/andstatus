@@ -33,7 +33,8 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.ParsedUri
 import org.andstatus.app.list.MyBaseListActivity
 import org.andstatus.app.list.SyncLoader
-import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncTask
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
@@ -130,7 +131,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
                     msgLog.append(", Ignored $mWorkingLoader")
                 } else {
                     val newLoader = AsyncLoader(instanceTag())
-                    if (AsyncTaskLauncher.execute(this, newLoader, args).isSuccess) {
+                    if (newLoader.execute(this, args).isSuccess) {
                         mWorkingLoader = newLoader
                         loaderIsWorking = true
                         refreshNeededSince.set(0)
@@ -197,8 +198,8 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     private inner class AsyncLoader : AsyncTask<Bundle?, String?, SyncLoader<*>>, ProgressPublisher {
         private var mSyncLoader: SyncLoader<*>? = null
 
-        constructor(taskId: String?) : super(taskId, PoolEnum.DEFAULT_POOL) {}
-        constructor() : super(PoolEnum.DEFAULT_POOL) {}
+        constructor(taskId: String?) : super(taskId, AsyncEnum.DEFAULT_POOL) {}
+        constructor() : super(AsyncEnum.DEFAULT_POOL) {}
 
         fun getSyncLoader(): SyncLoader<*> {
             return mSyncLoader ?: newSyncLoader(null)
@@ -388,27 +389,19 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     }
 
     private fun showSyncing(commandData: CommandData) {
-        AsyncTaskLauncher.execute(this,
-            object : AsyncTask<CommandData, Unit, String>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
-
-                override suspend fun doInBackground(params: CommandData): Try<String> {
-                    return Try.success(params.toCommandSummary(myContext))
+        AsyncResult<CommandData, String>("ShowSyncing" + instanceId, AsyncEnum.QUICK_UI)
+            .doInBackground {
+                Try.success(it.toCommandSummary(myContext))
+            }
+            .onPostExecute { _, result ->
+                result.onSuccess {
+                    showSyncing(
+                        "Show " + commandData.command,
+                        getText(R.string.title_preference_syncing).toString() + ": " + it
+                    )
                 }
-
-                override suspend fun onPostExecute(result: Try<String>) {
-                    result.onSuccess {
-                        showSyncing(
-                            "Show " + commandData.command,
-                            getText(R.string.title_preference_syncing).toString() + ": " + it
-                        )
-                    }
-                }
-
-                override fun toString(): String {
-                    return "ShowSyncing " + super.toString()
-                }
-            }, commandData
-        )
+            }
+            .execute(this, commandData)
     }
 
     protected open fun isCommandToShowInSyncIndicator(commandData: CommandData): Boolean {

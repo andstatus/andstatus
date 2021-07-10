@@ -28,15 +28,14 @@ import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
-import org.andstatus.app.os.AsyncTask
-import org.andstatus.app.os.AsyncTask.PoolEnum.DEFAULT_POOL
-import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.AsyncEffects
+import org.andstatus.app.os.AsyncEnum.DEFAULT_POOL
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 
 class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     private var dataFolder: DocumentFile? = null
-    private var asyncTask: RestoreTask? = null
+    private var asyncTask: AsyncEffects<DocumentFile>? = null
     private var progressCounter = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,10 +50,14 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     private fun doRestore(v: View?) {
         if (asyncTask?.isFinished ?: true) {
             resetProgress()
-            asyncTask = RestoreTask(this@RestoreActivity)
+            asyncTask = AsyncEffects<DocumentFile>(this, DEFAULT_POOL, cancelable = false)
+                .doInBackground { params ->
+                    MyBackupManager.restoreInteractively(params, this@RestoreActivity, this@RestoreActivity)
+                    TryUtils.SUCCESS
+                }
                 .also {
                     it.maxCommandExecutionSeconds = MAX_RESTORE_SECONDS.toLong()
-                    AsyncTaskLauncher.execute(this, it, getDataFolder())
+                    it.execute(this, getDataFolder())
                 }
         }
     }
@@ -114,19 +117,6 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
         if (view != null) {
             val folder = getDataFolder()
             view.text = if (MyBackupManager.isDataFolder(folder)) folder.uri.path else getText(R.string.not_set)
-        }
-    }
-
-    private class RestoreTask(private val activity: RestoreActivity) :
-        AsyncTask<DocumentFile?, CharSequence?, Unit>(DEFAULT_POOL) {
-
-        override val cancelable = false
-
-        override suspend fun doInBackground(params: DocumentFile?): Try<Unit> {
-            params?.let {
-                MyBackupManager.restoreInteractively(params, activity, activity)
-            }
-            return TryUtils.SUCCESS
         }
     }
 

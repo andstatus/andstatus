@@ -30,7 +30,9 @@ import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.graphics.MediaMetadata
 import org.andstatus.app.graphics.MediaMetadata.Companion.EMPTY
 import org.andstatus.app.graphics.MediaMetadata.Companion.fromFilePath
-import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.AsyncResult
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
@@ -133,7 +135,11 @@ abstract class MediaFile internal constructor(filename: String,
     fun preloadImageAsync(cacheName: CacheName) {
         val image = getImageFromCache(cacheName)
         if (image == null && downloadFile.existed) {
-            AsyncTaskLauncher.execute(true) { preloadImage(this, cacheName) }
+            AsyncRunnable(taskId = this, AsyncEnum.FILE_DOWNLOAD, cancelable = true)
+                .doInBackground {
+                    preloadImage(this, cacheName)
+                    TryUtils.SUCCESS
+                }.execute(this, Unit)
         }
     }
 
@@ -170,9 +176,11 @@ abstract class MediaFile internal constructor(filename: String,
         }
         logResult("Show default", taskSuffix)
         uiConsumer.accept(null)
-        AsyncTaskLauncher.execute(DrawableLoader(this, cacheName),
-            { loader: DrawableLoader? -> loader?.load()?.map(mapper) ?: TryUtils.notFound() },
-            { _, drawableTry: Try<Drawable?> -> drawableTry.onSuccess(uiConsumer) })
+        val params = DrawableLoader(this, cacheName)
+        AsyncResult<DrawableLoader, Drawable?>(taskId = params, pool = AsyncEnum.DEFAULT_POOL)
+            .doInBackground { loader: DrawableLoader? -> loader?.load()?.map(mapper) ?: TryUtils.notFound() }
+            .onPostExecute { _: DrawableLoader, drawableTry: Try<Drawable?> -> drawableTry.onSuccess(uiConsumer) }
+            .execute(this, params)
     }
 
     fun logResult(msgLog: String?, taskSuffix: String) {

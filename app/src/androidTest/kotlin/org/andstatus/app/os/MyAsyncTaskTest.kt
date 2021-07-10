@@ -17,12 +17,12 @@ import java.util.concurrent.atomic.AtomicReference
 
 class MyAsyncTaskTest {
 
-    class TestTask : AsyncTask<String, String, String>(PoolEnum.DEFAULT_POOL) {
+    class TestTask : AsyncTask<String, String, String>(AsyncEnum.DEFAULT_POOL) {
         val onPreExecuteVal = AtomicBoolean()
         val inBackgroundVal = AtomicBoolean()
         val onCancelVal = AtomicBoolean()
         val onPostExecuteVal = AtomicReference<String?>()
-        var exceptionDuringBackground: Exception? = null
+        var exceptionDuringBackground: (() -> Exception)? = null
 
         override suspend fun onPreExecute() {
             onPreExecuteVal.set(true)
@@ -32,7 +32,7 @@ class MyAsyncTaskTest {
         override suspend fun doInBackground(params: String): Try<String> {
             inBackgroundVal.set(true)
             delay(250)
-            exceptionDuringBackground?.let { throw it }
+            exceptionDuringBackground?.let { throw it() }
             delay(250)
             return Try.success("done $params")
         }
@@ -169,7 +169,7 @@ class MyAsyncTaskTest {
     @Test
     fun exceptionDuringBackground() = runBlocking {
         val task = TestTask().apply {
-            exceptionDuringBackground = Exception("Something went wrong")
+            exceptionDuringBackground = { Exception("Something went wrong") }
             executeInContext(Dispatchers.Default, "")
         }
 

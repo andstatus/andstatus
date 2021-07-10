@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit
 /** We need this as long as we use CompletableFuture (to be replaced with coroutines) */
 class NonUiThreadExecutor : Executor {
     override fun execute(command: Runnable) {
-        if (AsyncTask.isUiThread) {
+        if (AsyncUtil.isUiThread) {
             executor.execute(command)
         } else {
             command.run()

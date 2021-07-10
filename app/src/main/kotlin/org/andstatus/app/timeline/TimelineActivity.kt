@@ -66,8 +66,8 @@ import org.andstatus.app.note.NoteEditorListActivity
 import org.andstatus.app.note.NoteViewItem
 import org.andstatus.app.note.SharedNote
 import org.andstatus.app.origin.OriginSelector
-import org.andstatus.app.os.AsyncTask
-import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
@@ -1104,9 +1104,9 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
 
         private fun <T : ViewItem<T>> clearNotifications(timelineActivity: TimelineActivity<T>) {
             val timeline = timelineActivity.getParamsLoaded().timeline
-            object : AsyncTask<Unit, Unit, Unit>(
+            object : AsyncRunnable(
                 "clearNotifications" + timeline.getId(),
-                PoolEnum.QUICK_UI
+                AsyncEnum.QUICK_UI
             ) {
                 override suspend fun doInBackground(params: Unit): Try<Unit> {
                     timelineActivity.myContext.clearNotifications(timeline)

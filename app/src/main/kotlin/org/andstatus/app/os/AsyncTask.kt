@@ -17,7 +17,6 @@ package org.andstatus.app.os
 
 import android.database.sqlite.SQLiteDatabaseLockedException
 import android.database.sqlite.SQLiteDiskIOException
-import android.os.Looper
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import io.vavr.control.Try
@@ -40,6 +39,10 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
+typealias AsyncRunnable = AsyncTask<Unit, Unit, Unit>
+typealias AsyncEffects<Params> = AsyncTask<Params, Unit, Unit>
+typealias AsyncResult<Params, Result> = AsyncTask<Params, Unit, Result>
+
 /**
  * AsyncTask implementation using Kotlin Coroutines.
  * No dependencies on (deprecated in API 30) Android's AsyncTask
@@ -47,11 +50,11 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 open class AsyncTask<Params, Progress, Result>(
     taskId: Any?,
-    val pool: PoolEnum,
+    val pool: AsyncEnum,
     open val cancelable: Boolean = true
 ) : IdentifiableInstance {
 
-    constructor(pool: PoolEnum) : this(AsyncTask::class.java, pool)
+    constructor(pool: AsyncEnum) : this(AsyncTask::class.java, pool)
 
     var maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds
     private val taskId: String = MyStringBuilder.objToTag(taskId)
@@ -84,15 +87,9 @@ open class AsyncTask<Params, Progress, Result>(
     @Volatile
     var job: Job? = null
 
-    enum class PoolEnum(val corePoolSize: Int, val maxCommandExecutionSeconds: Long) {
-        SYNC(0, MAX_COMMAND_EXECUTION_SECONDS),
-        FILE_DOWNLOAD(0, MAX_COMMAND_EXECUTION_SECONDS),
-        QUICK_UI(2, 20),
-        DEFAULT_POOL(0, MAX_COMMAND_EXECUTION_SECONDS)
-    }
-
-    fun execute(params: Params): Try<Unit> = execute(params, params)
-    fun execute(objTag: Any?, params: Params): Try<Unit> = AsyncTaskLauncher.execute(objTag, this, params)
+    fun execute(params: Params): Try<AsyncTask<Params, Progress, Result>> = execute(params, params)
+    fun execute(objTag: Any?, params: Params): Try<AsyncTask<Params, Progress, Result>> =
+        AsyncTaskLauncher.execute(objTag, this, params)
 
     /**
      * Executes the task with the specified parameters. The task returns
@@ -404,13 +401,7 @@ open class AsyncTask<Params, Progress, Result>(
 
     companion object {
         private const val MAX_WAITING_BEFORE_EXECUTION_SECONDS: Long = 600
-        private const val MAX_COMMAND_EXECUTION_SECONDS: Long = 600
         private const val MAX_EXECUTION_AFTER_CANCEL_SECONDS: Long = 600
         private const val DELAY_AFTER_EXECUTOR_ENDED_SECONDS: Long = 1
-
-        val nonUiThread: Boolean get() = !isUiThread
-
-        // See http://stackoverflow.com/questions/11411022/how-to-check-if-current-thread-is-not-main-thread
-        val isUiThread: Boolean get() = Looper.myLooper() == Looper.getMainLooper()
     }
 }

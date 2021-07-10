@@ -24,8 +24,8 @@ import org.andstatus.app.account.AccountSelector
 import org.andstatus.app.data.MatchedUri
 import org.andstatus.app.list.ContextMenuItem
 import org.andstatus.app.note.NoteEditorData
-import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
@@ -140,36 +140,28 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
     }
 
     fun execute(menu: ActorContextMenu): Boolean {
-        val params = Params(menu)
+        val params1 = Params(menu)
         MyLog.v(this, "execute started")
         if (mIsAsync) {
-            executeAsync1(params)
+            AsyncResult<Params, NoteEditorData>(TAG + name, AsyncEnum.QUICK_UI)
+                .doInBackground {
+                    MyLog.v(this, "execute async started. " +
+                                it.menu.getViewItem().actor.getUniqueNameWithOrigin())
+                    executeAsync(it)
+                }
+                .onPostExecute { params, result ->
+                    MyLog.v(this, "execute async ended")
+                    result.onSuccess {
+                        executeOnUiThread(params.menu, it)
+                    }
+                }
+                .execute(TAG, params1)
         } else {
             val myAccount = menu.getActingAccount().getValidOrCurrent(menu.getMyContext())
             val editorData = NoteEditorData(myAccount, 0, false, 0, false)
-            executeOnUiThread(params.menu, editorData)
+            executeOnUiThread(params1.menu, editorData)
         }
         return false
-    }
-
-    private fun executeAsync1(params2: Params) {
-        object : AsyncTask<Unit, Unit, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
-            override suspend fun doInBackground(params: Unit): Try<NoteEditorData> {
-                MyLog.v(
-                    this, "execute async started. "
-                            + params2.menu.getViewItem().actor.getUniqueNameWithOrigin()
-                )
-                return executeAsync(params2)
-            }
-
-            override suspend fun onPostExecute(result: Try<NoteEditorData>) {
-                MyLog.v(this, "execute async ended")
-                result.onSuccess {
-                    executeOnUiThread(params2.menu, it)
-                }
-            }
-        }
-            .execute(TAG, Unit)
     }
 
     open fun executeAsync(params: Params): Try<NoteEditorData> {

@@ -28,7 +28,7 @@ import org.andstatus.app.data.OidEnum
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.origin.OriginConfig
-import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncUtil
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
@@ -305,7 +305,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             MyLog.v(this) { "Won't save $this" }
             return true
         }
-        check(!AsyncTask.isUiThread) { "Saving activity on the Main thread " + toString() }
+        check(!AsyncUtil.isUiThread) { "Saving activity on the Main thread " + toString() }
         check(accountActor.actorId != 0L) { "Account is unknown " + toString() }
         if (getId() == 0L) {
             findExisting(myContext)

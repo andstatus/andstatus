@@ -23,9 +23,8 @@ import org.andstatus.app.backup.DefaultProgressListener
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.checker.DataChecker
-import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.AsyncTask
-import org.andstatus.app.os.AsyncTask.PoolEnum.DEFAULT_POOL
+import org.andstatus.app.os.AsyncEnum.DEFAULT_POOL
+import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
@@ -34,7 +33,7 @@ import java.util.concurrent.TimeUnit
 
 class DatabaseConverterController {
     private class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) :
-        AsyncTask<Unit, Unit, Unit>(DEFAULT_POOL) {
+        AsyncRunnable(DEFAULT_POOL) {
         var progressLogger: ProgressLogger = ProgressLogger.getEmpty(TAG)
         override val cancelable: Boolean = false
 

@@ -20,7 +20,8 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyProvider
-import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceEvent
@@ -33,7 +34,7 @@ import org.andstatus.app.util.TryUtils
 /**
  * Asynchronously save, delete and send a note, prepared by [NoteEditor]
  */
-class NoteSaver(private val editor: NoteEditor) : AsyncTask<NoteEditorCommand?, Unit, NoteEditorData>(PoolEnum.QUICK_UI) {
+class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?, NoteEditorData>(AsyncEnum.QUICK_UI) {
     val noteEditorCommandEmpty = NoteEditorCommand(NoteEditorData.EMPTY)
 
     @Volatile

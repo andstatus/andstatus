@@ -21,8 +21,8 @@ import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.DbUtils
-import org.andstatus.app.os.AsyncTask
-import org.andstatus.app.os.AsyncTask.PoolEnum.DEFAULT_POOL
+import org.andstatus.app.os.AsyncEnum.DEFAULT_POOL
+import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
@@ -98,7 +98,7 @@ abstract class DataChecker {
         }
 
         fun fixDataAsync(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean) {
-            object : AsyncTask<Unit, Unit, Unit>(logger.logTag, DEFAULT_POOL, cancelable = false) {
+            object : AsyncRunnable(logger.logTag, DEFAULT_POOL, cancelable = false) {
 
                 override suspend fun doInBackground(params: Unit): Try<Unit> {
                     fixData(logger, includeLong, countOnly)

@@ -169,7 +169,7 @@ History size=$maxSize notes; deleted $nDeletedSize of $nActivities notes, before
 
     fun pruneMedia(): Long {
         val dirSize = MyStorage.getMediaFilesSize()
-        val maxSize = MyPreferences.getMaximumSizeOfCachedMediaBytes()
+        val maxSize = MyPreferences.maximumSizeOfCachedMediaBytes
         val bytesToPrune = dirSize - maxSize
         val bytesToPruneMin = ATTACHMENTS_TO_STORE_MIN * MyPreferences.getMaximumSizeOfAttachmentBytes()
         logger.logProgress("Size of media files: " + I18n.formatBytes(dirSize)

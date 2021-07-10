@@ -33,7 +33,7 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.AsyncTask.PoolEnum
+import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
@@ -283,7 +283,7 @@ class MyService : Service(), IdentifiableInstance {
             MyLog.v(this) { "(unInit) Cancelling task: $heartBeat" }
             heartBeat.cancel()
         }
-        AsyncTaskLauncher.cancelPoolTasks(PoolEnum.SYNC)
+        AsyncTaskLauncher.cancelPoolTasks(AsyncEnum.SYNC)
         releaseWakeLock()
         stopSelf()
         myContext.notifier.clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)

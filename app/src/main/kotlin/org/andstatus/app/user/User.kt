@@ -26,7 +26,7 @@ import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.database.table.UserTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncUtil
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TriState
@@ -119,7 +119,7 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
         }
 
         private fun loadInternal(myContext: MyContext, actorId: Long): User {
-            if (actorId == 0L || AsyncTask.isUiThread) return EMPTY
+            if (actorId == 0L || AsyncUtil.isUiThread) return EMPTY
             val sql = ("SELECT " + ActorSql.select(fullProjection = false, userOnly = true)
                     + " FROM " + ActorSql.tables(isFullProjection = false, userOnly = true, userIsOptional = false)
                     + " WHERE " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + "=" + actorId)

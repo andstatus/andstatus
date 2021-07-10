@@ -23,19 +23,18 @@ import android.provider.DocumentsContract
 import android.view.View
 import android.widget.TextView
 import androidx.documentfile.provider.DocumentFile
-import io.vavr.control.Try
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
-import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncEffects
+import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.util.TryUtils
 
 class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     private var backupFolder: DocumentFile? = null
-    private var asyncTask: BackupTask? = null
+    private var asyncTask: AsyncEffects<DocumentFile>? = null
     private var progressCounter = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,11 +47,15 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private fun doBackup(v: View?) {
-        if (asyncTask?.isFinished ?: true) {
+        if (asyncTask?.isFinished != false) {
             resetProgress()
-            asyncTask = BackupTask(this@BackupActivity).also {
-                AsyncTaskLauncher.execute(this, it, getBackupFolder())
-            }
+            asyncTask = AsyncEffects<DocumentFile>(this, AsyncEnum.DEFAULT_POOL, cancelable = false)
+                .doInBackground { params: DocumentFile ->
+                    MyBackupManager.backupInteractively(params, this@BackupActivity, this@BackupActivity)
+                    TryUtils.SUCCESS
+                }.also {
+                    it.execute(this, getBackupFolder())
+                }
         }
     }
 
@@ -101,17 +104,6 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
         val view = findViewById<TextView?>(R.id.backup_folder)
         if (view != null) {
             view.text = getBackupFolder().uri.path
-        }
-    }
-
-    private class BackupTask(private val activity: BackupActivity) :
-        AsyncTask<DocumentFile?, CharSequence?, Unit>(PoolEnum.DEFAULT_POOL) {
-
-        override suspend fun doInBackground(params: DocumentFile?): Try<Unit> {
-            params?.let {
-                MyBackupManager.backupInteractively(params, activity, activity)
-            }
-            return TryUtils.SUCCESS
         }
     }
 

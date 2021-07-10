@@ -46,8 +46,8 @@ import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.graphics.IdentifiableImageView
 import org.andstatus.app.net.social.ApiRoutineEnum
-import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncResult
+import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
@@ -526,7 +526,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         hide()
         if (command.nonEmpty) {
             MyLog.v(NoteEditorData.TAG) { "Requested: $command" }
-            AsyncTaskLauncher.execute(this, NoteSaver(this), command)
+            NoteSaver(this).execute(this, command)
         } else {
             if (command.showAfterSave) {
                 command.currentData?.let { showData(it) }
@@ -547,45 +547,43 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             return
         }
         MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft requested, noteId=$noteId" }
-        AsyncTaskLauncher.execute(this,
-                object : AsyncTask<Long, Unit, NoteEditorData>(this@NoteEditor.toString(),
-                        PoolEnum.QUICK_UI) {
-                    @Volatile
-                    var lock: NoteEditorLock = NoteEditorLock.EMPTY
 
-                    override suspend fun doInBackground(params: Long): Try<NoteEditorData> {
-                        MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft started, noteId=$params" }
-                        val potentialLock = NoteEditorLock(false, params)
-                        if (!potentialLock.acquire(true)) {
-                            return TryUtils.notFound()
-                        }
-                        lock = potentialLock
-                        MyLog.v(NoteEditorData.TAG, "loadCurrentDraft acquired lock")
-                        val data: NoteEditorData = NoteEditorData.load(editorContainer.getActivity().myContext, params)
-                        return if (data.mayBeEdited()) {
-                            Try.success(data)
+        object : AsyncResult<Long, NoteEditorData>(this@NoteEditor, AsyncEnum.QUICK_UI) {
+            @Volatile
+            var lock: NoteEditorLock = NoteEditorLock.EMPTY
+
+            override suspend fun doInBackground(params: Long): Try<NoteEditorData> {
+                MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft started, noteId=$params" }
+                val potentialLock = NoteEditorLock(false, params)
+                if (!potentialLock.acquire(true)) {
+                    return TryUtils.notFound()
+                }
+                lock = potentialLock
+                MyLog.v(NoteEditorData.TAG, "loadCurrentDraft acquired lock")
+                val data: NoteEditorData = NoteEditorData.load(editorContainer.getActivity().myContext, params)
+                return if (data.mayBeEdited()) {
+                    Try.success(data)
+                } else {
+                    MyLog.v(NoteEditorData.TAG) { "Cannot be edited $data" }
+                    MyPreferences.setBeingEditedNoteId(0)
+                    TryUtils.notFound()
+                }
+            }
+
+            override suspend fun onPostExecute(result: Try<NoteEditorData>) {
+                result.onSuccess {
+                    if (lock.acquired() && it.isValid() == true) {
+                        if (editorData.isValid()) {
+                            MyLog.v(NoteEditorData.TAG, "Loaded draft is not used: Editor data is valid")
+                            show()
                         } else {
-                            MyLog.v(NoteEditorData.TAG) { "Cannot be edited $data" }
-                            MyPreferences.setBeingEditedNoteId(0)
-                            TryUtils.notFound()
+                            showData(it)
                         }
                     }
-
-                    override suspend fun onPostExecute(result: Try<NoteEditorData>) {
-                        result.onSuccess {
-                            if (lock.acquired() && it.isValid() == true) {
-                                if (editorData.isValid()) {
-                                    MyLog.v(NoteEditorData.TAG, "Loaded draft is not used: Editor data is valid")
-                                    show()
-                                } else {
-                                    showData(it)
-                                }
-                            }
-                        }
-                        lock.release()
-                    }
-
-                }, noteId)
+                }
+                lock.release()
+            }
+        }.execute(this, noteId)
     }
 
     private fun onAttach() {

@@ -22,10 +22,12 @@ import android.view.ContextMenu.ContextMenuInfo
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import io.vavr.control.Try
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.list.SyncLoader
-import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.AsyncEffects
+import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.timeline.BaseTimelineAdapter
 import org.andstatus.app.timeline.LoadableListActivity
 import org.andstatus.app.timeline.WhichPage
@@ -66,9 +68,10 @@ class QueueViewer : LoadableListActivity<QueueData>() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
-            R.id.clear_the_queue -> AsyncTaskLauncher.execute(this,
-                    { MyContextHolder.myContextHolder.getBlocking().queues.clear() },
-                    { activity: QueueViewer?, _ -> activity?.showList(WhichPage.CURRENT) })
+            R.id.clear_the_queue -> AsyncEffects<QueueViewer>(taskId = this, pool = AsyncEnum.DEFAULT_POOL)
+                .doInBackground { MyContextHolder.myContextHolder.getBlocking().queues.clear() }
+                .onPostExecute { activity: QueueViewer?, _: Try<Unit> -> activity?.showList(WhichPage.CURRENT) }
+                .execute(this)
             else -> return super.onOptionsItemSelected(item)
         }
         return false
@@ -96,9 +99,14 @@ class QueueViewer : LoadableListActivity<QueueData>() {
                 true
             }
             R.id.menuItemDelete -> {
-                AsyncTaskLauncher.execute<QueueViewer, Unit>(this,
-                        { MyContextHolder.myContextHolder.getBlocking().queues.deleteCommand(data.commandData) },
-                        { activity: QueueViewer?, _ -> activity?.showList(WhichPage.CURRENT) })
+                AsyncEffects<QueueViewer>(taskId = this, pool = AsyncEnum.DEFAULT_POOL)
+                    .doInBackground {
+                        MyContextHolder.myContextHolder.getBlocking().queues.deleteCommand(
+                            data.commandData
+                        )
+                    }
+                    .onPostExecute { activity: QueueViewer?, _: Try<Unit> -> activity?.showList(WhichPage.CURRENT) }
+                    .execute(this)
                 true
             }
             else -> super.onContextItemSelected(item)

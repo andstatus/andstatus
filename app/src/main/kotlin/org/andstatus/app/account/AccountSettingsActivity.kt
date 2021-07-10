@@ -62,8 +62,8 @@ import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
 import org.andstatus.app.origin.PersistentOriginList
 import org.andstatus.app.origin.SIMPLE_USERNAME_EXAMPLES
-import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.AsyncTask
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.service.MyServiceManager
@@ -702,7 +702,7 @@ class AccountSettingsActivity : MyActivity() {
                 intent.data = null
                 // This activity was started by Twitter ("Service Provider")
                 // so start second step of OAuth Authentication process
-                AsyncTaskLauncher.execute(this, OAuthAcquireAccessTokenTask(), uri)
+                OAuthAcquireAccessTokenTask().execute(this, uri)
                 activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
             }
         }
@@ -888,7 +888,7 @@ class AccountSettingsActivity : MyActivity() {
      * Needed in a case we don't have the AndStatus Client keys for this Microblogging system
      */
     private inner class OAuthRegisterClientTask() :
-        AsyncTask<Unit, Unit, Boolean>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
+        AsyncResult<Unit, Boolean>("OAuthRegisterClientTask", AsyncEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -981,7 +981,7 @@ class AccountSettingsActivity : MyActivity() {
      * ProgressDialog and to get rid of any "Black blank screens"
      */
     private class OAuthAcquireRequestTokenTask(private val activity: AccountSettingsActivity) :
-        AsyncTask<Unit, Unit, TaskResult>(PoolEnum.QUICK_UI) {
+        AsyncResult<Unit, TaskResult>(AsyncEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -1110,7 +1110,7 @@ class AccountSettingsActivity : MyActivity() {
      * for "Access Token".
      * 2. Stores the Access token for all future interactions with Twitter.
      */
-    private inner class OAuthAcquireAccessTokenTask() : AsyncTask<Uri?, Unit, TaskResult>(PoolEnum.QUICK_UI) {
+    private inner class OAuthAcquireAccessTokenTask() : AsyncResult<Uri?, TaskResult>(AsyncEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -1221,7 +1221,7 @@ class AccountSettingsActivity : MyActivity() {
      * @author yvolk@yurivolkov.com
      */
     private inner class VerifyCredentialsTask(private val whoAmI: Optional<Uri>) :
-        AsyncTask<Unit, Unit, TaskResult>(PoolEnum.QUICK_UI) {
+        AsyncResult<Unit, TaskResult>(AsyncEnum.QUICK_UI) {
 
         override val cancelable = false // This is needed because there is initialize in the background
         private var dlg: ProgressDialog? = null
