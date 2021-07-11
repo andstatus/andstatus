@@ -37,7 +37,7 @@ class AccountSettingsWebActivity : MyActivity(AccountSettingsWebActivity::class)
         try {
             val url = intent.getStringExtra(EXTRA_URLTOOPEN)
             CookieManager.getInstance().setAcceptCookie(true)
-            MyLog.d(instanceTag, "Loading the URL: $url")
+            MyLog.d(this, "Loading the URL: $url")
             val view = findViewById<View?>(R.id.accountSettingsWebView) as WebView
             view.settings.builtInZoomControls = true
             view.settings.javaScriptEnabled = true
@@ -61,7 +61,7 @@ class AccountSettingsWebActivity : MyActivity(AccountSettingsWebActivity::class)
             val uri = Uri.parse(url)
             if (uri != null && HttpConnectionInterface.Companion.CALLBACK_URI.getHost() == uri.host) {
                 isCallback = true
-                MyLog.d(instanceTag, "Callback to: $url")
+                MyLog.d(this, "Callback to: $url")
                 if (!isFinishing) {
                     isFinishing = true
                     val i = Intent(this@AccountSettingsWebActivity, AccountSettingsActivity::class.java)

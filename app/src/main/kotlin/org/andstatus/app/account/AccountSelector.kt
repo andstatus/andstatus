@@ -87,7 +87,7 @@ class AccountSelector : SelectorDialog() {
                 visibleName = "($visibleName)"
             }
             map[KEY_VISIBLE_NAME] = visibleName
-            map[KEY_SYNC_AUTO] = if (ma.isSyncedAutomatically() && ma.isValidAndSucceeded()) syncText else ""
+            map[KEY_SYNC_AUTO] = if (ma.isSyncedAutomatically && ma.isValidAndSucceeded()) syncText else ""
             map[BaseColumns._ID] = ma.actorId.toString()
             list.add(map)
         }

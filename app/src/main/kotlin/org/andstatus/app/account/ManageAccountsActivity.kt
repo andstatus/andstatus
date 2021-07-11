@@ -172,7 +172,7 @@ private class MyRecyclerViewAdapter(val activity: ManageAccountsActivity):
                         intent.putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
                         activity.startActivity(intent)
                     }
-            MyUrlSpan.showText(itemView, R.id.sync_auto, if (ma.isSyncedAutomatically()) syncedText else "",
+            MyUrlSpan.showText(itemView, R.id.sync_auto, if (ma.isSyncedAutomatically) syncedText else "",
                     false, true)
             itemView.tag = visibleName
         }

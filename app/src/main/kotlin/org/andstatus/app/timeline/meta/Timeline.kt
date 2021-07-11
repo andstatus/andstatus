@@ -209,7 +209,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         isCombined = calcIsCombined(timelineType, this.origin)
         this.timelineType = fixedTimelineType(timelineType)
         isSyncable = calcIsSyncable(myAccountToSync)
-        isSyncableAutomatically = isSyncable && myAccountToSync.isSyncedAutomatically()
+        isSyncableAutomatically = isSyncable && myAccountToSync.isSyncedAutomatically
         isSyncableForAccounts = calcIsSyncableForAccounts(myContext)
         isSyncableForOrigins = calcIsSyncableForOrigins(myContext)
         this.selectorOrder = selectorOrder

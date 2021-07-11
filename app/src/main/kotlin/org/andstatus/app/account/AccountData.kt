@@ -69,17 +69,17 @@ class AccountData : Parcelable, AccountDataWriter, Identifiable {
 
     fun updateFrom(myAccount: MyAccount): AccountData {
         setDataString(MyAccount.KEY_ACTOR_OID, myAccount.actor.oid)
-        myAccount.getCredentialsVerified().put(this)
+        myAccount.credentialsVerified.put(this)
         setDataBoolean(MyAccount.KEY_OAUTH, myAccount.isOAuth())
         setDataLong(MyAccount.KEY_ACTOR_ID, myAccount.actor.actorId)
         myAccount.connection.saveTo(this)
         setPersistent(true)
         setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.isSyncable)
-        setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically())
-        setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.getSyncFrequencySeconds())
+        setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically)
+        setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.syncFrequencySeconds)
         // We don't create accounts of other versions
         setDataInt(AccountUtils.KEY_VERSION, AccountUtils.ACCOUNT_VERSION)
-        setDataInt(MyAccount.KEY_ORDER, myAccount.getOrder())
+        setDataInt(MyAccount.KEY_ORDER, myAccount.order)
         logMe("updated from $myAccount")
         return this
     }

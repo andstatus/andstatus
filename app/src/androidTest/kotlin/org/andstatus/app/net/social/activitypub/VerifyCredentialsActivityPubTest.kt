@@ -16,7 +16,7 @@
 package org.andstatus.app.net.social.activitypub
 
 import org.andstatus.app.account.AccountName
-import org.andstatus.app.account.MyAccount
+import org.andstatus.app.account.MyAccountBuilder
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
@@ -42,7 +42,7 @@ class VerifyCredentialsActivityPubTest {
         TestSuite.initializeWithAccounts(this)
         val origin: Origin =  myContext.origins.fromName(DemoData.demoData.activityPubTestOriginName)
         val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN)
-        stub = ConnectionStub.newFor(MyAccount.Builder.Companion.fromAccountName(accountName).myAccount)
+        stub = ConnectionStub.newFor(MyAccountBuilder.Companion.fromAccountName(accountName).myAccount)
     }
 
     @Test
@@ -50,7 +50,7 @@ class VerifyCredentialsActivityPubTest {
         stub.addResponse(org.andstatus.app.test.R.raw.activitypub_whoami_pleroma)
         val actor = stub.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID)).get()
         Assert.assertEquals("Actor's oid is actorOid of this account", ACTOR_OID, actor.oid)
-        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(stub.getData().getAccountName())
+        val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(stub.getData().getAccountName())
         builder.onCredentialsVerified(actor)
         Assert.assertTrue("Account is persistent", builder.isPersistent())
         val actorId = builder.myAccount.actorId

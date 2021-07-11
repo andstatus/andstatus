@@ -100,7 +100,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         assertEquals("No WebFingerId stored $actor",
                 actor.getWebFingerId(), MyQuery.actorIdToWebfingerId(myContext, actor.actorId))
         assertEquals("Account is not successfully verified",
-                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified())
+                CredentialsVerificationStatus.SUCCEEDED, ma.credentialsVerified)
         assertAccountIsAddedToAccountManager(ma)
         assertEquals("Oid: " + ma.actor, actor.oid, ma.actor.oid)
         assertTrue("Should be fully defined: " + ma.actor, ma.actor.isFullyDefined())
@@ -112,7 +112,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         val aa = AccountUtils.getCurrentAccounts(myContext.context)
         var ma: MyAccount = MyAccount.EMPTY
         for (account in aa) {
-            ma = MyAccount.Builder.loadFromAndroidAccount(myContext, account).myAccount
+            ma = MyAccountBuilder.loadFromAndroidAccount(myContext, account).myAccount
             if (maExpected.getAccountName() == ma.getAccountName()) {
                 break
             }
@@ -122,11 +122,11 @@ class DemoAccountInserter(private val myContext: MyContext) {
     }
 
     private fun addAccountFromActor(actor: Actor, accountName: AccountName): MyAccount {
-        val builder1: MyAccount.Builder = MyAccount.Builder.fromAccountName(accountName).setOAuth(true)
+        val builder1: MyAccountBuilder = MyAccountBuilder.fromAccountName(accountName).setOAuth(true)
         if (actor.origin.isOAuthDefault() || actor.origin.canChangeOAuth()) {
             insertTestClientKeys(builder1.myAccount)
         }
-        val builder: MyAccount.Builder = MyAccount.Builder.fromAccountName(accountName).setOAuth(true)
+        val builder: MyAccountBuilder = MyAccountBuilder.fromAccountName(accountName).setOAuth(true)
         if (builder.myAccount.isOAuth()) {
             builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.uniqueName,
                     "sampleUserSecretFor" + actor.uniqueName)
@@ -141,7 +141,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         val ma = tryMyAccount.get()
         assertTrue("Account is persistent $ma", builder.isPersistent())
         assertEquals("Credentials of " + actor.getUniqueNameWithOrigin() + " successfully verified",
-                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified())
+                CredentialsVerificationStatus.SUCCEEDED, ma.credentialsVerified)
         val actorId = ma.actorId
         assertTrue("Account " + actor.getUniqueNameWithOrigin() + " has ActorId", actorId != 0L)
         assertEquals("Account actorOid", ma.getActorOid(), actor.oid)

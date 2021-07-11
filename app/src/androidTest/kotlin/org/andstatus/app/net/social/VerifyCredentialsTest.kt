@@ -15,7 +15,7 @@
  */
 package org.andstatus.app.net.social
 
-import org.andstatus.app.account.MyAccount
+import org.andstatus.app.account.MyAccountBuilder
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
@@ -69,7 +69,7 @@ class VerifyCredentialsTest {
         val actor = connection.verifyCredentials(Optional.empty()).get()
         assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
         val origin: Origin =  myContext.origins.firstOfType(OriginType.TWITTER)
-        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(stub.getData().getAccountName())
+        val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(stub.getData().getAccountName())
         builder.onCredentialsVerified(actor).onFailure { e -> AssertionError("Failed: $e" ) }
         assertTrue("Account is persistent", builder.isPersistent())
         val actorId = builder.myAccount.actorId

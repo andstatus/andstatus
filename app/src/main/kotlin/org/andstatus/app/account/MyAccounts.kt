@@ -50,7 +50,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         myAccounts.clear()
         recentAccounts.clear()
         for (account in AccountUtils.getCurrentAccounts(myContext.context)) {
-            val ma: MyAccount = MyAccount.Builder.loadFromAndroidAccount(myContext, account).myAccount
+            val ma: MyAccount = MyAccountBuilder.loadFromAndroidAccount(myContext, account).myAccount
             if (ma.isValid) {
                 myAccounts.add(ma)
             } else {
@@ -87,7 +87,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         val myAccountToDelete = myAccounts.stream().filter { myAccount: MyAccount -> myAccount == ma }
                 .findFirst().orElse(MyAccount.EMPTY)
         if (myAccountToDelete.nonValid) return false
-        MyAccount.Builder.fromMyAccount(myAccountToDelete).deleteData()
+        MyAccountBuilder.fromMyAccount(myAccountToDelete).deleteData()
         myAccounts.remove(myAccountToDelete)
         MyPreferences.onPreferencesChanged()
         return true
@@ -118,7 +118,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         }
         for (androidAccount in AccountUtils.getCurrentAccounts(myContext.context)) {
             if (accountName.toString() == androidAccount.name) {
-                val myAccount: MyAccount = MyAccount.Builder.loadFromAndroidAccount(myContext, androidAccount).myAccount
+                val myAccount: MyAccount = MyAccountBuilder.loadFromAndroidAccount(myContext, androidAccount).myAccount
                 if (myAccount.isValid) {
                     myAccounts.add(myAccount)
                 }
@@ -246,7 +246,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
                         if (!ma.isValidAndSucceeded()) {
                             maSucceeded = myAccount
                         }
-                        if (myAccount.isSyncedAutomatically()) {
+                        if (myAccount.isSyncedAutomatically) {
                             maSynced = myAccount
                             break
                         }
@@ -374,7 +374,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     fun onDefaultSyncFrequencyChanged() {
         val syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds()
         for (ma in myAccounts) {
-            if (ma.getSyncFrequencySeconds() <= 0) AccountUtils.getExistingAndroidAccount(ma.getOAccountName()
+            if (ma.syncFrequencySeconds <= 0) AccountUtils.getExistingAndroidAccount(ma.getOAccountName()
             ).onSuccess { account: Account? -> AccountUtils.setSyncFrequencySeconds(account, syncFrequencySeconds) }
         }
     }
@@ -393,7 +393,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
             }
             return false
         }
-        if (syncedAutomaticallyOnly && !account.isSyncedAutomatically()) {
+        if (syncedAutomaticallyOnly && !account.isSyncedAutomatically) {
             MyLog.v(this) {
                 "Account '" + account.getAccountName() + "'" +
                         " skipped as it is not synced automatically"
@@ -432,8 +432,8 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
                 AccountConverter.convertJson(data.getMyContext(), jsa[ind] as JSONObject, false)
                         .onSuccess { jso: JSONObject ->
                             val accountData: AccountData = AccountData.fromJson(myContext, jso, false)
-                            val builder: MyAccount.Builder = MyAccount.Builder.loadFromAccountData(accountData, "fromJson")
-                            val verified = builder.myAccount.getCredentialsVerified()
+                            val builder: MyAccountBuilder = MyAccountBuilder.loadFromAccountData(accountData, "fromJson")
+                            val verified = builder.myAccount.credentialsVerified
                             if (verified != CredentialsVerificationStatus.SUCCEEDED) {
                                 newDescriptor.getLogger().logProgress("Account " + builder.myAccount.getAccountName() +
                                         " was not successfully verified")
@@ -481,9 +481,9 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     fun reorderAccounts(reorderedItems: MutableList<MyAccount>) {
         var count = 0
         reorderedItems.mapIndexed { index, myAccount ->
-            if (myAccount.getOrder() != index) {
+            if (myAccount.order != index) {
                 count++
-                val builder: MyAccount.Builder = MyAccount.Builder.fromMyAccount(myAccount)
+                val builder: MyAccountBuilder = MyAccountBuilder.fromMyAccount(myAccount)
                 builder.setOrder(index)
                 builder.save()
             }

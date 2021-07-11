@@ -496,7 +496,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
         val ma = myAccount
         var summary: StringBuilder? = null
         if (isMaPersistent()) {
-            summary = when (ma.getCredentialsVerified()) {
+            summary = when (ma.credentialsVerified) {
                 CredentialsVerificationStatus.SUCCEEDED -> StringBuilder(
                     getText(R.string.summary_preference_verify_credentials)
                 )
@@ -626,7 +626,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
     private fun showIsSyncedAutomatically() {
         MyCheckBox.set(
             findFragmentViewById(R.id.synced_automatically),
-            state.builder.myAccount.isSyncedAutomatically()
+            state.builder.myAccount.isSyncedAutomatically
         ) { buttonView: CompoundButton?, isChecked: Boolean -> state.builder.setSyncedAutomatically(isChecked) }
     }
 
@@ -641,8 +641,8 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
                         R.string.summary_preference_frequency
                     )
             label.text = labelText
-            val value = if (state.builder.myAccount.getSyncFrequencySeconds() <= 0) ""
-            else (state.builder.myAccount.getSyncFrequencySeconds() / 60).toString()
+            val value = if (state.builder.myAccount.syncFrequencySeconds <= 0) ""
+            else (state.builder.myAccount.syncFrequencySeconds / 60).toString()
             view.setText(value)
             view.hint = labelText
             view.addTextChangedListener(object : TextWatcher {
@@ -684,7 +684,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
         }
 
     override fun onResume() {
-        MyLog.v(instanceTag) { "onResume: ${state.accountAction}, ${state.builder}" }
+        MyLog.v(this) { "onResume: ${state.accountAction}, ${state.builder}" }
         super.onResume()
         MyContextHolder.myContextHolder.getNow().isInForeground = true
         if (restartMeIfNeeded()) return
@@ -694,7 +694,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
         updateScreen()
         val uri = intent.data
         if (uri != null) {
-            if (MyLog.isLoggable(instanceTag, MyLog.DEBUG)) {
+            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "uri=$uri")
             }
             if (HttpConnectionInterface.CALLBACK_URI.getScheme() == uri.scheme) {
@@ -715,7 +715,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
      * @param reVerify true - Verify only if we didn't do this yet
      */
     fun verifyCredentials(reVerify: Boolean) {
-        if (reVerify || myAccount.getCredentialsVerified() == CredentialsVerificationStatus.NEVER) {
+        if (reVerify || myAccount.credentialsVerified == CredentialsVerificationStatus.NEVER) {
             MyServiceManager.setServiceUnavailable()
             val state2: MyServiceState = MyServiceManager.getServiceState()
             if (state2 != MyServiceState.STOPPED) {
@@ -1250,7 +1250,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
             return if (skip) Try.success(TaskResult(ResultStatus.NONE))
             else Try.success(state.builder)
                 .flatMap { it?.getOriginConfig() }
-                .flatMap { b: MyAccount.Builder -> b.getConnection().verifyCredentials(whoAmI) }
+                .flatMap { b: MyAccountBuilder -> b.getConnection().verifyCredentials(whoAmI) }
                 .flatMap { actor: Actor -> state.builder.onCredentialsVerified(actor) }
                 .map({ it.myAccount })
                 .filter { obj: MyAccount -> obj.isValidAndSucceeded() }

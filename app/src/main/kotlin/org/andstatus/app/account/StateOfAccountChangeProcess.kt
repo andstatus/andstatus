@@ -52,7 +52,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
     var authenticatorResponse: AccountAuthenticatorResponse? = null
 
     // And this is what we constructed (maybe unsuccessfully)
-    var builder: MyAccount.Builder = MyAccount.Builder.EMPTY
+    var builder: MyAccountBuilder = MyAccountBuilder.EMPTY
     var useThisState = false
 
     val oauthStateParameter: String
@@ -71,13 +71,13 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
             accountAction = bundle.getString(ACCOUNT_ACTION_KEY) ?: ""
             actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true)
             actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY)
-            builder = MyAccount.Builder.fromJsonString(MyContextHolder.myContextHolder.getNow(), bundle.getString(ACCOUNT_KEY))
+            builder = MyAccountBuilder.fromJsonString(MyContextHolder.myContextHolder.getNow(), bundle.getString(ACCOUNT_KEY))
             authenticatorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY)
             setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY))
             oauthStateParameter = bundle.getString(OAUTH_STATE_PARAMETER) ?: ""
             theStateWasRestored = true
         } else {
-            builder = MyAccount.Builder.EMPTY
+            builder = MyAccountBuilder.EMPTY
             oauthStateParameter = "state_" + InstanceId.next() + "_" + System.currentTimeMillis()
             theStateWasRestored = false
         }
@@ -183,7 +183,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                     // Maybe we received MyAccount name as a parameter?!
                     val accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key)
                     if (!accountName.isNullOrEmpty()) {
-                        state.builder = MyAccount.Builder.fromAccountName(
+                        state.builder = MyAccountBuilder.fromAccountName(
                                 AccountName.fromAccountName(state.myContext, accountName)
                         )
                         state.useThisState = state.builder.isPersistent()
@@ -205,7 +205,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                     0 -> {
                         state.accountAction = Intent.ACTION_INSERT
                     }
-                    1 -> state.builder = MyAccount.Builder.fromAccountName(
+                    1 -> state.builder = MyAccountBuilder.fromAccountName(
                             state.myContext.accounts.currentAccount.getOAccountName()
                     )
                     else -> state.accountShouldBeSelected = true
@@ -216,12 +216,12 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                     val origin: Origin =  state.myContext
                             .origins
                             .firstOfType(OriginType.UNKNOWN)
-                    state.builder = MyAccount.Builder.fromAccountName(
+                    state.builder = MyAccountBuilder.fromAccountName(
                             AccountName.fromOriginAndUniqueName(origin, "")
                     )
                     state.originShouldBeSelected = true
                 } else {
-                    state.builder = MyAccount.Builder.fromAccountName(
+                    state.builder = MyAccountBuilder.fromAccountName(
                             state.myContext.accounts.currentAccount.getOAccountName()
                     )
                 }

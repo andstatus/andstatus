@@ -157,12 +157,12 @@ class DemoData {
 
     fun setSuccessfulAccountAsCurrent() {
         MyLog.i(TAG, "Persistent accounts: " +  MyContextHolder.myContextHolder.getNow().accounts.size())
-        var found = ( MyContextHolder.myContextHolder.getNow().accounts.currentAccount.getCredentialsVerified()
+        var found = ( MyContextHolder.myContextHolder.getNow().accounts.currentAccount.credentialsVerified
                 == CredentialsVerificationStatus.SUCCEEDED)
         if (!found) {
             for (ma in  MyContextHolder.myContextHolder.getNow().accounts.get()) {
                 MyLog.i(TAG, ma.toString())
-                if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
+                if (ma.credentialsVerified == CredentialsVerificationStatus.SUCCEEDED) {
                     found = true
                      MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
                     break
@@ -170,7 +170,8 @@ class DemoData {
             }
         }
         Assert.assertTrue("Found account, which is successfully verified", found)
-        Assert.assertTrue("Current account is successfully verified",  MyContextHolder.myContextHolder.getNow().accounts.currentAccount.getCredentialsVerified()
+        Assert.assertTrue("Current account is successfully verified",
+            MyContextHolder.myContextHolder.getNow().accounts.currentAccount.credentialsVerified
                 == CredentialsVerificationStatus.SUCCEEDED)
     }
 
