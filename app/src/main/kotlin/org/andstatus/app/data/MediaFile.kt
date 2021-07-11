@@ -188,7 +188,7 @@ abstract class MediaFile internal constructor(filename: String,
     }
 
     private fun getTaskId(taskSuffix: String?): String {
-        return instanceTag() + "-load" + taskSuffix
+        return instanceTag + "-load" + taskSuffix
     }
 
     fun getSize(): Point {
@@ -200,7 +200,7 @@ abstract class MediaFile internal constructor(filename: String,
 
     override fun toString(): String {
         return if (isEmpty) "EMPTY"
-        else instanceTag() + ": id:${id} " + contentType + ", " + mediaMetadata + ", " + downloadFile
+        else instanceTag + ": id:${id} " + contentType + ", " + mediaMetadata + ", " + downloadFile
     }
 
     override val instanceId: Long get() = id

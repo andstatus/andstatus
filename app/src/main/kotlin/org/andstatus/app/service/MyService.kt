@@ -303,9 +303,7 @@ class MyService : Service(), IdentifiableInstance {
         }
     }
 
-    override fun instanceTag(): String {
-        return TAG
-    }
+    override val instanceTag: String get() = TAG
 
     override fun onBind(intent: Intent?): IBinder? {
         return null

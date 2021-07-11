@@ -70,12 +70,10 @@ class MyServiceHeartBeat constructor(myService: MyService) : AsyncTask<Unit, Lon
     }
 
     override fun toString(): String {
-        return instanceTag() + "; " + super.toString()
+        return instanceTag + "; " + super.toString()
     }
 
-    override fun instanceTag(): String {
-        return super.instanceTag() + "-it" + mIteration
-    }
+    override val instanceTag: String get() = super.instanceTag + "-it" + mIteration
 
     override fun classTag(): String {
         return TAG

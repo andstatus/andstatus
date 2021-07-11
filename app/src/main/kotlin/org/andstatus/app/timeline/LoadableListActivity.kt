@@ -130,7 +130,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
                 if (isLoading() && chainedRequest != TriState.TRUE) {
                     msgLog.append(", Ignored $mWorkingLoader")
                 } else {
-                    val newLoader = AsyncLoader(instanceTag())
+                    val newLoader = AsyncLoader(instanceTag)
                     if (newLoader.execute(this, args).isSuccess) {
                         mWorkingLoader = newLoader
                         loaderIsWorking = true

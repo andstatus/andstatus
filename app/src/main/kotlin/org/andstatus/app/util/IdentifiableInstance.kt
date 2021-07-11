@@ -22,15 +22,15 @@ package org.andstatus.app.util
 interface IdentifiableInstance : TaggedClass {
     val instanceId: Long
 
-    fun instanceIdString(): String {
-        return instanceId.toString()
-    }
+    val instanceIdString: String get() = instanceId.toString()
 
-    fun instanceTag(): String {
-        val className = classTag()
-        val idString = instanceIdString()
-        val maxClassNameLength = MyLog.MAX_TAG_LENGTH - idString.length
-        return ((if (className.length > maxClassNameLength) className.substring(0, maxClassNameLength) else className)
-                + idString)
-    }
+    val instanceTag: String
+        get() {
+            val className = classTag()
+            val idString = instanceIdString
+            val maxClassNameLength = MyLog.MAX_TAG_LENGTH - idString.length
+            val classNameTruncated =
+                if (className.length > maxClassNameLength) className.substring(0, maxClassNameLength) else className
+            return classNameTruncated + idString
+        }
 }

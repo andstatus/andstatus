@@ -190,7 +190,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     }
 
     override fun toString(): String {
-        return instanceTag() + " by " + initializedBy + "; state=" + state +
+        return instanceTag + " by " + initializedBy + "; state=" + state +
                 (if (this.isExpired) "; expired" else "") +
                 "; " + accounts.size() + " accounts, " +
                 ("context=" + context.javaClass.name)

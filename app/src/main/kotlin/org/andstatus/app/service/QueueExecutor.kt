@@ -19,9 +19,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
     private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
     private val executedCounter: AtomicLong = AtomicLong()
 
-    override fun instanceTag(): String {
-        return super.instanceTag() + "-" + accessorType
-    }
+    override val instanceTag: String get() = super.instanceTag + "-" + accessorType
 
     override suspend fun doInBackground(params: Unit): Try<Boolean> {
         val myService = myServiceRef.get()

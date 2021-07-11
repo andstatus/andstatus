@@ -114,7 +114,7 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
     }
 
     override fun toString(): String {
-        return (instanceTag() + " http=" + httpConnectionStub + ", "
+        return (instanceTag + " http=" + httpConnectionStub + ", "
                 + super.toString())
     }
 

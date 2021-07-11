@@ -21,7 +21,5 @@ open class AbstractImageLoader(val mediaFile: MediaFile, val taskSuffix: String)
     override val instanceId: Long
         get() = mediaFile.id
 
-    override fun instanceIdString(): String {
-        return super.instanceIdString() + taskSuffix
-    }
+    override val instanceIdString: String get() = super.instanceIdString + taskSuffix
 }
