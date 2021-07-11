@@ -40,9 +40,7 @@ class LoadableListPosition<T : ViewItem<T>> private constructor(
         return MyStringBuilder.formatKeyValue(this, description)
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     companion object {
         private val TAG: String = LoadableListPosition::class.java.simpleName

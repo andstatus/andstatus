@@ -27,8 +27,9 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.widget.MySwipeRefreshLayout
 import org.andstatus.app.widget.MySwipeRefreshLayout.CanSwipeRefreshScrollUpCallback
 import java.util.*
+import kotlin.reflect.KClass
 
-abstract class MyBaseListActivity : MyActivity(), CanSwipeRefreshScrollUpCallback, OnRefreshListener {
+abstract class MyBaseListActivity(clazz: KClass<*>) : MyActivity(clazz), CanSwipeRefreshScrollUpCallback, OnRefreshListener {
     protected var mSwipeLayout: MySwipeRefreshLayout? = null
     private var mPositionOfContextMenu = -1
     private var mAdapter: ListAdapter = EmptyBaseTimelineAdapter.EMPTY

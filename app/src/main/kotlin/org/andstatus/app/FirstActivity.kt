@@ -32,10 +32,9 @@ import org.andstatus.app.context.MySettingsGroup
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.timeline.TimelineActivity
-import org.andstatus.app.util.IdentifiableInstance
-import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState
 import java.util.concurrent.CompletableFuture
@@ -47,8 +46,9 @@ import java.util.function.BiConsumer
  * It allows to avoid "Application not responding" errors.
  * It is transparent and shows progress indicator only, launches next activity after application initialization.
  */
-class FirstActivity : AppCompatActivity(), IdentifiableInstance {
-    override val instanceId = InstanceId.next()
+class FirstActivity(
+    private val idInstance: Identifiable = IdInstance(FirstActivity::class)
+) : AppCompatActivity(), Identifiable by idInstance {
 
     enum class NeedToStart {
         HELP, CHANGELOG, OTHER
@@ -100,9 +100,9 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
                 startNextActivitySync(myContext, intent)
                 launched = true
             } catch (e: AndroidRuntimeException) {
-                MyLog.w(TAG, "Launching next activity from firstActivity", e)
+                MyLog.w(instanceTag, "Launching next activity from firstActivity", e)
             } catch (e: SecurityException) {
-                MyLog.d(TAG, "Launching activity", e)
+                MyLog.d(instanceTag, "Launching activity", e)
             }
         }
         if (!launched) {
@@ -139,7 +139,6 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
     }
 
     companion object {
-        private val TAG: String = FirstActivity::class.java.simpleName
         private val SET_DEFAULT_VALUES: String = "setDefaultValues"
         private val resultOfSettingDefaults: AtomicReference<TriState> = AtomicReference(TriState.UNKNOWN)
         var isFirstrun: AtomicBoolean = AtomicBoolean(true)
@@ -154,12 +153,12 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
             )
         }
 
-        fun goHome(activity: Activity) {
+        fun goHome(activity: MyActivity) {
             try {
-                MyLog.v(TAG) { "goHome from " + MyStringBuilder.objToTag(activity) }
+                MyLog.v(activity.instanceTag) { "goHome"}
                 startApp(activity)
             } catch (e: Exception) {
-                MyLog.v(TAG, "goHome", e)
+                MyLog.v(activity.instanceTag, "goHome", e)
                  MyContextHolder.myContextHolder.thenStartApp()
             }
         }
@@ -202,7 +201,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
                 if (versionCodeLast < versionCode) {
                     // Even if the Actor will see only the first page of the Help activity,
                     // count this as showing the Change Log
-                    MyLog.v(TAG
+                    MyLog.v(FirstActivity::class
                     ) {
                         ("Last opened version=" + versionCodeLast
                                 + ", current is " + versionCode
@@ -214,7 +213,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
                     }
                 }
             } catch (e: PackageManager.NameNotFoundException) {
-                MyLog.e(TAG, "Unable to obtain package information", e)
+                MyLog.e(FirstActivity::class, "Unable to obtain package information", e)
             }
             return changed
         }
@@ -230,7 +229,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
          */
         fun setDefaultValues(context: Context?): Boolean {
             if (context == null) {
-                MyLog.e(TAG, SET_DEFAULT_VALUES + " no context")
+                MyLog.e(FirstActivity::class, SET_DEFAULT_VALUES + " no context")
                 return false
             }
             synchronized(resultOfSettingDefaults) {
@@ -242,11 +241,11 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
                         startMeAsync(context, MyAction.SET_DEFAULT_VALUES)
                     }
                     for (i in 0..99) {
-                        DbUtils.waitMs(TAG, 50)
+                        DbUtils.waitMs(FirstActivity::class, 50)
                         if (resultOfSettingDefaults.get().known) break
                     }
                 } catch (e: Exception) {
-                    MyLog.e(TAG, "$SET_DEFAULT_VALUES error:${e.message} \n${MyLog.getStackTrace(e)}")
+                    MyLog.e(FirstActivity::class, "$SET_DEFAULT_VALUES error:${e.message} \n${MyLog.getStackTrace(e)}")
                 }
             }
             return resultOfSettingDefaults.get().toBoolean(false)

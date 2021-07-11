@@ -34,7 +34,7 @@ import org.andstatus.app.timeline.WhichPage
 import org.andstatus.app.util.MyLog
 import java.util.*
 
-class QueueViewer : LoadableListActivity<QueueData>() {
+class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.my_list

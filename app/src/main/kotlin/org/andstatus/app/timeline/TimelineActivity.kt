@@ -95,7 +95,8 @@ import java.util.*
 /**
  * @author yvolk@yurivolkov.com
  */
-class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteContextMenuContainer, AbsListView.OnScrollListener {
+class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActivity::class),
+    NoteContextMenuContainer, AbsListView.OnScrollListener {
     /** Parameters for the next page request, not necessarily requested already  */
     @Volatile
     private var paramsNew: TimelineParameters? = null

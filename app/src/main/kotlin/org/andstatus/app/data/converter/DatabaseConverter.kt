@@ -100,8 +100,8 @@ internal class DatabaseConverter(val progressLogger: ProgressLogger) {
             } else {
                 "Error upgrading database"
             }
-            msgLog += """ from version $oldVersion to version $newVersion. Current database version=$currentVersion 
-Error: $lastError"""
+            msgLog += " from version $oldVersion to version $newVersion. Current database version=$currentVersion\n" +
+                    "Error: $lastError"
             MyLog.e(this, msgLog)
             throw ApplicationUpgradeException(msgLog)
         }

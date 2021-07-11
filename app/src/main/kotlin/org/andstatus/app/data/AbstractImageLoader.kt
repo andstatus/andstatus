@@ -15,9 +15,9 @@
  */
 package org.andstatus.app.data
 
-import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.Identifiable
 
-open class AbstractImageLoader(val mediaFile: MediaFile, val taskSuffix: String) : IdentifiableInstance {
+open class AbstractImageLoader(val mediaFile: MediaFile, val taskSuffix: String) : Identifiable {
     override val instanceId: Long
         get() = mediaFile.id
 

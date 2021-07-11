@@ -21,7 +21,7 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Connection
 import org.andstatus.app.timeline.meta.TimelineType
-import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
@@ -30,7 +30,7 @@ import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TryUtils
 import java.util.concurrent.TimeUnit
 
-open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : CommandExecutorParent, IdentifiableInstance {
+open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : CommandExecutorParent, Identifiable {
     override val instanceId = InstanceId.next()
     private var parent: CommandExecutorParent? = null
     protected var lastProgressBroadcastAt: Long = 0
@@ -120,9 +120,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
         return execContext.getConnection()
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     companion object {
         private val TAG: String = CommandExecutorStrategy::class.java.simpleName

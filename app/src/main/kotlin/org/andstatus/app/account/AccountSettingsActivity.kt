@@ -89,7 +89,7 @@ import java.util.*
  *
  * @author yvolk@yurivolkov.com
  */
-class AccountSettingsActivity : MyActivity() {
+class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
     private enum class ResultStatus {
         NONE, SUCCESS, ACCOUNT_INVALID, CONNECTION_EXCEPTION, CREDENTIALS_OF_OTHER_ACCOUNT
     }
@@ -684,7 +684,7 @@ class AccountSettingsActivity : MyActivity() {
         }
 
     override fun onResume() {
-        MyLog.v(TAG) { "onResume: ${state.accountAction}, ${state.builder}" }
+        MyLog.v(instanceTag) { "onResume: ${state.accountAction}, ${state.builder}" }
         super.onResume()
         MyContextHolder.myContextHolder.getNow().isInForeground = true
         if (restartMeIfNeeded()) return
@@ -694,7 +694,7 @@ class AccountSettingsActivity : MyActivity() {
         updateScreen()
         val uri = intent.data
         if (uri != null) {
-            if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
+            if (MyLog.isLoggable(instanceTag, MyLog.DEBUG)) {
                 MyLog.d(this, "uri=$uri")
             }
             if (HttpConnectionInterface.CALLBACK_URI.getScheme() == uri.scheme) {
@@ -1328,20 +1328,16 @@ class AccountSettingsActivity : MyActivity() {
         }
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
-
     companion object {
-        private val TAG: String = AccountSettingsActivity::class.java.simpleName
         fun startAddingNewAccount(context: Context, originName: String?, clearTask: Boolean) {
-            val intent: Intent = Intent(context, AccountSettingsActivity::class.java)
+            val clazz = AccountSettingsActivity::class
+            val intent: Intent = Intent(context, clazz.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK + if (clearTask) Intent.FLAG_ACTIVITY_CLEAR_TASK else 0)
-            intent.action = Intent.ACTION_INSERT
+                .setAction(Intent.ACTION_INSERT)
             if (!originName.isNullOrEmpty()) {
                 intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName)
             }
-            MyLog.i(TAG, "startAddNewAccount with $intent")
+            MyLog.i( clazz, ::startAddingNewAccount.name + " with $intent")
             context.startActivity(intent)
         }
     }

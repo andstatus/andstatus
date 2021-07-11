@@ -91,7 +91,7 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
     }
 
     companion object {
-        val EMPTY: HttpConnectionData = HttpConnectionData(AccountName.getEmpty())
+        val EMPTY: HttpConnectionData = HttpConnectionData(AccountName.EMPTY)
         fun fromAccountConnectionData(acData: AccountConnectionData): HttpConnectionData {
             val data = HttpConnectionData(acData.getAccountName())
             data.originUrl = acData.getOriginUrl()

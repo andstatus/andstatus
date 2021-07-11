@@ -42,7 +42,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
 
     override suspend fun doInBackground(params: NoteEditorCommand?): Try<NoteEditorData> {
         command = params ?: noteEditorCommandEmpty
-        MyLog.v(NoteEditorData.TAG) { "Started: $command" }
+        MyLog.v(command.currentData) { "Started: $command" }
         if (!command.acquireLock(true)) {
             return TryUtils.ofNullable(command.currentData)
         }
@@ -60,7 +60,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
 
     private fun savePreviousData() {
         if (command.needToSavePreviousData()) {
-            MyLog.v(NoteEditorData.TAG) { "Saving previous data:" + command.previousData }
+            MyLog.v(command.currentData) { "Saving previous data:" + command.previousData }
             command.previousData?.save()
             command.previousData?.let { broadcastDataChanged(it) }
         }
@@ -69,7 +69,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
     private fun saveCurrentData() {
         val currentData = command.currentData ?: return
 
-        MyLog.v(NoteEditorData.TAG) { "Saving current data: $currentData" }
+        MyLog.v(command.currentData) { "Saving current data: $currentData" }
         if (currentData.activity.getNote().getStatus() == DownloadStatus.DELETED) {
             MyProvider.deleteNoteAndItsActivities( MyContextHolder.myContextHolder.getNow(), currentData.getNoteId())
         } else {
@@ -105,16 +105,16 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
         result.onSuccess { data ->
             if (data.isValid()) {
                 if (command.hasLock()) {
-                    MyLog.v(NoteEditorData.TAG) { "Saved; Future data: $result" }
+                    MyLog.v(command.currentData) { "Saved; Future data: $result" }
                     editor.showData(data)
                 } else {
-                    MyLog.v(NoteEditorData.TAG) { "Saved; Result skipped: no lock" }
+                    MyLog.v(command.currentData) { "Saved; Result skipped: no lock" }
                 }
             } else {
-                MyLog.v(NoteEditorData.TAG, "Saved; No future data")
+                MyLog.v(command.currentData, "Saved; No future data")
             }
         }.onFailure {
-            MyLog.v(NoteEditorData.TAG, "Saved; No future data")
+            MyLog.v(command.currentData, "Saved; No future data")
         }
         command.releaseLock()
     }

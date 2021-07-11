@@ -31,8 +31,10 @@ import org.andstatus.app.util.MyLog
 
 /** See [Settings](http://developer.android.com/guide/topics/ui/settings.html)
  */
-class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceStartScreenCallback,
-        PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+class MySettingsActivity : MyActivity(MySettingsActivity::class),
+    PreferenceFragmentCompat.OnPreferenceStartScreenCallback,
+    PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+
     private val mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime()
     private var resumedOnce = false
 

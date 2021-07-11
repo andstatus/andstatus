@@ -26,7 +26,8 @@ import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.ExceptionsCounter
 import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.syncadapter.SyncInitiator
-import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
@@ -40,8 +41,12 @@ import java.util.function.UnaryOperator
 /**
  * @author yvolk@yurivolkov.com
  */
-class MyFutureContext private constructor(private val previousContext: MyContext, val future: CompletableFuture<MyContext>) : IdentifiableInstance {
-    protected val createdAt = MyLog.uniqueCurrentTimeMS()
+class MyFutureContext private constructor(
+    private val previousContext: MyContext,
+    val future: CompletableFuture<MyContext>,
+    private val idInstance: Identifiable = IdInstance(MyFutureContext::class)
+) : Identifiable by idInstance {
+    val createdAt = MyLog.uniqueCurrentTimeMS()
     override val instanceId = InstanceId.next()
 
     fun releaseNow(reason: Supplier<String>): MyFutureContext {
@@ -69,7 +74,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
     fun whenSuccessAsync(consumer: Consumer<MyContext>, executor: Executor): MyFutureContext {
         return with { future: CompletableFuture<MyContext> ->
             future.whenCompleteAsync({ myContext: MyContext?, throwable: Throwable? ->
-                MyLog.d(TAG, "whenSuccessAsync $myContext, $future")
+                MyLog.d(instanceTag, "whenSuccessAsync $myContext, $future")
                 if (myContext != null) {
                     consumer.accept(myContext)
                 }
@@ -88,14 +93,14 @@ class MyFutureContext private constructor(private val previousContext: MyContext
     fun with(futures: UnaryOperator<CompletableFuture<MyContext>>): MyFutureContext {
         val healthyFuture: CompletableFuture<MyContext> = getHealthyFuture("(with)")
         val nextFuture = futures.apply(healthyFuture)
-        MyLog.d(TAG, "with, after apply, next: $nextFuture")
+        MyLog.d(instanceTag, "with, after apply, next: $nextFuture")
         return MyFutureContext(previousContext, nextFuture)
     }
 
     private fun getHealthyFuture(calledBy: Any?): CompletableFuture<MyContext> {
         if (future.isDone()) {
             tryNow().onFailure { throwable: Throwable? ->
-                MyLog.i(TAG, if (future.isCancelled()) "Previous initialization was cancelled"
+                MyLog.i(instanceTag, if (future.isCancelled()) "Previous initialization was cancelled"
                 else "Previous initialization completed exceptionally, now called by " + calledBy, throwable)
             }
         }
@@ -104,10 +109,6 @@ class MyFutureContext private constructor(private val previousContext: MyContext
 
     fun tryBlocking(): Try<MyContext> {
         return Try.of { future.get() }
-    }
-
-    override fun classTag(): String {
-        return TAG
     }
 
     companion object {

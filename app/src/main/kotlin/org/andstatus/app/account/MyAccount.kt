@@ -48,6 +48,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TriState
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
@@ -59,7 +60,10 @@ import java.util.concurrent.TimeUnit
  *
  * @author yvolk@yurivolkov.com
  */
-class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccount>, IsEmpty, TaggedClass {
+class MyAccount internal constructor(
+    val data: AccountData,
+    private val taggedInstance: TaggedInstance = TaggedInstance(MyAccount::class)
+) : Comparable<MyAccount>, IsEmpty, TaggedClass by taggedInstance {
     val myContext: MyContext get() = data.myContext
 
     var actor: Actor = Actor.EMPTY
@@ -394,10 +398,6 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         return false
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
-
     /** Companion class used to load/create/change/delete [MyAccount]'s data  */
     class Builder private constructor(myAccountIn: MyAccount) : TaggedClass {
         var myAccount = myAccountIn
@@ -659,14 +659,9 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             myAccount.syncFrequencySeconds = syncFrequencySeconds
         }
 
-        override fun classTag(): String {
-            return TAG
-        }
-
         fun toJsonString(): String = myAccount.toJson().toString()
 
         companion object {
-            private val TAG: String = MyAccount.TAG + "." + Builder::class.java.simpleName
             val EMPTY = Builder(MyAccount.EMPTY)
 
             /**
@@ -714,7 +709,6 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     companion object {
-        private val TAG: String = MyAccount::class.java.simpleName
         val KEY_ACCOUNT_NAME: String = "account_name"
 
         /** Username for the account  */
@@ -745,7 +739,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         val KEY_IS_SYNCED_AUTOMATICALLY: String = "sync_automatically"
         val KEY_ORDER: String = "order"
 
-        val EMPTY: MyAccount = MyAccount(AccountName.getEmpty())
+        val EMPTY: MyAccount = MyAccount(AccountName.EMPTY)
         fun fromBundle(myContext: MyContext, bundle: Bundle?): MyAccount {
             return if (bundle == null) EMPTY else myContext.accounts.fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key))
         }

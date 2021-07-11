@@ -637,7 +637,9 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
 
     companion object {
         const val TEXT_LIMIT_FOR_WEBFINGER_ID = 200
-        val EMPTY: Origin = fromType(MyContextEmpty.EMPTY, OriginType.UNKNOWN)
+        val EMPTY: Origin by lazy {
+            fromType(MyContextEmpty.EMPTY, OriginType.UNKNOWN)
+        }
         private val VALID_NAME_CHARS: String = "a-zA-Z_0-9/.-"
         private val VALID_NAME_PATTERN = Pattern.compile("[" + VALID_NAME_CHARS + "]+")
         private val INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+")

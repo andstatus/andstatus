@@ -76,8 +76,8 @@ class AccountName private constructor(uniqueName: String,
 
     companion object {
         val ORIGIN_SEPARATOR: String = "/"
-        fun getEmpty(): AccountName {
-            return AccountName("",  Origin.EMPTY)
+        val EMPTY: AccountName by lazy {
+            AccountName("",  Origin.EMPTY)
         }
 
         fun fromOriginAndUniqueName(origin: Origin, uniqueName: String?): AccountName {

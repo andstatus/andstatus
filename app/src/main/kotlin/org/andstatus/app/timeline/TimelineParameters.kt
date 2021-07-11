@@ -190,9 +190,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
         return myContext
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     companion object {
         private val TAG: String = TimelineParameters::class.java.simpleName

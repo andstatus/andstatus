@@ -6,7 +6,10 @@ import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.context.MySettingsFragment
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.service.MyServiceManager
+import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert
+import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class MySettingsActivityTest : ActivityTest<MySettingsActivity>() {
@@ -26,5 +29,13 @@ class MySettingsActivityTest : ActivityTest<MySettingsActivity>() {
         }
         DbUtils.waitMs(method, 500)
         Assert.assertFalse("MyService is not available", MyServiceManager.Companion.isServiceAvailable())
+    }
+
+    @Test
+    fun testIdentifiable() {
+        val method = ::testIdentifiable.name
+
+        assertNotEquals(activity.instanceId, 0)
+        assertThat(activity.instanceTag, containsString("MySettingsActivity"))
     }
 }

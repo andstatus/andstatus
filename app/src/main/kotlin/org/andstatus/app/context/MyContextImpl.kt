@@ -35,7 +35,8 @@ import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.timeline.meta.PersistentTimelines
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.user.CachedUsersAndActors
-import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.Permissions
@@ -45,21 +46,27 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.UriUtils
 import java.util.function.Supplier
+import kotlin.reflect.KClass
 
 /**
  * Contains global state of the application
  * The objects are effectively immutable
  * @author yvolk@yurivolkov.com
  */
-open class MyContextImpl internal constructor(parent: MyContext, context: Context, initializer: Any?) : MyContext {
-    override val instanceId = InstanceId.next()
+open class MyContextImpl internal constructor(
+    parent: MyContext,
+    context: Context,
+    initializer: Any?,
+    clazz: KClass<*> = MyContextImpl::class,
+    private val identifiable: Identifiable = IdInstance(clazz)
+) : MyContext, Identifiable by identifiable {
 
     @Volatile
     final override var state: MyContextState = MyContextState.EMPTY
         private set
 
     private val initializedBy: String = MyStringBuilder.objToTag(initializer)
-    override val baseContext: Context = calcBaseContextToUse(parent, context)
+    final override val baseContext: Context = calcBaseContextToUse(parent, context)
     override val context: Context = MyLocale.onAttachBaseContext(baseContext)
 
     /**
@@ -254,12 +261,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
         notifier.clear(timeline)
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
-
     companion object {
-        private val TAG: String = MyContextImpl::class.java.simpleName
 
         @Volatile
         private var inForeground = false

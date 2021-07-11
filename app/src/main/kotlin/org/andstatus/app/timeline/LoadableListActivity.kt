@@ -50,13 +50,14 @@ import org.andstatus.app.util.TriState
 import org.andstatus.app.widget.MySearchView
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.reflect.KClass
 
 /**
  * List, loaded asynchronously. Updated by MyService
  *
  * @author yvolk@yurivolkov.com
  */
-abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyServiceEventsListener {
+abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseListActivity(clazz), MyServiceEventsListener {
     protected var showSyncIndicatorSetting = true
     protected var textualSyncIndicator: View? = null
     protected var syncingText: CharSequence? = ""

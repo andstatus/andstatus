@@ -49,7 +49,8 @@ import org.andstatus.app.util.MyStringBuilder
  *
  * @author yvolk@yurivolkov.com
  */
-class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(), NoteContextMenuContainer {
+class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(ConversationActivity::class),
+    NoteContextMenuContainer {
     private var mContextMenu: NoteContextMenu? = null
     var mDrawerLayout: DrawerLayout? = null
     var mDrawerToggle: ActionBarDrawerToggle? = null

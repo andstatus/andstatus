@@ -15,9 +15,7 @@
  */
 package org.andstatus.app.origin
 
-import android.content.Context
 import android.content.Intent
-import android.media.RingtoneManager
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
@@ -34,6 +32,7 @@ import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.lang.SelectableEnumList
 import org.andstatus.app.net.http.SslModeEnum
+import org.andstatus.app.notification.Notifier.Companion.beep
 import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.service.MyServiceManager
@@ -50,7 +49,7 @@ import java.util.concurrent.CompletableFuture
  * Add/Update Microblogging system
  * @author yvolk@yurivolkov.com
  */
-class OriginEditor : MyActivity() {
+class OriginEditor : MyActivity(OriginEditor::class) {
     private var builder: Origin.Builder? = null
     private var buttonSave: Button? = null
     private var buttonDelete: Button? = null
@@ -129,7 +128,7 @@ class OriginEditor : MyActivity() {
             builder = Origin.Builder(origin)
         }
         val origin = builder?.build() ?: Origin.EMPTY
-        MyLog.v(TAG) { "processNewIntent: $origin" }
+        MyLog.v(this) { "processNewIntent: $origin" }
         spinnerOriginType?.let { spinner ->
             spinner.setSelection(originTypes.getIndex(origin.originType))
             if (spinner.isEnabled()) {
@@ -243,41 +242,32 @@ class OriginEditor : MyActivity() {
     }
 
     private fun saveOthers() {
-        val builder = this.builder ?: return
-        builder.setHostOrUrl(editTextHost?.getText().toString())
-                .setSsl(checkBoxIsSsl?.isChecked() ?: true)
-                .setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode?.getSelectedItemPosition() ?: -1))
-                .setHtmlContentAllowed(MyCheckBox.isChecked(this, R.id.allow_html, false))
-                .setMentionAsWebFingerId(TriState.fromEntriesPosition(
-                        spinnerMentionAsWebFingerId?.getSelectedItemPosition() ?: -1))
-                .setUseLegacyHttpProtocol(TriState.fromEntriesPosition(
-                        spinnerUseLegacyHttpProtocol?.getSelectedItemPosition() ?: -1))
-                .setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false))
-                .setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false))
-                .save()
-        MyLog.v(TAG) { (if (builder.isSaved()) "Saved" else "Not saved") + ": " + builder.build().toString() }
-        if (builder.isSaved()) {
-            builder.getMyContext().origins.initialize()
-            setResult(RESULT_OK)
-            finish()
-        } else {
-            beep(this)
-        }
-    }
-
-    companion object {
-        private val TAG: String = OriginEditor::class.java.simpleName
-
-        /**
-         * See http://stackoverflow.com/questions/4441334/how-to-play-an-android-notification-sound/9622040
-         */
-        private fun beep(context: Context?) {
-            try {
-                val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                val r = RingtoneManager.getRingtone(context, notification)
-                r.play()
-            } catch (e: Exception) {
-                MyLog.w(TAG, "beep", e)
+        (this.builder ?: return)
+        .setHostOrUrl(editTextHost?.getText().toString())
+        .setSsl(checkBoxIsSsl?.isChecked() ?: true)
+        .setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode?.getSelectedItemPosition() ?: -1))
+        .setHtmlContentAllowed(MyCheckBox.isChecked(this, R.id.allow_html, false))
+        .setMentionAsWebFingerId(
+            TriState.fromEntriesPosition(
+                spinnerMentionAsWebFingerId?.getSelectedItemPosition() ?: -1
+            )
+        )
+        .setUseLegacyHttpProtocol(
+            TriState.fromEntriesPosition(
+                spinnerUseLegacyHttpProtocol?.getSelectedItemPosition() ?: -1
+            )
+        )
+        .setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false))
+        .setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false))
+        .save()
+        .let { builder ->
+            MyLog.v(this) { (if (builder.isSaved()) "Saved" else "Not saved") + ": " + builder.build().toString() }
+            if (builder.isSaved()) {
+                builder.getMyContext().origins.initialize()
+                setResult(RESULT_OK)
+                finish()
+            } else {
+                beep(this)
             }
         }
     }

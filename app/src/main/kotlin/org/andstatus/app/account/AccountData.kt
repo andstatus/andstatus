@@ -28,14 +28,14 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.MatchedUri
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.json.JSONObject
 
-class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
+class AccountData : Parcelable, AccountDataWriter, Identifiable {
     override val instanceId = InstanceId.next()
     private val myContextIn: MyContext
     val accountName: AccountName
@@ -259,9 +259,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         return JsonUtils.toString(data, 2)
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     companion object {
         private val TAG: String = AccountData::class.java.simpleName

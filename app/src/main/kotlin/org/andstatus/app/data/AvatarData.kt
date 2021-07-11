@@ -22,7 +22,6 @@ class AvatarData private constructor(actorIdIn: Long, avatarUriNew: Uri?) :
         DownloadData(null, 0, actorIdIn, 0,
                 MyContentType.UNKNOWN, "", DownloadType.AVATAR, avatarUriNew) {
     companion object {
-        val TAG: String = AvatarData::class.java.simpleName
         fun getCurrentForActor(actor: Actor): AvatarData {
             return AvatarData(actor.actorId, actor.getAvatarUri())
         }

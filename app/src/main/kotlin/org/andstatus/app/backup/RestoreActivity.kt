@@ -33,7 +33,7 @@ import org.andstatus.app.os.AsyncEnum.DEFAULT_POOL
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 
-class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
+class RestoreActivity : MyActivity(RestoreActivity::class), ProgressLogger.ProgressListener {
     private var dataFolder: DocumentFile? = null
     private var asyncTask: AsyncEffects<DocumentFile>? = null
     private var progressCounter = 0

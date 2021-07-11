@@ -49,7 +49,7 @@ import java.util.stream.Collectors
 /**
  * @author yvolk@yurivolkov.com
  */
-class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>() {
+class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTimelines::class) {
     private var sortByField = R.id.synced
     private var sortDefault = true
     private var columnHeadersParent: ViewGroup? = null

@@ -24,7 +24,7 @@ import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.util.MyLog
 
-class PersistentOriginList : OriginList() {
+class PersistentOriginList : OriginList(PersistentOriginList::class) {
     override fun getOrigins(): Iterable<Origin> {
         return  MyContextHolder.myContextHolder.getNow().origins.collection()
     }

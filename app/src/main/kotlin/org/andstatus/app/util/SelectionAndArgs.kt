@@ -66,9 +66,7 @@ class SelectionAndArgs @JvmOverloads constructor(selection_in: String = "") : Ta
         return MyStringBuilder.formatKeyValue(this, selection + ", args:" + selectionArgs.contentToString())
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     companion object {
         private val TAG: String = SelectionAndArgs::class.java.simpleName

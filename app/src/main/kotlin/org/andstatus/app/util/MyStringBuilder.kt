@@ -16,6 +16,7 @@
 package org.andstatus.app.util
 
 import java.util.*
+import kotlin.reflect.KClass
 
 /** Adds convenience methods to [StringBuilder]  */
 class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) : CharSequence, IsEmpty {
@@ -155,12 +156,13 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
         fun objToTag(objTag: Any?): String {
             val tag: String = when (objTag) {
                 null -> "(null)"
-                is IdentifiableInstance -> objTag.instanceTag
-                is TaggedClass -> objTag.classTag()
+                is Identifiable -> objTag.instanceTag
+                is TaggedClass -> objTag.classTag
                 is String -> objTag
                 is Enum<*> -> objTag.toString()
+                is KClass<*> -> objTag.simpleName ?: "NoName"
                 is Class<*> -> objTag.simpleName
-                else -> objTag.javaClass.simpleName
+                else -> objTag::class.simpleName ?: "NoName"
             }
             return if (tag.trim { it <= ' ' }.isEmpty()) {
                 "(empty)"

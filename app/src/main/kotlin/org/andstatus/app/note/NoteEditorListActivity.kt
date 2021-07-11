@@ -27,11 +27,12 @@ import org.andstatus.app.timeline.ViewItem
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UriUtils
 import java.util.*
+import kotlin.reflect.KClass
 
 /**
  * @author yvolk@yurivolkov.com
  */
-abstract class NoteEditorListActivity<T : ViewItem<T>> : LoadableListActivity<T>(), NoteEditorContainer {
+abstract class NoteEditorListActivity<T : ViewItem<T>>(clazz: KClass<*>) : LoadableListActivity<T>(clazz), NoteEditorContainer {
     private var noteEditor: NoteEditor? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

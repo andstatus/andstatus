@@ -438,9 +438,7 @@ open class DownloadData protected constructor(
         var consumedSize: Long = 0
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     companion object {
         private val TAG: String = DownloadData::class.java.simpleName

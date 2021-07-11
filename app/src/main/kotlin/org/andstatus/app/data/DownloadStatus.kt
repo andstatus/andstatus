@@ -74,7 +74,6 @@ enum class DownloadStatus(private val code: Long, private val titleResourceId: I
     }
 
     companion object {
-        private val TAG: String = DownloadStatus::class.java.simpleName
         fun load(codeIn: Long): DownloadStatus {
             for (value in values()) {
                 if (value.code == codeIn) {

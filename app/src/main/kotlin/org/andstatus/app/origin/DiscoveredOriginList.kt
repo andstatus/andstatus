@@ -26,7 +26,7 @@ import org.andstatus.app.service.MyServiceEventsListener
 import org.andstatus.app.service.MyServiceEventsReceiver
 import org.andstatus.app.service.MyServiceManager
 
-class DiscoveredOriginList : OriginList(), MyServiceEventsListener {
+class DiscoveredOriginList : OriginList(DiscoveredOriginList::class), MyServiceEventsListener {
     private var mServiceConnector: MyServiceEventsReceiver? = MyServiceEventsReceiver( MyContextHolder.myContextHolder.getNow(), this)
 
     override fun onCreate(savedInstanceState: Bundle?) {

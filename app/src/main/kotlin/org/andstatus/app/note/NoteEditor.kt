@@ -112,7 +112,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         bodyView.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 editorData.setContent(s.toString(), editorContentMediaType)
-                MyLog.v(NoteEditorData.TAG) { "Content updated to '" + editorData.getContent() + "'" }
+                MyLog.v(editorData) { "Content updated to '" + editorData.getContent() + "'" }
                 mCharsLeftText.setText(
                         editorData.getMyAccount().charactersLeftForNote(editorData.getContent()).toString())
             }
@@ -329,7 +329,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
     }
 
     fun startEditingSharedData(ma: MyAccount, shared: SharedNote) {
-        MyLog.v(NoteEditorData.TAG) { "startEditingSharedData " + shared.toString() }
+        MyLog.v(editorData) { "startEditingSharedData " + shared.toString() }
         updateDataFromScreen()
         val contentWithName: MyStringBuilder = MyStringBuilder.of(shared.content)
         if (!ma.origin.originType.hasNoteName && subjectHasAdditionalContent(shared.name, shared.content)) {
@@ -350,11 +350,11 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
 
     fun startEditingNote(data: NoteEditorData) {
         if (!data.isValid()) {
-            MyLog.v(NoteEditorData.TAG) { "Not a valid data $data" }
+            MyLog.v(data) { "Not a valid data $data" }
             return
         }
         if (!data.mayBeEdited()) {
-            MyLog.v(NoteEditorData.TAG) { "Cannot be edited $data" }
+            MyLog.v(data) { "Cannot be edited $data" }
             return
         }
         data.activity.getNote().setStatus(DownloadStatus.DRAFT)
@@ -396,8 +396,8 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             if (body.isNotEmpty()) {
                 body += " "
             }
-            if (!TextUtils.isEmpty(bodyView.getText()) && body.isNotEmpty()) {
-                MyLog.v(NoteEditorData.TAG, "Body updated\n'${bodyView.getText()}' to \n'$body'", Exception())
+            if (MyLog.isVerboseEnabled() && !TextUtils.isEmpty(bodyView.getText()) && body.isNotEmpty()) {
+                MyLog.v(editorData,"Body updated\n'${bodyView.getText()}' to \n'$body'", Exception())
             }
             bodyView.setText(body)
             bodyView.setSelection(bodyView.getText().toString().length)
@@ -525,7 +525,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         getActivity().toggleFullscreen(TriState.FALSE)
         hide()
         if (command.nonEmpty) {
-            MyLog.v(NoteEditorData.TAG) { "Requested: $command" }
+            MyLog.v(editorData) { "Requested: $command" }
             NoteSaver(this).execute(this, command)
         } else {
             if (command.showAfterSave) {
@@ -537,34 +537,34 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
 
     fun loadCurrentDraft() {
         if (editorData.isValid()) {
-            MyLog.v(NoteEditorData.TAG, "loadCurrentDraft skipped: Editor data is valid")
+            MyLog.v(editorData, "loadCurrentDraft skipped: Editor data is valid")
             show()
             return
         }
         val noteId = MyPreferences.getBeingEditedNoteId()
         if (noteId == 0L) {
-            MyLog.v(NoteEditorData.TAG, "loadCurrentDraft: no current draft")
+            MyLog.v(editorData, "loadCurrentDraft: no current draft")
             return
         }
-        MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft requested, noteId=$noteId" }
+        MyLog.v(editorData) { "loadCurrentDraft requested, noteId=$noteId" }
 
         object : AsyncResult<Long, NoteEditorData>(this@NoteEditor, AsyncEnum.QUICK_UI) {
             @Volatile
             var lock: NoteEditorLock = NoteEditorLock.EMPTY
 
             override suspend fun doInBackground(params: Long): Try<NoteEditorData> {
-                MyLog.v(NoteEditorData.TAG) { "loadCurrentDraft started, noteId=$params" }
+                MyLog.v(editorData) { "loadCurrentDraft started, noteId=$params" }
                 val potentialLock = NoteEditorLock(false, params)
                 if (!potentialLock.acquire(true)) {
                     return TryUtils.notFound()
                 }
                 lock = potentialLock
-                MyLog.v(NoteEditorData.TAG, "loadCurrentDraft acquired lock")
+                MyLog.v(instanceTag, "loadCurrentDraft acquired lock")
                 val data: NoteEditorData = NoteEditorData.load(editorContainer.getActivity().myContext, params)
                 return if (data.mayBeEdited()) {
                     Try.success(data)
                 } else {
-                    MyLog.v(NoteEditorData.TAG) { "Cannot be edited $data" }
+                    MyLog.v(instanceTag) { "Cannot be edited $data" }
                     MyPreferences.setBeingEditedNoteId(0)
                     TryUtils.notFound()
                 }
@@ -574,7 +574,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                 result.onSuccess {
                     if (lock.acquired() && it.isValid() == true) {
                         if (editorData.isValid()) {
-                            MyLog.v(NoteEditorData.TAG, "Loaded draft is not used: Editor data is valid")
+                            MyLog.v(editorData, "Loaded draft is not used: Editor data is valid")
                             show()
                         } else {
                             showData(it)

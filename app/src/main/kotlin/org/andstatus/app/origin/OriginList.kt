@@ -37,12 +37,13 @@ import org.andstatus.app.list.MyListActivity
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.view.MySimpleAdapter
 import java.util.*
+import kotlin.reflect.KClass
 
 /**
  * Select or Manage Origins
  * @author yvolk@yurivolkov.com
  */
-abstract class OriginList : MyListActivity() {
+abstract class OriginList(clazz: KClass<*>) : MyListActivity(clazz) {
     private val data: MutableList<MutableMap<String, String>> = ArrayList()
     protected var addEnabled = false
     protected var originType: OriginType = OriginType.UNKNOWN

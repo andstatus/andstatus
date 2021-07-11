@@ -33,7 +33,7 @@ import org.andstatus.app.graphics.MediaMetadata.Companion.fromFilePath
 import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncRunnable
-import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
@@ -45,7 +45,7 @@ abstract class MediaFile internal constructor(filename: String,
                                               val downloadId: Long,
                                               val downloadStatus: DownloadStatus,
                                               val downloadedDate: Long,
-                                              override val isEmpty: Boolean = false) : IsEmpty, IdentifiableInstance {
+                                              override val isEmpty: Boolean = false) : IsEmpty, Identifiable {
     val downloadFile: DownloadFile = DownloadFile(filename)
 
     @Volatile

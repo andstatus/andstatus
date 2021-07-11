@@ -37,13 +37,14 @@ import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.view.MyContextMenu
+import kotlin.reflect.KClass
 
 /**
  * List of actors for different contexts
  * e.g. "Actors of the note", "Followers of my account(s)" etc.
  * @author yvolk@yurivolkov.com
  */
-open class ActorsScreen : NoteEditorListActivity<ActorViewItem>() {
+open class ActorsScreen(clazz: KClass<*> = ActorsScreen::class) : NoteEditorListActivity<ActorViewItem>(clazz) {
     protected var actorsScreenType: ActorsScreenType = ActorsScreenType.UNKNOWN
     private var contextMenu: ActorContextMenu? = null
 

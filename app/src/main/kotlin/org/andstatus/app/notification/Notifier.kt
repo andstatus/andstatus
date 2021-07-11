@@ -21,6 +21,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.graphics.Color
+import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import org.andstatus.app.R
@@ -169,5 +170,19 @@ class Notifier(val myContext: MyContext) {
     companion object {
         private val VIBRATION_PATTERN: LongArray = longArrayOf(200, 300, 200, 300)
         private const val LIGHT_COLOR = Color.GREEN
+
+        /**
+         * See http://stackoverflow.com/questions/4441334/how-to-play-an-android-notification-sound/9622040
+         */
+        fun beep(context: Context?) {
+            try {
+                val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                val r = RingtoneManager.getRingtone(context, notification)
+                r.play()
+            } catch (e: Exception) {
+                MyLog.w(context, "beep", e)
+            }
+        }
+
     }
 }

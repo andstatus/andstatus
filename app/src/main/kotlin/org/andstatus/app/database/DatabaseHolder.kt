@@ -78,7 +78,7 @@ class DatabaseHolder(context: Context, private val creationEnabled: Boolean) :
         if (onUpgradeTriggered.compareAndSet(false, true)) {
             DatabaseUpgradeParams(db, oldVersion, newVersion)
                 .let {
-                    DatabaseConverterController().onUpgrade(it)
+                    DatabaseConverterController.onUpgrade(it)
                 }
         }
     }

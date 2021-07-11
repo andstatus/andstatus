@@ -32,10 +32,10 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.NotificationEventType
-import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.AsyncEnum
-import org.andstatus.app.util.IdentifiableInstance
-import org.andstatus.app.util.InstanceId
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import java.util.concurrent.atomic.AtomicBoolean
@@ -45,8 +45,9 @@ import java.util.concurrent.atomic.AtomicReference
  * This service asynchronously executes commands, mostly related to communication
  * between this Android Device and Social networks.
  */
-class MyService : Service(), IdentifiableInstance {
-    override val instanceId = InstanceId.next()
+class MyService(
+    private val idInstance: Identifiable = IdInstance(MyService::class)
+) : Service(), Identifiable by idInstance {
 
     @Volatile
     var myContext: MyContext = MyContextEmpty.EMPTY
@@ -92,12 +93,12 @@ class MyService : Service(), IdentifiableInstance {
     }
 
     override fun onCreate() {
-        MyLog.v(TAG) { "MyService $instanceId created" }
+        MyLog.v(this) { "Created" }
         myContext =  MyContextHolder.myContextHolder.initialize(this).getNow()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        MyLog.v(TAG) { "MyService $instanceId onStartCommand: startid=$startId" }
+        MyLog.v(this) { "onStartCommand: startid=$startId" }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForeground()
         }
@@ -117,7 +118,7 @@ class MyService : Service(), IdentifiableInstance {
 
     private val intentReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context?, intent: Intent?) {
-            MyLog.v(TAG) { "MyService " + instanceId + " onReceive " + intent.toString() }
+            MyLog.v(this) { "onReceive " + intent.toString() }
             receiveCommand(intent, 0)
         }
     }
@@ -126,7 +127,7 @@ class MyService : Service(), IdentifiableInstance {
         val commandData: CommandData = CommandData.fromIntent(myContext, intent)
         when (commandData.command) {
             CommandEnum.STOP_SERVICE -> {
-                MyLog.v(TAG) { "MyService " + instanceId + " command " + commandData.command + " received" }
+                MyLog.v(this) { "receiveCommand ${commandData.command}" }
                 stopDelayed(false)
             }
             CommandEnum.BROADCAST_SERVICE_STATE -> {
@@ -174,7 +175,7 @@ class MyService : Service(), IdentifiableInstance {
                 AppWidgets.of(myContext).updateViews()
             }
             reviveHeartBeat()
-            MyLog.d(TAG, "MyService $instanceId initialized")
+            MyLog.d(this, "Initialized")
             MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast()
         }
     }
@@ -192,10 +193,10 @@ class MyService : Service(), IdentifiableInstance {
                    MyLog.v(this) { "(revive heartbeat) Cancelling task: $it" }
                    it.cancel()
                 }
-                current.execute(TAG, Unit)
+                current.execute(instanceTag, Unit)
                     .onFailure { t: Throwable? ->
                         heartBeatRef.compareAndSet(current, null)
-                        MyLog.w(TAG, "MyService $instanceId Failed to revive heartbeat", t)
+                        MyLog.w(this, "Failed to revive heartbeat", t)
                     }
             }
         }
@@ -216,7 +217,7 @@ class MyService : Service(), IdentifiableInstance {
         try {
             executors.ensureExecutorsStarted()
         } catch (e: Exception) {
-            MyLog.i(TAG, "Couldn't start executor", e)
+            MyLog.i(this, "Couldn't start executor", e)
             executors.stopExecutor(true)
             releaseWakeLock()
         }
@@ -225,10 +226,10 @@ class MyService : Service(), IdentifiableInstance {
     private fun acquireWakeLock() {
         val previous = wakeLockRef.get()
         if (previous == null) {
-            MyLog.v(TAG) { "MyService $instanceId acquiring wakelock" }
+            MyLog.v(this) { "Acquiring wakelock" }
             val pm = getSystemService(POWER_SERVICE) as PowerManager ?
             if (pm == null) {
-                MyLog.w(TAG, "No Power Manager ???")
+                MyLog.w(this, "No Power Manager ???")
                 return
             }
             val current = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, MyService::class.java.name)
@@ -245,10 +246,10 @@ class MyService : Service(), IdentifiableInstance {
     override fun onDestroy() {
         if (initialized.get()) {
             mForcedToStop = true
-            MyLog.v(TAG) { "MyService $instanceId onDestroy" }
+            MyLog.v(this) { "onDestroy" }
             stopDelayed(true)
         }
-        MyLog.v(TAG) { "MyService $instanceId destroyed" }
+        MyLog.v(this) { "Destroyed" }
         MyLog.setNextLogFileName()
     }
 
@@ -259,7 +260,7 @@ class MyService : Service(), IdentifiableInstance {
      */
     private fun stopDelayed(forceNow: Boolean) {
         if (isStopping.compareAndSet(false, true)) {
-            MyLog.v(TAG) { "MyService " + instanceId + " stopping" + if (forceNow) ", forced" else "" }
+            MyLog.v(this) { "Stopping" + if (forceNow) ", forced" else "" }
         }
         startedForegrounLastTime = 0
         if (!executors.stopExecutor(forceNow) && !forceNow) {
@@ -275,7 +276,7 @@ class MyService : Service(), IdentifiableInstance {
         try {
             unregisterReceiver(intentReceiver)
         } catch (e: Exception) {
-            MyLog.d(TAG, "MyService $instanceId on unregisterReceiver", e)
+            MyLog.d(this, "on unregisterReceiver", e)
         }
         mForcedToStop = false
         val heartBeat = heartBeatRef.get()
@@ -287,7 +288,7 @@ class MyService : Service(), IdentifiableInstance {
         releaseWakeLock()
         stopSelf()
         myContext.notifier.clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
-        MyLog.i(TAG, "MyService " + instanceId + " stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime))
+        MyLog.i(this, "Stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime))
         isStopping.set(false)
     }
 
@@ -295,22 +296,19 @@ class MyService : Service(), IdentifiableInstance {
         val wakeLock = wakeLockRef.get()
         if (wakeLock != null && wakeLockRef.compareAndSet(wakeLock, null)) {
             if (wakeLock.isHeld) {
-                MyLog.v(TAG) { "MyService $instanceId releasing wakelock: $wakeLock" }
+                MyLog.v(this) { "Releasing wakelock: $wakeLock" }
                 wakeLock.release()
             } else {
-                MyLog.v(TAG) { "MyService $instanceId wakelock is not held: $wakeLock" }
+                MyLog.v(this) { "Wakelock is not held: $wakeLock" }
             }
         }
     }
-
-    override val instanceTag: String get() = TAG
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
     }
 
     companion object {
-        private val TAG: String = MyService::class.java.simpleName
         private const val STOP_ON_INACTIVITY_AFTER_SECONDS: Long = 10
         private val widgetsInitialized: AtomicBoolean = AtomicBoolean(false)
     }

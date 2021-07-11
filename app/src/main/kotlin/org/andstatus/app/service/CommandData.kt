@@ -351,9 +351,7 @@ class CommandData private constructor(
         }
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     companion object {
         private val TAG: String = CommandData::class.java.simpleName

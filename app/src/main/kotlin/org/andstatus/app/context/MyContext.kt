@@ -31,11 +31,11 @@ import org.andstatus.app.service.ConnectionState
 import org.andstatus.app.timeline.meta.PersistentTimelines
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.user.CachedUsersAndActors
-import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.IsEmpty
 import java.util.function.Supplier
 
-interface MyContext : IdentifiableInstance, IsEmpty {
+interface MyContext : Identifiable, IsEmpty {
     fun newInitialized(initializer: Any): MyContext
     val initialized: Boolean
     val isReady: Boolean

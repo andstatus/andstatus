@@ -38,7 +38,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  * @author yvolk@yurivolkov.com
  * Dragging implementation started from https://github.com/yfujiki/Android-DragReorderSample
  */
-class ManageAccountsActivity : MyActivity() {
+class ManageAccountsActivity : MyActivity(ManageAccountsActivity::class) {
 
     private val itemTouchHelper by lazy {
         val simpleItemTouchCallback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP

@@ -50,7 +50,7 @@ import org.andstatus.app.util.Permissions.PermissionType
 import org.andstatus.app.util.ViewUtils
 import org.andstatus.app.widget.WebViewFragment
 
-class HelpActivity : MyActivity() {
+class HelpActivity : MyActivity(HelpActivity::class) {
     private var helpFlipper: ViewPager? = null
 
     /** Stores state of [.EXTRA_IS_FIRST_ACTIVITY]  */
@@ -266,7 +266,6 @@ class HelpActivity : MyActivity() {
     }
 
     companion object {
-        val TAG: String = HelpActivity::class.java.simpleName
 
         /**
          * integer - Index of Help screen to show first
@@ -294,10 +293,12 @@ class HelpActivity : MyActivity() {
             intent.putExtra(EXTRA_HELP_PAGE_INDEX, pageIndex)
             if (context is Activity) {
                 context.startActivity(intent)
-                MyLog.v(TAG) { "Finishing " + context.javaClass.simpleName + " and starting " + TAG }
+                MyLog.v(HelpActivity::class) { "Finishing " + context.javaClass.simpleName + " and starting me"}
                 context.finish()
             } else {
-                MyLog.v(TAG) { "Starting " + TAG + " from " + context.getApplicationContext().javaClass.name }
+                MyLog.v(HelpActivity::class) {
+                    "Starting me from " + context.getApplicationContext()::class.simpleName ?: "NoName"
+                }
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.getApplicationContext().startActivity(intent)
             }

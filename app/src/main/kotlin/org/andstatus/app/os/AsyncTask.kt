@@ -26,7 +26,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
-import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
@@ -52,7 +52,7 @@ open class AsyncTask<Params, Progress, Result>(
     taskId: Any?,
     val pool: AsyncEnum,
     open val cancelable: Boolean = true
-) : IdentifiableInstance {
+) : Identifiable {
 
     constructor(pool: AsyncEnum) : this(AsyncTask::class.java, pool)
 

@@ -25,7 +25,7 @@ import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.os.AsyncUtil
 import org.andstatus.app.syncadapter.SyncInitiator
-import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import java.util.concurrent.TimeUnit
@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference
  * Android system creates new instance of this type on each Intent received.
  * This is why we're keeping a state in static fields.
  */
-class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
+class MyServiceManager : BroadcastReceiver(), Identifiable {
     override val instanceId = InstanceId.next()
 
     private class MyServiceStateInTime {

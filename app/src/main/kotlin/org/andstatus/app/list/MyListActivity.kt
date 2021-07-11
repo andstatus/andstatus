@@ -20,6 +20,7 @@ import android.widget.ListAdapter
 import android.widget.ListView
 import androidx.fragment.app.ListFragment
 import org.andstatus.app.R
+import kotlin.reflect.KClass
 
 /**
  * Support library doesn't have ListActivity, so we recreated it using one of two options:
@@ -28,7 +29,7 @@ import org.andstatus.app.R
  * And now it looks like we don't need ListFragment at all!
  * @author yvolk@yurivolkov.com
  */
-open class MyListActivity : MyBaseListActivity() {
+abstract class MyListActivity(clazz: KClass<*>) : MyBaseListActivity(clazz) {
     private var listFragment: ListFragment? = null
 
     override var listView: ListView? = null

@@ -29,24 +29,30 @@ import androidx.fragment.app.Fragment
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyTheme
-import org.andstatus.app.util.IdentifiableInstance
-import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TriState
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.reflect.KClass
 
 /**
  * @author yvolk@yurivolkov.com
  */
-open class MyActivity : AppCompatActivity(), IdentifiableInstance {
+open class MyActivity(
+    tag: String,
+    idInstance: Identifiable = IdInstance(tag)
+) : AppCompatActivity(), Identifiable by idInstance {
+
+    constructor(clazz: KClass<*>): this(clazz.simpleName ?: "NoName")
+
     protected enum class OnFinishAction {
         RESTART_APP, RESTART_ME, DONE, NONE
     }
 
     // introduce this in order to avoid duplicated restarts: we have one place, where we restart anything
     protected var onFinishAction: AtomicReference<OnFinishAction> = AtomicReference(OnFinishAction.NONE)
-    override val instanceId = InstanceId.next()
     protected var mLayoutId = 0
     protected var myResumed = false
 

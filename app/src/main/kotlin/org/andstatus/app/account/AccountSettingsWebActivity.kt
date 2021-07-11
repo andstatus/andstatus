@@ -27,18 +27,17 @@ import android.webkit.WebViewClient
 import org.andstatus.app.ClassInApplicationPackage
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.account.AccountSettingsWebActivity
 import org.andstatus.app.net.http.HttpConnectionInterface
 import org.andstatus.app.util.MyLog
 
-class AccountSettingsWebActivity : MyActivity() {
+class AccountSettingsWebActivity : MyActivity(AccountSettingsWebActivity::class) {
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.account_settings_web
         super.onCreate(savedInstanceState)
         try {
             val url = intent.getStringExtra(EXTRA_URLTOOPEN)
             CookieManager.getInstance().setAcceptCookie(true)
-            MyLog.d(TAG, "Loading the URL: $url")
+            MyLog.d(instanceTag, "Loading the URL: $url")
             val view = findViewById<View?>(R.id.accountSettingsWebView) as WebView
             view.settings.builtInZoomControls = true
             view.settings.javaScriptEnabled = true
@@ -62,7 +61,7 @@ class AccountSettingsWebActivity : MyActivity() {
             val uri = Uri.parse(url)
             if (uri != null && HttpConnectionInterface.Companion.CALLBACK_URI.getHost() == uri.host) {
                 isCallback = true
-                MyLog.d(TAG, "Callback to: $url")
+                MyLog.d(instanceTag, "Callback to: $url")
                 if (!isFinishing) {
                     isFinishing = true
                     val i = Intent(this@AccountSettingsWebActivity, AccountSettingsActivity::class.java)
@@ -85,7 +84,6 @@ class AccountSettingsWebActivity : MyActivity() {
     }
 
     companion object {
-        private val TAG: String? = AccountSettingsWebActivity::class.java.simpleName
-        val EXTRA_URLTOOPEN: String? = ClassInApplicationPackage.PACKAGE_NAME + ".URLTOOPEN"
+        val EXTRA_URLTOOPEN: String = ClassInApplicationPackage.PACKAGE_NAME + ".URLTOOPEN"
     }
 }

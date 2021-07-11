@@ -26,8 +26,10 @@ import java.util.*
 /**
  * Manages minimal information about the latest downloaded note by one Actor (or a User represented by the Actor).
  * We count notes where the Actor is either a Actor or an Author
+ *
+ * All information is supplied in this constructor, so it doesn't lookup anything in the database
  */
-class ActorActivity {
+class ActorActivity(actorIdIn: Long, activityId: Long, activityDate: Long) {
     private var actorId: Long = 0
 
     /**
@@ -46,20 +48,7 @@ class ActorActivity {
      */
     private var changed = false
 
-    /**
-     * Retrieve from the database information about the last downloaded activity by this Actor
-     */
-    constructor(actorIdIn: Long) {
-        actorId = actorIdIn
-        require(actorId != 0L) { "$TAG: actorId==0" }
-        lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId)
-        lastActivityDate = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, actorId)
-    }
-
-    /**
-     * All information is supplied in this constructor, so it doesn't lookup anything in the database
-     */
-    constructor(actorIdIn: Long, activityId: Long, activityDate: Long) {
+    init {
         if (actorIdIn != 0L && activityId != 0L) {
             actorId = actorIdIn
             onNewActivity(activityId, activityDate)
@@ -149,9 +138,5 @@ class ActorActivity {
             return false
         }
         return true
-    }
-
-    companion object {
-        private val TAG: String = ActorActivity::class.java.simpleName
     }
 }

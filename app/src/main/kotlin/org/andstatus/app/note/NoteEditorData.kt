@@ -42,6 +42,8 @@ import org.andstatus.app.net.social.Audience
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
@@ -50,7 +52,11 @@ import org.andstatus.app.util.StringUtil
 import java.util.*
 import java.util.stream.Collectors
 
-class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity) : IsEmpty {
+class NoteEditorData private constructor(
+    val ma: MyAccount,
+    activity: AActivity,
+    private val idInstance: Identifiable = IdInstance(NoteEditorData::class)
+) : IsEmpty, Identifiable by idInstance {
     val activity: AActivity
     private var attachedImageFiles: AttachedImageFiles = AttachedImageFiles.EMPTY
     private var replyToConversationParticipants = false
@@ -99,7 +105,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
             it.list.forEach { imageFile: AttachedMediaFile -> imageFile.preloadImageAsync(CacheName.ATTACHED_IMAGE) }
         }
         activity.setNote(note.withAttachments(Attachments.load(myContext, noteId)))
-        MyLog.v(TAG) { "Loaded $this" }
+        MyLog.v(instanceTag) { "Loaded $this" }
     }
 
     override fun hashCode(): Int {
@@ -366,7 +372,6 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
     }
 
     companion object {
-        val TAG: String = NoteEditorData::class.java.simpleName
         val EMPTY = newEmpty(MyAccount.EMPTY)
         private fun toActivity(ma: MyAccount, noteId: Long, andLoad: Boolean): AActivity {
             val activity: AActivity

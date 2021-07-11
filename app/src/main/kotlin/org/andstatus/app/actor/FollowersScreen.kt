@@ -25,7 +25,7 @@ import org.andstatus.app.service.MyServiceManager
 /**
  * @author yvolk@yurivolkov.com
  */
-class FollowersScreen : ActorsScreen() {
+class FollowersScreen : ActorsScreen(FollowersScreen::class) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }

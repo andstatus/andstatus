@@ -104,9 +104,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
         return myServiceRef.get()?.isStopping() ?: true
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     override fun toString(): String {
         val sb = MyStringBuilder()

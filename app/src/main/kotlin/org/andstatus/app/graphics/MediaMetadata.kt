@@ -28,7 +28,6 @@ import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.MyContentType
 import org.andstatus.app.database.table.DownloadTable
 import org.andstatus.app.util.IsEmpty
-import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.TaggedClass
 import org.apache.commons.lang3.time.DurationFormatUtils
@@ -74,9 +73,7 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
         )
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     companion object {
         private val TAG: String = MediaMetadata::class.java.simpleName

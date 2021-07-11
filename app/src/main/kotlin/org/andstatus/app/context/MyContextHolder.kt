@@ -19,7 +19,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.SystemClock
 import android.provider.Settings
 import io.vavr.control.Try
@@ -34,6 +33,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TamperingDetector
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
@@ -45,7 +45,9 @@ import java.util.function.UnaryOperator
  * Holds globally cached state of the application: [MyContext]
  * @author yvolk@yurivolkov.com
  */
-class MyContextHolder private constructor() : TaggedClass {
+class MyContextHolder private constructor(
+    private val taggedInstance: TaggedInstance = TaggedInstance(MyContextHolder::class)
+) : TaggedClass by taggedInstance {
     private val appStartedAt = SystemClock.elapsedRealtime()
 
     @Volatile
@@ -263,16 +265,11 @@ class MyContextHolder private constructor() : TaggedClass {
         synchronized(contextLock) { myFutureContext = myFutureContext.releaseNow(reason) }
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
-
     companion object {
-        private val TAG: String = MyContextHolder::class.java.simpleName
         val myContextHolder: MyContextHolder = MyContextHolder()
 
-        private fun requireNonNullContext(context: Context?, calledBy: Any?, message: String) {
-            checkNotNull(context) { TAG + ": " + message + ", called by " + MyStringBuilder.objToTag(calledBy) }
+        private fun requireNonNullContext(context: Context?, caller: Any?, message: String) {
+            checkNotNull(context) { ": " + message + ", called by " + MyStringBuilder.objToTag(caller) }
         }
     }
 }

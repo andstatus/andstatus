@@ -32,7 +32,7 @@ import java.util.function.Supplier
  * @author yvolk@yurivolkov.com
  */
 class MyContextTestImpl internal constructor(parent: MyContext, context: Context, initializer: Any?) :
-        MyContextImpl(parent, context, initializer) {
+        MyContextImpl(parent, context, initializer, MyContextTestImpl::class) {
     private val assertionData: MutableMap<String, AssertionData> = ConcurrentHashMap()
 
     @Volatile
@@ -118,16 +118,8 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
                 + super.toString())
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
-
     override val appWidgetIds: List<Int>
         get() = super.appWidgetIds.ifEmpty { listOf(1) }
-
-    companion object {
-        private val TAG: String = MyContextTestImpl::class.java.simpleName
-    }
 
     init {
         if (parent is MyContextTestImpl) {

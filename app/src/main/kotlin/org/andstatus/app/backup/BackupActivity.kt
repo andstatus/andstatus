@@ -32,7 +32,7 @@ import org.andstatus.app.os.AsyncEffects
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.util.TryUtils
 
-class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
+class BackupActivity : MyActivity(BackupActivity::class), ProgressLogger.ProgressListener {
     private var backupFolder: DocumentFile? = null
     private var asyncTask: AsyncEffects<DocumentFile>? = null
     private var progressCounter = 0

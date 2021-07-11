@@ -75,9 +75,7 @@ class MyServiceHeartBeat constructor(myService: MyService) : AsyncTask<Unit, Lon
 
     override val instanceTag: String get() = super.instanceTag + "-it" + mIteration
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     override val isReallyWorking: Boolean
         get() {

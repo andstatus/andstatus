@@ -16,7 +16,7 @@
 package org.andstatus.app.note
 
 import org.andstatus.app.data.DbUtils
-import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
@@ -24,7 +24,7 @@ import org.andstatus.app.util.MyStringBuilder
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
-internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, IdentifiableInstance {
+internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, Identifiable {
     override val instanceId = InstanceId.next()
     var startedAt: Long = 0
     override val isEmpty: Boolean
@@ -95,9 +95,7 @@ internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, 
         return isEmpty || Math.abs(System.currentTimeMillis() - startedAt) > 60000
     }
 
-    override fun classTag(): String {
-        return TAG
-    }
+    override val classTag: String get() = TAG
 
     companion object {
         private val TAG: String = NoteEditorLock::class.java.simpleName
