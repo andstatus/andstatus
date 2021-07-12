@@ -29,11 +29,11 @@ import org.andstatus.app.data.MyContentType
 import org.andstatus.app.database.table.DownloadTable
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.Taggable
 import org.apache.commons.lang3.time.DurationFormatUtils
 import java.util.concurrent.TimeUnit
 
-class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmpty, TaggedClass {
+class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmpty, Taggable {
     fun size(): Point {
         return Point(width, height)
     }

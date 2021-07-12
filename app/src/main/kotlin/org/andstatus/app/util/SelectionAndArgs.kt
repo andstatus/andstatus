@@ -18,7 +18,7 @@ package org.andstatus.app.util
 /**
  * Add selection and it's argument (for query...)
  */
-class SelectionAndArgs @JvmOverloads constructor(selection_in: String = "") : TaggedClass {
+class SelectionAndArgs @JvmOverloads constructor(selection_in: String = "") : Taggable {
     @Volatile
     var selection: String
 

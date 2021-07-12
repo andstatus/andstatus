@@ -15,13 +15,12 @@
  */
 package org.andstatus.app.service
 
-import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.service.CommandQueue.AccessorType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import java.util.concurrent.atomic.AtomicReference
 
-/** Two specialized threads to execute [CommandQueue]  */
+/** Two specialized async tasks to execute [CommandQueue]  */
 class QueueExecutors(private val myService: MyService) {
     private val general: AtomicReference<QueueExecutor> = AtomicReference()
     private val downloads: AtomicReference<QueueExecutor> = AtomicReference()
@@ -32,7 +31,7 @@ class QueueExecutors(private val myService: MyService) {
     }
 
     private fun ensureExecutorStarted(accessorType: AccessorType) {
-        val method = "ensureExecutorStarted-$accessorType"
+        val method = this::ensureExecutorStarted.name + "-$accessorType"
         val logMessageBuilder = MyStringBuilder()
         val previous = getRef(accessorType).get()
         var replace = previous == null
@@ -93,13 +92,13 @@ class QueueExecutors(private val myService: MyService) {
         return false
     }
 
-    fun stopExecutor(forceNow: Boolean): Boolean {
-        return (stopExecutor(AccessorType.GENERAL, forceNow)
-                && stopExecutor(AccessorType.DOWNLOADS, forceNow))
+    fun stopAll(forceNow: Boolean): Boolean {
+        return (stopOfType(AccessorType.GENERAL, forceNow)
+                && stopOfType(AccessorType.DOWNLOADS, forceNow))
     }
 
-    private fun stopExecutor(accessorType: AccessorType, forceNow: Boolean): Boolean {
-        val method = "couldStopExecutor-$accessorType"
+    private fun stopOfType(accessorType: AccessorType, forceNow: Boolean): Boolean {
+        val method = this::stopOfType.name + "-$accessorType"
         val logMessageBuilder = MyStringBuilder()
         val executorRef = getRef(accessorType)
         val previous = executorRef.get()
@@ -107,7 +106,7 @@ class QueueExecutors(private val myService: MyService) {
         var doStop = !success
         if (doStop && previous.needsBackgroundWork && previous.isReallyWorking) {
             if (forceNow) {
-                logMessageBuilder.withComma("Cancelling working Executor$previous")
+                logMessageBuilder.withComma("Cancelling working Executor $previous")
             } else {
                 logMessageBuilder.withComma("Cannot stop now Executor $previous")
                 doStop = false

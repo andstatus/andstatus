@@ -35,15 +35,15 @@ import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.timeline.meta.PersistentTimelines
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.user.CachedUsersAndActors
-import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.Permissions
 import org.andstatus.app.util.Permissions.PermissionType
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StopWatch
+import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.UriUtils
 import java.util.function.Supplier
 import kotlin.reflect.KClass
@@ -58,14 +58,14 @@ open class MyContextImpl internal constructor(
     context: Context,
     initializer: Any?,
     clazz: KClass<*> = MyContextImpl::class,
-    private val identifiable: Identifiable = IdInstance(clazz)
+    private val identifiable: Identifiable = Identified(clazz)
 ) : MyContext, Identifiable by identifiable {
 
     @Volatile
     final override var state: MyContextState = MyContextState.EMPTY
         private set
 
-    private val initializedBy: String = MyStringBuilder.objToTag(initializer)
+    private val initializedBy: String = Taggable.anyToTag(initializer)
     final override val baseContext: Context = calcBaseContextToUse(parent, context)
     override val context: Context = MyLocale.onAttachBaseContext(baseContext)
 

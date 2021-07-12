@@ -21,7 +21,7 @@ import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.UriUtils
 import java.util.*
 import java.util.function.Consumer
@@ -36,7 +36,7 @@ open class DownloadData protected constructor(
     private var mimeType: String,
     private var downloadType: DownloadType,
     uri: Uri?
-) : IsEmpty, TaggedClass {
+) : IsEmpty, Taggable {
 
     private var status: DownloadStatus = DownloadStatus.UNKNOWN
     private var downloadNumber: Long = 0

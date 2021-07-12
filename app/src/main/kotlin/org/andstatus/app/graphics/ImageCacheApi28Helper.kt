@@ -58,7 +58,7 @@ object ImageCacheApi28Helper {
         return cachedImage
     }
 
-    private fun setTargetSize(imageCache: ImageCache, objTag: Any?, decoder: ImageDecoder, imageSize: Size) {
+    private fun setTargetSize(imageCache: ImageCache, anyTag: Any?, decoder: ImageDecoder, imageSize: Size) {
         var width = imageSize.width
         var height = imageSize.height
         while (height > imageCache.maxBitmapHeight || width > imageCache.getMaxBitmapWidth()) {
@@ -66,7 +66,7 @@ object ImageCacheApi28Helper {
             width = width * 3 / 4
         }
         if (width != imageSize.width) {
-            MyLog.v(objTag, "Large bitmap " + imageSize + " scaled to " + width + "x" + height)
+            MyLog.v(anyTag, "Large bitmap " + imageSize + " scaled to " + width + "x" + height)
             decoder.setTargetSize(width, height)
         }
     }

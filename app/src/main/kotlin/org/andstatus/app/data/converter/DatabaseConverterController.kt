@@ -19,7 +19,7 @@ import android.app.Activity
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.Taggable
 import java.util.concurrent.TimeUnit
 
 object DatabaseConverterController {
@@ -65,7 +65,7 @@ object DatabaseConverterController {
         }
 
         fun attemptToTriggerDatabaseUpgrade(upgradeRequestorIn: Activity) {
-            val requestorName: String = MyStringBuilder.objToTag(upgradeRequestorIn)
+            val requestorName: String = Taggable.anyToTag(upgradeRequestorIn)
             var skip = false
             if (isUpgrading()) {
                 MyLog.v(

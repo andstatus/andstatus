@@ -18,7 +18,7 @@ package org.andstatus.app.data
 import org.andstatus.app.context.MyStorage
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.Taggable
 import java.io.File
 import java.util.*
 
@@ -73,7 +73,7 @@ class DownloadFile(filename: String) : IsEmpty {
     }
 
     override fun toString(): String {
-        return (MyStringBuilder.objToTag(this)
+        return (Taggable.anyToTag(this)
                 + " filename:" + filename
                 + if (existed) ", existed" else "")
     }

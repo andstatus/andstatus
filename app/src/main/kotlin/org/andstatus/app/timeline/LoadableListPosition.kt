@@ -20,11 +20,11 @@ import android.widget.ListView
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.Taggable
 
 class LoadableListPosition<T : ViewItem<T>> private constructor(
         val itemId: Long, val y: Int, val position: Int,
-        val minSentDate: Long, val description: String?) : IsEmpty, TaggedClass {
+        val minSentDate: Long, val description: String?) : IsEmpty, Taggable {
 
     override val isEmpty: Boolean
         get() {

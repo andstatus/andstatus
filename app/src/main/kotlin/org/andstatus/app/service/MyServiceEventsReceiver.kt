@@ -24,7 +24,7 @@ import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.Taggable
 
 /**
  * @author yvolk@yurivolkov.com
@@ -48,7 +48,7 @@ class MyServiceEventsReceiver(private val myContext: MyContext, private val list
         val event: MyServiceEvent = MyServiceEvent.load(intent.getStringExtra(IntentExtra.SERVICE_EVENT.key) ?: "")
         if (event == MyServiceEvent.UNKNOWN) return
         MyLog.v(this) {
-            ("onReceive " + event + " for " + MyStringBuilder.objToTag(listener)
+            ("onReceive " + event + " for " + Taggable.anyToTag(listener)
                     + ", instanceId:" + mInstanceId)
         }
         listener.onReceive(CommandData.fromIntent(myContext, intent), event)
@@ -57,7 +57,7 @@ class MyServiceEventsReceiver(private val myContext: MyContext, private val list
     init {
         MyLog.v(this) {
             ("Created, instanceId=" + mInstanceId
-                    + ("; listener=" + MyStringBuilder.objToTag(listener)))
+                    + ("; listener=" + Taggable.anyToTag(listener)))
         }
     }
 }

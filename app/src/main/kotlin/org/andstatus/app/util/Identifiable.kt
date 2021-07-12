@@ -15,13 +15,14 @@
  */
 package org.andstatus.app.util
 
+import org.andstatus.app.util.Taggable.Companion.noNameTag
 import kotlin.reflect.KClass
 
 /**
  * Helps easier distinguish instances of a class e.g. in log messages
  * @author yvolk@yurivolkov.com
  */
-interface Identifiable : TaggedClass {
+interface Identifiable : Taggable {
     val instanceId: Long
 
     val instanceIdString: String get() = instanceId.toString()
@@ -30,7 +31,7 @@ interface Identifiable : TaggedClass {
         get() {
             val className = classTag
             val idString = instanceIdString
-            val maxClassNameLength = MyLog.MAX_TAG_LENGTH - idString.length
+            val maxClassNameLength = Taggable.MAX_TAG_LENGTH - idString.length
             val classNameTruncated =
                 if (className.length > maxClassNameLength) className.substring(0, maxClassNameLength) else className
             return classNameTruncated + idString
@@ -39,9 +40,9 @@ interface Identifiable : TaggedClass {
 
 /** To be used as a delegate implementing [Identifiable]
  * See [Delegation](https://kotlinlang.org/docs/delegation.html) */
-class IdInstance(val tag: String) : Identifiable {
+class Identified(val tag: String) : Identifiable {
 
-    constructor(clazz: KClass<*>): this(clazz.simpleName ?: "NoName")
+    constructor(clazz: KClass<*>): this(clazz.simpleName ?: noNameTag)
 
     override val instanceId = InstanceId.next()
 
@@ -53,5 +54,11 @@ class IdInstance(val tag: String) : Identifiable {
 
     override val instanceTag: String by lazy {
         super.instanceTag
+    }
+
+    companion object {
+        fun fromAny(anyTag: Any?): Identified {
+            return Identified(Taggable.anyToTag(anyTag))
+        }
     }
 }

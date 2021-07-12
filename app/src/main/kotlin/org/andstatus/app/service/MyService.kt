@@ -34,7 +34,7 @@ import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
@@ -46,8 +46,8 @@ import java.util.concurrent.atomic.AtomicReference
  * between this Android Device and Social networks.
  */
 class MyService(
-    private val idInstance: Identifiable = IdInstance(MyService::class)
-) : Service(), Identifiable by idInstance {
+    private val identifiable: Identifiable = Identified(MyService::class)
+) : Service(), Identifiable by identifiable {
 
     @Volatile
     var myContext: MyContext = MyContextEmpty.EMPTY
@@ -218,7 +218,7 @@ class MyService(
             executors.ensureExecutorsStarted()
         } catch (e: Exception) {
             MyLog.i(this, "Couldn't start executor", e)
-            executors.stopExecutor(true)
+            executors.stopAll(true)
             releaseWakeLock()
         }
     }
@@ -263,7 +263,7 @@ class MyService(
             MyLog.v(this) { "Stopping" + if (forceNow) ", forced" else "" }
         }
         startedForegrounLastTime = 0
-        if (!executors.stopExecutor(forceNow) && !forceNow) {
+        if (!executors.stopAll(forceNow) && !forceNow) {
             return
         }
         unInitialize()

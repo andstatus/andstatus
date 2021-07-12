@@ -278,8 +278,8 @@ class HttpReadResult(val request: HttpRequest) {
 
     fun logResponse(): HttpReadResult {
         if (MyPreferences.isLogNetworkLevelMessages()) {
-            val objTag: Any = "response"
-            MyLog.logNetworkLevelMessage(objTag, request.getLogName(), strResponse,
+            val anyTag: Any = "response"
+            MyLog.logNetworkLevelMessage(anyTag, request.getLogName(), strResponse,
                     MyStringBuilder.of("")
                             .atNewLine("logger-URL", url.toString())
                             .atNewLine("logger-account", request.connectionData().getAccountName().name)

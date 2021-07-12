@@ -233,7 +233,7 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
         }
     }
 
-    fun calculateScaling(objTag: Any, imageSize: Point): BitmapFactory.Options {
+    fun calculateScaling(anyTag: Any, imageSize: Point): BitmapFactory.Options {
         val options = BitmapFactory.Options()
         options.inSampleSize = 1
         var x = maxBitmapWidth
@@ -244,7 +244,7 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
             y *= 2
         }
         if (options.inSampleSize > 1 && MyLog.isVerboseEnabled()) {
-            MyLog.v(objTag, "Large bitmap " + imageSize.x + "x" + imageSize.y
+            MyLog.v(anyTag, "Large bitmap " + imageSize.x + "x" + imageSize.y
                     + " scaling by " + options.inSampleSize + " times")
         }
         return options

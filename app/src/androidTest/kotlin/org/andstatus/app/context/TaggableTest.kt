@@ -1,20 +1,35 @@
 package org.andstatus.app.context
 
-import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TaggedInstance
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class TaggedClassTest: TaggedClass {
+class TaggableTest: Taggable {
 
     @Test
-    fun testTaggedClass() {
-        val method = ::testTaggedClass.name
-        assertEquals("testTaggedClass", method)
+    fun testAnyToTag() {
+        var tag: Any? = this
+        val className = "TaggableTest"
+        assertEquals(className, Taggable.anyToTag(tag))
+        tag = this::class
+        assertEquals(className, Taggable.anyToTag(tag))
+        tag = javaClass
+        assertEquals(className, Taggable.anyToTag(tag))
+        tag = "Other tag"
+        assertEquals(tag.toString(), Taggable.anyToTag(tag))
+        tag = null
+        assertEquals("(null)", Taggable.anyToTag(tag))
+    }
 
-        val expectedClassName = "TaggedClassTest"
+    @Test
+    fun testTaggable() {
+        val method = ::testTaggable.name
+        assertEquals("testTaggable", method)
+
+        val expectedClassName = "TaggableTest"
         assertEquals(expectedClassName, this::class.simpleName)
         MatcherAssert.assertThat(classTag, CoreMatchers.containsString(expectedClassName))
     }
@@ -38,12 +53,12 @@ class TaggedClassTest: TaggedClass {
 
 private class MyCoolClass(
     private val taggedInstance: TaggedInstance = TaggedInstance(MyCoolClass::class)
-) : TaggedClass by taggedInstance {
+) : Taggable by taggedInstance {
     // Empty
 }
 
 private class MyCoolClassTwo(
     private val taggedInstance: TaggedInstance = TaggedInstance("tagTwo")
-) : TaggedClass by taggedInstance {
+) : Taggable by taggedInstance {
     // Empty
 }

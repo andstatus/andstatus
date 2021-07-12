@@ -32,7 +32,7 @@ import org.andstatus.app.timeline.meta.TimelineSaver
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StringUtil
-import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TriState
 
@@ -40,7 +40,7 @@ import org.andstatus.app.util.TriState
 class MyAccountBuilder private constructor(
     myAccountIn: MyAccount,
     taggedInstance: TaggedInstance = TaggedInstance(MyAccountBuilder::class)
-) : TaggedClass by taggedInstance {
+) : Taggable by taggedInstance {
     var myAccount = myAccountIn
         private set
 

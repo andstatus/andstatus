@@ -30,9 +30,9 @@ import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.SelectionAndArgs
-import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.Taggable
 
-class TimelineParameters(private val myContext: MyContext, val timeline: Timeline, val whichPage: WhichPage) : TaggedClass {
+class TimelineParameters(private val myContext: MyContext, val timeline: Timeline, val whichPage: WhichPage) : Taggable {
     var mLoaderCallbacks: LoaderManager.LoaderCallbacks<Cursor>? = null
     private var mProjection: MutableSet<String> = mutableSetOf()
     var maxDate: Long = 0

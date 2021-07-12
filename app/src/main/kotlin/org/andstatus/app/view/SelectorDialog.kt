@@ -37,7 +37,7 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyTheme
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.Taggable
 
 /**
  * @author yvolk@yurivolkov.com
@@ -132,7 +132,7 @@ open class SelectorDialog : DialogFragment() {
             ft.addToBackStack(null)
             show(ft, dialogTag)
         } catch (e: Exception) {
-            MyLog.w(fragmentActivity, "Failed to show " + MyStringBuilder.objToTag(this), e)
+            MyLog.w(fragmentActivity, "Failed to show " + Taggable.anyToTag(this), e)
         }
     }
 

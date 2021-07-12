@@ -26,11 +26,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
-import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.TryUtils.isCancelled
 import java.util.concurrent.atomic.AtomicBoolean
@@ -51,15 +51,15 @@ typealias AsyncResult<Params, Result> = AsyncTask<Params, Unit, Result>
 open class AsyncTask<Params, Progress, Result>(
     taskId: Any?,
     val pool: AsyncEnum,
-    open val cancelable: Boolean = true
-) : Identifiable {
+    open val cancelable: Boolean = true,
+    identifiable: Identifiable = Identified.fromAny(taskId)
+) : Identifiable by identifiable {
 
-    constructor(pool: AsyncEnum) : this(AsyncTask::class.java, pool)
+    constructor(pool: AsyncEnum) : this(AsyncTask::class, pool)
 
     var maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds
-    private val taskId: String = MyStringBuilder.objToTag(taskId)
+    private val taskId: String = Taggable.anyToTag(taskId)
     protected val createdAt = MyLog.uniqueCurrentTimeMS()
-    override val instanceId = InstanceId.next()
 
     val isPending: Boolean get() = startedAt.get() == 0L && !isFinished
     val isRunning: Boolean get() = startedAt.get() > 0 && !isFinished
@@ -88,8 +88,8 @@ open class AsyncTask<Params, Progress, Result>(
     var job: Job? = null
 
     fun execute(params: Params): Try<AsyncTask<Params, Progress, Result>> = execute(params, params)
-    fun execute(objTag: Any?, params: Params): Try<AsyncTask<Params, Progress, Result>> =
-        AsyncTaskLauncher.execute(objTag, this, params)
+    fun execute(anyTag: Any?, params: Params): Try<AsyncTask<Params, Progress, Result>> =
+        AsyncTaskLauncher.execute(anyTag, this, params)
 
     /**
      * Executes the task with the specified parameters. The task returns
@@ -284,7 +284,7 @@ open class AsyncTask<Params, Progress, Result>(
     val isBackgroundEnded: Boolean get() = backgroundEndedAt.get() > 0
 
     override fun toString(): String {
-        return (taskId + " on " + pool.name +
+        return (instanceTag + " on " + pool.name +
                 ", age: " + RelativeTime.secMsAgo(createdAt) +
                 ", " + stateSummary +
                 ", instanceId: " + instanceId)

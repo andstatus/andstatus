@@ -32,7 +32,7 @@ import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TamperingDetector
 import java.util.concurrent.CompletableFuture
@@ -47,7 +47,7 @@ import java.util.function.UnaryOperator
  */
 class MyContextHolder private constructor(
     private val taggedInstance: TaggedInstance = TaggedInstance(MyContextHolder::class)
-) : TaggedClass by taggedInstance {
+) : Taggable by taggedInstance {
     private val appStartedAt = SystemClock.elapsedRealtime()
 
     @Volatile
@@ -269,7 +269,7 @@ class MyContextHolder private constructor(
         val myContextHolder: MyContextHolder = MyContextHolder()
 
         private fun requireNonNullContext(context: Context?, caller: Any?, message: String) {
-            checkNotNull(context) { ": " + message + ", called by " + MyStringBuilder.objToTag(caller) }
+            checkNotNull(context) { ": " + message + ", called by " + Taggable.anyToTag(caller) }
         }
     }
 }

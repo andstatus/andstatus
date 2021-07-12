@@ -17,7 +17,7 @@ package org.andstatus.app.net.http
 
 import android.content.res.Resources.NotFoundException
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.Taggable
 import java.io.IOException
 import java.net.URL
 
@@ -115,27 +115,27 @@ class ConnectionException : IOException {
             return ConnectionException(result)
         }
 
-        fun loggedHardJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException {
-            return loggedJsonException(objTag, detailMessage, e, jso, true)
+        fun loggedHardJsonException(anyTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException {
+            return loggedJsonException(anyTag, detailMessage, e, jso, true)
         }
 
-        fun loggedJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException {
-            return loggedJsonException(objTag, detailMessage, e, jso, false)
+        fun loggedJsonException(anyTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException {
+            return loggedJsonException(anyTag, detailMessage, e, jso, false)
         }
 
-        private fun loggedJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?,
+        private fun loggedJsonException(anyTag: Any?, detailMessage: String?, e: Exception?, jso: Any?,
                                         isHard: Boolean): ConnectionException {
-            MyLog.d(objTag, detailMessage + if (e != null) ": " + e.message else "")
+            MyLog.d(anyTag, detailMessage + if (e != null) ": " + e.message else "")
             if (jso != null) {
                 val fileName = MyLog.uniqueDateTimeFormatted()
                 if (e != null) {
                     val stackTrace = MyLog.getStackTrace(e)
                     MyLog.writeStringToFile(stackTrace, fileName + "_JsonException.txt")
-                    MyLog.v(objTag) { "stack trace: $stackTrace" }
+                    MyLog.v(anyTag) { "stack trace: $stackTrace" }
                 }
-                MyLog.logJson(objTag, "json_exception", jso, fileName)
+                MyLog.logJson(anyTag, "json_exception", jso, fileName)
             }
-            return ConnectionException(StatusCode.OK, MyStringBuilder.objToTag(objTag) + ": " + detailMessage, e, null, isHard)
+            return ConnectionException(StatusCode.OK, Taggable.anyToTag(anyTag) + ": " + detailMessage, e, null, isHard)
         }
 
         fun fromStatusCode(statusCode: StatusCode?, detailMessage: String?): ConnectionException {

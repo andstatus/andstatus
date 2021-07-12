@@ -306,8 +306,8 @@ class CommandQueue(private val myContext: MyContext) {
         return accessors.values.stream().anyMatch { obj: Accessor -> obj.isAnythingToExecuteNow() }
     }
 
-    enum class AccessorType {
-        GENERAL, DOWNLOADS
+    enum class AccessorType(val title: String) {
+        GENERAL("General"), DOWNLOADS("Downloads")
     }
 
     class Accessor(private val cq: CommandQueue, val accessorType: AccessorType) {

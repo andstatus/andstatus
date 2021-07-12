@@ -38,7 +38,7 @@ import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.StringUtil
-import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TriState
 import org.json.JSONObject
@@ -54,7 +54,7 @@ import java.util.concurrent.TimeUnit
 class MyAccount internal constructor(
     val data: AccountData,
     private val taggedInstance: TaggedInstance = TaggedInstance(MyAccount::class)
-) : Comparable<MyAccount>, IsEmpty, TaggedClass by taggedInstance {
+) : Comparable<MyAccount>, IsEmpty, Taggable by taggedInstance {
     val myContext: MyContext get() = data.myContext
 
     var actor: Actor = Actor.EMPTY

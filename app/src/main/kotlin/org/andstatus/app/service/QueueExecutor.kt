@@ -15,11 +15,9 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicLong
 
 class QueueExecutor(myService: MyService, private val accessorType: AccessorType) :
-        AsyncResult<Unit, Boolean>("$TAG-$accessorType", AsyncEnum.SYNC), CommandExecutorParent {
+        AsyncResult<Unit, Boolean>(QueueExecutor::class, AsyncEnum.SYNC), CommandExecutorParent {
     private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
     private val executedCounter: AtomicLong = AtomicLong()
-
-    override val instanceTag: String get() = super.instanceTag + "-" + accessorType
 
     override suspend fun doInBackground(params: Unit): Try<Boolean> {
         val myService = myServiceRef.get()
@@ -77,11 +75,12 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
     }
 
     private fun addSyncAfterNoteWasSent(myService: MyService, commandDataExecuted: CommandData) {
-        if (commandDataExecuted.getResult().hasError()
-                || commandDataExecuted.command != CommandEnum.UPDATE_NOTE || !SharedPreferencesUtil.getBoolean(
-                        MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)) {
+        if (commandDataExecuted.getResult().hasError() ||
+            commandDataExecuted.command != CommandEnum.UPDATE_NOTE ||
+            !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)) {
             return
         }
+
         myService.myContext.queues.addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 commandDataExecuted.getTimeline().myAccountToSync, TimelineType.SENT)
                 .setInForeground(commandDataExecuted.isInForeground()))
@@ -104,19 +103,17 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
         return myServiceRef.get()?.isStopping() ?: true
     }
 
-    override val classTag: String get() = TAG
-
     override fun toString(): String {
         val sb = MyStringBuilder()
         if (isStopping()) {
             sb.withComma("stopping")
         }
+        sb.withComma(accessorType.title)
         sb.withComma(super.toString())
-        return sb.toKeyValue(this)
+        return sb.toString()
     }
 
     companion object {
         const val MAX_EXECUTION_TIME_SECONDS: Long = 60
-        private const val TAG: String = "QueueExecutor"
     }
 }

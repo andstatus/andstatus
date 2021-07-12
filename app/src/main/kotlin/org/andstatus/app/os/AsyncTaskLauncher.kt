@@ -56,11 +56,11 @@ class AsyncTaskLauncher {
         ).asCoroutineDispatcher()
 
         fun <Params, Progress, Result> execute(
-            objTag: Any?,
+            anyTag: Any?,
             asyncTask: AsyncTask<Params, Progress, Result>,
             params: Params
         ): Try<AsyncTask<Params, Progress, Result>> = try {
-            MyLog.v(objTag) { "Launching $asyncTask" }
+            MyLog.v(anyTag) { "Launching $asyncTask" }
             cancelStalledTasks()
             asyncTask.executeInContext(getExecutor(asyncTask.pool), params)
             launchedTasks.add(asyncTask)
@@ -69,7 +69,7 @@ class AsyncTaskLauncher {
             Try.success(asyncTask)
         } catch (e: Exception) {
             val msgLog = "Launching $asyncTask in ${threadPoolInfo()}"
-            MyLog.w(objTag, msgLog, e)
+            MyLog.w(anyTag, msgLog, e)
             Try.failure(Exception("${e.message} $msgLog", e))
         }
 

@@ -32,7 +32,7 @@ import org.andstatus.app.context.MySettingsGroup
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.timeline.TimelineActivity
-import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
@@ -47,8 +47,8 @@ import java.util.function.BiConsumer
  * It is transparent and shows progress indicator only, launches next activity after application initialization.
  */
 class FirstActivity(
-    private val idInstance: Identifiable = IdInstance(FirstActivity::class)
-) : AppCompatActivity(), Identifiable by idInstance {
+    private val identifiable: Identifiable = Identified(FirstActivity::class)
+) : AppCompatActivity(), Identifiable by identifiable {
 
     enum class NeedToStart {
         HELP, CHANGELOG, OTHER

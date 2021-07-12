@@ -26,12 +26,12 @@ import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.ExceptionsCounter
 import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.syncadapter.SyncInitiator
-import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.Taggable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.function.Consumer
@@ -44,8 +44,8 @@ import java.util.function.UnaryOperator
 class MyFutureContext private constructor(
     private val previousContext: MyContext,
     val future: CompletableFuture<MyContext>,
-    private val idInstance: Identifiable = IdInstance(MyFutureContext::class)
-) : Identifiable by idInstance {
+    private val identifiable: Identifiable = Identified(MyFutureContext::class)
+) : Identifiable by identifiable {
     val createdAt = MyLog.uniqueCurrentTimeMS()
     override val instanceId = InstanceId.next()
 
@@ -136,8 +136,8 @@ class MyFutureContext private constructor(
                 } else {
                     val reasonSupplier = Supplier {
                         ("Initialization: " + reason
-                                + ", previous:" + MyStringBuilder.objToTag(previousContext)
-                                + " by " + MyStringBuilder.objToTag(calledBy))
+                                + ", previous:" + Taggable.anyToTag(previousContext)
+                                + " by " + Taggable.anyToTag(calledBy))
                     }
                     MyLog.v(TAG) { "Preparing for " + reasonSupplier.get() }
                     release(previousContext, reasonSupplier)

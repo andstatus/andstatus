@@ -19,7 +19,7 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.Taggable
 
 /**
  * See http://stackoverflow.com/questions/24658428/swiperefreshlayout-webview-when-scroll-position-is-at-top
@@ -38,7 +38,7 @@ class MySwipeRefreshLayout @JvmOverloads constructor(context: Context, attrs: At
 
     init {
         mCanSwipeRefreshScrollUpCallback = if (context is CanSwipeRefreshScrollUpCallback) {
-            MyLog.v(this) { "Created for " + MyStringBuilder.objToTag(context) }
+            MyLog.v(this) { "Created for " + Taggable.anyToTag(context) }
             context
         } else null
     }

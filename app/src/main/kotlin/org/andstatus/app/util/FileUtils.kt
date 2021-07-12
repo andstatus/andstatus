@@ -174,16 +174,16 @@ object FileUtils {
      * @param dst
      * @return true if success
      */
-    fun copyFile(objTag: Any?, src: File?, dst: File): Boolean {
+    fun copyFile(anyTag: Any?, src: File?, dst: File): Boolean {
         var sizeIn: Long = -1
         var sizeCopied: Long = 0
         var ok = false
         if (src != null && src.exists()) {
             sizeIn = src.length()
             if (!dst.createNewFile()) {
-                MyLog.w(objTag, "New file was not created: '" + dst.getCanonicalPath() + "'")
+                MyLog.w(anyTag, "New file was not created: '" + dst.getCanonicalPath() + "'")
             } else if (src.canonicalPath.compareTo(dst.getCanonicalPath()) == 0) {
-                MyLog.i(objTag, "Cannot copy to itself: '" + src.canonicalPath + "'")
+                MyLog.i(anyTag, "Cannot copy to itself: '" + src.canonicalPath + "'")
             } else {
                 FileInputStream(src).use { fileInputStream ->
                     fileInputStream.channel.use { inChannel ->
@@ -198,7 +198,7 @@ object FileUtils {
                 dst.setLastModified(src.lastModified())
             }
         }
-        MyLog.d(objTag, "Copied $sizeCopied bytes of $sizeIn")
+        MyLog.d(anyTag, "Copied $sizeCopied bytes of $sizeIn")
         return ok
     }
 

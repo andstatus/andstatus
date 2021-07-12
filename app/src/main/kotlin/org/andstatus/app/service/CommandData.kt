@@ -46,7 +46,7 @@ import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.Taggable
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -64,7 +64,7 @@ class CommandData private constructor(
          * It holds actorId for command, which need such parameter (not only for a timeline)
          */
         val commandTimeline: CommandTimeline,
-        createdDate: Long) : Comparable<CommandData>, TaggedClass {
+        createdDate: Long) : Comparable<CommandData>, Taggable {
 
     private val commandId: Long = if (commandId == 0L) MyLog.uniqueCurrentTimeMS() else commandId
     private val createdDate: Long = if (createdDate > 0) createdDate else this.commandId

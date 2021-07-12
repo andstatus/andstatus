@@ -29,7 +29,7 @@ import androidx.fragment.app.Fragment
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyTheme
-import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
@@ -42,8 +42,8 @@ import kotlin.reflect.KClass
  */
 open class MyActivity(
     tag: String,
-    idInstance: Identifiable = IdInstance(tag)
-) : AppCompatActivity(), Identifiable by idInstance {
+    identifiable: Identifiable = Identified(tag)
+) : AppCompatActivity(), Identifiable by identifiable {
 
     constructor(clazz: KClass<*>): this(clazz.simpleName ?: "NoName")
 

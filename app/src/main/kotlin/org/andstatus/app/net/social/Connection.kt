@@ -34,8 +34,8 @@ import org.andstatus.app.origin.OriginConfig
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
@@ -331,7 +331,7 @@ abstract class Connection protected constructor() : IsEmpty {
 
     open fun getOpenInstances(): Try<List<Server>> {
         return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
-                MyStringBuilder.objToTag(this)))
+                Taggable.anyToTag(this)))
     }
 
     /**

@@ -32,18 +32,6 @@ class MyLogTest {
     }
 
     @Test
-    fun testObjTag() {
-        var tag: Any? = this
-        Assert.assertEquals("MyLogTest", MyStringBuilder.Companion.objToTag(tag))
-        tag = this.javaClass
-        Assert.assertEquals("MyLogTest", MyStringBuilder.Companion.objToTag(tag))
-        tag = "Other tag"
-        Assert.assertEquals(tag.toString(), MyStringBuilder.Companion.objToTag(tag))
-        tag = null
-        Assert.assertEquals("(null)", MyStringBuilder.Companion.objToTag(tag))
-    }
-
-    @Test
     fun testLogFilename() {
         val method = "testLogFilename"
         val isLogEnabled = MyLog.isLogToFileEnabled()

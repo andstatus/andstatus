@@ -42,7 +42,7 @@ import org.andstatus.app.net.social.Audience
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.timeline.meta.Timeline
-import org.andstatus.app.util.IdInstance
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
@@ -55,8 +55,8 @@ import java.util.stream.Collectors
 class NoteEditorData private constructor(
     val ma: MyAccount,
     activity: AActivity,
-    private val idInstance: Identifiable = IdInstance(NoteEditorData::class)
-) : IsEmpty, Identifiable by idInstance {
+    private val identifiable: Identifiable = Identified(NoteEditorData::class)
+) : IsEmpty, Identifiable by identifiable {
     val activity: AActivity
     private var attachedImageFiles: AttachedImageFiles = AttachedImageFiles.EMPTY
     private var replyToConversationParticipants = false

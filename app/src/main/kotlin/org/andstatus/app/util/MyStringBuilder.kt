@@ -16,7 +16,6 @@
 package org.andstatus.app.util
 
 import java.util.*
-import kotlin.reflect.KClass
 
 /** Adds convenience methods to [StringBuilder]  */
 class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) : CharSequence, IsEmpty {
@@ -126,7 +125,7 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
         }
 
         fun formatKeyValue(keyIn: Any?, valueIn: Any?): String {
-            val key = objToTag(keyIn)
+            val key = Taggable.anyToTag(keyIn)
             if (keyIn == null) {
                 return key
             }
@@ -150,23 +149,7 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
                     out = out.substring(0, ind)
                 }
             }
-            return objToTag(key) + ":{" + out + "}"
-        }
-
-        fun objToTag(objTag: Any?): String {
-            val tag: String = when (objTag) {
-                null -> "(null)"
-                is Identifiable -> objTag.instanceTag
-                is TaggedClass -> objTag.classTag
-                is String -> objTag
-                is Enum<*> -> objTag.toString()
-                is KClass<*> -> objTag.simpleName ?: "NoName"
-                is Class<*> -> objTag.simpleName
-                else -> objTag::class.simpleName ?: "NoName"
-            }
-            return if (tag.trim { it <= ' ' }.isEmpty()) {
-                "(empty)"
-            } else tag
+            return Taggable.anyToTag(key) + ":{" + out + "}"
         }
 
         private fun <T> nonEmptyObj(obj: T?): Boolean {

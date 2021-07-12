@@ -27,7 +27,7 @@ import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TryUtils
 
 class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : AsyncRunnable(AsyncEnum.DEFAULT_POOL) {
@@ -56,7 +56,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
             synchronized(DatabaseConverterController.upgradeLock) { DatabaseConverterController.mProgressLogger = progressLogger }
             MyLog.i(
                 DatabaseConverterController.TAG,
-                "Upgrade triggered by " + MyStringBuilder.objToTag(upgradeRequester)
+                "Upgrade triggered by " + Taggable.anyToTag(upgradeRequester)
             )
             MyServiceManager.setServiceUnavailable()
             MyContextHolder.myContextHolder.release { "doUpgrade" }

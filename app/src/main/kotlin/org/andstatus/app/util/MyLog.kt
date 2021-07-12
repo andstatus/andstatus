@@ -22,6 +22,7 @@ import org.andstatus.app.context.MyLocale.MY_DEFAULT_LOCALE
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MyStorage
 import org.andstatus.app.data.DbUtils
+import org.andstatus.app.util.Taggable.Companion.anyToTruncatedTag
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -65,7 +66,6 @@ import java.util.function.Supplier
  */
 object MyLog {
     private val TAG: String = MyLog::class.java.simpleName
-    const val MAX_TAG_LENGTH = 23
 
     /**
      * Use this tag to change logging level of the whole application
@@ -93,9 +93,9 @@ object MyLog {
     private var logFileName: String? = null
     // end ---
 
-    fun logSharedPreferencesValue(objTag: Any?, key: String?) {
+    fun logSharedPreferencesValue(anyTag: Any?, key: String?) {
         val sp = SharedPreferencesUtil.getDefaultSharedPreferences()
-        if (sp == null || !isLoggable(objTag, DEBUG)) {
+        if (sp == null || !isLoggable(anyTag, DEBUG)) {
             return
         }
         var value: String? = "(not set)"
@@ -103,62 +103,62 @@ object MyLog {
             value = try {
                 sp.getString(key, "")
             } catch (e1: ClassCastException) {
-                ignored(objTag, e1)
+                ignored(anyTag, e1)
                 try {
                     java.lang.Boolean.toString(sp.getBoolean(key, false))
                 } catch (e2: ClassCastException) {
-                    ignored(objTag, e2)
+                    ignored(anyTag, e2)
                     "??"
                 }
             }
         }
-        d(objTag, "SharedPreference: $key='$value'")
+        d(anyTag, "SharedPreference: $key='$value'")
     }
 
-    fun e(objTag: Any?, msg: String?, tr: Throwable?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun e(anyTag: Any?, msg: String?, tr: Throwable?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         logToFile(ERROR, tag, msg, tr)
         return Log.e(tag, withOptionalPrefix(msg), tr)
     }
 
-    fun e(objTag: Any?, tr: Throwable?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun e(anyTag: Any?, tr: Throwable?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         logToFile(ERROR, tag, null, tr)
         return Log.e(tag, withOptionalPrefix(""), tr)
     }
 
-    fun e(objTag: Any?, msg: String?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun e(anyTag: Any?, msg: String?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         logToFile(ERROR, tag, msg, null)
         return Log.e(tag, withOptionalPrefix(msg))
     }
 
-    fun i(objTag: Any?, msg: String?, tr: Throwable?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun i(anyTag: Any?, msg: String?, tr: Throwable?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         logToFile(INFO, tag, msg, tr)
         return Log.i(tag, withOptionalPrefix(msg), tr)
     }
 
-    fun i(objTag: Any?, tr: Throwable?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun i(anyTag: Any?, tr: Throwable?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         logToFile(INFO, tag, null, tr)
         return Log.i(tag, withOptionalPrefix(""), tr)
     }
 
-    fun i(objTag: Any?, msg: String?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun i(anyTag: Any?, msg: String?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         logToFile(INFO, tag, msg, null)
         return Log.i(tag, withOptionalPrefix(msg))
     }
 
-    fun w(objTag: Any?, msg: String?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun w(anyTag: Any?, msg: String?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         logToFile(WARN, tag, msg, null)
         return Log.w(tag, withOptionalPrefix(msg))
     }
 
-    fun w(objTag: Any?, msg: String?, tr: Throwable?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun w(anyTag: Any?, msg: String?, tr: Throwable?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         logToFile(WARN, tag, msg, tr)
         return Log.w(tag, withOptionalPrefix(msg), tr)
     }
@@ -166,8 +166,8 @@ object MyLog {
     /**
      * Shortcut for debugging messages of the application
      */
-    fun d(objTag: Any?, msg: String?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun d(anyTag: Any?, msg: String?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         var i = 0
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, null)
@@ -179,8 +179,8 @@ object MyLog {
     /**
      * Shortcut for debugging messages of the application
      */
-    fun d(objTag: Any?, msg: String?, tr: Throwable?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun d(anyTag: Any?, msg: String?, tr: Throwable?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         var i = 0
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, tr)
@@ -192,8 +192,8 @@ object MyLog {
     /**
      * Shortcut for verbose messages of the application
      */
-    fun v(objTag: Any?, tr: Throwable?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun v(anyTag: Any?, tr: Throwable?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         var i = 0
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, null, tr)
@@ -202,8 +202,8 @@ object MyLog {
         return i
     }
 
-    fun v(objTag: Any?, msg: String?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun v(anyTag: Any?, msg: String?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         var i = 0
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, null)
@@ -212,16 +212,16 @@ object MyLog {
         return i
     }
 
-    fun v(objTag: Any?, supplier: () -> String?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun v(anyTag: Any?, supplier: () -> String?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         if (!isLoggable(tag, Log.VERBOSE)) return 0
         val msg = supplier()
         logToFile(VERBOSE, tag, msg, null)
         return Log.v(tag, withOptionalPrefix(msg))
     }
 
-    fun v(objTag: Any?, msg: String?, tr: Throwable?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun v(anyTag: Any?, msg: String?, tr: Throwable?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         var i = 0
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, tr)
@@ -233,8 +233,8 @@ object MyLog {
     /**
      * This will be ignored
      */
-    fun ignored(objTag: Any?, tr: Throwable?): Int {
-        val tag = objToTruncatedTag(objTag)
+    fun ignored(anyTag: Any?, tr: Throwable?): Int {
+        val tag = anyToTruncatedTag(anyTag)
         var i = 0
         if (isLoggable(tag, IGNORED)) {
             i = Log.i(tag, withOptionalPrefix(""), tr)
@@ -245,12 +245,6 @@ object MyLog {
     /** For now let's not add any prefix  */
     private fun withOptionalPrefix(msg: String?): String {
         return msg ?: ""
-    }
-
-    /** Truncated to [.MAX_TAG_LENGTH]  */
-    fun objToTruncatedTag(objTag: Any?): String {
-        val tag: String = MyStringBuilder.objToTag(objTag)
-        return if (tag.length > MAX_TAG_LENGTH) tag.substring(0, MAX_TAG_LENGTH) else tag
     }
 
     fun isDebugEnabled(): Boolean {
@@ -267,18 +261,18 @@ object MyLog {
 
     /**
      *
-     * @param objTag If tag is empty then [.APPTAG] is used
+     * @param anyTag If tag is empty then [.APPTAG] is used
      * @param level [android.util.Log.INFO] ...
      * @return
      */
-    fun isLoggable(objTag: Any?, level: Int): Boolean {
+    fun isLoggable(anyTag: Any?, level: Int): Boolean {
         checkInit()
         return if (level < VERBOSE) {
             false
         } else if (level >= minLogLevel) {
             true
         } else {
-            var tag: String? = objToTruncatedTag(objTag)
+            var tag: String? = anyToTruncatedTag(anyTag)
             if (tag.isNullOrEmpty()) {
                 tag = APPTAG
             }
@@ -312,8 +306,8 @@ object MyLog {
         val defaultLevel = Log.INFO
         return Try.of { sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL, null) }
                 .map { s -> s?.toInt() ?: defaultLevel }
-                .recover(Exception::class.java) { e: Exception? -> sp.getInt(MyPreferences.KEY_MIN_LOG_LEVEL, defaultLevel) }
-                .recover(Exception::class.java) { e: Exception? -> defaultLevel }
+                .recover(Exception::class.java) { sp.getInt(MyPreferences.KEY_MIN_LOG_LEVEL, defaultLevel) }
+                .recover(Exception::class.java) { defaultLevel }
     }
 
     fun setMinLogLevel(minLogLevel: Int) {
@@ -485,16 +479,16 @@ object MyLog {
         return out
     }
 
-    fun logNetworkLevelMessage(objTag: Any?, namePrefix: String?, jsonMessage: Any?, textData: String?) {
+    fun logNetworkLevelMessage(anyTag: Any?, namePrefix: String?, jsonMessage: Any?, textData: String?) {
         if (jsonMessage != null && MyPreferences.isLogNetworkLevelMessages()) {
-            val fileName = getSeparateLogFileName(namePrefix, objTag)
-            logJson(objTag, namePrefix, jsonMessage, fileName)
+            val fileName = getSeparateLogFileName(namePrefix, anyTag)
+            logJson(anyTag, namePrefix, jsonMessage, fileName)
             StringUtil.optNotEmpty(textData).ifPresent { txt: String -> writeStringToFile(txt, "$fileName.txt") }
         }
     }
 
-    fun logJson(objTag: Any?, namePrefix: String?, jso: Any, fileName: String?) {
-        val logFileName = StringUtil.notEmpty(fileName, getSeparateLogFileName(namePrefix, objTag))
+    fun logJson(anyTag: Any?, namePrefix: String?, jso: Any, fileName: String?) {
+        val logFileName = StringUtil.notEmpty(fileName, getSeparateLogFileName(namePrefix, anyTag))
         try {
             var isEmpty = false
             var jso2: Any? = jso
@@ -517,21 +511,21 @@ object MyLog {
             if (!isEmpty) {
                 writeStringToFile(strJso, "$logFileName.json")
             } else {
-                v(objTag) { "$namePrefix; jso: $strJso" }
+                v(anyTag) { "$namePrefix; jso: $strJso" }
             }
         } catch (ignored1: JSONException) {
-            ignored(objTag, ignored1)
+            ignored(anyTag, ignored1)
             try {
                 writeStringToFile(jso.toString(), logFileName + "_invalid.json")
-                v(objTag) { "$namePrefix; invalid obj: $jso" }
+                v(anyTag) { "$namePrefix; invalid obj: $jso" }
             } catch (ignored2: Exception) {
-                ignored(objTag, ignored2)
+                ignored(anyTag, ignored2)
             }
         }
     }
 
-    private fun getSeparateLogFileName(namePrefix: String?, objTag: Any?): String {
-        return uniqueDateTimeFormatted() + "_" + namePrefix + "_" + MyStringBuilder.objToTag(objTag)
+    private fun getSeparateLogFileName(namePrefix: String?, anyTag: Any?): String {
+        return uniqueDateTimeFormatted() + "_" + namePrefix + "_" + Taggable.anyToTag(anyTag)
     }
 
     fun uniqueDateTimeFormatted(): String {
