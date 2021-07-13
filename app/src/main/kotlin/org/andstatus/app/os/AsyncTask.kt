@@ -26,8 +26,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
-import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.Taggable
@@ -181,6 +181,7 @@ open class AsyncTask<Params, Progress, Result>(
             return (backgroundFun.get()?.let { it(params) } ?: doInBackground(params))
                 .also { resultRef.set(it) }
         } finally {
+            currentlyExecutingSince.set(0)
             backgroundEndedAt.set(System.currentTimeMillis())
         }
     }
@@ -273,7 +274,8 @@ open class AsyncTask<Params, Progress, Result>(
         if (this === other) return true
         if (other == null || other !is AsyncTask<*, *, *>) return false
 
-        return taskId == other.taskId
+        /** Actually equals to itself only */
+        return false
     }
 
     override fun hashCode(): Int {

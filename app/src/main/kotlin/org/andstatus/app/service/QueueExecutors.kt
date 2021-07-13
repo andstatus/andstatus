@@ -15,105 +15,103 @@
  */
 package org.andstatus.app.service
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.andstatus.app.service.CommandQueue.AccessorType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
-import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.min
 
 /** Two specialized async tasks to execute [CommandQueue]  */
 class QueueExecutors(private val myService: MyService) {
-    private val general: AtomicReference<QueueExecutor> = AtomicReference()
-    private val downloads: AtomicReference<QueueExecutor> = AtomicReference()
+    private val executors: MutableList<QueueExecutor> = ArrayList()
+    private val mutex = Mutex()
 
-    fun ensureExecutorsStarted() {
-        ensureExecutorStarted(AccessorType.GENERAL)
-        ensureExecutorStarted(AccessorType.DOWNLOADS)
+    suspend fun ensureExecutorsStarted() {
+        mutex.withLock {
+            removeUnneeded()
+            AccessorType.values().forEach(::addNeeded)
+        }
     }
 
-    private fun ensureExecutorStarted(accessorType: AccessorType) {
-        val method = this::ensureExecutorStarted.name + "-$accessorType"
+    private fun removeUnneeded() {
+        executors.filter { it.noMoreBackgroundWork }.foldIndexed("") { ind, acc, executor ->
+            removeExecutor(executor)
+            acc + (if (ind == 0) "Removing completed ${executor.instanceTag}"
+            else ", ${executor.instanceTag}")
+        }.takeIf( String::isNotBlank )?.let {
+            MyLog.v(myService) { it }
+        }
+        executors.filter { !it.isReallyWorking }.foldIndexed("") { ind, acc, executor ->
+            removeExecutor(executor)
+            acc + (if (ind == 0) "Removing stalled: ${executor.instanceTag}"
+            else ", ${executor.instanceTag}")
+        }.takeIf( String::isNotBlank )?.let {
+            MyLog.v(myService) { it }
+        }
+    }
+
+    private fun addNeeded(accessorType: AccessorType) {
+        val maxToAdd = accessorType.numberOfExecutors - executors.count { it.accessorType == accessorType}
+        if (maxToAdd < 1) return
+
+        val toAdd = min(
+            myService.myContext.queues.getAccessor(accessorType).countToExecuteNow().toInt() -
+                    // The below executors will take commands soon
+                    executors.count { it.accessorType == accessorType && it.executedCounter.get() == 0L },
+            maxToAdd)
+        if (toAdd < 1) return
+
         val logMessageBuilder = MyStringBuilder()
-        val previous = getRef(accessorType).get()
-        var replace = previous == null
-        if (!replace && previous.noMoreBackgroundWork) {
-            logMessageBuilder.withComma("Removing completed Executor $previous")
-            replace = true
-        }
-        if (!replace && !previous.isReallyWorking) {
-            logMessageBuilder.withComma("Cancelling stalled Executor $previous")
-            replace = true
-        }
-        if (replace) {
-            val accessor = myService.myContext.queues.getAccessor(accessorType)
-            val current = if (accessor.isAnythingToExecuteNow()) QueueExecutor(myService, accessorType) else null
-            if (current == null && previous == null) {
-                logMessageBuilder.withComma("Nothing to execute")
-            } else {
-                if (replaceExecutor(logMessageBuilder, accessorType, previous, current)) {
-                    if (current == null) {
-                        logMessageBuilder.withComma("Nothing to execute")
-                    } else {
-                        logMessageBuilder.withComma("Starting new Executor $current")
-                        current.execute(myService.classTag + "-" + accessorType, Unit)
-                            .onFailure { throwable: Throwable? ->
-                                logMessageBuilder.withComma("Failed to start new executor: $throwable")
-                                replaceExecutor(logMessageBuilder, accessorType, current, null)
-                            }
-                    }
+        repeat(toAdd) {
+            val executor = QueueExecutor(myService, accessorType)
+            executors.add(executor)
+            logMessageBuilder.withComma(executor.instanceTag)
+            executor.execute(myService, Unit)
+                .onFailure { throwable: Throwable? ->
+                    logMessageBuilder.withComma("Failed to start $executor: $throwable")
                 }
+        }
+        MyLog.v(myService) { "Added $logMessageBuilder" }
+    }
+
+    fun contains(other: QueueExecutor): Boolean {
+        return executors.contains(other)
+    }
+
+    private fun removeExecutor(executor: QueueExecutor) {
+        if ( executors.removeIf { it === executor }) {
+            if (executor.needsBackgroundWork) {
+                executor.cancel()
             }
-        } else {
-            logMessageBuilder.withComma("There is an Executor already $previous")
-        }
-        if (logMessageBuilder.isNotEmpty()) {
-            MyLog.v(myService) { "$method; $logMessageBuilder" }
         }
     }
 
-    fun getRef(accessorType: AccessorType): AtomicReference<QueueExecutor> {
-        return if (accessorType == AccessorType.GENERAL) general else downloads
-    }
-
-    private fun replaceExecutor(logMessageBuilder: MyStringBuilder, accessorType: AccessorType,
-                                previous: QueueExecutor?, current: QueueExecutor?): Boolean {
-        if (getRef(accessorType).compareAndSet(previous, current)) {
-            if (previous == null) {
-                logMessageBuilder.withComma(if (current == null) "No executor" else "Executor set to $current")
-            } else {
-                if (previous.needsBackgroundWork) {
-                    logMessageBuilder.withComma("Cancelling previous")
-                    MyLog.v(this) { "(previous) Cancelling task: $previous" }
-                    previous.cancel()
-                }
-                logMessageBuilder.withComma(if (current == null) "Removed executor $previous" else "Replaced executor $previous with $current")
+    suspend fun stopAll(forceNow: Boolean): Boolean {
+        return mutex.withLock {
+            // toList is actually used to copy the list (and avoid concurrent modifications exception)
+            executors.toList().fold(true) { acc, executor ->
+                acc && stopOne(executor, forceNow)
             }
-            return true
         }
-        return false
     }
 
-    fun stopAll(forceNow: Boolean): Boolean {
-        return (stopOfType(AccessorType.GENERAL, forceNow)
-                && stopOfType(AccessorType.DOWNLOADS, forceNow))
-    }
-
-    private fun stopOfType(accessorType: AccessorType, forceNow: Boolean): Boolean {
-        val method = this::stopOfType.name + "-$accessorType"
+    private fun stopOne(previous: QueueExecutor, forceNow: Boolean): Boolean {
+        val method = this::stopOne.name
         val logMessageBuilder = MyStringBuilder()
-        val executorRef = getRef(accessorType)
-        val previous = executorRef.get()
-        var success = previous == null
-        var doStop = !success
+        var success = false
+        var doStop = true
         if (doStop && previous.needsBackgroundWork && previous.isReallyWorking) {
             if (forceNow) {
-                logMessageBuilder.withComma("Cancelling working Executor $previous")
+                logMessageBuilder.withComma("Cancelling working $previous")
             } else {
-                logMessageBuilder.withComma("Cannot stop now Executor $previous")
+                logMessageBuilder.withComma("Cannot stop now $previous")
                 doStop = false
             }
         }
         if (doStop) {
-            success = replaceExecutor(logMessageBuilder, accessorType, previous, null)
+            removeExecutor(previous)
+            success = true
         }
         if (logMessageBuilder.nonEmpty) {
             MyLog.v(myService) { "$method; $logMessageBuilder" }
@@ -122,13 +120,10 @@ class QueueExecutors(private val myService: MyService) {
     }
 
     fun isReallyWorking(): Boolean {
-        val gExecutor = general.get()
-        val dExecutor = downloads.get()
-        return gExecutor != null && (gExecutor.isReallyWorking
-                || dExecutor != null && dExecutor.isReallyWorking)
+        return executors.any{ it.isReallyWorking }
     }
 
     override fun toString(): String {
-        return "$general; $downloads"
+        return executors.toString()
     }
 }

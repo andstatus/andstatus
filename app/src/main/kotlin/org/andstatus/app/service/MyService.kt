@@ -24,6 +24,9 @@ import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.andstatus.app.MyAction
 import org.andstatus.app.appwidget.AppWidgets
 import org.andstatus.app.context.MyContext
@@ -34,8 +37,8 @@ import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import java.util.concurrent.atomic.AtomicBoolean
@@ -60,7 +63,7 @@ class MyService(
     private var mForcedToStop = false
 
     @Volatile
-    var latestActivityTime: Long = 0
+    private var latestActivityTime: Long = 0
 
     /** Flag to control the Service state persistence  */
     val initialized: AtomicBoolean = AtomicBoolean(false)
@@ -180,6 +183,12 @@ class MyService(
         }
     }
 
+    fun onExecutorFinished() {
+        latestActivityTime = System.currentTimeMillis()
+        reviveHeartBeat()
+        startStopExecution()
+    }
+
     fun reviveHeartBeat() {
         val previous = heartBeatRef.get()
         var replace = previous == null
@@ -204,15 +213,18 @@ class MyService(
 
     fun startStopExecution() {
         if (!initialized.get()) return
-        if (isStopping.get() || !myContext.isReady || isForcedToStop() || (!isAnythingToExecuteNow()
+
+        CoroutineScope(Dispatchers.Default).launch {
+            if (isStopping.get() || !myContext.isReady || isForcedToStop() || (!isAnythingToExecuteNow()
                         && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))) {
-            stopDelayed(false)
-        } else if (isAnythingToExecuteNow()) {
-            startExecution()
+                stopDelayed(false)
+            } else if (isAnythingToExecuteNow()) {
+                startExecution()
+            }
         }
     }
 
-    private fun startExecution() {
+    private suspend fun startExecution() {
         acquireWakeLock()
         try {
             executors.ensureExecutorsStarted()
@@ -259,16 +271,19 @@ class MyService(
      * Persist everything that we'll need on next Service creation and free resources
      */
     private fun stopDelayed(forceNow: Boolean) {
-        if (isStopping.compareAndSet(false, true)) {
-            MyLog.v(this) { "Stopping" + if (forceNow) ", forced" else "" }
+        CoroutineScope(Dispatchers.Default).launch {
+            if (isStopping.compareAndSet(false, true)) {
+                MyLog.v(this) { "Stopping" + if (forceNow) ", forced" else "" }
+            }
+            startedForegrounLastTime = 0
+            if (!executors.stopAll(forceNow) && !forceNow) {
+                // TODO
+            } else {
+                unInitialize()
+                MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
+                    .setEvent(MyServiceEvent.ON_STOP).broadcast()
+            }
         }
-        startedForegrounLastTime = 0
-        if (!executors.stopAll(forceNow) && !forceNow) {
-            return
-        }
-        unInitialize()
-        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-                .setEvent(MyServiceEvent.ON_STOP).broadcast()
     }
 
     private fun unInitialize() {

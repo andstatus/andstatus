@@ -14,10 +14,10 @@ import org.andstatus.app.util.TryUtils
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicLong
 
-class QueueExecutor(myService: MyService, private val accessorType: AccessorType) :
+class QueueExecutor(myService: MyService, val accessorType: AccessorType) :
         AsyncResult<Unit, Boolean>(QueueExecutor::class, AsyncEnum.SYNC), CommandExecutorParent {
     private val myServiceRef: WeakReference<MyService> = WeakReference(myService)
-    private val executedCounter: AtomicLong = AtomicLong()
+    val executedCounter: AtomicLong = AtomicLong()
 
     override suspend fun doInBackground(params: Unit): Try<Boolean> {
         val myService = myServiceRef.get()
@@ -27,7 +27,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
         }
         val accessor = myService.myContext.queues.getAccessor(accessorType)
         accessor.moveCommandsFromSkippedToMainQueue()
-        MyLog.v(this) { "Started, " + accessor.countToExecuteNow() + " commands to process" }
+        MyLog.v(this) { "Started, to process in ${accessorType.title}:" + accessor.countToExecuteNow()}
         val breakReason: String
         do {
             if (isStopping()) {
@@ -42,11 +42,11 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
                 breakReason = "Executed too long"
                 break
             }
-            if (myService.executors.getRef(accessorType).get() !== this) {
-                breakReason = "Other executor"
+            if (!myService.executors.contains(this)) {
+                breakReason = "Removed"
                 break
             }
-            val commandData = accessor.pollQueue()
+            val commandData = accessor.nextToExecute(this)
             if (commandData == null || commandData == CommandData.EMPTY) {
                 breakReason = "No more commands"
                 break
@@ -65,11 +65,11 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
                 }
                 else -> addSyncAfterNoteWasSent(myService, commandData)
             }
+            accessor.onPostExecute(commandData)
             myService.broadcastAfterExecutingCommand(commandData)
         } while (true)
-        MyLog.v(this) { "Ended, cause:$breakReason, " + executedCounter.get() + " commands executed, " + accessor.countToExecuteNow() + " left" }
+        MyLog.v(this) { "Ended:$breakReason, left:" + accessor.countToExecuteNow() + ", $this" }
         myService.myContext.queues.save()
-        currentlyExecutingSince.set(0)
         currentlyExecutingDescription = breakReason
         return TryUtils.TRUE
     }
@@ -87,16 +87,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
     }
 
     override suspend fun onPostExecute(result: Try<Boolean>) {
-        val myService = myServiceRef.get()
-        if (myService != null) {
-            myService.latestActivityTime = System.currentTimeMillis()
-        }
-        MyLog.v(this, if (result.isSuccess) "onExecutorSuccess" else "onExecutorFailure")
-        currentlyExecutingSince.set(0)
-        if (myService != null) {
-            myService.reviveHeartBeat()
-            myService.startStopExecution()
-        }
+        myServiceRef.get()?.onExecutorFinished()
     }
 
     override fun isStopping(): Boolean {
@@ -109,6 +100,7 @@ class QueueExecutor(myService: MyService, private val accessorType: AccessorType
             sb.withComma("stopping")
         }
         sb.withComma(accessorType.title)
+        sb.withComma("commands executed", executedCounter.get())
         sb.withComma(super.toString())
         return sb.toString()
     }

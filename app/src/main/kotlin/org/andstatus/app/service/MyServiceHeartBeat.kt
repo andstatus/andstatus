@@ -65,17 +65,10 @@ class MyServiceHeartBeat constructor(myService: MyService) : AsyncTask<Unit, Lon
         ) {
             MyLog.d(this, AsyncTaskLauncher.threadPoolInfo())
         }
-        val myService = myServiceRef.get()
-        myService?.startStopExecution()
-    }
-
-    override fun toString(): String {
-        return instanceTag + "; " + super.toString()
+        myServiceRef.get()?.startStopExecution()
     }
 
     override val instanceTag: String get() = super.instanceTag + "-it" + mIteration
-
-    override val classTag: String get() = TAG
 
     override val isReallyWorking: Boolean
         get() {

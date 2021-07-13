@@ -145,6 +145,7 @@ class CommandData private constructor(
         if (this === EMPTY) return MyStringBuilder.formatKeyValue(this, "EMPTY")
         val builder = MyStringBuilder()
         builder.withComma("command", command.save())
+        builder.withComma("id", commandId)
         if (mManuallyLaunched) {
             builder.withComma("manual")
         }

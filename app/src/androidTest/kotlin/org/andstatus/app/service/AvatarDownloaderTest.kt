@@ -268,7 +268,7 @@ class AvatarDownloaderTest {
             myContext.users.reload(actor)
             val loadedActor = Actor.Companion.load(myContext, actor.actorId)
             Assert.assertEquals(
-                "URL should change for $actor reloaded: $loadedActor",
+                "URL should change for $actor\n  Reloaded: $loadedActor",
                 urlString, MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, actor.actorId)
             )
         }
