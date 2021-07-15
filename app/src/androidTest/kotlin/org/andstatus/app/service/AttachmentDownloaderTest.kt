@@ -52,13 +52,13 @@ class AttachmentDownloaderTest {
         Assert.assertEquals("Image URI stored", activity.getNote().attachments.list[0].uri, dd.getUri())
         loadAndAssertStatusForRow(method, dd, DownloadStatus.ABSENT, true)
         loadAndAssertStatusForRow(method, dd, DownloadStatus.LOADED, false)
-        testFileProvider(dd.getDownloadId())
+        testFileProvider(dd.downloadId)
     }
 
     private fun testFileProvider(downloadRowId: Long) {
         val data: DownloadData = DownloadData.Companion.fromId(downloadRowId)
-        Assert.assertTrue(data.getFilename(), data.getFile().existed)
-        val uri: Uri = FileProvider.Companion.downloadFilenameToUri(data.getFile().getFilename())
+        Assert.assertTrue(data.filename, data.file.existed)
+        val uri: Uri = FileProvider.Companion.downloadFilenameToUri(data.file.getFilename())
         val inputStream: InputStream = myContext.context.contentResolver.openInputStream(uri)
                 ?: throw IllegalStateException("No stream")
         val buffer = ByteArray(100)
@@ -81,7 +81,7 @@ class AttachmentDownloaderTest {
             }
             val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, Actor.EMPTY, "someActor")
             loader.load(commandData)
-            val data: DownloadData = DownloadData.Companion.fromId(dataIn.getDownloadId())
+            val data: DownloadData = DownloadData.Companion.fromId(dataIn.downloadId)
             if (DownloadStatus.LOADED == status) {
                 Assert.assertFalse("Has error $data\n$commandData", commandData.getResult().hasError())
                 Assert.assertEquals("Status $data", status, loader.getStatus())
@@ -89,9 +89,9 @@ class AttachmentDownloaderTest {
                 Assert.assertTrue("Error loading " + data.getUri(), commandData.getResult().hasError())
             }
             if (DownloadStatus.LOADED == status) {
-                Assert.assertTrue("File exists " + data.getUri(), data.getFile().existed)
+                Assert.assertTrue("File exists " + data.getUri(), data.file.existed)
             } else {
-                Assert.assertFalse("File doesn't exist " + data.getUri(), data.getFile().existed)
+                Assert.assertFalse("File doesn't exist " + data.getUri(), data.file.existed)
             }
             Assert.assertEquals("Loaded " + data.getUri(), status, loader.getStatus())
         }

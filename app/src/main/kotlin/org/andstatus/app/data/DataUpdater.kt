@@ -172,7 +172,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             // TODO: move as toContentValues() into Note
             val values = ContentValues()
             if (isFirstTimeLoaded || note.noteId == 0L) {
-                values.put(NoteTable.INS_DATE, MyLog.uniqueCurrentTimeMS())
+                values.put(NoteTable.INS_DATE, MyLog.uniqueCurrentTimeMS)
             }
             values.put(NoteTable.NOTE_STATUS, note.getStatus().save())
             if (isNewerThanInDatabase) {

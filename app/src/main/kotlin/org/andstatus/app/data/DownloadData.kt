@@ -29,7 +29,7 @@ import java.util.function.Function
 
 open class DownloadData protected constructor(
     cursor: Cursor?,
-    private var downloadId: Long,
+    var downloadId: Long,
     var actorId: Long,
     var noteId: Long,
     private var contentType: MyContentType,
@@ -353,17 +353,9 @@ open class DownloadData protected constructor(
         }
     }
 
-    fun getFile(): DownloadFile {
-        return fileStored
-    }
+    val file: DownloadFile get() = fileStored
 
-    fun getFilename(): String {
-        return fileStored.getFilename()
-    }
-
-    fun getDownloadId(): Long {
-        return downloadId
-    }
+    val filename: String get() = fileStored.getFilename()
 
     fun getDownloadNumber(): Long {
         return downloadNumber
@@ -373,9 +365,7 @@ open class DownloadData protected constructor(
         return status
     }
 
-    fun getFilenameNew(): String {
-        return fileNew.getFilename()
-    }
+    val filenameNew: String get() = fileNew.getFilename()
 
     fun getUri(): Uri {
         return uri
@@ -408,7 +398,7 @@ open class DownloadData protected constructor(
         builder.withComma("status", getStatus())
         builder.withCommaQuoted("errorMessage", getMessage(), true)
         if (fileStored.existed) {
-            builder.withComma("file", getFilename())
+            builder.withComma("file", filename)
             builder.withComma("size", fileSize)
             if (mediaMetadata.nonEmpty) builder.withComma(mediaMetadata.toString())
         }

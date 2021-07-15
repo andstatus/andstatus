@@ -344,7 +344,7 @@ class Note : AObject {
 
     fun setUpdatedNow(level: Int) {
         if (isEmpty || level > 10) return
-        updatedDate = MyLog.uniqueCurrentTimeMS()
+        updatedDate = MyLog.uniqueCurrentTimeMS
         inReplyTo.setUpdatedNow(level + 1)
     }
 
@@ -426,7 +426,7 @@ class Note : AObject {
         }
 
         private fun getTempOid(): String {
-            return StringUtil.toTempOid("note:" + MyLog.uniqueCurrentTimeMS())
+            return StringUtil.toTempOid("note:" + MyLog.uniqueCurrentTimeMS)
         }
 
         fun mayBeEdited(originType: OriginType?, downloadStatus: DownloadStatus?): Boolean {

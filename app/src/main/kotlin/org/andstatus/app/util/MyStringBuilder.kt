@@ -53,12 +53,19 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
         return append("", text, " ", false)
     }
 
-    fun atNewLine(label: CharSequence?, text: CharSequence?): MyStringBuilder {
-        return append(label, text, ", \n", false)
+    fun atNewLine(text: CharSequence?): MyStringBuilder {
+        return atNewLine("", text)
     }
 
-    fun atNewLine(text: CharSequence?): MyStringBuilder {
-        return append("", text, ", \n", false)
+    fun atNewLine(label: CharSequence?, text: CharSequence?): MyStringBuilder {
+        val separator = if (isEmpty) "" else {
+            when(get(lastIndex-1)) {
+                '\n' -> ""
+                ',' -> "\n"
+                else -> ",\n"
+            }
+        }
+        return append(label, text, separator, false)
     }
 
     fun append(label: CharSequence?, obj: Any?, separator: String, quoted: Boolean): MyStringBuilder {
@@ -105,10 +112,7 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
         return unaryOperator(this)
     }
 
-    override val isEmpty: Boolean
-        get() {
-            return length == 0
-        }
+    override val isEmpty: Boolean get() = length == 0
 
     fun toKeyValue(key: Any): String {
         return formatKeyValue(key, toString())
@@ -149,7 +153,7 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
                     out = out.substring(0, ind)
                 }
             }
-            return Taggable.anyToTag(key) + ":{" + out + "}"
+            return Taggable.anyToTag(key) + ": {" + out + "}"
         }
 
         private fun <T> nonEmptyObj(obj: T?): Boolean {

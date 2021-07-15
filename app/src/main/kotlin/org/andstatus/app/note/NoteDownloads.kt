@@ -27,7 +27,7 @@ class NoteDownloads private constructor(val noteId: Long, val list: List<Downloa
     }
 
     fun fromId(downloadId: Long): DownloadData {
-        return list.stream().filter { d: DownloadData -> d.getDownloadId() == downloadId }.findFirst().orElse(DownloadData.EMPTY)
+        return list.stream().filter { d: DownloadData -> d.downloadId == downloadId }.findFirst().orElse(DownloadData.EMPTY)
     }
 
     companion object {

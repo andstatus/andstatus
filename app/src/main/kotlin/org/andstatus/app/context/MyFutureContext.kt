@@ -46,7 +46,7 @@ class MyFutureContext private constructor(
     val future: CompletableFuture<MyContext>,
     private val identifiable: Identifiable = Identified(MyFutureContext::class)
 ) : Identifiable by identifiable {
-    val createdAt = MyLog.uniqueCurrentTimeMS()
+    val createdAt = MyLog.uniqueCurrentTimeMS
     override val instanceId = InstanceId.next()
 
     fun releaseNow(reason: Supplier<String>): MyFutureContext {

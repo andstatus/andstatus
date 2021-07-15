@@ -529,7 +529,7 @@ object MyLog {
     }
 
     fun uniqueDateTimeFormatted(): String {
-        return formatDateTime(uniqueCurrentTimeMS())
+        return formatDateTime(uniqueCurrentTimeMS)
     }
 
     fun formatDateTime(time: Long): String {
@@ -549,18 +549,19 @@ object MyLog {
 
     // see http://stackoverflow.com/a/9191383/297710
     private val LAST_TIME_MS: AtomicLong = AtomicLong()
-    fun uniqueCurrentTimeMS(): Long {
-        var now = System.currentTimeMillis()
-        while (true) {
-            val lastTime = LAST_TIME_MS.get()
-            if (lastTime >= now) {
-                now = lastTime + 1
-            }
-            if (LAST_TIME_MS.compareAndSet(lastTime, now)) {
-                return now
+    val uniqueCurrentTimeMS: Long
+        get() {
+            var now = System.currentTimeMillis()
+            while (true) {
+                val lastTime = LAST_TIME_MS.get()
+                if (lastTime >= now) {
+                    now = lastTime + 1
+                }
+                if (LAST_TIME_MS.compareAndSet(lastTime, now)) {
+                    return now
+                }
             }
         }
-    }
 
     fun debugFormatOfDate(date: Long): String {
         return if (date == RelativeTime.DATETIME_MILLIS_NEVER) "NEVER"

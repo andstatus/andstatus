@@ -59,7 +59,7 @@ open class AsyncTask<Params, Progress, Result>(
 
     var maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds
     private val taskId: String = Taggable.anyToTag(taskId)
-    protected val createdAt = MyLog.uniqueCurrentTimeMS()
+    protected val createdAt = MyLog.uniqueCurrentTimeMS
 
     val isPending: Boolean get() = startedAt.get() == 0L && !isFinished
     val isRunning: Boolean get() = startedAt.get() > 0 && !isFinished

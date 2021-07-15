@@ -32,7 +32,7 @@ import java.util.*
 open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: TimelinePage<T>) {
     // Contains at least one Page
     val pages: MutableList<TimelinePage<T>>
-    val updatedAt = MyLog.uniqueCurrentTimeMS()
+    val updatedAt = MyLog.uniqueCurrentTimeMS
     val params: TimelineParameters
 
     @Volatile

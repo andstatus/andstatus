@@ -45,6 +45,6 @@ class HttpReadResultTest {
         val request3: HttpRequest = HttpRequest.Companion.of(ApiRoutineEnum.HOME_TIMELINE, uri)
                 .withPostParams(JSONObject("{\"text\":\"Text1\"}"))
         Assert.assertTrue(request3.toString(), request3.postParams.isPresent)
-        MatcherAssert.assertThat(request3.toString(), CoreMatchers.containsString("POST:"))
+        MatcherAssert.assertThat(request3.toString(), CoreMatchers.containsString("verb: POST"))
     }
 }

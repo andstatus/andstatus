@@ -150,13 +150,13 @@ class DemoConversationInserter {
         // Note downloaded by another account
         val ma2: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountSecondName)
         author3.isMyFriend = TriState.TRUE
-        author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+        author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         val reply10 = buildActivity(ma2.actor, author3, "", "Reply 10 to Reply 8", reply8,
                 null, DownloadStatus.LOADED)
         assertEquals("The third is a note Author", author3, reply10.getAuthor())
         addActivity(reply10)
         author3.isMyFriend = TriState.UNKNOWN
-        author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+        author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         assertIfActorIsMyFriend(author3, true, ma2)
         val anonymousReply = buildActivity(Actor.EMPTY, "", "Anonymous reply to Reply 10", reply10, null)
         addActivity(anonymousReply)

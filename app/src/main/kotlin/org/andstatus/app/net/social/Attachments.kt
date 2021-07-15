@@ -48,7 +48,7 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
             dd.setDownloadNumber(attachment.getDownloadNumber())
             if (attachment.previewOf.nonEmpty) {
                 dd.setPreviewOfDownloadId( downloads.stream().filter { d: DownloadData -> d.getUri() == attachment.previewOf.uri }.findAny()
-                        .map { obj: DownloadData -> obj.getDownloadId() }.orElse(0L))
+                        .map { obj: DownloadData -> obj.downloadId }.orElse(0L))
             }
             dd.saveToDatabase()
             downloads.add(dd)
@@ -65,7 +65,7 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
             }
         }
         DownloadData.deleteOtherOfThisNote(execContext.myContext, noteId,
-                downloads.stream().map { obj: DownloadData -> obj.getDownloadId() }.collect(Collectors.toList()))
+                downloads.stream().map { obj: DownloadData -> obj.downloadId }.collect(Collectors.toList()))
     }
 
     private fun renumber() {
@@ -118,11 +118,11 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
             if (downloads.isEmpty) return EMPTY
             val map: MutableMap<Long, Attachment> = HashMap()
             for (downloadData in downloads.list) {
-                map[downloadData.getDownloadId()] = Attachment(downloadData)
+                map[downloadData.downloadId] = Attachment(downloadData)
             }
             var attachments = Attachments()
             for (downloadData in downloads.list) {
-                map[downloadData.getDownloadId()]?.let { attachment ->
+                map[downloadData.downloadId]?.let { attachment ->
                     if (downloadData.getPreviewOfDownloadId() != 0L) {
                         val target = map[downloadData.getPreviewOfDownloadId()]
                         if (target == null) {

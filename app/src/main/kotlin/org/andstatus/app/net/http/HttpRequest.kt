@@ -46,12 +46,12 @@ class HttpRequest private constructor(val apiRoutine: ApiRoutineEnum, val uri: U
     }
 
     override fun toString(): String {
-        return ("uri:'" + uri + "'"
-                + (if (verb != Verb.GET) "; $verb: " else "")
-                + postParams.map { params: JSONObject -> "'$params'" }.orElse("(nothing)")
-                + (if (fileResult == null) "" else "; save to file")
-                + (if (isLegacyHttpProtocol()) "; legacy HTTP" else "")
-                + if (authenticate) "; authenticate" else "")
+        return ("uri: '" + uri + "'"
+                + (if (verb != Verb.GET) ", verb: $verb" else "")
+                + postParams.map { params: JSONObject -> ", params: $params" }.orElse(", (no params)")
+                + (if (fileResult == null) "" else ", save to file")
+                + (if (isLegacyHttpProtocol()) ", legacy HTTP" else "")
+                + if (authenticate) ", authenticate" else "")
     }
 
     fun isLegacyHttpProtocol(): Boolean {

@@ -123,7 +123,7 @@ class DataUpdaterTest {
         Assert.assertEquals("Should be no notes of this actor in the Friends timeline", 0, cursor.getCount().toLong())
         cursor.close()
         somebody.isMyFriend = TriState.TRUE
-        somebody.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+        somebody.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         dataUpdater.onActivity(accountActor.update(somebody))
         DemoConversationInserter.Companion.assertIfActorIsMyFriend(somebody, true, ma)
         cursor = context.getContentResolver().query(contentUri, projection, sa.selection,
@@ -396,7 +396,7 @@ $activity""",
         Assert.assertEquals("Same Actor renamed", actorId1, actorId1Renamed)
         Assert.assertEquals("Actor should not be renamed, if updatedDate didn't change", username,
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1))
-        actor1.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+        actor1.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         val actorId2Renamed = dataUpdater.onActivity(accountActor.update(actor1))?.getObjActor()?.actorId ?: 0
         Assert.assertEquals("Same Actor renamed", actorId1, actorId2Renamed)
         Assert.assertEquals("Same Actor renamed", actor1.getUsername(),
@@ -624,12 +624,12 @@ $activity""",
         // Response from a server
         val activity2: AActivity = AActivity.Companion.from(accountActor, ActivityType.CREATE)
         activity2.setId(activity1.getId())
-        activity2.setOid("https://" + DemoData.demoData.activityPubMainHost + "/activities/" + MyLog.uniqueCurrentTimeMS())
-        activity2.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+        activity2.setOid("https://" + DemoData.demoData.activityPubMainHost + "/activities/" + MyLog.uniqueCurrentTimeMS)
+        activity2.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
 
         // No content in the response, just oid of the note
         val note2: Note = Note.Companion.fromOriginAndOid(accountActor.origin,
-                "https://" + DemoData.demoData.activityPubMainHost + "/objects/" + MyLog.uniqueCurrentTimeMS(),
+                "https://" + DemoData.demoData.activityPubMainHost + "/objects/" + MyLog.uniqueCurrentTimeMS,
                 DownloadStatus.UNKNOWN)
         activity2.setNote(note2)
 

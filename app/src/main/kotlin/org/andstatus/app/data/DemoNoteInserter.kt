@@ -61,12 +61,12 @@ class DemoNoteInserter(val accountActor: Actor) {
             val connection = ConnectionPumpio()
             username = connection.actorOidToUsername(actorOid)
             profileUrl = "http://" + connection.actorOidToHost(actorOid) + "/" + username
-            actor.setCreatedDate(MyLog.uniqueCurrentTimeMS())
+            actor.setCreatedDate(MyLog.uniqueCurrentTimeMS)
         } else {
             username = "actorOf" + origin.name + actorOid
             profileUrl = ("https://" + DemoData.demoData.gnusocialTestOriginName
                     + ".example.com/profiles/" + username)
-            actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+            actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         }
         actor.setUsername(username)
         actor.setProfileUrl(profileUrl)

@@ -37,13 +37,13 @@ internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, 
         for (i in 0..199) {
             val lockPrevious = lock.get()
             if (lockPrevious.expired()) {
-                startedAt = MyLog.uniqueCurrentTimeMS()
+                startedAt = MyLog.uniqueCurrentTimeMS
                 if (lock.compareAndSet(lockPrevious, this)) {
                     MyLog.v(this) { "Received lock " + this + if (lockPrevious.isEmpty) "" else ". Replaced expired $lockPrevious" }
                     break
                 }
             } else if (isSave && !lockPrevious.isSave) {
-                startedAt = MyLog.uniqueCurrentTimeMS()
+                startedAt = MyLog.uniqueCurrentTimeMS
                 if (lock.compareAndSet(lockPrevious, this)) {
                     MyLog.v(this) { "Received lock $this. Replaced load $lockPrevious" }
                     break

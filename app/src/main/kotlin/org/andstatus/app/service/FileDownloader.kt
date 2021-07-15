@@ -56,7 +56,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
 
     private fun loadUrl() {
         data.beforeDownload()
-        downloadFile()
+        doDownloadFile()
         data.saveToDatabase()
         if (!data.isError()) {
             onSuccessfulLoad()
@@ -64,10 +64,18 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
     }
 
     protected abstract fun onSuccessfulLoad()
-    private fun downloadFile() {
-        val method = "downloadFile"
-        val fileTemp = DownloadFile(MyStorage.TEMP_FILENAME_PREFIX + data.getFilenameNew())
-        val file = fileTemp.getFile()
+
+    private fun doDownloadFile() {
+        val method = this::doDownloadFile.name
+        val fileTemp = DownloadFile(MyStorage.TEMP_FILENAME_PREFIX + MyLog.uniqueCurrentTimeMS +
+            "_" + data.filenameNew)
+        if (fileTemp.existsNow()) {
+            fileTemp.delete()
+            if (fileTemp.existsNow()) {
+                data.softErrorLogged("$method; Couldn't delete existing temp file $fileTemp", null)
+            }
+        }
+
         val ma = findBestAccountForDownload()
         if (ma.isValidAndSucceeded()) {
             val connection = connectionStub ?: ma.connection
@@ -78,7 +86,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
                         + "; account:" + ma.getAccountName())
             }
             Try.success(connection)
-                    .flatMap { connection1: Connection -> connection1.execute(newRequest(file)) }
+                    .flatMap { connection1: Connection -> connection1.execute(newRequest(fileTemp.getFile())) }
                     .onFailure { e: Throwable? ->
                         val ce: ConnectionException = ConnectionException.of(e)
                         if (ce.isHardError()) {
@@ -91,14 +99,36 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
             MyLog.v(this) { "No account to download " + data.toString() + "; account:" + ma.getAccountName() }
             data.hardErrorLogged("$method, No account to download the file", null)
         }
+        if (!data.isError() && !fileTemp.existsNow()) {
+            data.softErrorLogged("$method; New temp file doesn't exist $fileTemp", null)
+        }
+        if (!data.isError()) {
+            val fileNew = DownloadFile(data.filenameNew)
+            MyLog.v(this) { "$method; Renaming $fileTemp to $fileNew"}
+            fileNew.delete()
+            if (fileNew.existsNow()) {
+                data.softErrorLogged("$method; Couldn't delete existing file $fileNew", null)
+            } else {
+                val file1 = fileTemp.getFile()
+                val file2 = fileNew.getFile()
+                if (file1 == null) {
+                    data.softErrorLogged("$method; file1 is null ???", null)
+                } else if (file2 == null) {
+                    data.softErrorLogged("$method; file2 is null ???", null)
+                } else {
+                    if (file1.renameTo(file2)) {
+                        if (!fileNew.existsNow()) {
+                            data.softErrorLogged("$method; After renamingfrom $fileTemp" +
+                                " new file doesn't exist $fileNew", null)
+                        }
+                    } else {
+                        data.softErrorLogged("$method; Couldn't rename file $fileTemp to $fileNew", null)
+                    }
+                }
+            }
+        }
         if (data.isError()) {
             fileTemp.delete()
-        }
-        val fileNew = DownloadFile(data.getFilenameNew())
-        fileNew.delete()
-        val file2 = fileNew.getFile()
-        if (file2 == null || (!data.isError() && fileTemp.getFile()?.renameTo(file2) == false)) {
-            data.softErrorLogged("$method; Couldn't rename file $fileTemp to $fileNew", null)
         }
         data.onDownloaded()
     }

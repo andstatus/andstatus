@@ -83,7 +83,7 @@ class Attachment : Comparable<Attachment>, IsEmpty {
     fun mediaUriToPost(): Uri? {
         return if (downloadData.isEmpty || UriUtils.isDownloadable(uri)) {
             Uri.EMPTY
-        } else FileProvider.downloadFilenameToUri(downloadData.getFile().getFilename())
+        } else FileProvider.downloadFilenameToUri(downloadData.file.getFilename())
     }
 
     override operator fun compareTo(other: Attachment): Int {
@@ -100,7 +100,7 @@ class Attachment : Comparable<Attachment>, IsEmpty {
         }
 
     fun getDownloadId(): Long {
-        return downloadData.getDownloadId()
+        return downloadData.downloadId
     }
 
     fun setDownloadNumber(downloadNumber: Long) {

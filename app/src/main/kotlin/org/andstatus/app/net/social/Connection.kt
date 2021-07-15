@@ -271,7 +271,7 @@ abstract class Connection protected constructor() : IsEmpty {
     fun getActor(actorIn: Actor): Try<Actor> {
         return getActor2(actorIn).map { actor: Actor ->
             if (actor.isFullyDefined() && actor.getUpdatedDate() <= RelativeTime.SOME_TIME_AGO) {
-                actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+                actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
             }
             MyLog.v(this) { "getActor oid='" + actorIn.oid + "' -> " + actor.uniqueName }
             actor

@@ -284,7 +284,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("Actor Username", actorUsername, activity.getActor().getUsername())
         Assert.assertEquals("Author should be Actor", activity.getActor(), activity.getAuthor())
         Assert.assertTrue("inReplyTo should not be empty $activity", activity.getNote().getInReplyTo().nonEmpty)
-        activity.getNote().updatedDate = MyLog.uniqueCurrentTimeMS()
+        activity.getNote().updatedDate = MyLog.uniqueCurrentTimeMS
         activity.setUpdatedNow(0)
         val executionContext = CommandExecutionContext(
                  myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, stub.getData().getMyAccount(), 123))

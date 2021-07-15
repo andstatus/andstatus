@@ -352,14 +352,14 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Preview $downloads", 0, dPreview.getDownloadNumber())
         val dVideo = downloads.stream().filter { d: DownloadData -> d.getContentType() == MyContentType.VIDEO }
                 .findAny().orElse(DownloadData.Companion.EMPTY)
-        Assert.assertNotEquals("Video URL not saved $downloads", 0, dVideo.getDownloadId())
-        Assert.assertEquals("Preview $downloads", dVideo.getDownloadId(), dPreview.getPreviewOfDownloadId())
+        Assert.assertNotEquals("Video URL not saved $downloads", 0, dVideo.downloadId)
+        Assert.assertEquals("Preview $downloads", dVideo.downloadId, dPreview.getPreviewOfDownloadId())
         Assert.assertEquals("Video URL $downloads", video.uri, dVideo.getUri())
         Assert.assertEquals("Video $downloads", 1, dVideo.getDownloadNumber())
         val nfa = NoteForAnyAccount(myContext, activity.getId(), activity.getNote().noteId)
         Assert.assertEquals(preview.uri, nfa.downloads.getFirstForTimeline().getUri())
         Assert.assertEquals(MyContentType.IMAGE, nfa.downloads.getFirstForTimeline().getContentType())
-        Assert.assertEquals(dVideo.getDownloadId(), nfa.downloads.getFirstForTimeline().getPreviewOfDownloadId())
+        Assert.assertEquals(dVideo.downloadId, nfa.downloads.getFirstForTimeline().getPreviewOfDownloadId())
         Assert.assertEquals(video.uri, nfa.downloads.getFirstToShare().getUri())
         Assert.assertEquals(MyContentType.VIDEO, nfa.downloads.getFirstToShare().getContentType())
     }

@@ -60,8 +60,8 @@ internal class CheckDownloads : DataChecker() {
                 if (!logger.isCancelled) {
                     val dd: DownloadData = DownloadData.fromCursor(cursor)
                     results.totalCount++
-                    if (!dd.getFile().existsNow()) {
-                        results.toFix.add(Result(dd.getDownloadId()))
+                    if (!dd.file.existsNow()) {
+                        results.toFix.add(Result(dd.downloadId))
                     }
                     logger.logProgressIfLongProcess {
                         "Will mark " +

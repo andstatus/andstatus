@@ -25,7 +25,11 @@ class MyServiceTestHelper : MyServiceEventsListener {
     var connectionInstanceId: Long = 0
 
     @Volatile
-    private var listenedCommand: CommandData = CommandData.Companion.EMPTY
+    var listenedCommand: CommandData = CommandData.Companion.EMPTY
+        set(value) {
+            field = value
+            MyLog.v(this, "setListenedCommand; " + value)
+        }
 
     @Volatile
     var executionStartCount: Long = 0
@@ -82,7 +86,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
     }
 
     fun sendListenedCommand() {
-        MyServiceManager.Companion.sendCommandIgnoringServiceAvailability(getListenedCommand())
+        MyServiceManager.Companion.sendCommandIgnoringServiceAvailability(listenedCommand)
     }
 
     /** @return true if execution started
@@ -95,8 +99,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
             "check for no new execution, count0 = $count0",
             "just waiting, count0 = $count0"
         )
-        MyLog.v(this, "$method; started, count=$executionStartCount, $criteria, " +
-                getListenedCommand().command.save())
+        MyLog.v(this, "$method; started, count=$executionStartCount, $criteria, $listenedCommand")
         var found = false
         var locEvent = "none"
         for (pass in 0..999) {
@@ -111,7 +114,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
             }
         }
         val logMsgEnd = "$method; ended, found=$found, count=$executionStartCount, $criteria; " +
-                "waiting ended on:$locEvent, ${stopWatch.time} ms, ${getListenedCommand().command.save()}"
+                "waiting ended on:$locEvent, ${stopWatch.time} ms, $listenedCommand"
         MyLog.v(this, logMsgEnd)
         if (expectStarted != TriState.UNKNOWN) {
             Assert.assertEquals(logMsgEnd, expectStarted.toBoolean(false), found)
@@ -137,8 +140,8 @@ class MyServiceTestHelper : MyServiceEventsListener {
         }
         MyLog.v(
             this, method + " ended " +
-                    " " + found + ", event:" + locEvent + ", count0=" + count0 +
-                    ", ${stopWatch.time} ms, " + getListenedCommand().command.save()
+                " " + found + ", event:" + locEvent + ", count0=" + count0 +
+                ", ${stopWatch.time} ms, " + listenedCommand
         )
         return found
     }
@@ -200,13 +203,13 @@ class MyServiceTestHelper : MyServiceEventsListener {
         var locEvent = "ignored"
         when (myServiceEvent) {
             MyServiceEvent.BEFORE_EXECUTING_COMMAND -> {
-                if (commandData == getListenedCommand()) {
+                if (commandData == listenedCommand) {
                     executionStartCount++
                     locEvent = "execution started"
                 }
                 serviceStopped = false
             }
-            MyServiceEvent.AFTER_EXECUTING_COMMAND -> if (commandData == getListenedCommand()) {
+            MyServiceEvent.AFTER_EXECUTING_COMMAND -> if (commandData == listenedCommand) {
                 executionEndCount++
                 locEvent = "execution ended"
             }
@@ -234,15 +237,6 @@ class MyServiceTestHelper : MyServiceEventsListener {
         MyContextHolder.myContextHolder.getBlocking().timelines.initialize()
         MyServiceManager.Companion.setServiceAvailable()
         MyLog.v(this, "tearDown ended")
-    }
-
-    fun getListenedCommand(): CommandData {
-        return listenedCommand
-    }
-
-    fun setListenedCommand(listenedCommand: CommandData) {
-        this.listenedCommand = listenedCommand
-        MyLog.v(this, "setListenedCommand; " + this.listenedCommand)
     }
 
     fun getHttp(): HttpConnectionStub {

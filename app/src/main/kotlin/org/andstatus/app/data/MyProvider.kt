@@ -109,7 +109,7 @@ class MyProvider : ContentProvider() {
                 MatchedUri.ORIGIN_ITEM -> table = OriginTable.TABLE_NAME
                 MatchedUri.ACTOR_ITEM -> {
                     table = ActorTable.TABLE_NAME
-                    values.put(ActorTable.INS_DATE, MyLog.uniqueCurrentTimeMS())
+                    values.put(ActorTable.INS_DATE, MyLog.uniqueCurrentTimeMS)
                     accountActorId = uriParser.getAccountActorId()
                 }
                 else -> throw IllegalArgumentException(uriParser.toString())

@@ -180,7 +180,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
 
     fun setUpdatedNow(level: Int) {
         if (isEmpty || level > 10) return
-        setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+        setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         getNote().setUpdatedNow(level + 1)
         getActivity().setUpdatedNow(level + 1)
     }
@@ -451,7 +451,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             }
         }
         if (id == 0L || storedUpdatedDate <= RelativeTime.SOME_TIME_AGO && updatedDate > RelativeTime.SOME_TIME_AGO) {
-            insDate = MyLog.uniqueCurrentTimeMS()
+            insDate = MyLog.uniqueCurrentTimeMS
             values.put(ActivityTable.INS_DATE, insDate)
         }
         if (oid.isNotEmpty()) {

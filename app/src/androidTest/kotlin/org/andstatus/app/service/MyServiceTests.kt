@@ -141,8 +141,8 @@ class MyServiceTests: IgnoredInTravis2() {
     fun testHomeTimeline() {
         val method = "testHomeTimeline"
         MyLog.i(this, "$method started")
-        mService.setListenedCommand(CommandData.Companion.newTimelineCommand(
-            CommandEnum.GET_TIMELINE, ma, TimelineType.HOME))
+        mService.listenedCommand = CommandData.Companion.newTimelineCommand(
+            CommandEnum.GET_TIMELINE, ma, TimelineType.HOME)
         val startCount = mService.executionStartCount
         val endCount = mService.executionEndCount
         mService.sendListenedCommand()
@@ -162,7 +162,7 @@ class MyServiceTests: IgnoredInTravis2() {
         val cd1Home: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
             DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
             TimelineType.HOME)
-        mService.setListenedCommand(cd1Home)
+        mService.listenedCommand = cd1Home
         var startCount = mService.executionStartCount
         var endCount = mService.executionEndCount
         MyLog.i(this, "$method Sending first command")
@@ -176,7 +176,7 @@ class MyServiceTests: IgnoredInTravis2() {
         val cd2Interactions: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
             DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
             TimelineType.INTERACTIONS)
-        mService.setListenedCommand(cd2Interactions)
+        mService.listenedCommand = cd2Interactions
         startCount = mService.executionStartCount
         MyLog.i(this, "$method Sending second command")
         mService.sendListenedCommand()
@@ -197,7 +197,7 @@ class MyServiceTests: IgnoredInTravis2() {
             DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
             TimelineType.PUBLIC)
             .setInForeground(true)
-        mService.setListenedCommand(cd3PublicForeground)
+        mService.listenedCommand = cd3PublicForeground
         startCount = mService.executionStartCount
         endCount = mService.executionEndCount
         MyLog.i(this, "$method Sending third command")
@@ -221,9 +221,9 @@ class MyServiceTests: IgnoredInTravis2() {
     fun testRateLimitStatus() {
         val method = "testRateLimitStatus"
         MyLog.i(this, "$method started")
-        mService.setListenedCommand(CommandData.Companion.newAccountCommand(
+        mService.listenedCommand = CommandData.Companion.newAccountCommand(
             CommandEnum.RATE_LIMIT_STATUS,
-            DemoData.demoData.getGnuSocialAccount()))
+            DemoData.demoData.getGnuSocialAccount())
         val startCount = mService.executionStartCount
         val endCount = mService.executionEndCount
         mService.sendListenedCommand()
@@ -240,11 +240,8 @@ class MyServiceTests: IgnoredInTravis2() {
     fun testDiskIoErrorCatching() {
         val method = "testDiskIoErrorCatching"
         MyLog.i(this, "$method started")
-        mService.setListenedCommand(
-            CommandData.Companion.newAccountCommand(
-                CommandEnum.RATE_LIMIT_STATUS,
-                DemoData.demoData.getGnuSocialAccount()
-            )
+        mService.listenedCommand = CommandData.Companion.newAccountCommand(
+            CommandEnum.RATE_LIMIT_STATUS, DemoData.demoData.getGnuSocialAccount()
         )
         mService.getHttp().setRuntimeException(SQLiteDiskIOException(method))
         val startCount = mService.executionStartCount
@@ -269,35 +266,38 @@ class MyServiceTests: IgnoredInTravis2() {
         inserter.onActivity(ma.actor.update(actor))
         val urlString = "http://andstatus.org/nonexistent2_avatar_" + System.currentTimeMillis() + ".png"
         AvatarDownloaderTest.changeAvatarUrl(actor, urlString)
-        val startCount = mService.executionStartCount
-        val endCount = mService.executionEndCount
+
+        val startCount1 = mService.executionStartCount
+        val endCount1 = mService.executionEndCount
         val requestsCounter0 = mService.getHttp().getRequestsCounter()
-        sendGetAvatarCommand(actor, false)
-        mService.waitForStartOfCommandExecution("First command $actor", startCount, TriState.TRUE)
-        sendGetAvatarCommand(actor, false)
-        assertTrue("First command didn't end $actor", mService.waitForEndOfCommandExecution(endCount))
-        assertTrue("Request for the first command wasn't sent:" +
-                " ${mService.getListenedCommand()}\n${mService.getHttp()}",
+        val command1 = sendGetAvatarCommand("$method; First command", actor, false)
+        mService.waitForStartOfCommandExecution("First command", startCount1, TriState.TRUE)
+        assertTrue("First command didn't end $command1", mService.waitForEndOfCommandExecution(endCount1))
+        assertTrue("Request for the first command wasn't sent: $command1\n${mService.getHttp()}",
             mService.getHttp().getRequestsCounter() > requestsCounter0)
-        sendGetAvatarCommand(actor, false)
-        mService.waitForStartOfCommandExecution("Duplicate command started ${mService.getListenedCommand()}\n$actor",
-            startCount + 1, TriState.FALSE)
-        sendGetAvatarCommand(actor, true)
-        mService.waitForStartOfCommandExecution("Manually launched duplicate command didn't start" +
-                " ${mService.getListenedCommand()}\n$actor", startCount + 1, TriState.TRUE)
-        assertTrue("The third command didn't end ${mService.getListenedCommand()}\n$actor",
-            mService.waitForEndOfCommandExecution(endCount + 1))
+
+        val startCount2 = mService.executionStartCount
+        sendGetAvatarCommand("$method; Duplicate (second) command", actor, false)
+        mService.waitForStartOfCommandExecution("Duplicate command should not start", startCount2, TriState.FALSE)
+
+        val startCount3 = mService.executionStartCount
+        val endCount3 = mService.executionEndCount
+        val command3 = sendGetAvatarCommand("$method; Third (manual) command", actor, true)
+        mService.waitForStartOfCommandExecution("Third (manual) command should start", startCount3, TriState.TRUE)
+        assertTrue("The third command didn't end $command3", mService.waitForEndOfCommandExecution(endCount3))
         MyLog.i(this, "$method ended, $actor")
     }
 
     // We need to generate new command in order to have new unique ID for it. This is how it works in app itself
-    private fun sendGetAvatarCommand(actor: Actor, manuallyLaunched: Boolean) {
+    private fun sendGetAvatarCommand(msgLog: String, actor: Actor, manuallyLaunched: Boolean): CommandData {
         val command: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, actor, "")
         if (manuallyLaunched) {
             command.setManuallyLaunched(true)
         }
-        mService.setListenedCommand(command)
+        MyLog.i(this, "About to send $msgLog: $command")
+        mService.listenedCommand = command
         mService.sendListenedCommand()
+        return command
     }
 
 }

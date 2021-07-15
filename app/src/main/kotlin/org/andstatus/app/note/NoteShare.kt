@@ -67,8 +67,8 @@ class NoteShare(private val origin: Origin, private val noteId: Long, private va
                 " - " + subjectString
         val intent = Intent(if (share) Intent.ACTION_SEND else Intent.ACTION_VIEW)
         val downloadData = downloads.getFirstToShare()
-        val mediaFileUri = if (downloadData.getFile().existsNow())
-            FileProvider.downloadFilenameToUri(downloadData.getFilename())
+        val mediaFileUri = if (downloadData.file.existsNow())
+            FileProvider.downloadFilenameToUri(downloadData.filename)
             else downloadData.getUri()
         if (share || UriUtils.isEmpty(mediaFileUri)) {
             intent.type = "text/*"

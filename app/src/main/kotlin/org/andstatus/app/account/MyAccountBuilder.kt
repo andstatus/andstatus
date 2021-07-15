@@ -209,7 +209,7 @@ class MyAccountBuilder private constructor(
             actor.lookupActorId()
             actor.lookupUser()
             actor.user.setIsMyUser(TriState.TRUE)
-            actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+            actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
             myAccount.actor = actor
             if (DatabaseConverterController.isUpgrading()) {
                 MyLog.v(this, "Upgrade in progress")

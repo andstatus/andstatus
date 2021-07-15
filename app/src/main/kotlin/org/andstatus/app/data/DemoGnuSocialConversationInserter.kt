@@ -41,7 +41,7 @@ class DemoGnuSocialConversationInserter {
 
     private fun mySetup() {
         iteration = iterationCounter.incrementAndGet()
-        conversationOid = java.lang.Long.toString(MyLog.uniqueCurrentTimeMS())
+        conversationOid = java.lang.Long.toString(MyLog.uniqueCurrentTimeMS)
         origin = DemoData.demoData.getGnuSocialOrigin()
         Assert.assertTrue(DemoData.demoData.gnusocialTestOriginName + " exists", origin.isValid())
         Assert.assertNotSame("No host URL: $origin", "", origin.getHost())

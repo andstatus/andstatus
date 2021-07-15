@@ -124,7 +124,7 @@ class AllowHtmlContentTest {
         val expectedContent = jso.getString(if (isHtmlAllowed) "statusnet_html" else "text")
         val actualContent = if (isHtmlAllowed) activity.getNote().content else MyHtml.htmlToPlainText(activity.getNote().content)
         Assert.assertEquals(if (isHtmlAllowed) "HTML content allowed" else "No HTML content", expectedContent, actualContent)
-        activity.getNote().updatedDate = MyLog.uniqueCurrentTimeMS()
+        activity.getNote().updatedDate = MyLog.uniqueCurrentTimeMS
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val executionContext = CommandExecutionContext(

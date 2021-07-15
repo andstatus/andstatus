@@ -1,6 +1,8 @@
 package org.andstatus.app.service
 
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.TestSuite
@@ -12,6 +14,8 @@ import org.andstatus.app.graphics.CacheName
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Attachment
 import org.andstatus.app.net.social.ConnectionStub
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StopWatch
 import org.junit.Assert
 import org.junit.Test
 
@@ -41,17 +45,49 @@ class LargeImageTest {
         loadingTest(dd)
     }
 
-    private fun insertNote(): DownloadData {
+    private fun insertNote(): DownloadData = runBlocking {
+        val method = "testLargeImageAttachmentLoad"
         val body = "Large image attachment"
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
+        val myContext = ma.myContext
         val inserter = DemoNoteInserter(ma)
         val activity = inserter.buildActivity(inserter.buildActor(), "", body, null, null,
                 DownloadStatus.LOADED)
         activity.addAttachment(Attachment.Companion.fromUri("http://www.example.com/pictures/large_image.png"))
         inserter.onActivity(activity)
-        val dd: DownloadData = DownloadData.Companion.getSingleAttachment(activity.getNote().noteId
-        )
+        val dd: DownloadData = DownloadData.Companion.getSingleAttachment(activity.getNote().noteId)
         Assert.assertEquals("Image URI stored", activity.getNote().attachments.list[0].uri, dd.getUri())
+
+        // Wait till automatic attachment loading fails
+        // TODO: Clarify this...
+        var foundFailed = false
+        StopWatch.tillPassedSeconds(20) {
+            delay(500)
+            (myContext.queues[QueueType.ERROR].queue.any { commandData ->
+                commandData.itemId == dd.downloadId &&
+                    commandData.command == CommandEnum.GET_ATTACHMENT
+            } ||
+                myContext.queues[QueueType.ERROR].queue.any { commandData ->
+                    commandData.itemId == dd.downloadId &&
+                        commandData.command == CommandEnum.GET_ATTACHMENT
+                })
+                .also { foundFailed = it }
+        }
+        MyLog.i(
+            this,
+            (if (foundFailed) "Found" else "Didn't find") +
+                " failed command ${CommandEnum.GET_ATTACHMENT}" +
+                " with id:${dd.downloadId} ($dd)"
+        )
+        MyLog.i(method, "Error queue:")
+        myContext.queues[QueueType.ERROR].queue.forEachIndexed { index, commandData ->
+            MyLog.i(method, "$index: $commandData")
+        }
+        MyLog.i(method, "Retry queue")
+        myContext.queues[QueueType.RETRY].queue.forEachIndexed { index, commandData ->
+            MyLog.i(method, "$index: $commandData")
+        }
+
         val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR,
                 Actor.Companion.fromId(ma.origin, 34234), "")
         val loader = AttachmentDownloader(ma.myContext, dd)
@@ -63,11 +99,11 @@ class LargeImageTest {
         loader.setConnectionStub(connStub.connection)
         loader.load(commandData)
         Assert.assertEquals("Requested", 1, connStub.getHttpStub().getRequestsCounter())
-        val data: DownloadData = DownloadData.Companion.fromId(dd.getDownloadId())
-        Assert.assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError())
-        Assert.assertTrue("File exists " + data.getUri(), data.getFile().existed)
+        val data: DownloadData = DownloadData.Companion.fromId(dd.downloadId)
+        Assert.assertFalse("Failed to load stubbed image " + data.getUri() + "\n$commandData", commandData.getResult().hasError())
+        Assert.assertTrue("File exists " + data.getUri(), data.file.existed)
         DemoData.demoData.assertConversations()
-        return data
+        data
     }
 
     private fun loadingTest(dd: DownloadData) {

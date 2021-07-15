@@ -86,7 +86,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
             actor.endpoints.add(ActorEndpointType.API_FOLLOWING, "$basePath/following")
             actor.endpoints.add(ActorEndpointType.API_FOLLOWERS, "$basePath/followers")
         }
-        actor.setCreatedDate(MyLog.uniqueCurrentTimeMS())
+        actor.setCreatedDate(MyLog.uniqueCurrentTimeMS)
         val ma = addAccountFromActor(actor, accountName)
         val accountActorId = ma.actorId
         val msg = "AccountUserId for '$accountNameString, (first: '$firstAccountActorOid')"

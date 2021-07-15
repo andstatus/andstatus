@@ -49,8 +49,10 @@ class AttachedMediaFile : MediaFile {
         previewOf = EMPTY
     }
 
-    constructor(data: DownloadData) : super(data.getFilename(), data.getContentType(), data.mediaMetadata, data.getDownloadId(), data.getStatus(),
-            data.getDownloadedDate()) {
+    constructor(data: DownloadData) : super(
+        data.filename, data.getContentType(), data.mediaMetadata, data.downloadId, data.getStatus(),
+        data.getDownloadedDate()
+    ) {
         uri = data.getUri()
         previewOfDownloadId = 0
         previewOf = EMPTY

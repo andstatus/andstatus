@@ -132,7 +132,7 @@ class AvatarDownloaderTest {
 
     private fun deleteMaAvatarFile(ma: MyAccount) {
         val data: DownloadData = AvatarData.Companion.getCurrentForActor(ma.actor)
-        assertTrue("Loaded avatar file deleted", data.getFile().delete())
+        assertTrue("Loaded avatar file deleted", data.file.delete())
     }
 
     @Test
@@ -188,14 +188,14 @@ class AvatarDownloaderTest {
         Assert.assertEquals(DemoData.demoData.conversationAccountAvatarUrl, urlString)
         loadAndAssertStatusForMa(ma, "", DownloadStatus.LOADED, DownloadStatus.LOADED, false)
         var data: DownloadData = AvatarData.Companion.getCurrentForActor(ma.actor)
-        assertTrue("Existence of " + data.getFilename(), data.getFile().existed)
-        assertTrue("Is File" + data.getFilename(), data.getFile().getFile()?.isFile == true)
-        val avatarFile = data.getFile()
+        assertTrue("Existence of " + data.filename, data.file.existed)
+        assertTrue("Is File" + data.filename, data.file.getFile()?.isFile == true)
+        val avatarFile = data.file
         DownloadData.Companion.deleteAllOfThisActor(ma.myContext, ma.actorId)
         assertFalse(avatarFile.existsNow())
         loadAndAssertStatusForMa(ma, "", DownloadStatus.LOADED, DownloadStatus.LOADED, false)
         data = AvatarData.Companion.getCurrentForActor(ma.actor)
-        assertTrue(data.getFile().existed)
+        assertTrue(data.file.existed)
     }
 
     private fun changeMaAvatarUrl(ma: MyAccount, urlString: String?) {
@@ -205,7 +205,7 @@ class AvatarDownloaderTest {
     private fun changeAvatarStatus(actor: Actor, status: DownloadStatus) {
         val values = ContentValues()
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save())
-        values.put(DownloadTable.DOWNLOADED_DATE, MyLog.uniqueCurrentTimeMS())
+        values.put(DownloadTable.DOWNLOADED_DATE, MyLog.uniqueCurrentTimeMS)
         myContext.database
             ?.update(
                 DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + actor.actorId
@@ -234,9 +234,9 @@ class AvatarDownloaderTest {
         val loaded = loader.load(commandData)
         val data: DownloadData = AvatarData.Companion.getDisplayedForActor(actor)
         val logMsg = "${description.toString()} Expecting load status: $loadStatus, displayed: $displayedStatus\n" +
-                "  for $actor\n" +
-                "  (loaded $data, error message:'" + commandData.getResult().getMessage() + "')" +
-                if (imitateNetworkError) " imitated the error" else ""
+            "  for $actor\n" +
+            "  (loaded $data, error message:'" + commandData.getResult().getMessage() + "')" +
+            if (imitateNetworkError) " imitated the error" else ""
         if (imitateNetworkError || loadStatus == DownloadStatus.HARD_ERROR) {
             assertTrue("Load should be a failure: $logMsg", loaded.isFailure)
         }
@@ -248,11 +248,11 @@ class AvatarDownloaderTest {
         }
         Assert.assertEquals(logMsg, loadStatus, loader.getStatus())
         if (DownloadStatus.LOADED == displayedStatus) {
-            assertTrue("Avatar should be displayed: $logMsg", data.getFile().existed)
+            assertTrue("Avatar should be displayed: $logMsg", data.file.existed)
         } else {
-            Assert.assertFalse("Avatar shouldn't be displayed: $logMsg", data.getFile().existed)
+            Assert.assertFalse("Avatar shouldn't be displayed: $logMsg", data.file.existed)
         }
-        return loader.data.getDownloadId()
+        return loader.data.downloadId
     }
 
     companion object {
@@ -260,7 +260,7 @@ class AvatarDownloaderTest {
             val myContext = actor.origin.myContext
             val values = ContentValues()
             actor.setAvatarUrl(urlString)
-            actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+            actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
             values.put(ActorTable.AVATAR_URL, urlString)
             values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate())
             myContext.database

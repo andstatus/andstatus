@@ -66,7 +66,7 @@ class CommandData private constructor(
         val commandTimeline: CommandTimeline,
         createdDate: Long) : Comparable<CommandData>, Taggable {
 
-    private val commandId: Long = if (commandId == 0L) MyLog.uniqueCurrentTimeMS() else commandId
+    private val commandId: Long = if (commandId == 0L) MyLog.uniqueCurrentTimeMS else commandId
     private val createdDate: Long = if (createdDate > 0) createdDate else this.commandId
     private var description: String = ""
 

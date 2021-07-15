@@ -119,7 +119,7 @@ class ProgressLogger {
         private val TAG: String = ProgressLogger::class.java.simpleName
         val startedAt: AtomicLong = AtomicLong(0)
         fun newStartingTime(): Long {
-            val iStartedAt = MyLog.uniqueCurrentTimeMS()
+            val iStartedAt = MyLog.uniqueCurrentTimeMS
             startedAt.set(iStartedAt)
             return iStartedAt
         }

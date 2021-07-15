@@ -56,9 +56,9 @@ class MyLogTest {
         var string1: String? = ""
         var string2: String? = ""
         for (ind in 0..19) {
-            val time1 = MyLog.uniqueCurrentTimeMS()
+            val time1 = MyLog.uniqueCurrentTimeMS
             string1 = MyLog.uniqueDateTimeFormatted()
-            val time2 = MyLog.uniqueCurrentTimeMS()
+            val time2 = MyLog.uniqueCurrentTimeMS
             string2 = MyLog.uniqueDateTimeFormatted()
             Assert.assertTrue("Time:$time1", time2 > time1)
             Assert.assertFalse(string1, string1.contains("SSS"))
