@@ -299,7 +299,8 @@ class CommandQueue(val myContext: MyContext) {
     }
 
     enum class AccessorType(val title: String, val numberOfExecutors: Int) {
-        GENERAL("General", 2), DOWNLOADS("Downloads", 4)
+        GENERAL("General", 2),
+        DOWNLOADS("Downloads", 4)
     }
 
     fun getFromAnyQueue(dataIn: CommandData): CommandData {

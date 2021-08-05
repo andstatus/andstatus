@@ -1,5 +1,5 @@
-v.59.01 New Settings option "Show Send button near the composed note" in "Gestures" section replaces
-the old and not working "ENTER key sends a note" option https://github.com/andstatus/andstatus/issues/533
+v.59.02 Use concurrent timelines and images downloading:
+now up to 2 processes load timelines and up to 4 processes load images concurrently.
 
-Support Magnet URI as a "downloadable ID" of an object.
-Intended for ActivityPub but will work for any Social network https://github.com/andstatus/andstatus/issues/535
+Increase maximum local storage (cache) size up to 10 million notes and 100 years.
+
