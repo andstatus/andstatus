@@ -214,6 +214,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="history_size_entries_50000">50000 notes</string>
   <string name="history_size_entries_100000">100000 notes</string>
   <string name="history_size_entries_1mln">1 mln notes</string>
+  <string name="history_size_entries_10mln">10 mln notes</string>
   <string name="history_time_entries_1day">1 day</string>
   <string name="history_time_entries_2days">2 days</string>
   <string name="history_time_entries_3days">3 days</string>
@@ -224,6 +225,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="history_time_entries_1month">1 month</string>
   <string name="history_time_entries_1year">1 year</string>
   <string name="history_time_entries_10years">10 years</string>
+  <string name="history_time_entries_100years">100 years</string>
   <string name="host_hint">E.g. pleroma.site, loadaverage.org</string>
   <string name="host_hint_mastodon">The address or domain of any instance, e.g. mastodon.social, icosahedron.website,
     social.tchncs.de</string>

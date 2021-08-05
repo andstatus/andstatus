@@ -109,6 +109,7 @@
         <item>@string/history_size_entries_50000</item>
         <item>@string/history_size_entries_100000</item>
         <item>@string/history_size_entries_1mln</item>
+        <item>@string/history_size_entries_10mln</item>
     </string-array>
     <string-array name="history_time_entries">
         <item>@string/history_time_entries_1day</item>
@@ -121,6 +122,7 @@
         <item>@string/history_time_entries_1month</item>
         <item>@string/history_time_entries_1year</item>
         <item>@string/history_time_entries_10years</item>
+        <item>@string/history_time_entries_100years</item>
     </string-array>
     <string-array name="history_size_values">
         <item>500</item>
@@ -132,6 +134,7 @@
         <item>50000</item>
         <item>100000</item>
         <item>1000000</item>
+        <item>10000000</item>
     </string-array>
     <string-array name="history_time_values">
         <item>1</item>
@@ -144,6 +147,7 @@
         <item>31</item>
         <item>365</item>
         <item>3653</item>
+        <item>36530</item>
     </string-array>
     <string-array name="tristate_yes_no_auto_entries">
         <item>@string/yes</item>
