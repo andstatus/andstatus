@@ -28,13 +28,13 @@ import java.util.*
 /**
  * @author yvolk@yurivolkov.com
  */
-class EnumSelector<E>(private val enumList: SelectableEnumList<E>) : SelectorDialog() where E : Enum<E>, E : SelectableEnum {
+class EnumSelector<E>(private val enums: SelectableEnumList<E>? = null) : SelectorDialog()
+    where E : Enum<E>, E : SelectableEnum {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val enums: SelectableEnumList<E> = enumList
 
-        if (enums.getDialogTitleResId() == 0) {  // We don't save a state of the dialog
+        if (enums == null || enums.getDialogTitleResId() == 0) {  // We don't save a state of the dialog
             dismiss()
             return
         }
@@ -46,7 +46,7 @@ class EnumSelector<E>(private val enumList: SelectableEnumList<E>) : SelectorDia
 
     private fun newListAdapter(): MySimpleAdapter {
         val list: MutableList<MutableMap<String, String>> = ArrayList()
-        for (value in enumList.getList()) {
+        for (value in enums?.getList() ?: emptyList()) {
             val map: MutableMap<String, String> = HashMap()
             map[KEY_VISIBLE_NAME] = value.title(activity).toString()
             list.add(map)
