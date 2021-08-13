@@ -551,14 +551,14 @@ object MyLog {
     private val LAST_TIME_MS: AtomicLong = AtomicLong()
     val uniqueCurrentTimeMS: Long
         get() {
-            var now = System.currentTimeMillis()
+            var nextTime = System.currentTimeMillis()
             while (true) {
                 val lastTime = LAST_TIME_MS.get()
-                if (lastTime >= now) {
-                    now = lastTime + 1
+                if (lastTime >= nextTime) {
+                    nextTime = lastTime + 1
                 }
-                if (LAST_TIME_MS.compareAndSet(lastTime, now)) {
-                    return now
+                if (LAST_TIME_MS.compareAndSet(lastTime, nextTime)) {
+                    return nextTime
                 }
             }
         }
