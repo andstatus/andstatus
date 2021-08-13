@@ -25,7 +25,6 @@ buildscript {
     extra["acraVersion"] = "5.8.3"                // https://github.com/ACRA/acra/wiki/AdvancedUsage
     extra["annotationVersion"] = "1.2.0"          // https://mvnrepository.com/artifact/androidx.annotation/annotation
     extra["appCompatVersion"] = "1.2.0"           // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
-    extra["commonsCodecVersion"] = "1.15"         // https://mvnrepository.com/artifact/commons-codec/commons-codec
     extra["commonsLangVersion"] = "3.12.0"        // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     extra["documentFileVersion"] = "1.0.1"        // https://developer.android.com/jetpack/androidx/releases/documentfile
     extra["espressoCoreVersion"] = "3.3.0"        // https://developer.android.com/jetpack/androidx/releases/test

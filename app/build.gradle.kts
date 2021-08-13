@@ -208,7 +208,6 @@ dependencies {
     implementation("ch.acra:acra-mail:${rootProject.extra["acraVersion"]}")
     implementation("com.github.scribejava:scribejava-core:${rootProject.extra["scribeJavaCoreVersion"]}")
     implementation("com.google.android.material:material:${rootProject.extra["materialVersion"]}")
-    implementation("commons-codec:commons-codec:${rootProject.extra["commonsCodecVersion"]}")
     implementation("cz.msebera.android:httpclient:${rootProject.extra["httpClientVersion"]}")
     implementation("io.vavr:vavr:${rootProject.extra["vavrVersion"]}")
     implementation("junit:junit:${rootProject.extra["junitVersion"]}")
