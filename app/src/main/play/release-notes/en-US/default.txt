@@ -1,5 +1,6 @@
-v.59.02 Use concurrent timelines and images downloading:
+v.59.02 Faster timelines and images downloading:
 now up to 2 processes load timelines and up to 4 processes load images concurrently.
 
-Increase maximum local storage (cache) size up to 10 million notes and 100 years.
+Fixed long timeouts during attempts to load files from non-working server over SSL.
 
+Maximum local storage (cache) size increased up to 10 million notes and 100 years.

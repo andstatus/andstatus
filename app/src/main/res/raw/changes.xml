@@ -29,6 +29,16 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="59.02" android:versionCode="346"
+        versionDate="2021-08-13"
+        versionTitle="Faster timelines and images downloading">
+        <changes>
+            <change>Faster timelines and images downloading:
+                now up to 2 processes load timelines and up to 4 processes load images concurrently.</change>
+            <change>Fixed long timeouts during attempts to load files from non-working server over SSL.</change>
+            <change>Maximum local storage (cache) size increased up to 10 million notes and 100 years.</change>
+        </changes>
+    </release>
     <release android:versionName="59.01" android:versionCode="345"
         versionDate="2021-06-23"
         versionTitle="Show Send button near the composed note">

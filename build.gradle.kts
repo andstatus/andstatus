@@ -38,7 +38,7 @@ buildscript {
     extra["preferenceVersion"] = "1.1.1"          // https://mvnrepository.com/artifact/androidx.preference/preference-ktx
     extra["recyclerViewVersion"] = "1.2.0"        // https://mvnrepository.com/artifact/androidx.recyclerview/recyclerview
     extra["screenshottyVersion"] = "1.0.3"        // https://github.com/bolteu/screenshotty
-    extra["scribeJavaCoreVersion"] = "8.3.1"      // https://github.com/scribejava/scribejava
+    extra["scribeJavaCoreVersion"] = "8.1.0"      // https://github.com/scribejava/scribejava
     extra["signPostVersion"] = "2.1.1"            // https://mvnrepository.com/artifact/oauth.signpost/signpost-core
     extra["swipeRefreshLayoutVersion"] = "1.1.0"  // https://developer.android.com/jetpack/androidx/releases/swiperefreshlayout
     extra["testRulesVersion"] = "1.3.0"           // https://developer.android.com/jetpack/androidx/releases/test
