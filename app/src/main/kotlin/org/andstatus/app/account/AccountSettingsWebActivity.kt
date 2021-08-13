@@ -46,7 +46,7 @@ class AccountSettingsWebActivity : MyActivity(AccountSettingsWebActivity::class)
             }
             // see http://stackoverflow.com/questions/5561709/opening-webview-not-in-new-browser
             view.webViewClient = WebViewListener()
-            view.loadUrl(url)
+            url?.let { view.loadUrl(it) }
         } catch (e: Exception) {
             MyLog.w(this, "onCreate", e)
             finish()

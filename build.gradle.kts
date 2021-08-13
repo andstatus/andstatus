@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
 
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    val androidGradlePluginVersion = "4.2.2"      // https://maven.google.com/web/index.html#com.android.tools.build:gradle
+    val androidGradlePluginVersion = "7.0.0"      // https://maven.google.com/web/index.html#com.android.tools.build:gradle
                                                   // https://developer.android.com/studio/releases/gradle-plugin
     val kotlinVersion = "1.5.20"                  // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
     extra["kotlinVersion"] = kotlinVersion
@@ -16,10 +16,10 @@ buildscript {
         google()
     }
 
-    extra["compileSdkVersion"] = 29
+    extra["compileSdk"] = 30
     extra["buildToolsVersion"] = "30.0.3"
-    extra["minSdkVersion"] = 24
-    extra["targetSdkVersion"] = 29
+    extra["minSdk"] = 24
+    extra["targetSdk"] = 30
 
     // Lookup the latest here: https://mvnrepository.com/
     extra["acraVersion"] = "5.8.3"                // https://github.com/ACRA/acra/wiki/AdvancedUsage

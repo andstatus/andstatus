@@ -60,7 +60,7 @@ class WebViewFragment : Fragment() {
         }
     }
 
-    private fun getTransformedContent(context: Context): String? {
+    private fun getTransformedContent(context: Context): String {
         return try {
             var output: String = Xslt.toHtmlString(context, arguments?.getInt(SOURCE_XML) ?: 0,
                     arguments?.getInt(SOURCE_XSL) ?: 0)

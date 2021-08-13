@@ -16,16 +16,16 @@ fun cancelIfNoCoverage() {
 }
 
 android {
-    compileSdkVersion(rootProject.extra["compileSdkVersion"] as Int)
-    buildToolsVersion(rootProject.extra["buildToolsVersion"] as String)
+    compileSdk = rootProject.extra["compileSdk"] as Int
+    buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
 
     defaultConfig {
         versionCode = 346
         versionName = "59.02"
 
         applicationId = "org.andstatus.app"
-        minSdkVersion(rootProject.extra["minSdkVersion"] as Int)
-        targetSdkVersion(rootProject.extra["targetSdkVersion"] as Int)
+        minSdk = rootProject.extra["minSdk"] as Int
+        targetSdk = rootProject.extra["targetSdk"] as Int
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // To test arguments:
