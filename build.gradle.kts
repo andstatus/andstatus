@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
+
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     val androidGradlePluginVersion = "4.2.2"      // https://maven.google.com/web/index.html#com.android.tools.build:gradle
@@ -102,40 +104,54 @@ tasks.register<Zip>("dumpAll") {
 }
 
 /**
- * This task is for experiments and learning...
- *
- * We could define dependency this way, but we don't need this yet
- * task printInfo(dependsOn: rootProject.subprojects.find() { it.name == "app" }.tasks.find() { it.name == "myDummy"}) {
+ * Task for experiments and learning...
  */
 tasks.register("printInfo") {
-    doFirst {
-        println("printInfo.doFist")
-        val root: Project = rootProject
-        println("Projects (" + root.allprojects.size + "): " + rootProject.allprojects)
-        println("Subprojects (" + rootProject.subprojects.size + "): " + rootProject.subprojects)
-        println("Configurations (" + configurations.size + "): " + configurations)
 
-        println("Root project tasks " + rootProject.tasks.size + ":\n  " +
-            rootProject.tasks.names.joinToString("\n  "))
+    fun printProjectInfo(project: Project) {
+        println("\nProject '${project.name}' ----------------")
 
-        rootProject.subprojects.find() { it.name == "app" }?.let { app: Project ->
-            println("Project \"" + app + "\"; Properties:" +
-                app.properties.entries
-                    .map { "\n  " + it.key + ": " + it.value }
-                    .sorted()
-                    .joinToString("")
-            )
+        project.subprojects.ifNotEmpty {
+            println("Subprojects ($size): $this")
+        }
 
-            println("archivesBaseName: " + app.property("archivesBaseName"))
-
-            println("Tasks \"" + app + "\", " + app.tasks.size + ":\n  " +
-                app.tasks.names.joinToString("\n  "))
-            println("Task 0 \"" + app.tasks.firstOrNull())
-
-            app.tasks.find() { it.name == "assembleRelease"}?.let { task: Task ->
-                println("Task \"" + task + "\"; " + task.inputs)
+        "archivesBaseName".let { name ->
+            if (project.hasProperty(name)) {
+                println("$name property: " + project.property(name))
             }
         }
+
+        println("Properties (" + project.properties.entries.size + ")" +
+            project.properties.entries
+                .map {
+                    it.key + ": " +
+                        (if (it.key == "properties") "(not shown)" else it.value)
+                }
+                .sorted()
+                .joinToString("\n  ", ":\n  ")
+        )
+
+        println(
+            "Configurations (" + project.configurations.size + ")" +
+                project.configurations.names
+                    .joinToString("\n  ", ":\n  ")
+        )
+
+        println("First task: '" + project.tasks.firstOrNull() + "'")
+        println(
+            "Tasks (" + project.tasks.size + ")" +
+                project.tasks.names
+                    .joinToString("\n  ", ":\n  ")
+        )
+
+        project.tasks.find() { it.name == "assembleRelease" }?.let { task: Task ->
+            println("Task '" + task + "' inputs:\n  " + task.inputs)
+        }
+    }
+
+    doFirst {
+        println("printInfo.doFist")
+        rootProject.allprojects.forEach(::printProjectInfo)
     }
 
     doLast {
