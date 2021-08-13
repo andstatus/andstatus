@@ -20,11 +20,12 @@ import kotlinx.coroutines.sync.withLock
 import org.andstatus.app.service.CommandQueue.AccessorType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.min
 
-/** Two specialized async tasks to execute [CommandQueue]  */
+/** Specialized async tasks to execute [CommandQueue]  */
 class QueueExecutors(private val myService: MyService) {
-    private val executors: MutableList<QueueExecutor> = ArrayList()
+    private val executors: MutableList<QueueExecutor> = CopyOnWriteArrayList()
     private val mutex = Mutex()
 
     suspend fun ensureExecutorsStarted() {
@@ -80,9 +81,13 @@ class QueueExecutors(private val myService: MyService) {
     }
 
     private fun removeExecutor(executor: QueueExecutor) {
-        if ( executors.removeIf { it === executor }) {
-            if (executor.needsBackgroundWork) {
-                executor.cancel()
+        // removeIf is not supported by CopyOnWriteArrayList
+        for (exec in executors) {
+            if (exec == executor) {
+                executors.remove(exec)
+                if (exec.needsBackgroundWork) {
+                    exec.cancel()
+                }
             }
         }
     }
