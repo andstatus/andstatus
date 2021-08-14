@@ -186,7 +186,7 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
                     )
                 }
         if (result.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .getOrElseThrow { e: Throwable -> ConnectionException.of(e) } == null) {
+                .getOrElseThrow(ConnectionException::of) == null) {
             result = Try.failure(ConnectionException(
                     "Error uploading '$attachment': null response returned"))
         }
@@ -195,7 +195,7 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
                 .map { jso: JSONObject -> jso.toString(2) }
                 .onSuccess { message: String? -> MyLog.v(this, "uploaded '$attachment' $message") }
         return result.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .getOrElseThrow { e: Throwable -> ConnectionException.of(e) }
+                .getOrElseThrow(ConnectionException::of)
     }
 
     private fun buildObject(activity: JSONObject): JSONObject {

@@ -23,11 +23,12 @@ import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.DownloadFile
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.http.HttpRequest
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Connection
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
 import java.io.File
 
 abstract class FileDownloader protected constructor(val myContext: MyContext, val data: DownloadData) {
@@ -51,7 +52,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
         }
         return if (commandData.getResult().hasError()) Try.failure(ConnectionException.fromStatusCode(
                 StatusCode.UNKNOWN, commandData.getResult().toSummary()))
-        else Try.success(true)
+        else TryUtils.TRUE
     }
 
     private fun loadUrl() {
@@ -89,7 +90,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
                     .flatMap { connection1: Connection -> connection1.execute(newRequest(fileTemp.getFile())) }
                     .onFailure { e: Throwable? ->
                         val ce: ConnectionException = ConnectionException.of(e)
-                        if (ce.isHardError()) {
+                        if (ce.isHardError) {
                             data.hardErrorLogged(method, ce)
                         } else {
                             data.softErrorLogged(method, ce)

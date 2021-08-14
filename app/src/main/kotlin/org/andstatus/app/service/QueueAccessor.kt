@@ -225,7 +225,7 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
 
     companion object {
         private const val RETRY_QUEUE_PROCESSING_PERIOD_SECONDS: Long = 900
-        private const val MIN_RETRY_PERIOD_SECONDS: Long = 900
+        const val MIN_RETRY_PERIOD_SECONDS: Long = 900
         private const val MAX_DAYS_IN_ERROR_QUEUE: Long = 10
     }
 

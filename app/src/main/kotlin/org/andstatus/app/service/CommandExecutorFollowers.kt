@@ -29,7 +29,7 @@ import org.andstatus.app.data.OidEnum
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.ActivityType
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ApiRoutineEnum

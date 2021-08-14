@@ -53,7 +53,7 @@ import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.http.HttpConnectionInterface
 import org.andstatus.app.net.http.MyOAuth2AccessTokenJsonExtractor
 import org.andstatus.app.net.social.Actor
@@ -1267,7 +1267,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
                 }
                 .map { ma: MyAccount -> TaskResult(ResultStatus.SUCCESS, "") }
                 .recover(ConnectionException::class.java) { e: ConnectionException ->
-                    val status: ResultStatus = when (e.getStatusCode()) {
+                    val status: ResultStatus = when (e.statusCode) {
                         StatusCode.AUTHENTICATION_ERROR -> ResultStatus.ACCOUNT_INVALID
                         StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT -> ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT
                         else -> ResultStatus.CONNECTION_EXCEPTION

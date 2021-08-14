@@ -18,7 +18,7 @@ package org.andstatus.app.net.social.pumpio
 import android.net.Uri
 import io.vavr.control.Try
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest

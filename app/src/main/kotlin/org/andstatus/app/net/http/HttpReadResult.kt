@@ -19,8 +19,8 @@ import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
-import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.service.QueueAccessor.Companion.MIN_RETRY_PERIOD_SECONDS
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MagnetUri.Companion.getDownloadableUrl
@@ -50,12 +50,19 @@ class HttpReadResult(val request: HttpRequest) {
     var strResponse: String = ""
     var statusLine: String = ""
     private var intStatusCode = 0
-    private var statusCode: StatusCode? = StatusCode.UNKNOWN
+    private var statusCode: StatusCode = StatusCode.UNKNOWN
 
     fun requiredUrl(errorMessage: String): URL? = url ?: let {
         setException(Exception("Mo URL for $errorMessage"))
         null
     }
+
+    val retryAfterSeconds: Long?
+        get() = headers.get("retry-after")?.firstNotNullOfOrNull { it ->
+            // We parse only integer value.
+            // Formatted date is not parsed yet, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
+            it.toLongOrNull()
+        } ?: if (statusCode == StatusCode.TOO_MANY_REQUESTS) MIN_RETRY_PERIOD_SECONDS else null
 
     fun getHeaders(): MutableMap<String, MutableList<String>> {
         return headers
@@ -96,7 +103,7 @@ class HttpReadResult(val request: HttpRequest) {
         statusCode = StatusCode.fromResponseCode(intStatusCodeIn)
     }
 
-    fun getStatusCode(): StatusCode? {
+    fun getStatusCode(): StatusCode {
         return statusCode
     }
 

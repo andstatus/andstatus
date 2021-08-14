@@ -20,6 +20,7 @@ import org.andstatus.app.data.DataPruner
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
 
 /**
  * Downloads ("loads") different types of Timelines
@@ -36,7 +37,7 @@ internal abstract class TimelineDownloader(execContext: CommandExecutionContext)
                 (execContext.getTimeline().toString() + " is not supported for "
                         + execContext.getMyAccount().getAccountName())
             }
-            return Try.success(true)
+            return TryUtils.TRUE
         }
         MyLog.d(this, "Getting " + execContext.commandData.toCommandSummary(execContext.myContext) +
                 " by " + execContext.getMyAccount().getAccountName())

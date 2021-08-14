@@ -20,7 +20,6 @@ import com.github.scribejava.core.model.Verb
 import io.vavr.control.Try
 import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.context.MyPreferences
-import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog

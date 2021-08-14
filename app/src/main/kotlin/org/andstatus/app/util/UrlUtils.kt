@@ -19,7 +19,7 @@ import android.net.Uri
 import io.vavr.control.Try
 import org.andstatus.app.context.MyLocale.MY_DEFAULT_LOCALE
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.StatusCode
 import org.json.JSONObject
 import java.net.MalformedURLException
 import java.net.URL

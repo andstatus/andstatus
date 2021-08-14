@@ -33,6 +33,7 @@ import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.TryUtils
 import org.json.JSONObject
 
 class AccountData : Parcelable, AccountDataWriter, Identifiable {
@@ -127,7 +128,7 @@ class AccountData : Parcelable, AccountDataWriter, Identifiable {
         val jsonString = toJsonString()
         logMe("Saving to " + androidAccount.name)
         am.setUserData(androidAccount, AccountUtils.KEY_ACCOUNT, jsonString)
-        return Try.success(true)
+        return TryUtils.TRUE
     }
 
     fun isVersionCurrent(): Boolean {

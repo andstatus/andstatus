@@ -24,7 +24,6 @@ import cz.msebera.android.httpclient.client.methods.HttpGet
 import cz.msebera.android.httpclient.client.methods.HttpPost
 import cz.msebera.android.httpclient.protocol.HTTP
 import org.andstatus.app.data.DbUtils.closeSilently
-import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.util.MyLog
 import org.json.JSONObject
 import java.net.URL

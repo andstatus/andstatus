@@ -33,7 +33,7 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.database.table.DownloadTable
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.util.MyLog

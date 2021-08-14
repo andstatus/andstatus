@@ -25,53 +25,25 @@ import java.net.URL
  * @author yvolk@yurivolkov.com
  */
 class ConnectionException : IOException {
-    enum class StatusCode {
-        UNKNOWN, OK, UNSUPPORTED_API, NOT_FOUND, BAD_REQUEST, AUTHENTICATION_ERROR, CREDENTIALS_OF_OTHER_ACCOUNT, NO_CREDENTIALS_FOR_HOST, UNAUTHORIZED, FORBIDDEN, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE, MOVED, REQUEST_ENTITY_TOO_LARGE, LENGTH_REQUIRED, CLIENT_ERROR, SERVER_ERROR;
 
-        companion object {
-            fun fromResponseCode(responseCode: Int): StatusCode {
-                return when (responseCode) {
-                    200, 201, 304 -> OK
-                    301, 302, 303, 307 -> MOVED
-                    400 -> BAD_REQUEST
-                    401 -> UNAUTHORIZED
-                    403 -> FORBIDDEN
-                    404 -> NOT_FOUND
-                    411 -> LENGTH_REQUIRED
-                    413 -> REQUEST_ENTITY_TOO_LARGE
-                    500 -> INTERNAL_SERVER_ERROR
-                    502 -> BAD_GATEWAY
-                    503 -> SERVICE_UNAVAILABLE
-                    else -> {
-                        if (responseCode >= 500) {
-                            return SERVER_ERROR
-                        } else if (responseCode >= 400) {
-                            return CLIENT_ERROR
-                        }
-                        UNKNOWN
-                    }
-                }
-            }
-        }
-    }
-
-    private val statusCode: StatusCode?
-    private val isHardError: Boolean
+    val httpResult: HttpReadResult?
+    val statusCode: StatusCode
+    val isHardError: Boolean
     private val url: URL?
 
     private constructor(result: HttpReadResult) : super(result.logMsg(), result.getException()) {
+        httpResult = result
         statusCode = result.getStatusCode()
         url = result.url
         isHardError = isHardFromStatusCode(isHardFromCause(result.getException()), statusCode)
     }
 
-    constructor(throwable: Throwable?) : this(null, throwable) {}
-    constructor(detailMessage: String?) : this(StatusCode.UNKNOWN, detailMessage) {}
-    constructor(detailMessage: String?, throwable: Throwable?) : this(StatusCode.OK, detailMessage, throwable, null, false) {}
+    constructor(throwable: Throwable?) : this(null, throwable)
+    constructor(detailMessage: String?) : this(StatusCode.UNKNOWN, detailMessage)
+    constructor(detailMessage: String?, throwable: Throwable?) : this(StatusCode.OK, detailMessage, throwable, null, false)
 
-    @JvmOverloads
-    constructor(statusCode: StatusCode?, detailMessage: String?, url: URL? = null) : this(statusCode, detailMessage, null, url, false) {
-    }
+    constructor(statusCode: StatusCode, detailMessage: String?, url: URL? = null) :
+        this(statusCode, detailMessage, null, url, false)
 
     fun append(toAppend: String?): ConnectionException {
         return ConnectionException(statusCode,
@@ -79,15 +51,12 @@ class ConnectionException : IOException {
                 cause, url, isHardError)
     }
 
-    private constructor(statusCode: StatusCode?, detailMessage: String?,
+    private constructor(statusCode: StatusCode, detailMessage: String?,
                         throwable: Throwable?, url: URL?, isHardIn: Boolean) : super(detailMessage, throwable) {
+        httpResult = null
         this.statusCode = statusCode
         this.url = url
         isHardError = isHardFromStatusCode(isHardIn || isHardFromCause(throwable), statusCode)
-    }
-
-    fun getStatusCode(): StatusCode? {
-        return statusCode
     }
 
     override fun toString(): String {
@@ -96,10 +65,6 @@ class ConnectionException : IOException {
                 (if (url == null) "" else "; URL: $url") +
                 "; \n${super.message}\n" +
                 (if (super.cause != null) "Caused by ${super.cause.toString()}\n" else "")
-    }
-
-    fun isHardError(): Boolean {
-        return isHardError
     }
 
     companion object {
@@ -138,15 +103,15 @@ class ConnectionException : IOException {
             return ConnectionException(StatusCode.OK, Taggable.anyToTag(anyTag) + ": " + detailMessage, e, null, isHard)
         }
 
-        fun fromStatusCode(statusCode: StatusCode?, detailMessage: String?): ConnectionException {
+        fun fromStatusCode(statusCode: StatusCode, detailMessage: String?): ConnectionException {
             return fromStatusCodeAndThrowable(statusCode, detailMessage, null)
         }
 
-        fun fromStatusCodeAndThrowable(statusCode: StatusCode?, detailMessage: String?, throwable: Throwable?): ConnectionException {
+        fun fromStatusCodeAndThrowable(statusCode: StatusCode, detailMessage: String?, throwable: Throwable?): ConnectionException {
             return ConnectionException(statusCode, detailMessage, throwable, null, false)
         }
 
-        fun fromStatusCodeAndHost(statusCode: StatusCode?, detailMessage: String?, host2: URL?): ConnectionException {
+        fun fromStatusCodeAndHost(statusCode: StatusCode, detailMessage: String?, host2: URL?): ConnectionException {
             return ConnectionException(statusCode, detailMessage, host2)
         }
 

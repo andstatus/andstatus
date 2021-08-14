@@ -19,7 +19,7 @@ import io.vavr.control.Try
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.InputTimelinePage
 import org.andstatus.app.net.social.TimelinePosition
@@ -27,6 +27,7 @@ import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -103,7 +104,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
                 positionToRequest = optPositionToRequest.get()
             }
             if (tryPage.isFailure()) {
-                if (ConnectionException.of(tryPage.getCause()).getStatusCode() != StatusCode.NOT_FOUND) {
+                if (ConnectionException.of(tryPage.getCause()).statusCode != StatusCode.NOT_FOUND) {
                     return Try.failure(tryPage.getCause())
                 }
                 val optPositionToRequest = syncTracker.onNotFound()
@@ -116,7 +117,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
             }
         }
         dataUpdater.saveLum()
-        return Try.success(true)
+        return TryUtils.TRUE
     }
 
     private fun getActorWithOid(): Try<Actor> {

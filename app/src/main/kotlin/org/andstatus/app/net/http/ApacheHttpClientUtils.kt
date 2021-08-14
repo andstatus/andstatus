@@ -23,7 +23,6 @@ import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder
 import cz.msebera.android.httpclient.message.BasicNameValuePair
 import cz.msebera.android.httpclient.protocol.HTTP
 import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
-import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.util.FileUtils
 import org.andstatus.app.util.JsonUtils
 import org.json.JSONObject

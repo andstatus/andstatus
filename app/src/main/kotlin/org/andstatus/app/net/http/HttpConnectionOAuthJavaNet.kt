@@ -25,7 +25,6 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
-import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder

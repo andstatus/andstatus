@@ -58,7 +58,7 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
             val activityResponse = tryConu
                     .flatMap { conu: ConnectionAndUrl -> conu.execute(conu.newRequest().withPostParams(activityImm)) }
             if (activityResponse.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                            .getOrElseThrow { e: Throwable? -> ConnectionException.of(e) } == null) {
+                            .getOrElseThrow(ConnectionException::of) == null) {
                 return Try.failure(ConnectionException.hardConnectionException("$msgLog returned no data", null))
             }
             activityResponse.filter { r: HttpReadResult? -> MyLog.isVerboseEnabled() }
@@ -205,7 +205,7 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
         var result: Try<HttpReadResult> = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
                 .flatMap { conu: ConnectionAndUrl -> conu.execute(conu.newRequest().withAttachmentToPost(attachment)) }
         if (result.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                        .getOrElseThrow { e: Throwable -> ConnectionException.of(e) } == null) {
+                        .getOrElseThrow(ConnectionException::of) == null) {
             result = Try.failure(ConnectionException(
                     "Error uploading '$attachment': null response returned"))
         }
@@ -214,7 +214,7 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
                 .map { jso: JSONObject -> jso.toString(2) }
                 .onSuccess { message: String? -> MyLog.v(this, "uploaded '$attachment' $message") }
         return result.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .getOrElseThrow { e: Throwable? -> ConnectionException.of(e) }
+                .getOrElseThrow(ConnectionException::of)
     }
 
     private fun buildObject(activity: JSONObject): JSONObject {

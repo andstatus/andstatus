@@ -28,7 +28,6 @@ import oauth.signpost.OAuthConsumer
 import oauth.signpost.OAuthProvider
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils
-import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyLogVerboseStream

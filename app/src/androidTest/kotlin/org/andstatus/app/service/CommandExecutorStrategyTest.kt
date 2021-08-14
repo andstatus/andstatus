@@ -24,7 +24,7 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.http.HttpConnectionStub
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.ConnectionStub

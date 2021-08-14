@@ -19,7 +19,6 @@ import android.text.format.Formatter
 import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.data.DbUtils.closeSilently
-import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.service.ConnectionRequired
 import org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry
 import org.andstatus.app.util.StopWatch

@@ -123,7 +123,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                 .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .filter { obj: JSONObject? -> Objects.nonNull(obj) }
                 .onSuccess { jso: JSONObject? -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
-                .getOrElseThrow { e: Throwable? -> ConnectionException.of(e) }
+                .getOrElseThrow(ConnectionException::of)
     }
 
     override fun getConfig(): Try<OriginConfig> {

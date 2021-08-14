@@ -35,6 +35,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
     private var parent: CommandExecutorParent? = null
     protected var lastProgressBroadcastAt: Long = 0
     private val stopWatch: StopWatch = StopWatch.createStarted()
+
     fun logSoftErrorIfStopping(): Boolean {
         if (isStopping()) {
             if (!execContext.getResult().hasError()) {
@@ -75,14 +76,10 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
         return parent?.isStopping() ?: false
     }
 
-    fun <T> logException(t: Throwable?, detailedMessage: String?): Try<T> {
-        val e: ConnectionException = ConnectionException.of(t)
-        val isHard = t != null && e.isHardError()
+    fun logConnectionException(e: ConnectionException, detailedMessage: String?): Try<Boolean> {
         val builder: MyStringBuilder = MyStringBuilder.of(detailedMessage)
-        if (t != null) {
-            builder.atNewLine(e.toString())
-        }
-        return logExecutionError(isHard, builder.toString())
+            .atNewLine(e.toString())
+        return logExecutionError(e.isHardError, builder.toString())
     }
 
     fun <T> logExecutionError(isHard: Boolean, detailedMessage: String?): Try<T> {
@@ -91,7 +88,8 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
         } else {
             execContext.getResult().incrementNumIoExceptions()
         }
-        val builder: MyStringBuilder = MyStringBuilder.of(detailedMessage).atNewLine(execContext.toExceptionContext())
+        val builder: MyStringBuilder = MyStringBuilder.of(detailedMessage)
+            .atNewLine(execContext.toExceptionContext())
         execContext.getResult().setMessage(builder.toString())
         MyLog.w(this, builder.toString())
         return TryUtils.failure(detailedMessage)
@@ -101,7 +99,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
      */
     open suspend fun execute(): Try<Boolean> {
         MyLog.d(this, "Doing nothing")
-        return Try.success(true)
+        return TryUtils.TRUE
     }
 
     fun noErrors(): Boolean {
@@ -135,9 +133,14 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
             strategy.execute()
                     .onSuccess { ok: Boolean ->
                         strategy.execContext.getResult().setSoftErrorIfNotOk(ok)
-                        MyLog.d(strategy, strategy.execContext.getCommandSummary() + if (ok) " succeeded" else " soft errors")
+                        MyLog.d(strategy, strategy.execContext.getCommandSummary() +
+                            if (ok) " succeeded" else " soft errors")
                     }
-                    .onFailure { t: Throwable? -> strategy.logException<Any?>(t, strategy.execContext.getCommandSummary()) }
+                    .onFailure { t: Throwable ->
+                        strategy.logConnectionException(
+                            ConnectionException.of(t), strategy.execContext.getCommandSummary()
+                        )
+                    }
             commandData.getResult().afterExecutionEnded()
             logEnd(strategy)
         }

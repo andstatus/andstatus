@@ -21,7 +21,7 @@ object TryUtils {
     val SUCCESS: Try<Unit> = Try.success(Unit)
 
     fun <T> failure(exception: Throwable?): Try<T> {
-        return failure("", exception)
+        return failure(null, exception)
     }
 
     fun <T> failure(message: String?, exception: Throwable?): Try<T> {
@@ -111,9 +111,9 @@ object TryUtils {
         return this
     }
 
-    suspend fun <T> Try<T>.onFailureS(action: suspend (T) -> Unit): Try<T> {
+    suspend fun <T> Try<T>.onFailureS(action: suspend (Throwable) -> Unit): Try<T> {
         if (isFailure) {
-            action(get())
+            action(cause)
         }
         return this
     }

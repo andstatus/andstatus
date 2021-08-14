@@ -24,6 +24,7 @@ import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Connection
 import org.andstatus.app.origin.Origin
@@ -247,7 +248,7 @@ class MyAccountBuilder private constructor(
             )
             return Try.failure(
                 ConnectionException(
-                    ConnectionException.StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT,
+                    StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT,
                     actor.getUniqueNameWithOrigin()
                 )
             )
@@ -255,7 +256,7 @@ class MyAccountBuilder private constructor(
         if (errorSettingUsername) {
             val msg = myAccount.myContext.context.getText(R.string.error_set_username).toString() + " " + actor.getUsername()
             MyLog.w(this, msg)
-            return Try.failure(ConnectionException(ConnectionException.StatusCode.AUTHENTICATION_ERROR, msg))
+            return Try.failure(ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg))
         }
         return Try.success(this)
     }

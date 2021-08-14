@@ -27,7 +27,7 @@ import org.andstatus.app.data.checker.CheckConversations
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.ActivityType
 import org.andstatus.app.net.social.Actor
@@ -109,7 +109,8 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     }
                 }
                 .map { activities -> true }
-                .mapFailure { e: Throwable -> ConnectionException.of(e).append(MyQuery.noteInfoForLog(execContext.myContext, noteId)) }
+                .mapFailure { e: Throwable -> ConnectionException.of(e)
+                    .append(MyQuery.noteInfoForLog(execContext.myContext, noteId)) }
     }
 
     private fun getActorCommand(actorIn: Actor, username: String?): Try<Boolean> {
@@ -220,10 +221,10 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         val method = "deleteNote"
         if (noteId == 0L) {
             MyLog.d(this, "$method skipped as noteId == 0")
-            return Try.success(true)
+            return TryUtils.TRUE
         }
         val author: Actor = Actor.load(execContext.myContext, MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId))
-        return (if (execContext.getMyAccount().actor.isSame(author)) deleteNoteAtServer(noteId, method) else Try.success(true))
+        return (if (execContext.getMyAccount().actor.isSame(author)) deleteNoteAtServer(noteId, method) else TryUtils.TRUE)
                 .onSuccess { b: Boolean? -> MyProvider.deleteNoteAndItsActivities(execContext.myContext, noteId) }
     }
 
@@ -232,15 +233,19 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         val statusStored: DownloadStatus = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId))
         if (tryOid.filter { obj: String? -> StringUtil.nonEmptyNonTemp(obj) }.isFailure || statusStored != DownloadStatus.LOADED) {
             MyLog.i(this, "$method; OID='$tryOid', status='$statusStored' for noteId=$noteId")
-            return Try.success(true)
+            return TryUtils.TRUE
         }
         return tryOid
                 .flatMap { oid: String -> getConnection().deleteNote(oid) }
                 .recoverWith(ConnectionException::class.java
-                ) { e: ConnectionException ->  // "Not found" means that there is no such "Status", so we may
+                ) { e: ConnectionException ->
+                    // "Not found" means that there is no such "Status", so we may
                     // assume that it's Ok!
-                    if (e.getStatusCode() == StatusCode.NOT_FOUND) Try.success(true) else logException<Any?>(e, method + "; noteOid:" + tryOid + ", " +
-                            MyQuery.noteInfoForLog(execContext.myContext, noteId)).map { any: Any? -> true }
+                    if (e.statusCode == StatusCode.NOT_FOUND) TryUtils.TRUE
+                    else logConnectionException(
+                        e, method + "; noteOid:" + tryOid + ", " +
+                            MyQuery.noteInfoForLog(execContext.myContext, noteId)
+                    )
                 }
     }
 
@@ -258,10 +263,14 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         return getConnection()
                 .undoAnnounce(reblogOid)
                 .recoverWith(ConnectionException::class.java
-                ) { e: ConnectionException ->  // "Not found" means that there is no such "Status", so we may
+                ) { e: ConnectionException ->
+                    // "Not found" means that there is no such "Status", so we may
                     // assume that it's Ok!
-                    if (e.getStatusCode() == StatusCode.NOT_FOUND) Try.success(true) else logException<Any?>(e, method + "; reblogOid:" + reblogOid + ", " +
-                            MyQuery.noteInfoForLog(execContext.myContext, noteId)).map { any: Any? -> true }
+                    if (e.statusCode == StatusCode.NOT_FOUND) TryUtils.TRUE
+                    else logConnectionException(
+                        e, method + "; reblogOid:" + reblogOid + ", " +
+                            MyQuery.noteInfoForLog(execContext.myContext, noteId)
+                    )
                 }
                 .onSuccess { b: Boolean ->  // And delete the reblog from local storage
                     MyProvider.deleteActivity(execContext.myContext, reblogAndType.first ?: 0, noteId, false)
@@ -279,7 +288,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     } else {
                         try {
                             DataUpdater(execContext).onActivity(activity)
-                            return@flatMap Try.success(true)
+                            return@flatMap TryUtils.TRUE
                         } catch (e: Exception) {
                             return@flatMap logExecutionError<Boolean>(false, "Error while saving to the local cache,"
                                     + MyQuery.noteInfoForLog(execContext.myContext, noteId) + ", " + e.message)
@@ -287,7 +296,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     }
                 }
                 .onFailure { e: Throwable ->
-                    if (ConnectionException.of(e).getStatusCode() == StatusCode.NOT_FOUND) {
+                    if (ConnectionException.of(e).statusCode == StatusCode.NOT_FOUND) {
                         execContext.getResult().incrementParseExceptions()
                         // This means that there is no such "Status"
                         // TODO: so we don't need to retry this command
@@ -337,7 +346,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         return if (note == null || note.isEmpty) {
             logExecutionError(false, method + "; Received note is empty, "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId))
-        } else Try.success(true)
+        } else TryUtils.TRUE
     }
 
     private fun reblog(rebloggedNoteId: Long): Try<Boolean> {

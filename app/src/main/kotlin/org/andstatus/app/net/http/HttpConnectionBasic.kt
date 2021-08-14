@@ -120,11 +120,11 @@ class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
                 conn.connect()
                 setStatusCodeAndHeaders(result, conn)
                 when (result.getStatusCode()) {
-                    ConnectionException.StatusCode.OK -> {
+                    StatusCode.OK -> {
                         result.readStream("") { conn.inputStream }
                         stop = true
                     }
-                    ConnectionException.StatusCode.MOVED -> {
+                    StatusCode.MOVED -> {
                         redirected = true
                         stop = onMoved(result)
                     }
