@@ -77,7 +77,7 @@ class ConnectionActivityPub : Connection() {
             .filter { obj: Uri -> UriUtils.isDownloadable(obj) }
             .orElse { getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS) }
             .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .recoverWith(Exception::class.java) { originalException: Exception ->
                 mastodonsHackToVerifyCredentials(
                     originalException
@@ -96,7 +96,7 @@ class ConnectionActivityPub : Connection() {
             .map { partialPath: String -> OriginType.MASTODON.partialPathToApiPath(partialPath) }
             .flatMap { path: String -> pathToUri(path) }
             .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .map { jso: JSONObject -> JsonUtils.optString(jso, "username") }
             .filter { obj: String -> obj.isNotEmpty() }
@@ -105,7 +105,7 @@ class ConnectionActivityPub : Connection() {
         return userNameInMastodon.map { username: String -> "users/$username" }
             .flatMap { path: String -> pathToUri(path) }
             .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.GET_ACTOR, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .recoverWith(Exception::class.java) { newException: Exception? -> Try.failure(originalException) }
     }
 
@@ -175,7 +175,8 @@ class ConnectionActivityPub : Connection() {
     private fun getActors(apiRoutine: ApiRoutineEnum, position: TimelinePosition, actor: Actor): Try<InputActorPage> =
         ConnectionAndUrl.fromActor(this, apiRoutine, position, actor)
             .flatMap { conu: ConnectionAndUrl ->
-                conu.newRequest().executeMe(conu::execute)
+                conu.newRequest()
+                    .let(conu::execute)
                     .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                     .map { jsonObject: JSONObject ->
                         val jsonCollection: AJsonCollection = AJsonCollection.of(jsonObject)
@@ -189,7 +190,7 @@ class ConnectionActivityPub : Connection() {
 
     override fun getNote1(noteOid: String): Try<AActivity> = HttpRequest
         .of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid))
-        .executeMe(::execute)
+        .let(::execute)
         .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
         .map { jsoActivity: JSONObject? -> this.activityFromJson(jsoActivity) }
 
@@ -228,7 +229,7 @@ class ConnectionActivityPub : Connection() {
     }
 
     private fun getActivities(conu: ConnectionAndUrl): Try<InputTimelinePage> = conu.newRequest()
-        .executeMe(conu::execute)
+        .let(conu::execute)
         .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
         .map { root: JSONObject ->
             val jsonCollection: AJsonCollection = AJsonCollection.of(root)
@@ -445,7 +446,7 @@ class ConnectionActivityPub : Connection() {
 
     public override fun getActor2(actorIn: Actor): Try<Actor> = ConnectionAndUrl
         .fromActor(this, ApiRoutineEnum.GET_ACTOR, TimelinePosition.EMPTY, actorIn)
-        .flatMap { conu: ConnectionAndUrl -> conu.newRequest().executeMe(conu::execute) }
+        .flatMap { conu: ConnectionAndUrl -> conu.newRequest().let(conu::execute) }
         .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
         .map { jso: JSONObject -> actorFromJson(jso) }
 

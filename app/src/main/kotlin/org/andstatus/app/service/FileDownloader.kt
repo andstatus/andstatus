@@ -87,7 +87,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
                         + "; account:" + ma.getAccountName())
             }
             newRequest(fileTemp.getFile())
-                .executeMe(connection::execute)
+                .let(connection::execute)
                 .onFailure { e: Throwable? ->
                     val ce: ConnectionException = ConnectionException.of(e)
                     if (ce.isHardError) {

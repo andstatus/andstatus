@@ -119,7 +119,7 @@ class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
                 }
                 conn.connect()
                 setStatusCodeAndHeaders(result, conn)
-                when (result.getStatusCode()) {
+                when (result.statusCode) {
                     StatusCode.OK -> {
                         result.readStream("") { conn.inputStream }
                         stop = true

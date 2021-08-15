@@ -39,6 +39,8 @@ class HttpRequest private constructor(val apiRoutine: ApiRoutineEnum, val uri: U
     var postParams: Optional<JSONObject> = Optional.empty()
     var fileResult: File? = null
 
+    val hostAndPort: String? get() = uri.host ?.let { it + ":" + uri.port }
+
     fun validate(): Try<HttpRequest> {
         return if (UriUtils.isEmpty(uri)) {
             Try.failure(IllegalArgumentException("URi is empty; API: $apiRoutine"))
@@ -129,10 +131,6 @@ class HttpRequest private constructor(val apiRoutine: ApiRoutineEnum, val uri: U
         } else {
             connectionData.getAccountName().logName + "-" + apiRoutine.name.toLowerCase()
         }
-    }
-
-    fun executeMe(executor: (HttpRequest) -> Try<HttpReadResult>): Try<HttpReadResult> {
-        return executor(this)
     }
 
     fun newResult(): HttpReadResult {

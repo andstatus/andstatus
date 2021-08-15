@@ -86,7 +86,7 @@ class ConnectionPumpio : Connection() {
         .filter { obj: Uri? -> UriUtils.isDownloadable(obj) }
         .orElse { getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS) }
         .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) }
-        .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+        .flatMap(::execute)
         .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
         .map { jso: JSONObject -> actorFromJson(jso) }
 
@@ -165,7 +165,7 @@ class ConnectionPumpio : Connection() {
             val uri = builder.build()
             conu.withUri(uri)
         }
-        .flatMap { conu: ConnectionAndUrl -> conu.newRequest().executeMe(conu::execute) }
+        .flatMap { conu: ConnectionAndUrl -> conu.newRequest().let(conu::execute) }
         .flatMap { result: HttpReadResult ->
             result.getJsonArray()
                 .map { jsonArray: JSONArray? -> jsonArrayToActors(apiRoutine, result.request.uri, jsonArray) }
@@ -190,7 +190,7 @@ class ConnectionPumpio : Connection() {
 
     override fun getNote1(noteOid: String): Try<AActivity> =
         HttpRequest.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid))
-            .executeMe(::execute)
+            .let(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .map { jsoActivity: JSONObject? -> activityFromJson(jsoActivity) }
 
@@ -250,7 +250,7 @@ class ConnectionPumpio : Connection() {
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine))
         return HttpRequest.of(apiRoutine, builder.build())
-            .executeMe(::execute)
+            .let(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
             .map { jArr: JSONArray? ->
                 val activities: MutableList<AActivity> = ArrayList()
@@ -472,7 +472,7 @@ class ConnectionPumpio : Connection() {
 
     public override fun getActor2(actorIn: Actor): Try<Actor> =
         ConnectionAndUrl.fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn)
-            .flatMap { conu: ConnectionAndUrl -> conu.newRequest().executeMe(conu::execute) }
+            .flatMap { conu: ConnectionAndUrl -> conu.newRequest().let(conu::execute) }
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .map { jso: JSONObject -> actorFromJson(jso) }
 

@@ -33,6 +33,7 @@ enum class StatusCode(val isHard: Boolean) {
     REQUEST_ENTITY_TOO_LARGE(true),
     LENGTH_REQUIRED(true),
     TOO_MANY_REQUESTS(false),
+    DELAYED(false),
     CLIENT_ERROR(true),
     SERVER_ERROR(true);
 

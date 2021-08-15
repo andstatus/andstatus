@@ -57,7 +57,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
             params.put("website", "http://andstatus.org")
             HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
                 .withPostParams(params)
-                .executeMe(::execute)
+                .let(::execute)
                 .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .map { jso: JSONObject ->
                     val consumerKey = jso.getString("client_id")
@@ -127,7 +127,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
             val response = service.execute(request)
             setStatusCodeAndHeaders(result, response)
             result.readStream("") { response.stream }
-            if (result.getStatusCode() != StatusCode.OK) {
+            if (result.statusCode != StatusCode.OK) {
                 result.setException(result.getExceptionFromJsonErrorResponse())
             }
         } catch (e: InterruptedException) {
@@ -154,7 +154,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
                 responseCopy = service.execute(request)
                 val response = responseCopy
                 setStatusCodeAndHeaders(result, response)
-                when (result.getStatusCode()) {
+                when (result.statusCode) {
                     StatusCode.OK -> {
                         result.readStream("") { response.stream }
                         stop = true

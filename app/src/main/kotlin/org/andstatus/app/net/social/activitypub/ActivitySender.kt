@@ -58,7 +58,9 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
             val activityResponse: Try<HttpReadResult> = ConnectionAndUrl.fromActor(connection,
                     ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor())
                 .flatMap { conu: ConnectionAndUrl ->
-                    conu.newRequest().withPostParams(activityImm).executeMe(conu::execute)
+                    conu.newRequest()
+                        .withPostParams(activityImm)
+                        .let(conu::execute)
                 }
             val jsonObject = activityResponse
                     .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
@@ -76,10 +78,13 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
                             "when an image object is posted. Sending an update")
                 }
                 activity.put("type", ActivityType.UPDATE.activityPubValue)
-                return ConnectionAndUrl.fromActor(connection,
-                        ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor())
+                return ConnectionAndUrl.fromActor(
+                    connection, ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor()
+                )
                     .flatMap { conu: ConnectionAndUrl ->
-                        conu.newRequest().withPostParams(activityImm).executeMe(conu::execute)
+                        conu.newRequest()
+                            .withPostParams(activityImm)
+                            .let(conu::execute)
                     }
             }
             activityResponse
@@ -189,7 +194,7 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
                 conu.newRequest()
                     .withMediaPartName("file")
                     .withAttachmentToPost(attachment)
-                    .executeMe(conu::execute)
+                    .let(conu::execute)
             }
         if (result.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .getOrElseThrow(ConnectionException::of) == null) {

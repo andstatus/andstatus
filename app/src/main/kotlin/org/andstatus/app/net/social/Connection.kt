@@ -382,31 +382,6 @@ abstract class Connection protected constructor() : IsEmpty {
         return unixDate
     }
 
-    /**
-     * Simple solution based on:
-     * http://stackoverflow.com/questions/2201925/converting-iso8601-compliant-string-to-java-util-date
-     * @return Unix time. Returns 0 in a case of an error
-     */
-    protected fun parseIso8601Date(stringDate: String?): Long {
-        var unixDate: Long = 0
-        if (stringDate != null) {
-            val datePrepared: String
-            datePrepared = if (stringDate.lastIndexOf('Z') == stringDate.length - 1) {
-                stringDate.substring(0, stringDate.length - 1) + "+0000"
-            } else {
-                stringDate.replace("\\+0([0-9]):00".toRegex(), "+0$100")
-            }
-            val formatString = if (stringDate.contains(".")) if (stringDate.length - stringDate.lastIndexOf(".") > 4) "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ" else "yyyy-MM-dd'T'HH:mm:ss.SSSZ" else "yyyy-MM-dd'T'HH:mm:ssZ"
-            val iso8601DateFormatSec: DateFormat = SimpleDateFormat(formatString, MY_DEFAULT_LOCALE)
-            try {
-                unixDate = iso8601DateFormatSec.parse(datePrepared)?.time ?: 0L
-            } catch (e: ParseException) {
-                MyLog.w(this, "Failed to parse the date: '$stringDate' using '$formatString'", e)
-            }
-        }
-        return unixDate
-    }
-
     fun myContext(): MyContext {
         return http.data.myContext()
     }
@@ -431,6 +406,33 @@ abstract class Connection protected constructor() : IsEmpty {
 
     companion object {
         val KEY_PASSWORD: String = "password"
+
+        /**
+         * Simple solution based on:
+         * http://stackoverflow.com/questions/2201925/converting-iso8601-compliant-string-to-java-util-date
+         * @return Unix time. Returns 0 in a case of an error
+         */
+        fun parseIso8601Date(stringDate: String?): Long {
+            var unixDate: Long = 0
+            if (stringDate != null) {
+                val datePrepared: String
+                datePrepared = if (stringDate.lastIndexOf('Z') == stringDate.length - 1) {
+                    stringDate.substring(0, stringDate.length - 1) + "+0000"
+                } else {
+                    stringDate.replace("\\+0([0-9]):00".toRegex(), "+0$100")
+                }
+                val formatString = if (stringDate.contains("."))
+                    if (stringDate.length - stringDate.lastIndexOf(".") > 4) "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"
+                    else "yyyy-MM-dd'T'HH:mm:ss.SSSZ" else "yyyy-MM-dd'T'HH:mm:ssZ"
+                val iso8601DateFormatSec: DateFormat = SimpleDateFormat(formatString, MY_DEFAULT_LOCALE)
+                try {
+                    unixDate = iso8601DateFormatSec.parse(datePrepared)?.time ?: 0L
+                } catch (e: ParseException) {
+                    MyLog.w(this, "Failed to parse the date: '$stringDate' using '$formatString'", e)
+                }
+            }
+            return unixDate
+        }
 
         fun fromMyAccount(myAccount: MyAccount, isOAuth: TriState): Connection {
             if (!myAccount.origin.isValid()) return ConnectionEmpty.EMPTY

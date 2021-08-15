@@ -57,7 +57,9 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
             val tryConu: Try<ConnectionAndUrl> =
                 ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE, getActor())
             val activityResponse = tryConu.flatMap { conu: ConnectionAndUrl ->
-                conu.newRequest().withPostParams(activityImm).executeMe(conu::execute)
+                conu.newRequest()
+                    .withPostParams(activityImm)
+                    .let(conu::execute)
             }
             if (activityResponse.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                     .getOrElseThrow(ConnectionException::of) == null) {
@@ -79,7 +81,9 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
                 }
                 activity.put("verb", PActivityType.UPDATE.code)
                 return tryConu.flatMap { conu: ConnectionAndUrl ->
-                    conu.newRequest().withPostParams(activityImm).executeMe(conu::execute)
+                    conu.newRequest()
+                        .withPostParams(activityImm)
+                        .let(conu::execute)
                 }
             }
             activityResponse
@@ -211,7 +215,9 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
         var result: Try<HttpReadResult> =
             ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
                 .flatMap { conu: ConnectionAndUrl ->
-                    conu.newRequest().withAttachmentToPost(attachment).executeMe(conu::execute)
+                    conu.newRequest()
+                        .withAttachmentToPost(attachment)
+                        .let(conu::execute)
                 }
         if (result.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .getOrElseThrow(ConnectionException::of) == null) {

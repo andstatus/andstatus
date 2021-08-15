@@ -120,7 +120,7 @@ abstract class ConnectionTwitterLike : Connection() {
             .map { builder: Uri.Builder -> builder.appendQueryParameter("user_id", actorOid) }
             .map { it.build() }
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { result: HttpReadResult -> result.getJsonArrayInObject("ids") }
             .flatMap { jsonArray: JSONArray? ->
                 val list: MutableList<String> = ArrayList()
@@ -162,7 +162,7 @@ abstract class ConnectionTwitterLike : Connection() {
             .map { builder: Uri.Builder -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
             .map { it.build() }
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { result: HttpReadResult ->
                 result.getJsonArray()
                     .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
@@ -383,7 +383,7 @@ abstract class ConnectionTwitterLike : Connection() {
             }
             .map { it.build() }
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { result: HttpReadResult ->
                 result.getJsonArray()
                     .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
@@ -472,7 +472,7 @@ abstract class ConnectionTwitterLike : Connection() {
             }
             .map { it.build() }
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .map { jso: JSONObject? -> actorFromJson(jso) }
     }
@@ -498,7 +498,7 @@ abstract class ConnectionTwitterLike : Connection() {
         val apiRoutine = ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS
         return getApiPath(apiRoutine)
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .flatMap { result: JSONObject? ->
                 val status = RateLimitStatus()
@@ -564,7 +564,7 @@ abstract class ConnectionTwitterLike : Connection() {
         val apiRoutine = ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS
         return getApiPath(apiRoutine)
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .map { jso: JSONObject? -> actorFromJson(jso) }
     }
@@ -572,7 +572,7 @@ abstract class ConnectionTwitterLike : Connection() {
     protected fun postRequest(apiRoutine: ApiRoutineEnum, formParams: JSONObject): Try<HttpReadResult> {
         return tryApiPath(data.getAccountActor(), apiRoutine)
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri).withPostParams(formParams) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
     }
 
     fun getApiPathWithNoteId(routineEnum: ApiRoutineEnum, noteId: String): Try<Uri> {
@@ -622,7 +622,7 @@ abstract class ConnectionTwitterLike : Connection() {
             noteOid
         )
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri).asPost(asPost) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
     }
 

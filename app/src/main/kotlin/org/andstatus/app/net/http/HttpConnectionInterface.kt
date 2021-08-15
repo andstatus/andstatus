@@ -77,11 +77,15 @@ interface HttpConnectionInterface {
             MyLog.logNetworkLevelMessage("post", request.getLogName(), jso, "")
         }
         return request.validate()
-                .map { obj: HttpRequest -> obj.newResult() }
-                .map { result: HttpReadResult -> if (result.request.verb == Verb.POST) postRequest(result)
-                else getRequestInner(result) }
-                .map { obj: HttpReadResult -> obj.logResponse() }
-                .flatMap { obj: HttpReadResult -> obj.tryToParse() }
+            .flatMap(Throttler::beforeExecution)
+            .map { obj: HttpRequest -> obj.newResult() }
+            .map { result: HttpReadResult ->
+                if (result.request.verb == Verb.POST) postRequest(result)
+                else getRequestInner(result)
+            }
+            .also(Throttler::afterExecution)
+            .onSuccess { result: HttpReadResult -> result.logResponse() }
+            .flatMap { result: HttpReadResult -> result.toTryResult() }
     }
 
     fun postRequest(result: HttpReadResult): HttpReadResult {

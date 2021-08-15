@@ -119,7 +119,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                     .withMediaPartName("media")
                     .withAttachmentToPost(attachment)
             }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .filter { obj: JSONObject? -> Objects.nonNull(obj) }
             .onSuccess { jso: JSONObject? -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
@@ -160,18 +160,23 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                              oldestPosition: TimelinePosition, limit: Int, searchQuery: String): Try<InputTimelinePage> {
         val apiRoutine = ApiRoutineEnum.SEARCH_NOTES
         return getApiPath(apiRoutine)
-                .map { obj: Uri -> obj.buildUpon() }
-                .map { b: Uri.Builder -> if (searchQuery.isEmpty()) b else b.appendQueryParameter("q", searchQuery) }
-                .map { builder: Uri.Builder -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
-                .map { builder: Uri.Builder -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
-                .flatMap { result: HttpReadResult ->
-                    result.getJsonArrayInObject("statuses")
-                            .flatMap { jArr: JSONArray? -> jArrToTimeline(jArr, apiRoutine) }
-                }
-                .map { activities: MutableList<AActivity> -> InputTimelinePage.of(activities) }
+            .map { obj: Uri -> obj.buildUpon() }
+            .map { b: Uri.Builder -> if (searchQuery.isEmpty()) b else b.appendQueryParameter("q", searchQuery) }
+            .map { builder: Uri.Builder -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
+            .map { builder: Uri.Builder ->
+                builder.appendQueryParameter(
+                    "count",
+                    strFixedDownloadLimit(limit, apiRoutine)
+                )
+            }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap(::execute)
+            .flatMap { result: HttpReadResult ->
+                result.getJsonArrayInObject("statuses")
+                    .flatMap { jArr: JSONArray? -> jArrToTimeline(jArr, apiRoutine) }
+            }
+            .map { activities: MutableList<AActivity> -> InputTimelinePage.of(activities) }
     }
 
     override fun searchActors(limit: Int, searchQuery: String): Try<List<Actor>> {
@@ -182,7 +187,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
             .map { b: Uri.Builder -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
             .map { it.build() }
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { result: HttpReadResult ->
                 result.getJsonArray()
                     .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
@@ -260,7 +265,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                 .map { b: Uri.Builder -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
                 .map { it.build() }
                 .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+                .flatMap(::execute)
                 .flatMap { result: HttpReadResult ->
                     result.getJsonArray()
                             .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }

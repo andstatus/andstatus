@@ -33,7 +33,7 @@ class ConnectionException : IOException {
 
     private constructor(result: HttpReadResult) : super(result.logMsg(), result.getException()) {
         httpResult = result
-        statusCode = result.getStatusCode()
+        statusCode = result.statusCode
         url = result.url
         isHardError = isHardFromStatusCode(isHardFromCause(result.getException()), statusCode)
     }
@@ -60,7 +60,7 @@ class ConnectionException : IOException {
     }
 
     override fun toString(): String {
-        return "Status code: ${statusCode}; " +
+        return "Status code: $statusCode; " +
                 (if (isHardError) "hard" else "soft") +
                 (if (url == null) "" else "; URL: $url") +
                 "; \n${super.message}\n" +

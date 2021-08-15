@@ -76,7 +76,7 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
                 // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
                 response = specific.httpApacheGetResponse(httpGet)
                 setStatusCodeAndHeaders(result, response)
-                when (result.getStatusCode()) {
+                when (result.statusCode) {
                     StatusCode.OK, StatusCode.UNKNOWN -> {
                         val entity = response.entity
                         if (entity != null) {

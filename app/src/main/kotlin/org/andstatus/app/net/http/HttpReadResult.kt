@@ -20,7 +20,7 @@ import io.vavr.control.Try
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.net.social.ApiRoutineEnum
-import org.andstatus.app.service.QueueAccessor.Companion.MIN_RETRY_PERIOD_SECONDS
+import org.andstatus.app.net.social.Connection.Companion.parseIso8601Date
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MagnetUri.Companion.getDownloadableUrl
@@ -39,7 +39,7 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 class HttpReadResult(val request: HttpRequest) {
-    var url: URL? = null
+    var url: URL? = request.uri.getDownloadableUrl()
         private set
     private var headers: MutableMap<String, MutableList<String>> = mutableMapOf()
     var redirected = false
@@ -50,19 +50,37 @@ class HttpReadResult(val request: HttpRequest) {
     var strResponse: String = ""
     var statusLine: String = ""
     private var intStatusCode = 0
-    private var statusCode: StatusCode = StatusCode.UNKNOWN
+    var statusCode: StatusCode = StatusCode.UNKNOWN
+        private set
+
+    var delayedTill: Long? = null
+        private set
 
     fun requiredUrl(errorMessage: String): URL? = url ?: let {
         setException(Exception("Mo URL for $errorMessage"))
         null
     }
 
-    val retryAfterSeconds: Long?
-        get() = headers.get("retry-after")?.firstNotNullOfOrNull { it ->
-            // We parse only integer value.
-            // Formatted date is not parsed yet, see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
-            it.toLongOrNull()
-        } ?: if (statusCode == StatusCode.TOO_MANY_REQUESTS) MIN_RETRY_PERIOD_SECONDS else null
+    fun delayTill(millis: Long): HttpReadResult {
+        if (millis > System.currentTimeMillis()) {
+            delayedTill = millis
+            if (statusCode == StatusCode.UNKNOWN) statusCode = StatusCode.DELAYED
+        }
+        return this
+    }
+
+    // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
+    val retryAfterDate: Long?
+        get() = headers.get("retry-after")?.firstNotNullOfOrNull(::parseSecondsOrDate)
+
+    // See https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-ratelimit-headers
+    val rateLimitRemaining: Long?
+        get() = headers.get("ratelimit-remaining")?.firstNotNullOfOrNull { it.toLongOrNull() }
+            ?: headers.get("x-ratelimit-remaining")?.firstNotNullOfOrNull { it.toLongOrNull() }
+
+    val rateLimitReset: Long?
+        get() = headers.get("ratelimit-reset")?.firstNotNullOfOrNull(::parseSecondsOrDate)
+            ?: headers.get("x-ratelimit-reset")?.firstNotNullOfOrNull(::parseSecondsOrDate)
 
     fun getHeaders(): MutableMap<String, MutableList<String>> {
         return headers
@@ -101,10 +119,6 @@ class HttpReadResult(val request: HttpRequest) {
     fun setStatusCode(intStatusCodeIn: Int) {
         intStatusCode = intStatusCodeIn
         statusCode = StatusCode.fromResponseCode(intStatusCodeIn)
-    }
-
-    fun getStatusCode(): StatusCode {
-        return statusCode
     }
 
     fun appendToLog(chars: CharSequence?) {
@@ -250,7 +264,9 @@ class HttpReadResult(val request: HttpRequest) {
         return exception
     }
 
-    fun tryToParse(): Try<HttpReadResult> {
+    fun toTryRequest(): Try<HttpRequest> = toTryResult().map { it.request }
+
+    fun toTryResult(): Try<HttpReadResult> {
         if (exception is ConnectionException) {
             return Try.failure(exception)
         }
@@ -261,7 +277,7 @@ class HttpReadResult(val request: HttpRequest) {
                                 + Formatter.formatShortFileSize( MyContextHolder.myContextHolder.getNow().context,
                                 request.fileResult?.length() ?: 0),
                         null))
-                return Try.failure(exception)
+                return Try.failure(ConnectionException.from(this))
             }
             MyLog.v(this) { this.toString() }
         } else {
@@ -270,7 +286,7 @@ class HttpReadResult(val request: HttpRequest) {
             } else {
                 setException(ConnectionException.fromStatusCodeAndThrowable(statusCode, toString(), exception))
             }
-            return Try.failure(exception)
+            return Try.failure(ConnectionException.from(this))
         }
         return Try.success(this)
     }
@@ -340,9 +356,28 @@ class HttpReadResult(val request: HttpRequest) {
                         out
                     })
         }
+
+        fun Try<*>.toHttpReadResult(): HttpReadResult? =
+            fold({
+                when (it) {
+                    is ConnectionException -> it.httpResult
+                    else -> null
+                }
+            }, {
+                when(it) {
+                    is HttpReadResult -> it
+                    else -> null
+                }
+            })
+
+        fun parseSecondsOrDate(value: String): Long? =
+            value.toLongOrNull()?.let {
+                it * 1000 + System.currentTimeMillis()
+            } ?: parseIso8601Date(value).let {
+                // Date format is not exactly correct...
+                // see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
+                if (it > 1) it else null
+            }
     }
 
-    init {
-        setUrl(request.uri.getDownloadableUrl())
-    }
 }

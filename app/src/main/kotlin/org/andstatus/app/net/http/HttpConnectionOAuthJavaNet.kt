@@ -66,7 +66,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
             writer.close()
             HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
                 .withConnectionData(data)
-                .executeMe { request ->
+                .let { request ->
                     val result: HttpReadResult = request.newResult()
                     setStatusCodeAndHeaders(result, conn)
                     if (result.isStatusOk()) {
@@ -81,7 +81,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                         logmsg.atNewLine("Response message from server", conn.responseMessage)
                         MyLog.i(this, logmsg.toString())
                     }
-                    result.tryToParse()
+                    result.toTryResult()
                 }
         } catch (e: Exception) {
             logmsg.withComma("Exception", e.message)
@@ -132,7 +132,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                 result.setException(e)
             }
             setStatusCodeAndHeaders(result, conn)
-            when (result.getStatusCode()) {
+            when (result.statusCode) {
                 StatusCode.OK -> result.readStream("") { conn.inputStream }
                 else -> {
                     result.readStream("") { conn.errorStream }
@@ -197,7 +197,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                 }
                 conn.connect()
                 setStatusCodeAndHeaders(result, conn)
-                when (result.getStatusCode()) {
+                when (result.statusCode) {
                     StatusCode.OK -> {
                         result.readStream("") { conn.inputStream }
                         stop = true

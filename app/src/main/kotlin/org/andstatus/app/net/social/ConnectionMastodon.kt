@@ -121,7 +121,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             .map { b: Uri.Builder -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
             .map { it.build() }
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { result: HttpReadResult ->
                 result.getJsonArray()
                     .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
@@ -143,7 +143,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             }
             .map { it.build() }
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { result: HttpReadResult ->
                 result.getJsonArray()
                     .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
@@ -237,7 +237,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                     .withMediaPartName("file")
                     .withAttachmentToPost(attachment)
             }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .filter { obj: JSONObject? -> Objects.nonNull(obj) }
             .onSuccess { jso: JSONObject -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
@@ -412,7 +412,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             if (UriUtils.isRealOid(actorIn.oid)) actorIn.oid else actorIn.getUsername()
         )
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .map { jso: JSONObject? -> actorFromJson(jso) }
     }
@@ -421,7 +421,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         val apiRoutine = if (follow) ApiRoutineEnum.FOLLOW else ApiRoutineEnum.UNDO_FOLLOW
         val tryRelationship = getApiPathWithActorId(apiRoutine, actorOid)
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri).asPost() }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
         return tryRelationship.map { relationship: JSONObject? ->
             if (relationship == null || relationship.isNull("following")) {
@@ -450,7 +450,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             .map { b: Uri.Builder -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
             .map { it.build() }
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { result: HttpReadResult ->
                 result.getJsonArray()
                     .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
@@ -461,7 +461,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         val apiRoutine = ApiRoutineEnum.GET_CONFIG
         return getApiPath(apiRoutine)
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .map({ result: JSONObject? ->
                 // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb

@@ -46,7 +46,7 @@ class ApiDebugger(private val myContext: MyContext, private val activityContext:
         val connection = myContext.accounts.currentAccount.connection
         return connection.pathToUri(connection.partialPathToApiPath(text))
             .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.HOME_TIMELINE, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(connection::execute) }
+            .flatMap(connection::execute)
     }
 
     private fun debugApiSync(results: Try<HttpReadResult>) {

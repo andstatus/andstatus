@@ -60,7 +60,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
             .map { builder: Uri.Builder -> builder.appendQueryParameter("user_id", actorOid) }
             .map { it.build() }
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
             .flatMap { jsonArray: JSONArray? ->
                 val list: MutableList<String> = ArrayList()
@@ -81,7 +81,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
         val apiRoutine = ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS
         return getApiPath(apiRoutine)
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .flatMap { result: JSONObject? ->
                 val status = RateLimitStatus()
@@ -110,7 +110,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                             .withMediaPartName("media")
                             .withAttachmentToPost(note.attachments.getFirstToUpload())
                 }
-                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+                .flatMap(::execute)
                 .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .map { jso: JSONObject? -> activityFromJson(jso) }
     }
@@ -119,7 +119,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
         val apiRoutine = ApiRoutineEnum.GET_CONFIG
         return getApiPath(apiRoutine)
                 .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+                .flatMap(::execute)
                 .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .map { result: JSONObject? ->
                     var config: OriginConfig = OriginConfig.getEmpty()
@@ -145,7 +145,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
         val apiRoutine = ApiRoutineEnum.GET_CONVERSATION
         return getApiPathWithNoteId(apiRoutine, conversationOid)
                 .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+                .flatMap(::execute)
                 .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
                 .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
     }
@@ -197,7 +197,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 HttpRequest.of(apiRoutine, path)
                     .withAuthenticate(false)
             }
-            .flatMap { request: HttpRequest -> request.executeMe(http::execute) }
+            .flatMap(http::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .map { result: JSONObject? ->
                 val origins: MutableList<Server> = ArrayList()
