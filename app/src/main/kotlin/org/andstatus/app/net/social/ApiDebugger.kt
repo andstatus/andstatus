@@ -22,8 +22,8 @@ import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
-import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.util.DialogFactory
 
 /** Send any GET requests using current account  */
@@ -45,8 +45,8 @@ class ApiDebugger(private val myContext: MyContext, private val activityContext:
         previousValue = text
         val connection = myContext.accounts.currentAccount.connection
         return connection.pathToUri(connection.partialPathToApiPath(text))
-                .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.HOME_TIMELINE, uri) }
-                .flatMap { request: HttpRequest -> connection.execute(request) }
+            .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.HOME_TIMELINE, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(connection::execute) }
     }
 
     private fun debugApiSync(results: Try<HttpReadResult>) {

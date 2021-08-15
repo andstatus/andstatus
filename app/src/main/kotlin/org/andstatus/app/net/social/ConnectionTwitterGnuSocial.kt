@@ -56,41 +56,41 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
 
     override fun getFriendsOrFollowersIds(apiRoutine: ApiRoutineEnum, actorOid: String): Try<List<String>> {
         return getApiPath(apiRoutine)
-                .map { obj: Uri -> obj.buildUpon() }
-                .map { builder: Uri.Builder -> builder.appendQueryParameter("user_id", actorOid) }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
-                .flatMap { jsonArray: JSONArray? ->
-                    val list: MutableList<String> = ArrayList()
-                    try {
-                        var index = 0
-                        while (jsonArray != null && index < jsonArray.length()) {
-                            list.add(jsonArray.getString(index))
-                            index++
-                        }
-                        Try.success(list)
-                    } catch (e: JSONException) {
-                        Try.failure(ConnectionException.loggedJsonException(this, apiRoutine.name, e, jsonArray))
+            .map { obj: Uri -> obj.buildUpon() }
+            .map { builder: Uri.Builder -> builder.appendQueryParameter("user_id", actorOid) }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
+            .flatMap { jsonArray: JSONArray? ->
+                val list: MutableList<String> = ArrayList()
+                try {
+                    var index = 0
+                    while (jsonArray != null && index < jsonArray.length()) {
+                        list.add(jsonArray.getString(index))
+                        index++
                     }
+                    Try.success(list)
+                } catch (e: JSONException) {
+                    Try.failure(ConnectionException.loggedJsonException(this, apiRoutine.name, e, jsonArray))
                 }
+            }
     }
 
     override fun rateLimitStatus(): Try<RateLimitStatus> {
         val apiRoutine = ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS
         return getApiPath(apiRoutine)
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .flatMap { result: JSONObject? ->
-                    val status = RateLimitStatus()
-                    if (result != null) {
-                        status.remaining = result.optInt("remaining_hits")
-                        status.limit = result.optInt("hourly_limit")
-                    }
-                    Try.success(status)
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .flatMap { result: JSONObject? ->
+                val status = RateLimitStatus()
+                if (result != null) {
+                    status.remaining = result.optInt("remaining_hits")
+                    status.limit = result.optInt("hourly_limit")
                 }
+                Try.success(status)
+            }
     }
 
     override fun updateNote2(note: Note): Try<AActivity> {
@@ -110,7 +110,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                             .withMediaPartName("media")
                             .withAttachmentToPost(note.attachments.getFirstToUpload())
                 }
-                .flatMap { request: HttpRequest -> execute(request) }
+                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
                 .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .map { jso: JSONObject? -> activityFromJson(jso) }
     }
@@ -119,7 +119,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
         val apiRoutine = ApiRoutineEnum.GET_CONFIG
         return getApiPath(apiRoutine)
                 .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
+                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
                 .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .map { result: JSONObject? ->
                     var config: OriginConfig = OriginConfig.getEmpty()
@@ -145,7 +145,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
         val apiRoutine = ApiRoutineEnum.GET_CONVERSATION
         return getApiPathWithNoteId(apiRoutine, conversationOid)
                 .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
+                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
                 .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
                 .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
     }
@@ -193,47 +193,53 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
     override fun getOpenInstances(): Try<List<Server>> {
         val apiRoutine = ApiRoutineEnum.GET_OPEN_INSTANCES
         return getApiPath(apiRoutine)
-                .map { path: Uri ->
-                    HttpRequest.of(apiRoutine, path)
-                            .withAuthenticate(false)
+            .map { path: Uri ->
+                HttpRequest.of(apiRoutine, path)
+                    .withAuthenticate(false)
+            }
+            .flatMap { request: HttpRequest -> request.executeMe(http::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { result: JSONObject? ->
+                val origins: MutableList<Server> = ArrayList()
+                val logMessage = StringBuilder(apiRoutine.toString())
+                var error = false
+                if (result == null) {
+                    MyStringBuilder.appendWithSpace(logMessage, "Response is null JSON")
+                    error = true
+                } else if (!error && JsonUtils.optString(result, "status") != "OK") {
+                    MyStringBuilder.appendWithSpace(
+                        logMessage, "gtools service returned the error: '" +
+                            JsonUtils.optString(result, "error") + "'"
+                    )
+                    error = true
                 }
-                .flatMap { requestIn: HttpRequest -> http.execute(requestIn) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { result: JSONObject? ->
-                    val origins: MutableList<Server> = ArrayList()
-                    val logMessage = StringBuilder(apiRoutine.toString())
-                    var error = false
-                    if (result == null) {
-                        MyStringBuilder.appendWithSpace(logMessage, "Response is null JSON")
-                        error = true
-                    } else if (!error && JsonUtils.optString(result, "status") != "OK") {
-                        MyStringBuilder.appendWithSpace(logMessage, "gtools service returned the error: '" +
-                                JsonUtils.optString(result, "error") + "'")
-                        error = true
-                    }
-                    if (!error && result != null) {
-                        val data = result.optJSONObject("data")
-                        if (data != null) {
-                            try {
-                                val iterator = data.keys()
-                                while (iterator.hasNext()) {
-                                    val key = iterator.next()
-                                    val instance = data.getJSONObject(key)
-                                    origins.add(Server(JsonUtils.optString(instance, "instance_name"),
-                                            JsonUtils.optString(instance, "instance_address"),
-                                            instance.optLong("users_count"),
-                                            instance.optLong("notices_count")))
-                                }
-                            } catch (e: JSONException) {
-                                throw ConnectionException.loggedJsonException(this, logMessage.toString(), e, data)
+                if (!error && result != null) {
+                    val data = result.optJSONObject("data")
+                    if (data != null) {
+                        try {
+                            val iterator = data.keys()
+                            while (iterator.hasNext()) {
+                                val key = iterator.next()
+                                val instance = data.getJSONObject(key)
+                                origins.add(
+                                    Server(
+                                        JsonUtils.optString(instance, "instance_name"),
+                                        JsonUtils.optString(instance, "instance_address"),
+                                        instance.optLong("users_count"),
+                                        instance.optLong("notices_count")
+                                    )
+                                )
                             }
+                        } catch (e: JSONException) {
+                            throw ConnectionException.loggedJsonException(this, logMessage.toString(), e, data)
                         }
                     }
-                    if (error) {
-                        throw ConnectionException(logMessage.toString())
-                    }
-                    origins
                 }
+                if (error) {
+                    throw ConnectionException(logMessage.toString())
+                }
+                origins
+            }
     }
 
     companion object {

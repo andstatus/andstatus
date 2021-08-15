@@ -74,13 +74,17 @@ class ConnectionActivityPub : Connection() {
 
     override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor> {
         return TryUtils.fromOptional(whoAmI)
-                .filter { obj: Uri -> UriUtils.isDownloadable(obj) }
-                .orElse { getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS) }
-                .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .recoverWith(Exception::class.java) { originalException: Exception -> mastodonsHackToVerifyCredentials(originalException) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject -> actorFromJson(jso) }
+            .filter { obj: Uri -> UriUtils.isDownloadable(obj) }
+            .orElse { getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS) }
+            .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .recoverWith(Exception::class.java) { originalException: Exception ->
+                mastodonsHackToVerifyCredentials(
+                    originalException
+                )
+            }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jso: JSONObject -> actorFromJson(jso) }
     }
 
     /** @return  original error, if this Mastodon's hack didn't work
@@ -88,21 +92,21 @@ class ConnectionActivityPub : Connection() {
     private fun mastodonsHackToVerifyCredentials(originalException: Exception?): Try<HttpReadResult> {
         // Get Username first by partially parsing Mastodon's non-ActivityPub response
         val userNameInMastodon = Try.success(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)
-                .map { routine: ApiRoutineEnum -> ConnectionMastodon.partialPath(routine) }
-                .map { partialPath: String -> OriginType.MASTODON.partialPathToApiPath(partialPath) }
-                .flatMap { path: String -> pathToUri(path) }
-                .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject -> JsonUtils.optString(jso, "username") }
-                .filter { obj: String -> obj.isNotEmpty() }
+            .map { routine: ApiRoutineEnum -> ConnectionMastodon.partialPath(routine) }
+            .map { partialPath: String -> OriginType.MASTODON.partialPathToApiPath(partialPath) }
+            .flatMap { path: String -> pathToUri(path) }
+            .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jso: JSONObject -> JsonUtils.optString(jso, "username") }
+            .filter { obj: String -> obj.isNotEmpty() }
 
         // Now build the Actor's Uri artificially using Mastodon's known URL pattern
         return userNameInMastodon.map { username: String -> "users/$username" }
-                .flatMap { path: String -> pathToUri(path) }
-                .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.GET_ACTOR, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .recoverWith(Exception::class.java) { newException: Exception? -> Try.failure(originalException) }
+            .flatMap { path: String -> pathToUri(path) }
+            .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.GET_ACTOR, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .recoverWith(Exception::class.java) { newException: Exception? -> Try.failure(originalException) }
     }
 
     private fun actorFromJson(jso: JSONObject): Actor {
@@ -168,25 +172,26 @@ class ConnectionActivityPub : Connection() {
         return getActors(routineEnum, position, actor)
     }
 
-    private fun getActors(apiRoutine: ApiRoutineEnum, position: TimelinePosition, actor: Actor): Try<InputActorPage> {
-        return ConnectionAndUrl.fromActor(this, apiRoutine, position, actor)
-                .flatMap { conu: ConnectionAndUrl ->
-                    conu.execute(conu.newRequest())
-                            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                            .map { jsonObject: JSONObject ->
-                                val jsonCollection: AJsonCollection = AJsonCollection.of(jsonObject)
-                                val actors = jsonCollection.mapAll({ jso: JSONObject -> actorFromJson(jso) }) { id: String? -> actorFromOid(id) }
-                                MyLog.v(TAG) { apiRoutine.toString() + " '" + conu.uri + "' " + actors.size + " actors" }
-                                InputActorPage.of(jsonCollection, actors)
-                            }
-                }
-    }
+    private fun getActors(apiRoutine: ApiRoutineEnum, position: TimelinePosition, actor: Actor): Try<InputActorPage> =
+        ConnectionAndUrl.fromActor(this, apiRoutine, position, actor)
+            .flatMap { conu: ConnectionAndUrl ->
+                conu.newRequest().executeMe(conu::execute)
+                    .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+                    .map { jsonObject: JSONObject ->
+                        val jsonCollection: AJsonCollection = AJsonCollection.of(jsonObject)
+                        val actors = jsonCollection.mapAll({ jso: JSONObject -> actorFromJson(jso) }) { id: String? ->
+                            actorFromOid(id)
+                        }
+                        MyLog.v(TAG) { apiRoutine.toString() + " '" + conu.uri + "' " + actors.size + " actors" }
+                        InputActorPage.of(jsonCollection, actors)
+                    }
+            }
 
-    override fun getNote1(noteOid: String): Try<AActivity> {
-        return execute(HttpRequest.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jsoActivity: JSONObject? -> this.activityFromJson(jsoActivity) }
-    }
+    override fun getNote1(noteOid: String): Try<AActivity> = HttpRequest
+        .of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid))
+        .executeMe(::execute)
+        .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+        .map { jsoActivity: JSONObject? -> this.activityFromJson(jsoActivity) }
 
     override fun updateNote(note: Note): Try<AActivity> {
         return ActivitySender.fromContent(this, note).send(ActivityType.CREATE)
@@ -222,19 +227,21 @@ class ConnectionActivityPub : Connection() {
                 .flatMap { conu: ConnectionAndUrl -> getActivities(conu) }
     }
 
-    private fun getActivities(conu: ConnectionAndUrl): Try<InputTimelinePage> {
-        return conu.execute(conu.newRequest())
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { root: JSONObject ->
-                    val jsonCollection: AJsonCollection = AJsonCollection.of(root)
-                    val activities = jsonCollection.mapObjects { item: JSONObject? ->
-                        activityFromJson(ObjectOrId.of(item))
-                                .setTimelinePositions(jsonCollection.getPrevId(), jsonCollection.getNextId())
-                    }
-                    MyLog.d(TAG, "getTimeline " + conu.apiRoutine + " '" + conu.uri + "' " + activities.size + " activities")
-                    InputTimelinePage.of(jsonCollection, activities)
-                }
-    }
+    private fun getActivities(conu: ConnectionAndUrl): Try<InputTimelinePage> = conu.newRequest()
+        .executeMe(conu::execute)
+        .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+        .map { root: JSONObject ->
+            val jsonCollection: AJsonCollection = AJsonCollection.of(root)
+            val activities = jsonCollection.mapObjects { item: JSONObject? ->
+                activityFromJson(ObjectOrId.of(item))
+                    .setTimelinePositions(jsonCollection.getPrevId(), jsonCollection.getNextId())
+            }
+            MyLog.d(
+                TAG,
+                "getTimeline " + conu.apiRoutine + " '" + conu.uri + "' " + activities.size + " activities"
+            )
+            InputTimelinePage.of(jsonCollection, activities)
+        }
 
     override fun fixedDownloadLimit(limit: Int, apiRoutine: ApiRoutineEnum?): Int {
         val maxLimit = if (apiRoutine == ApiRoutineEnum.GET_FRIENDS) 200 else 20
@@ -436,12 +443,11 @@ class ConnectionActivityPub : Connection() {
         return ActivitySender.fromId(this, actorId).send(activityType)
     }
 
-    public override fun getActor2(actorIn: Actor): Try<Actor> {
-        return ConnectionAndUrl.fromActor(this, ApiRoutineEnum.GET_ACTOR, TimelinePosition.EMPTY, actorIn)
-                .flatMap { connectionAndUrl: ConnectionAndUrl -> connectionAndUrl.execute(connectionAndUrl.newRequest()) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject -> actorFromJson(jso) }
-    }
+    public override fun getActor2(actorIn: Actor): Try<Actor> = ConnectionAndUrl
+        .fromActor(this, ApiRoutineEnum.GET_ACTOR, TimelinePosition.EMPTY, actorIn)
+        .flatMap { conu: ConnectionAndUrl -> conu.newRequest().executeMe(conu::execute) }
+        .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+        .map { jso: JSONObject -> actorFromJson(jso) }
 
     companion object {
         private val TAG: String = ConnectionActivityPub::class.java.simpleName

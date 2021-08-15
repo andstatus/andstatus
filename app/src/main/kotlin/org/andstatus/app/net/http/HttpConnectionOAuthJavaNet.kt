@@ -47,8 +47,6 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
         val logmsg: MyStringBuilder = MyStringBuilder.of("registerClient; for " + data.originUrl
                 + "; URL='" + uri + "'")
         MyLog.v(this) { logmsg.toString() }
-        val consumerKey: String
-        val consumerSecret: String
         data.oauthClientKeys?.clear()
         var writer: Writer? = null
         try {
@@ -66,22 +64,25 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
             writer = OutputStreamWriter(conn.outputStream, StandardCharsets.UTF_8)
             writer.write(requestBody)
             writer.close()
-            val result: HttpReadResult = HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
-                    .withConnectionData(data)
-                    .newResult()
-            setStatusCodeAndHeaders(result, conn)
-            if (result.isStatusOk()) {
-                result.readStream("") { conn.inputStream }
-                val jso = JSONObject(result.strResponse)
-                consumerKey = jso.getString("client_id")
-                consumerSecret = jso.getString("client_secret")
-                data.oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
-            } else {
-                result.readStream("") { conn.errorStream }
-                logmsg.atNewLine("Server returned an error response", result.strResponse)
-                logmsg.atNewLine("Response message from server", conn.responseMessage)
-                MyLog.i(this, logmsg.toString())
-            }
+            HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
+                .withConnectionData(data)
+                .executeMe { request ->
+                    val result: HttpReadResult = request.newResult()
+                    setStatusCodeAndHeaders(result, conn)
+                    if (result.isStatusOk()) {
+                        result.readStream("") { conn.inputStream }
+                        val jso = JSONObject(result.strResponse)
+                        val consumerKey = jso.getString("client_id")
+                        val consumerSecret = jso.getString("client_secret")
+                        data.oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
+                    } else {
+                        result.readStream("") { conn.errorStream }
+                        logmsg.atNewLine("Server returned an error response", result.strResponse)
+                        logmsg.atNewLine("Response message from server", conn.responseMessage)
+                        MyLog.i(this, logmsg.toString())
+                    }
+                    result.tryToParse()
+                }
         } catch (e: Exception) {
             logmsg.withComma("Exception", e.message)
             MyLog.i(this, logmsg.toString(), e)

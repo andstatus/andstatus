@@ -116,17 +116,17 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         }
         val apiRoutine = ApiRoutineEnum.TAG_TIMELINE
         return getApiPathWithTag(apiRoutine, tag)
-                .map { obj: Uri -> obj.buildUpon() }
-                .map { b: Uri.Builder -> appendPositionParameters(b, youngestPosition, oldestPosition) }
-                .map { b: Uri.Builder -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { result: HttpReadResult ->
-                    result.getJsonArray()
-                            .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
-                }
-                .map { activities -> InputTimelinePage.of(activities) }
+            .map { obj: Uri -> obj.buildUpon() }
+            .map { b: Uri.Builder -> appendPositionParameters(b, youngestPosition, oldestPosition) }
+            .map { b: Uri.Builder -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { result: HttpReadResult ->
+                result.getJsonArray()
+                    .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
+            }
+            .map { activities -> InputTimelinePage.of(activities) }
     }
 
     override fun searchActors(limit: Int, searchQuery: String): Try<List<Actor>> {
@@ -136,18 +136,18 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         }
         val apiRoutine = ApiRoutineEnum.SEARCH_ACTORS
         return getApiPath(apiRoutine).map { obj: Uri -> obj.buildUpon() }
-                .map { b: Uri.Builder ->
-                    b.appendQueryParameter("q", searchQuery)
-                            .appendQueryParameter("resolve", "true")
-                            .appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine))
-                }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { result: HttpReadResult ->
-                    result.getJsonArray()
-                            .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
-                }
+            .map { b: Uri.Builder ->
+                b.appendQueryParameter("q", searchQuery)
+                    .appendQueryParameter("resolve", "true")
+                    .appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine))
+            }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { result: HttpReadResult ->
+                result.getJsonArray()
+                    .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
+            }
     }
 
     // TODO: Delete ?
@@ -232,15 +232,15 @@ class ConnectionMastodon : ConnectionTwitterLike() {
 
     private fun uploadMedia(attachment: Attachment): Try<JSONObject> {
         return tryApiPath(data.getAccountActor(), ApiRoutineEnum.UPLOAD_MEDIA)
-                .map { uri: Uri ->
-                    HttpRequest.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
-                            .withMediaPartName("file")
-                            .withAttachmentToPost(attachment)
-                }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .filter { obj: JSONObject? -> Objects.nonNull(obj) }
-                .onSuccess { jso: JSONObject -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
+            .map { uri: Uri ->
+                HttpRequest.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
+                    .withMediaPartName("file")
+                    .withAttachmentToPost(attachment)
+            }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .filter { obj: JSONObject? -> Objects.nonNull(obj) }
+            .onSuccess { jso: JSONObject -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
     }
 
     override fun actorFromJson(jso: JSONObject?): Actor {
@@ -407,20 +407,22 @@ class ConnectionMastodon : ConnectionTwitterLike() {
 
     override fun getActor2(actorIn: Actor): Try<Actor> {
         val apiRoutine = ApiRoutineEnum.GET_ACTOR
-        return getApiPathWithActorId(apiRoutine,
-                if (UriUtils.isRealOid(actorIn.oid)) actorIn.oid else actorIn.getUsername())
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject? -> actorFromJson(jso) }
+        return getApiPathWithActorId(
+            apiRoutine,
+            if (UriUtils.isRealOid(actorIn.oid)) actorIn.oid else actorIn.getUsername()
+        )
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jso: JSONObject? -> actorFromJson(jso) }
     }
 
     override fun follow(actorOid: String, follow: Boolean): Try<AActivity> {
         val apiRoutine = if (follow) ApiRoutineEnum.FOLLOW else ApiRoutineEnum.UNDO_FOLLOW
         val tryRelationship = getApiPathWithActorId(apiRoutine, actorOid)
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri).asPost() }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri).asPost() }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
         return tryRelationship.map { relationship: JSONObject? ->
             if (relationship == null || relationship.isNull("following")) {
                 AActivity.EMPTY
@@ -444,30 +446,30 @@ class ConnectionMastodon : ConnectionTwitterLike() {
     override fun getActors(actor: Actor, apiRoutine: ApiRoutineEnum): Try<List<Actor>> {
         val limit = 400
         return getApiPathWithActorId(apiRoutine, actor.oid)
-                .map { obj: Uri -> obj.buildUpon() }
-                .map { b: Uri.Builder -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { result: HttpReadResult ->
-                    result.getJsonArray()
-                            .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
-                }
+            .map { obj: Uri -> obj.buildUpon() }
+            .map { b: Uri.Builder -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { result: HttpReadResult ->
+                result.getJsonArray()
+                    .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
+            }
     }
 
     override fun getConfig(): Try<OriginConfig> {
         val apiRoutine = ApiRoutineEnum.GET_CONFIG
         return getApiPath(apiRoutine)
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map({ result: JSONObject? ->
-                    // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
-                    val textLimit = if (result == null || result.optInt(TEXT_LIMIT_KEY) < 1)
-                        OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
-                    else result.optInt(TEXT_LIMIT_KEY)
-                    OriginConfig.fromTextLimit(textLimit, (10 * MyPreferences.BYTES_IN_MB).toLong())
-                })
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map({ result: JSONObject? ->
+                // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
+                val textLimit = if (result == null || result.optInt(TEXT_LIMIT_KEY) < 1)
+                    OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
+                else result.optInt(TEXT_LIMIT_KEY)
+                OriginConfig.fromTextLimit(textLimit, (10 * MyPreferences.BYTES_IN_MB).toLong())
+            })
     }
 
     companion object {

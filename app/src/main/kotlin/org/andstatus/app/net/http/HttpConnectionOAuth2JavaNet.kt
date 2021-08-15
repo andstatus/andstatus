@@ -55,26 +55,29 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
             params.put("redirect_uris", HttpConnectionInterface.CALLBACK_URI.toString())
             params.put("scopes", OAUTH_SCOPES)
             params.put("website", "http://andstatus.org")
-            val request: HttpRequest = HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
-                    .withPostParams(params)
-            execute(request)
-                    .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                    .map { jso: JSONObject ->
-                        val consumerKey = jso.getString("client_id")
-                        val consumerSecret = jso.getString("client_secret")
-                        data.oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
-                        data.oauthClientKeys?.areKeysPresent() ?: false
+            HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
+                .withPostParams(params)
+                .executeMe(::execute)
+                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+                .map { jso: JSONObject ->
+                    val consumerKey = jso.getString("client_id")
+                    val consumerSecret = jso.getString("client_secret")
+                    data.oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
+                    data.oauthClientKeys?.areKeysPresent() ?: false
+                }
+                .flatMap { keysArePresent: Boolean ->
+                    if (keysArePresent) {
+                        MyLog.v(this) { "Completed $logmsg" }
+                        TryUtils.SUCCESS
+                    } else {
+                        Try.failure(
+                            ConnectionException.fromStatusCodeAndHost(
+                                StatusCode.NO_CREDENTIALS_FOR_HOST,
+                                "Failed to obtain client keys for host; $logmsg", data.originUrl
+                            )
+                        )
                     }
-                    .flatMap { keysArePresent: Boolean ->
-                        if (keysArePresent) {
-                            MyLog.v(this) { "Completed $logmsg" }
-                            TryUtils.SUCCESS
-                        } else {
-                            Try.failure(ConnectionException.fromStatusCodeAndHost(
-                                    StatusCode.NO_CREDENTIALS_FOR_HOST,
-                                    "Failed to obtain client keys for host; $logmsg", data.originUrl))
-                        }
-                    }
+                }
         } catch (e: JSONException) {
             Try.failure(ConnectionException.loggedJsonException(this, logmsg.toString(), e, null))
         }

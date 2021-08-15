@@ -114,16 +114,16 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
 
     private fun uploadMedia(attachment: Attachment): JSONObject? {
         return tryApiPath(data.getAccountActor(), ApiRoutineEnum.UPLOAD_MEDIA)
-                .map { uri: Uri ->
-                    HttpRequest.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
-                            .withMediaPartName("media")
-                            .withAttachmentToPost(attachment)
-                }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .filter { obj: JSONObject? -> Objects.nonNull(obj) }
-                .onSuccess { jso: JSONObject? -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
-                .getOrElseThrow(ConnectionException::of)
+            .map { uri: Uri ->
+                HttpRequest.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
+                    .withMediaPartName("media")
+                    .withAttachmentToPost(attachment)
+            }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .filter { obj: JSONObject? -> Objects.nonNull(obj) }
+            .onSuccess { jso: JSONObject? -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
+            .getOrElseThrow(ConnectionException::of)
     }
 
     override fun getConfig(): Try<OriginConfig> {
@@ -166,7 +166,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                 .map { builder: Uri.Builder -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
                 .map { it.build() }
                 .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
+                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
                 .flatMap { result: HttpReadResult ->
                     result.getJsonArrayInObject("statuses")
                             .flatMap { jArr: JSONArray? -> jArrToTimeline(jArr, apiRoutine) }
@@ -177,16 +177,16 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
     override fun searchActors(limit: Int, searchQuery: String): Try<List<Actor>> {
         val apiRoutine = ApiRoutineEnum.SEARCH_ACTORS
         return getApiPath(apiRoutine)
-                .map { obj: Uri -> obj.buildUpon() }
-                .map { b: Uri.Builder -> if (searchQuery.isEmpty()) b else b.appendQueryParameter("q", searchQuery) }
-                .map { b: Uri.Builder -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { result: HttpReadResult ->
-                    result.getJsonArray()
-                            .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
-                }
+            .map { obj: Uri -> obj.buildUpon() }
+            .map { b: Uri.Builder -> if (searchQuery.isEmpty()) b else b.appendQueryParameter("q", searchQuery) }
+            .map { b: Uri.Builder -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { result: HttpReadResult ->
+                result.getJsonArray()
+                    .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
+            }
     }
 
     override fun activityFromJson2(jso: JSONObject?): AActivity {
@@ -260,7 +260,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                 .map { b: Uri.Builder -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
                 .map { it.build() }
                 .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
+                .flatMap { request: HttpRequest -> request.executeMe(::execute) }
                 .flatMap { result: HttpReadResult ->
                     result.getJsonArray()
                             .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }

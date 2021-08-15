@@ -33,7 +33,7 @@ class HttpRequest private constructor(val apiRoutine: ApiRoutineEnum, val uri: U
     var connectionRequired: ConnectionRequired = ConnectionRequired.ANY
     var authenticate = true
     private var isLegacyHttpProtocol = false
-    val maxSizeBytes: Long
+    val maxSizeBytes: Long = MyPreferences.getMaximumSizeOfAttachmentBytes()
     var mediaPartName: String = "file"
     var mediaUri: Optional<Uri> = Optional.empty()
     var postParams: Optional<JSONObject> = Optional.empty()
@@ -131,6 +131,10 @@ class HttpRequest private constructor(val apiRoutine: ApiRoutineEnum, val uri: U
         }
     }
 
+    fun executeMe(executor: (HttpRequest) -> Try<HttpReadResult>): Try<HttpReadResult> {
+        return executor(this)
+    }
+
     fun newResult(): HttpReadResult {
         return HttpReadResult(this)
     }
@@ -141,7 +145,4 @@ class HttpRequest private constructor(val apiRoutine: ApiRoutineEnum, val uri: U
         }
     }
 
-    init {
-        maxSizeBytes = MyPreferences.getMaximumSizeOfAttachmentBytes()
-    }
 }

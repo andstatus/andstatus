@@ -81,15 +81,14 @@ class ConnectionPumpio : Connection() {
         return partialPathToApiPath(url)
     }
 
-    override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor> {
-        return TryUtils.fromOptional(whoAmI)
-                .filter { obj: Uri? -> UriUtils.isDownloadable(obj) }
-                .orElse { getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS) }
-                .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject -> actorFromJson(jso) }
-    }
+    override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor> = TryUtils
+        .fromOptional(whoAmI)
+        .filter { obj: Uri? -> UriUtils.isDownloadable(obj) }
+        .orElse { getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS) }
+        .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) }
+        .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+        .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+        .map { jso: JSONObject -> actorFromJson(jso) }
 
     protected fun actorFromJson(jso: JSONObject): Actor {
         val groupType: GroupType
@@ -157,21 +156,20 @@ class ConnectionPumpio : Connection() {
         return getActors(actor, ApiRoutineEnum.GET_FRIENDS)
     }
 
-    private fun getActors(actor: Actor, apiRoutine: ApiRoutineEnum): Try<List<Actor>> {
-        val limit = 200
-        return ConnectionAndUrl.fromActor(this, apiRoutine, actor)
-                .map { conu: ConnectionAndUrl ->
-                    val builder = conu.uri.buildUpon()
-                    builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine))
-                    val uri = builder.build()
-                    conu.withUri(uri)
-                }
-                .flatMap { conu: ConnectionAndUrl -> conu.execute(conu.newRequest()) }
-                .flatMap { result: HttpReadResult ->
-                    result.getJsonArray()
-                            .map { jsonArray: JSONArray? -> jsonArrayToActors(apiRoutine, result.request.uri, jsonArray) }
-                }
-    }
+    private fun getActors(actor: Actor, apiRoutine: ApiRoutineEnum): Try<List<Actor>> = ConnectionAndUrl
+        .fromActor(this, apiRoutine, actor)
+        .map { conu: ConnectionAndUrl ->
+            val builder = conu.uri.buildUpon()
+            val limit = 200
+            builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine))
+            val uri = builder.build()
+            conu.withUri(uri)
+        }
+        .flatMap { conu: ConnectionAndUrl -> conu.newRequest().executeMe(conu::execute) }
+        .flatMap { result: HttpReadResult ->
+            result.getJsonArray()
+                .map { jsonArray: JSONArray? -> jsonArrayToActors(apiRoutine, result.request.uri, jsonArray) }
+        }
 
     private fun jsonArrayToActors(apiRoutine: ApiRoutineEnum, uri: Uri, jArr: JSONArray?): List<Actor> {
         val actors: MutableList<Actor> = ArrayList()
@@ -190,11 +188,11 @@ class ConnectionPumpio : Connection() {
         return actors
     }
 
-    override fun getNote1(noteOid: String): Try<AActivity> {
-        return execute(HttpRequest.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jsoActivity: JSONObject? -> activityFromJson(jsoActivity) }
-    }
+    override fun getNote1(noteOid: String): Try<AActivity> =
+        HttpRequest.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid))
+            .executeMe(::execute)
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jsoActivity: JSONObject? -> activityFromJson(jsoActivity) }
 
     override fun updateNote(note: Note): Try<AActivity> {
         return ActivitySender.fromContent(this, note).send(PActivityType.POST)
@@ -251,24 +249,25 @@ class ConnectionPumpio : Connection() {
             builder.appendQueryParameter("before", oldestPosition.getPosition())
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine))
-        return execute(HttpRequest.of(apiRoutine, builder.build()))
-                .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
-                .map { jArr: JSONArray? ->
-                    val activities: MutableList<AActivity> = ArrayList()
-                    if (jArr != null) {
-                        // Read the activities in the chronological order
-                        for (index in jArr.length() - 1 downTo 0) {
-                            try {
-                                val jso = jArr.getJSONObject(index)
-                                activities.add(activityFromJson(jso))
-                            } catch (e: JSONException) {
-                                throw ConnectionException.loggedJsonException(this, "Parsing timeline", e, null)
-                            }
+        return HttpRequest.of(apiRoutine, builder.build())
+            .executeMe(::execute)
+            .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
+            .map { jArr: JSONArray? ->
+                val activities: MutableList<AActivity> = ArrayList()
+                if (jArr != null) {
+                    // Read the activities in the chronological order
+                    for (index in jArr.length() - 1 downTo 0) {
+                        try {
+                            val jso = jArr.getJSONObject(index)
+                            activities.add(activityFromJson(jso))
+                        } catch (e: JSONException) {
+                            throw ConnectionException.loggedJsonException(this, "Parsing timeline", e, null)
                         }
                     }
-                    MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size + " activities")
-                    InputTimelinePage.of(activities)
                 }
+                MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size + " activities")
+                InputTimelinePage.of(activities)
+            }
     }
 
     override fun fixedDownloadLimit(limit: Int, apiRoutine: ApiRoutineEnum?): Int {
@@ -471,12 +470,11 @@ class ConnectionPumpio : Connection() {
         return ActivitySender.fromId(this, actorId).send(activityType)
     }
 
-    public override fun getActor2(actorIn: Actor): Try<Actor> {
-        return ConnectionAndUrl.fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn)
-                .flatMap { conu: ConnectionAndUrl -> conu.execute(conu.newRequest()) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject -> actorFromJson(jso) }
-    }
+    public override fun getActor2(actorIn: Actor): Try<Actor> =
+        ConnectionAndUrl.fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn)
+            .flatMap { conu: ConnectionAndUrl -> conu.newRequest().executeMe(conu::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jso: JSONObject -> actorFromJson(jso) }
 
     companion object {
         private val TAG: String = ConnectionPumpio::class.java.simpleName

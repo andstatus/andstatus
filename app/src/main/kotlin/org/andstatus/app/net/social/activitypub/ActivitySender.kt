@@ -57,7 +57,9 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
             val activityImm = activity
             val activityResponse: Try<HttpReadResult> = ConnectionAndUrl.fromActor(connection,
                     ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor())
-                    .flatMap { conu: ConnectionAndUrl -> conu.execute(conu.newRequest().withPostParams(activityImm)) }
+                .flatMap { conu: ConnectionAndUrl ->
+                    conu.newRequest().withPostParams(activityImm).executeMe(conu::execute)
+                }
             val jsonObject = activityResponse
                     .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                     .flatMap { jso: JSONObject? ->
@@ -76,7 +78,9 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
                 activity.put("type", ActivityType.UPDATE.activityPubValue)
                 return ConnectionAndUrl.fromActor(connection,
                         ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor())
-                        .flatMap { conu: ConnectionAndUrl -> conu.execute(conu.newRequest().withPostParams(activityImm)) }
+                    .flatMap { conu: ConnectionAndUrl ->
+                        conu.newRequest().withPostParams(activityImm).executeMe(conu::execute)
+                    }
             }
             activityResponse
         } catch (e: JSONException) {
@@ -177,14 +181,16 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
     }
 
     private fun uploadMedia(attachment: Attachment): JSONObject {
-        var result: Try<HttpReadResult> = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA,
-                TimelinePosition.EMPTY, getActor())
-                .flatMap { conu: ConnectionAndUrl ->
-                    conu.execute(conu.newRequest()
-                            .withMediaPartName("file")
-                            .withAttachmentToPost(attachment)
-                    )
-                }
+        var result: Try<HttpReadResult> = ConnectionAndUrl.fromActor(
+            connection, ApiRoutineEnum.UPLOAD_MEDIA,
+            TimelinePosition.EMPTY, getActor()
+        )
+            .flatMap { conu: ConnectionAndUrl ->
+                conu.newRequest()
+                    .withMediaPartName("file")
+                    .withAttachmentToPost(attachment)
+                    .executeMe(conu::execute)
+            }
         if (result.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .getOrElseThrow(ConnectionException::of) == null) {
             result = Try.failure(ConnectionException(

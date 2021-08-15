@@ -68,7 +68,7 @@ interface HttpConnectionInterface {
         return executeInner(request.withLegacyHttpProtocol(isLegacyHttpProtocol))
     }
 
-    fun executeInner(request: HttpRequest): Try<HttpReadResult> {
+    private fun executeInner(request: HttpRequest): Try<HttpReadResult> {
         if (request.verb == Verb.POST && MyPreferences.isLogNetworkLevelMessages()) {
             var jso = JsonUtils.put(request.postParams.orElseGet { JSONObject() }, "loggedURL", request.uri)
             if (request.mediaUri.isPresent) {

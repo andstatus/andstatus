@@ -116,25 +116,32 @@ abstract class ConnectionTwitterLike : Connection() {
      */
     override fun getFriendsOrFollowersIds(apiRoutine: ApiRoutineEnum, actorOid: String): Try<List<String>> {
         return getApiPath(apiRoutine)
-                .map { obj: Uri -> obj.buildUpon() }
-                .map { builder: Uri.Builder -> builder.appendQueryParameter("user_id", actorOid) }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { result: HttpReadResult -> result.getJsonArrayInObject("ids") }
-                .flatMap { jsonArray: JSONArray? ->
-                    val list: MutableList<String> = ArrayList()
-                    try {
-                        var index = 0
-                        while (jsonArray != null && index < jsonArray.length()) {
-                            list.add(jsonArray.getString(index))
-                            index++
-                        }
-                        Try.success(list)
-                    } catch (e: JSONException) {
-                        Try.failure<MutableList<String>>(ConnectionException.loggedJsonException(this, apiRoutine.name, e, jsonArray))
+            .map { obj: Uri -> obj.buildUpon() }
+            .map { builder: Uri.Builder -> builder.appendQueryParameter("user_id", actorOid) }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { result: HttpReadResult -> result.getJsonArrayInObject("ids") }
+            .flatMap { jsonArray: JSONArray? ->
+                val list: MutableList<String> = ArrayList()
+                try {
+                    var index = 0
+                    while (jsonArray != null && index < jsonArray.length()) {
+                        list.add(jsonArray.getString(index))
+                        index++
                     }
+                    Try.success(list)
+                } catch (e: JSONException) {
+                    Try.failure<MutableList<String>>(
+                        ConnectionException.loggedJsonException(
+                            this,
+                            apiRoutine.name,
+                            e,
+                            jsonArray
+                        )
+                    )
                 }
+            }
     }
 
     /**
@@ -152,15 +159,15 @@ abstract class ConnectionTwitterLike : Connection() {
                              youngestPosition: TimelinePosition, oldestPosition: TimelinePosition,
                              limit: Int, actor: Actor): Try<InputTimelinePage> {
         return getTimelineUriBuilder(apiRoutine, limit, actor)
-                .map { builder: Uri.Builder -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { result: HttpReadResult ->
-                    result.getJsonArray()
-                            .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
-                }
-                .map { activities -> InputTimelinePage.of(activities) }
+            .map { builder: Uri.Builder -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { result: HttpReadResult ->
+                result.getJsonArray()
+                    .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
+            }
+            .map { activities -> InputTimelinePage.of(activities) }
     }
 
     protected open fun getTimelineUriBuilder(apiRoutine: ApiRoutineEnum, limit: Int, actor: Actor): Try<Uri.Builder> {
@@ -365,18 +372,23 @@ abstract class ConnectionTwitterLike : Connection() {
                              oldestPosition: TimelinePosition, limit: Int, searchQuery: String): Try<InputTimelinePage> {
         val apiRoutine = ApiRoutineEnum.SEARCH_NOTES
         return getApiPath(apiRoutine)
-                .map { obj: Uri -> obj.buildUpon() }
-                .map { b: Uri.Builder -> if (searchQuery.isEmpty()) b else b.appendQueryParameter("q", searchQuery) }
-                .map { builder: Uri.Builder -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
-                .map { builder: Uri.Builder -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { result: HttpReadResult ->
-                    result.getJsonArray()
-                            .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
-                }
-                .map { activities -> InputTimelinePage.of(activities) }
+            .map { obj: Uri -> obj.buildUpon() }
+            .map { b: Uri.Builder -> if (searchQuery.isEmpty()) b else b.appendQueryParameter("q", searchQuery) }
+            .map { builder: Uri.Builder -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
+            .map { builder: Uri.Builder ->
+                builder.appendQueryParameter(
+                    "count",
+                    strFixedDownloadLimit(limit, apiRoutine)
+                )
+            }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { result: HttpReadResult ->
+                result.getJsonArray()
+                    .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
+            }
+            .map { activities -> InputTimelinePage.of(activities) }
     }
 
     fun appendPositionParameters(builder: Uri.Builder, youngest: TimelinePosition, oldest: TimelinePosition): Uri.Builder {
@@ -452,15 +464,17 @@ abstract class ConnectionTwitterLike : Connection() {
     public override fun getActor2(actorIn: Actor): Try<Actor> {
         val apiRoutine = ApiRoutineEnum.GET_ACTOR
         return getApiPath(apiRoutine)
-                .map { obj: Uri -> obj.buildUpon() }
-                .map { builder: Uri.Builder -> if (UriUtils.isRealOid(actorIn.oid))
+            .map { obj: Uri -> obj.buildUpon() }
+            .map { builder: Uri.Builder ->
+                if (UriUtils.isRealOid(actorIn.oid))
                     builder.appendQueryParameter("user_id", actorIn.oid)
-                    else builder.appendQueryParameter("screen_name", actorIn.getUsername()) }
-                .map { it.build() }
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject? -> actorFromJson(jso) }
+                else builder.appendQueryParameter("screen_name", actorIn.getUsername())
+            }
+            .map { it.build() }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jso: JSONObject? -> actorFromJson(jso) }
     }
 
     override fun announce(rebloggedNoteOid: String): Try<AActivity> {
@@ -483,24 +497,31 @@ abstract class ConnectionTwitterLike : Connection() {
     override fun rateLimitStatus(): Try<RateLimitStatus> {
         val apiRoutine = ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS
         return getApiPath(apiRoutine)
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .flatMap { result: JSONObject? ->
-                    val status = RateLimitStatus()
-                    if (result != null) {
-                        var resources: JSONObject? = null
-                        try {
-                            resources = result.getJSONObject("resources")
-                            val limitObject = resources.getJSONObject("statuses").getJSONObject("/statuses/home_timeline")
-                            status.remaining = limitObject.optInt("remaining")
-                            status.limit = limitObject.optInt("limit")
-                        } catch (e: JSONException) {
-                            return@flatMap Try.failure<RateLimitStatus?>(ConnectionException.loggedJsonException(this, "getting rate limits", e, resources))
-                        }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .flatMap { result: JSONObject? ->
+                val status = RateLimitStatus()
+                if (result != null) {
+                    var resources: JSONObject? = null
+                    try {
+                        resources = result.getJSONObject("resources")
+                        val limitObject = resources.getJSONObject("statuses").getJSONObject("/statuses/home_timeline")
+                        status.remaining = limitObject.optInt("remaining")
+                        status.limit = limitObject.optInt("limit")
+                    } catch (e: JSONException) {
+                        return@flatMap Try.failure<RateLimitStatus?>(
+                            ConnectionException.loggedJsonException(
+                                this,
+                                "getting rate limits",
+                                e,
+                                resources
+                            )
+                        )
                     }
-                    Try.success(status)
                 }
+                Try.success(status)
+            }
     }
 
     override fun updateNote(note: Note): Try<AActivity> {
@@ -542,16 +563,16 @@ abstract class ConnectionTwitterLike : Connection() {
     override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor> {
         val apiRoutine = ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS
         return getApiPath(apiRoutine)
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject? -> actorFromJson(jso) }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jso: JSONObject? -> actorFromJson(jso) }
     }
 
     protected fun postRequest(apiRoutine: ApiRoutineEnum, formParams: JSONObject): Try<HttpReadResult> {
         return tryApiPath(data.getAccountActor(), apiRoutine)
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri).withPostParams(formParams) }
-                .flatMap { request: HttpRequest -> execute(request) }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri).withPostParams(formParams) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
     }
 
     fun getApiPathWithNoteId(routineEnum: ApiRoutineEnum, noteId: String): Try<Uri> {
@@ -596,10 +617,13 @@ abstract class ConnectionTwitterLike : Connection() {
     }
 
     private fun noteAction(apiRoutine: ApiRoutineEnum, noteOid: String, asPost: Boolean): Try<JSONObject> {
-        return if (UriUtils.nonRealOid(noteOid)) Try.success(JsonUtils.EMPTY) else getApiPathWithNoteId(apiRoutine, noteOid)
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri).asPost(asPost) }
-                .flatMap { request: HttpRequest -> execute(request) }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+        return if (UriUtils.nonRealOid(noteOid)) Try.success(JsonUtils.EMPTY) else getApiPathWithNoteId(
+            apiRoutine,
+            noteOid
+        )
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri).asPost(asPost) }
+            .flatMap { request: HttpRequest -> request.executeMe(::execute) }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
     }
 
     companion object {

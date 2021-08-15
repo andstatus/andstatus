@@ -86,16 +86,16 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
                         + ": " + connection
                         + "; account:" + ma.getAccountName())
             }
-            Try.success(connection)
-                    .flatMap { connection1: Connection -> connection1.execute(newRequest(fileTemp.getFile())) }
-                    .onFailure { e: Throwable? ->
-                        val ce: ConnectionException = ConnectionException.of(e)
-                        if (ce.isHardError) {
-                            data.hardErrorLogged(method, ce)
-                        } else {
-                            data.softErrorLogged(method, ce)
-                        }
+            newRequest(fileTemp.getFile())
+                .executeMe(connection::execute)
+                .onFailure { e: Throwable? ->
+                    val ce: ConnectionException = ConnectionException.of(e)
+                    if (ce.isHardError) {
+                        data.hardErrorLogged(method, ce)
+                    } else {
+                        data.softErrorLogged(method, ce)
                     }
+                }
         } else {
             MyLog.v(this) { "No account to download " + data.toString() + "; account:" + ma.getAccountName() }
             data.hardErrorLogged("$method, No account to download the file", null)
