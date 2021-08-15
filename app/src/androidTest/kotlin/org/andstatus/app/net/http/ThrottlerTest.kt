@@ -18,6 +18,7 @@ package org.andstatus.app.net.http
 import io.vavr.control.Try
 import org.andstatus.app.net.http.HttpReadResult.Companion.toHttpReadResult
 import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.util.RelativeTime.millisToDelaySeconds
 import org.andstatus.app.util.UriUtils
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -62,7 +63,7 @@ class ThrottlerTest {
 
         val result2 = try2.toHttpReadResult()
         requireNotNull(result2, { "result2" })
-        val delayedForOut: Long? = result2.delayedTill.toDelaySeconds()
+        val delayedForOut: Long? = result2.delayedTill.millisToDelaySeconds()
         assertNotNull("$key should be delayed $result2", delayedForOut)
         assertTrue("$key delayed for $delayedForOut seconds in $result2, should be near $delayedFor",
             delayedForOut in (delayedFor - 1)..delayedFor)
@@ -83,7 +84,7 @@ class ThrottlerTest {
         result.setHeaders(inputHeaders.stream(), { it.first }, { it.second })
         assertEquals("RateLimit-Remaining $result", rateLimitRemainingValue, result.rateLimitRemaining)
         val rateLimitReset: Long? = result.rateLimitReset
-        val resetIn = rateLimitReset.toDelaySeconds()
+        val resetIn = rateLimitReset.millisToDelaySeconds()
         assertTrue("RateLimit-Reset is $resetIn seconds in $result",
             resetIn in (rateLimitResetIn - 1)..rateLimitResetIn)
 
@@ -91,7 +92,7 @@ class ThrottlerTest {
         assertTrue(try1.isSuccess)
         val result2 = try2.toHttpReadResult()
         requireNotNull(result2, { "result2" })
-        val delayedForOut: Long? = delays.get(key).toDelaySeconds()
+        val delayedForOut: Long? = delays.get(key).millisToDelaySeconds()
         if (delayedForExpected == null) {
             assertEquals("Should not be delayed $result2", null, result2.delayedTill)
             assertNull("$key should not be delayed $delays", delayedForOut)
@@ -101,6 +102,4 @@ class ThrottlerTest {
                 delayedForOut in (delayedForExpected - 1)..delayedForExpected)
         }
     }
-
-    private fun Long?.toDelaySeconds(): Long? = this?.let { (it - System.currentTimeMillis()) / 1000 }
 }

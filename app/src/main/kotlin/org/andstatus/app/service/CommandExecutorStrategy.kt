@@ -17,6 +17,7 @@ package org.andstatus.app.service
 
 import io.vavr.control.Try
 import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.HttpReadResult.Companion.toHttpReadResult
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Connection
@@ -28,6 +29,8 @@ import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.TryUtils.onFailureAsConnectionException
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : CommandExecutorParent, Identifiable {
@@ -131,16 +134,28 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
             logLaunch(strategy)
             // This may cause recursive calls to executors...
             strategy.execute()
-                    .onSuccess { ok: Boolean ->
-                        strategy.execContext.getResult().setSoftErrorIfNotOk(ok)
-                        MyLog.d(strategy, strategy.execContext.getCommandSummary() +
-                            if (ok) " succeeded" else " soft errors")
+                .onSuccess { ok: Boolean ->
+                    strategy.execContext.getResult().setSoftErrorIfNotOk(ok)
+                    MyLog.d(
+                        strategy, strategy.execContext.getCommandSummary() +
+                            if (ok) " succeeded" else " soft errors"
+                    )
+                }
+                .onFailureAsConnectionException { ce: ConnectionException ->
+                    strategy.logConnectionException(ce, strategy.execContext.getCommandSummary())
+                }
+                .also {
+                    it.toHttpReadResult() ?.let { result ->
+                        with(commandData.getResult()) {
+                            delayedTill = result.delayedTill
+                            delayedTill?.let { millis ->
+                                if (getMessage().isEmpty()) {
+                                    setMessage("Delayed till ${Date(millis)}")
+                                }
+                            }
+                        }
                     }
-                    .onFailure { t: Throwable ->
-                        strategy.logConnectionException(
-                            ConnectionException.of(t), strategy.execContext.getCommandSummary()
-                        )
-                    }
+                }
             commandData.getResult().afterExecutionEnded()
             logEnd(strategy)
         }

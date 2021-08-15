@@ -122,4 +122,10 @@ object RelativeTime {
     fun minDate(date1: Long, date2: Long): Long {
         return if (date1 > SOME_TIME_AGO) if (date2 > SOME_TIME_AGO) java.lang.Long.min(date1, date2) else date1 else if (date2 > SOME_TIME_AGO) date2 else java.lang.Long.max(date1, date2)
     }
+
+    /** @return delay in seconds > 0 (relative to now) or null */
+    fun Long?.millisToDelaySeconds(): Long? =
+        this?.let { (it - System.currentTimeMillis()) / 1000 }
+            ?.let { if (it > 0L) it else null }
+
 }

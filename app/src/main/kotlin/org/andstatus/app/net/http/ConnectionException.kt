@@ -45,11 +45,9 @@ class ConnectionException : IOException {
     constructor(statusCode: StatusCode, detailMessage: String?, url: URL? = null) :
         this(statusCode, detailMessage, null, url, false)
 
-    fun append(toAppend: String?): ConnectionException {
-        return ConnectionException(statusCode,
-                message + (if (!message.isNullOrEmpty()) ". " else "") + toAppend,
-                cause, url, isHardError)
-    }
+    fun append(toAppend: String?): ConnectionException =
+        if (toAppend.isNullOrBlank()) this
+        else ConnectionException(statusCode, "$message. $toAppend", cause, url, isHardError)
 
     private constructor(statusCode: StatusCode, detailMessage: String?,
                         throwable: Throwable?, url: URL?, isHardIn: Boolean) : super(detailMessage, throwable) {
@@ -69,12 +67,13 @@ class ConnectionException : IOException {
 
     companion object {
         private const val serialVersionUID = 1L
-        fun of(e: Throwable?): ConnectionException {
-            if (e is ConnectionException) return e
-            return if (e is NotFoundException) {
-                fromStatusCode(StatusCode.NOT_FOUND, e.message)
-            } else ConnectionException("Unexpected exception", e)
-        }
+
+        fun of(e: Throwable?, messageIn: String? = null): ConnectionException =
+            when (e) {
+                is ConnectionException -> e
+                is NotFoundException -> fromStatusCode(StatusCode.NOT_FOUND, e.message)
+                else -> ConnectionException("Unexpected exception", e)
+            }.append(messageIn)
 
         fun from(result: HttpReadResult): ConnectionException {
             return ConnectionException(result)

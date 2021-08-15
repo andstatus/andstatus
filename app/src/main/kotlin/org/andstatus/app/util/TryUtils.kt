@@ -26,10 +26,7 @@ object TryUtils {
 
     fun <T> failure(message: String?, exception: Throwable?): Try<T> {
         checkException<Throwable?>(exception)
-        return Try.failure(
-                if (!message.isNullOrEmpty()) ConnectionException.of(exception).append(message)
-                else exception
-        )
+        return Try.failure(ConnectionException.of(exception, message))
     }
 
     fun <T : Throwable?> checkException(exception: T?): T? {
@@ -114,6 +111,13 @@ object TryUtils {
     suspend fun <T> Try<T>.onFailureS(action: suspend (Throwable) -> Unit): Try<T> {
         if (isFailure) {
             action(cause)
+        }
+        return this
+    }
+
+    fun <T> Try<T>.onFailureAsConnectionException(action: (ConnectionException) -> Unit): Try<T> {
+        if (isFailure) {
+            action(ConnectionException.of(cause))
         }
         return this
     }

@@ -82,7 +82,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     }
                     true
                 }
-                .mapFailure { e: Throwable? -> ConnectionException.of(e).append(msgLog) }
+                .mapFailure { e: Throwable? -> ConnectionException.of(e, msgLog) }
     }
 
     private fun getConversation(noteId: Long): Try<Boolean> {
@@ -109,8 +109,9 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     }
                 }
                 .map { activities -> true }
-                .mapFailure { e: Throwable -> ConnectionException.of(e)
-                    .append(MyQuery.noteInfoForLog(execContext.myContext, noteId)) }
+                .mapFailure { e: Throwable -> ConnectionException.of(e,
+                    MyQuery.noteInfoForLog(execContext.myContext, noteId))
+                }
     }
 
     private fun getActorCommand(actorIn: Actor, username: String?): Try<Boolean> {

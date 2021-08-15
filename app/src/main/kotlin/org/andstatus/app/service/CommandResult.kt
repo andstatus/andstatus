@@ -25,6 +25,7 @@ import org.andstatus.app.database.table.CommandTable
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.RelativeTime.millisToDelaySeconds
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
@@ -35,6 +36,10 @@ import java.util.function.Consumer
  * @author yvolk@yurivolkov.com
  */
 class CommandResult : Parcelable {
+    var delayedTill: Long? = null
+        set(value) {
+            field = value?.let { if (it > 0) it else null }
+        }
     private var lastExecutedDate: Long = 0
     private var executionCount = 0
     private var retriesLeft = 0
@@ -58,6 +63,7 @@ class CommandResult : Parcelable {
     constructor() {}
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeLong(delayedTill ?: 0)
         dest.writeLong(lastExecutedDate)
         dest.writeInt(executionCount)
         dest.writeInt(retriesLeft)
@@ -73,6 +79,7 @@ class CommandResult : Parcelable {
     }
 
     constructor(parcel: Parcel) {
+        delayedTill = parcel.readLong()
         lastExecutedDate = parcel.readLong()
         executionCount = parcel.readInt()
         retriesLeft = parcel.readInt()
@@ -88,6 +95,7 @@ class CommandResult : Parcelable {
     }
 
     fun toContentValues(values: ContentValues) {
+        delayedTill // TODO
         values.put(CommandTable.LAST_EXECUTED_DATE, lastExecutedDate)
         values.put(CommandTable.EXECUTION_COUNT, executionCount)
         values.put(CommandTable.RETRIES_LEFT, retriesLeft)
@@ -133,34 +141,27 @@ class CommandResult : Parcelable {
         return toSummaryBuilder().toString()
     }
 
-    private fun toSummaryBuilder(): StringBuilder {
-        val message = StringBuilder()
+    private fun toSummaryBuilder(): MyStringBuilder {
+        val sb = MyStringBuilder()
+        delayedTill.millisToDelaySeconds()?.let { sb.withComma("Delayed for $it sec") }
         if (executionCount > 0) {
-            message.append("executed:$executionCount, ")
-            message.append("last:" + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context, lastExecutedDate) + ", ")
-            if (retriesLeft > 0) {
-                message.append("retriesLeft:$retriesLeft, ")
-            }
-            if (!hasError()) {
-                message.append("error:None, ")
-            }
+            sb.withComma("executed", executionCount)
+            sb.withComma(
+                "last", RelativeTime.getDifference(
+                    MyContextHolder.myContextHolder.getNow().context, lastExecutedDate
+                )
+            )
+            if (retriesLeft > 0) sb.withComma("retriesLeft", retriesLeft)
+            if (!hasError()) sb.withComma("error", "none")
         }
-        if (hasError()) {
-            message.append("error:" + (if (hasHardError()) "Hard" else "Soft") + ", ")
-        }
-        if (downloadedCount > 0) {
-            message.append("downloaded:$downloadedCount, ")
-        }
-        if (newCount > 0) {
-            message.append("new:$newCount, ")
-        }
+        if (hasError()) sb.withComma("error", if (hasHardError()) "Hard" else "Soft")
+        if (downloadedCount > 0) sb.withComma("downloaded", downloadedCount)
+        if (newCount > 0) sb.withComma("new", newCount)
         notificationEventCounts.forEach { event: NotificationEventType, count: AtomicLong ->
-            if (count.get() > 0) message.append(event.name + ":" + count.get() + ", ")
+            if (count.get() > 0) sb.withComma(event.name, count.get())
         }
-        if (mMessage.isNotEmpty()) {
-            message.append(" \n$mMessage")
-        }
-        return message
+        if (mMessage.isNotEmpty()) sb.append("\n$mMessage")
+        return sb
     }
 
     fun getNumAuthExceptions(): Long {
@@ -241,6 +242,7 @@ class CommandResult : Parcelable {
     }
 
     fun prepareForLaunch() {
+        delayedTill = null
         executed = false
         numAuthExceptions = 0
         numIoExceptions = 0
@@ -256,12 +258,14 @@ class CommandResult : Parcelable {
     }
 
     fun afterExecutionEnded() {
-        executed = true
-        executionCount++
-        if (retriesLeft > 0) {
-            retriesLeft -= 1
+        if (delayedTill == null) {
+            executed = true
+            executionCount++
+            if (retriesLeft > 0) {
+                retriesLeft -= 1
+            }
+            lastExecutedDate = System.currentTimeMillis()
         }
-        lastExecutedDate = System.currentTimeMillis()
     }
 
     fun shouldWeRetry(): Boolean {
@@ -311,6 +315,7 @@ class CommandResult : Parcelable {
 
         fun fromCursor(cursor: Cursor): CommandResult {
             val result = CommandResult()
+            result.delayedTill // TODO
             result.lastExecutedDate = DbUtils.getLong(cursor, CommandTable.LAST_EXECUTED_DATE)
             result.executionCount = DbUtils.getInt(cursor, CommandTable.EXECUTION_COUNT)
             result.retriesLeft = DbUtils.getInt(cursor, CommandTable.RETRIES_LEFT)

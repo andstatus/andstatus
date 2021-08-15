@@ -22,116 +22,108 @@ import org.andstatus.app.context.MyStorage
 import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.DownloadFile
 import org.andstatus.app.data.DownloadStatus
-import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpRequest
-import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Connection
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.TryUtils.onFailureAsConnectionException
 import java.io.File
 
 abstract class FileDownloader protected constructor(val myContext: MyContext, val data: DownloadData) {
     private var connectionStub: Connection? = null
     private var connectionRequired: ConnectionRequired = ConnectionRequired.ANY
 
-    fun load(commandData: CommandData): Try<Boolean> {
-        when (data.getStatus()) {
-            DownloadStatus.LOADED -> {
+    fun load(commandData: CommandData): Try<Boolean> =
+        if (data.getStatus() == DownloadStatus.LOADED) { TryUtils.TRUE }
+        else doDownloadFile()
+            .onFailureAsConnectionException { ce ->
+                if (ce.isHardError) {
+                    data.hardErrorLogged("load", ce)
+                    commandData.getResult().incrementParseExceptions()
+                } else {
+                    data.softErrorLogged("load", ce)
+                    commandData.getResult().incrementNumIoExceptions()
+                }
+                ce.message?.let { message ->
+                    commandData.getResult().setMessage(message)
+                }
             }
-            else -> loadUrl()
-        }
-        if (data.isError() && data.getMessage().isNotEmpty()) {
-            commandData.getResult().setMessage(data.getMessage())
-        }
-        if (data.isHardError()) {
-            commandData.getResult().incrementParseExceptions()
-        }
-        if (data.isSoftError()) {
-            commandData.getResult().incrementNumIoExceptions()
-        }
-        return if (commandData.getResult().hasError()) Try.failure(ConnectionException.fromStatusCode(
-                StatusCode.UNKNOWN, commandData.getResult().toSummary()))
-        else TryUtils.TRUE
-    }
-
-    private fun loadUrl() {
-        data.beforeDownload()
-        doDownloadFile()
-        data.saveToDatabase()
-        if (!data.isError()) {
-            onSuccessfulLoad()
-        }
-    }
+            .also { data.saveToDatabase() }
+            .onSuccess { onSuccessfulLoad() }
+            .map { true }
 
     protected abstract fun onSuccessfulLoad()
 
-    private fun doDownloadFile() {
+    private fun doDownloadFile(): Try<Boolean> {
         val method = this::doDownloadFile.name
-        val fileTemp = DownloadFile(MyStorage.TEMP_FILENAME_PREFIX + MyLog.uniqueCurrentTimeMS +
-            "_" + data.filenameNew)
-        if (fileTemp.existsNow()) {
-            fileTemp.delete()
-            if (fileTemp.existsNow()) {
-                data.softErrorLogged("$method; Couldn't delete existing temp file $fileTemp", null)
-            }
-        }
+        val fileTemp = DownloadFile(
+            MyStorage.TEMP_FILENAME_PREFIX + MyLog.uniqueCurrentTimeMS +
+                "_" + data.filenameNew
+        )
+        if (fileTemp.existsNow()) fileTemp.delete()
 
-        val ma = findBestAccountForDownload()
-        if (ma.isValidAndSucceeded()) {
-            val connection = connectionStub ?: ma.connection
-            MyLog.v(this) {
-                ("About to download " + data.toString() + "; connection"
-                        + (if (connectionStub == null) "" else " (stubbed)")
-                        + ": " + connection
-                        + "; account:" + ma.getAccountName())
+        data.beforeDownload()
+            .flatMap {
+                if (fileTemp.existsNow()) {
+                    TryUtils.failure("$method; Couldn't delete existing temp file $fileTemp")
+                } else TryUtils.TRUE
             }
-            newRequest(fileTemp.getFile())
-                .let(connection::execute)
-                .onFailure { e: Throwable? ->
-                    val ce: ConnectionException = ConnectionException.of(e)
-                    if (ce.isHardError) {
-                        data.hardErrorLogged(method, ce)
-                    } else {
-                        data.softErrorLogged(method, ce)
+            .flatMap {
+                val ma = findBestAccountForDownload()
+                if (ma.isValidAndSucceeded()) {
+                    val connection = connectionStub ?: ma.connection
+                    MyLog.v(this) {
+                        ("About to download " + data.toString() + "; connection"
+                            + (if (connectionStub == null) "" else " (stubbed)")
+                            + ": " + connection
+                            + "; account:" + ma.getAccountName())
                     }
-                }
-        } else {
-            MyLog.v(this) { "No account to download " + data.toString() + "; account:" + ma.getAccountName() }
-            data.hardErrorLogged("$method, No account to download the file", null)
-        }
-        if (!data.isError() && !fileTemp.existsNow()) {
-            data.softErrorLogged("$method; New temp file doesn't exist $fileTemp", null)
-        }
-        if (!data.isError()) {
-            val fileNew = DownloadFile(data.filenameNew)
-            MyLog.v(this) { "$method; Renaming $fileTemp to $fileNew"}
-            fileNew.delete()
-            if (fileNew.existsNow()) {
-                data.softErrorLogged("$method; Couldn't delete existing file $fileNew", null)
-            } else {
-                val file1 = fileTemp.getFile()
-                val file2 = fileNew.getFile()
-                if (file1 == null) {
-                    data.softErrorLogged("$method; file1 is null ???", null)
-                } else if (file2 == null) {
-                    data.softErrorLogged("$method; file2 is null ???", null)
+                    newRequest(fileTemp.getFile())
+                        .let(connection::execute)
+                        .map { true }
+
                 } else {
-                    if (file1.renameTo(file2)) {
-                        if (!fileNew.existsNow()) {
-                            data.softErrorLogged("$method; After renamingfrom $fileTemp" +
-                                " new file doesn't exist $fileNew", null)
-                        }
+                    TryUtils.failure("No account to download " + data.toString() + "; account:" + ma.getAccountName())
+                }
+            }
+            .flatMap {
+                if (fileTemp.existsNow()) TryUtils.TRUE
+                else TryUtils.failure("$method; New temp file doesn't exist $fileTemp")
+            }
+            .flatMap {
+                val fileNew = DownloadFile(data.filenameNew)
+                MyLog.v(this) { "$method; Renaming $fileTemp to $fileNew" }
+                fileNew.delete()
+                if (fileNew.existsNow()) {
+                    TryUtils.failure("$method; Couldn't delete existing file $fileNew")
+                } else {
+                    val file1 = fileTemp.getFile()
+                    val file2 = fileNew.getFile()
+                    if (file1 == null) {
+                        TryUtils.failure("$method; file1 is null ???")
+                    } else if (file2 == null) {
+                        TryUtils.failure<Boolean>("$method; file2 is null ???")
                     } else {
-                        data.softErrorLogged("$method; Couldn't rename file $fileTemp to $fileNew", null)
+                        if (file1.renameTo(file2)) {
+                            if (!fileNew.existsNow()) {
+                                TryUtils.failure<Boolean>(
+                                    "$method; After renamingfrom $fileTemp" +
+                                        " new file doesn't exist $fileNew"
+                                )
+                            } else TryUtils.TRUE
+                        } else {
+                            TryUtils.failure("$method; Couldn't rename file $fileTemp to $fileNew")
+                        }
                     }
                 }
             }
-        }
-        if (data.isError()) {
-            fileTemp.delete()
-        }
-        data.onDownloaded()
+            .flatMap { data.onDownloaded() }
+            .onFailure {
+                fileTemp.delete()
+                data.onNoFile()
+            }
+            .let { return it }
     }
 
     private fun newRequest(file: File?): HttpRequest {

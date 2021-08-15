@@ -321,6 +321,10 @@ class CommandData private constructor(
         return this
     }
 
+    val isTimeToRetry: Boolean
+        get() = commandResult.delayedTill?.let { it < System.currentTimeMillis() }
+            ?: executedMoreSecondsAgoThan(QueueAccessor.MIN_RETRY_PERIOD_SECONDS)
+
     fun executedMoreSecondsAgoThan(predefinedPeriodSeconds: Long): Boolean {
         return RelativeTime.moreSecondsAgoThan(getResult().getLastExecutedDate(),
                 predefinedPeriodSeconds)

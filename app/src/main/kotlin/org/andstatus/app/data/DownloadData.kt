@@ -7,11 +7,13 @@ import android.database.sqlite.SQLiteException
 import android.net.Uri
 import android.provider.BaseColumns
 import android.webkit.MimeTypeMap
+import io.vavr.control.Try
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
 import org.andstatus.app.database.table.DownloadTable
 import org.andstatus.app.graphics.MediaMetadata
+import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Attachment
 import org.andstatus.app.service.CommandData
@@ -22,6 +24,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.Taggable
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import java.util.*
 import java.util.function.Consumer
@@ -172,31 +175,32 @@ open class DownloadData protected constructor(
         }
     }
 
-    fun beforeDownload() {
+    fun beforeDownload(): Try<Boolean> {
         softError = false
         hardError = false
         if (downloadId == 0L) saveToDatabase()
         fileNew = DownloadFile(downloadType.filePrefix + "_" + java.lang.Long.toString(downloadId)
                 + "_" + downloadNumber
                 + "." + getExtension())
+        return TryUtils.TRUE
     }
 
-    fun onDownloaded() {
+    fun onDownloaded(): Try<Boolean> {
         fileNew = DownloadFile(fileNew.getFilename())
-        if (isError() || !fileNew.existed) {
-            if (!fileNew.existed) onNoFile()
-            return
-        }
-        fileSize = fileNew.getSize()
-        MediaMetadata.fromFilePath(fileNew.getFilePath()).onSuccess {
-            mediaMetadata = it
-            downloadedDate = System.currentTimeMillis()
-        } .onFailure {
-            MyLog.w(this, "Failed to load metadata for $this", it)
+        return if (isError() || !fileNew.existed) {
+            TryUtils.failure("No new file ${fileNew.getFilename()}")
+        } else {
+            fileSize = fileNew.getSize()
+            MediaMetadata.fromFilePath(fileNew.getFilePath()).onSuccess {
+                mediaMetadata = it
+                downloadedDate = System.currentTimeMillis()
+            } .mapFailure {
+                ConnectionException.of(it, "Failed to load metadata for $this")
+            } .map { true }
         }
     }
 
-    private fun onNoFile() {
+    fun onNoFile() {
         if (DownloadStatus.LOADED == status) status = DownloadStatus.ABSENT
         fileSize = 0
         mediaMetadata = MediaMetadata.EMPTY
