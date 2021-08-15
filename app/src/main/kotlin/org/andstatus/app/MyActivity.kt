@@ -15,7 +15,6 @@
  */
 package org.andstatus.app
 
-import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -29,8 +28,8 @@ import androidx.fragment.app.Fragment
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyTheme
-import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TriState
@@ -143,8 +142,8 @@ open class MyActivity(
     override fun startActivityForResult(intent: Intent?, requestCode: Int) {
         try {
             super.startActivityForResult(intent, requestCode)
-        } catch (e: ActivityNotFoundException) {
-            MyLog.w(this, "requestCode=$requestCode", e)
+        } catch (e: Exception) {
+            MyLog.w(this, "startActivityForResult requestCode:$requestCode, intent:$intent", e)
         }
     }
 

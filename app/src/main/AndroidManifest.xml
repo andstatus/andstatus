@@ -55,6 +55,7 @@
 		<provider android:name="org.andstatus.app.data.FileProvider"
 			android:authorities="org.andstatus.app.data.FileProvider" 
 			android:exported="true"
+            android:grantUriPermissions="true"
             android:permission="android.permission.READ_EXTERNAL_STORAGE"/>
 				
 		<service android:name="org.andstatus.app.service.MyService"

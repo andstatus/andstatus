@@ -29,6 +29,13 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="59.03" android:versionCode="347"
+        versionDate="2021-08-15"
+        versionTitle="Fix crash when clicking on an image">
+        <changes>
+            <change>Fix crash when clicking on an image</change>
+        </changes>
+    </release>
     <release android:versionName="59.02" android:versionCode="346"
         versionDate="2021-08-13"
         versionTitle="Faster timelines and images downloading">
