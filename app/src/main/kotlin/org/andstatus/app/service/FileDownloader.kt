@@ -28,7 +28,6 @@ import org.andstatus.app.net.social.Connection
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.TryUtils.onFailureAsConnectionException
-import java.io.File
 
 abstract class FileDownloader protected constructor(val myContext: MyContext, val data: DownloadData) {
     private var connectionStub: Connection? = null
@@ -58,8 +57,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
     private fun doDownloadFile(): Try<Boolean> {
         val method = this::doDownloadFile.name
         val fileTemp = DownloadFile(
-            MyStorage.TEMP_FILENAME_PREFIX + MyLog.uniqueCurrentTimeMS +
-                "_" + data.filenameNew
+            MyStorage.TEMP_FILENAME_PREFIX + MyLog.uniqueCurrentTimeMS + "_" + data.filenameNew
         )
         if (fileTemp.existsNow()) fileTemp.delete()
 
@@ -79,7 +77,10 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
                             + ": " + connection
                             + "; account:" + ma.getAccountName())
                     }
-                    newRequest(fileTemp.getFile())
+                    HttpRequest
+                        .of(ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
+                        .withConnectionRequired(connectionRequired)
+                        .withFile(fileTemp.getFile())
                         .let(connection::execute)
                         .map { true }
 
@@ -124,12 +125,6 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
                 data.onNoFile()
             }
             .let { return it }
-    }
-
-    private fun newRequest(file: File?): HttpRequest {
-        return HttpRequest.of(ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
-                .withConnectionRequired(connectionRequired)
-                .withFile(file)
     }
 
     fun setConnectionRequired(connectionRequired: ConnectionRequired): FileDownloader {

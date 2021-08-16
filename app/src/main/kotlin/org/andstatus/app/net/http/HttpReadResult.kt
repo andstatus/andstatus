@@ -65,6 +65,8 @@ class HttpReadResult(val request: HttpRequest) {
         if (millis > System.currentTimeMillis()) {
             delayedTill = millis
             if (statusCode == StatusCode.UNKNOWN) statusCode = StatusCode.DELAYED
+        } else {
+            delayedTill = null
         }
         return this
     }
@@ -325,7 +327,10 @@ class HttpReadResult(val request: HttpRequest) {
     }
 
     fun noMoreHttpRetries(): Boolean {
-        if (authenticate() && request.apiRoutine == ApiRoutineEnum.DOWNLOAD_FILE) {
+        if (authenticate() && request.apiRoutine == ApiRoutineEnum.DOWNLOAD_FILE
+            && statusCode != StatusCode.TOO_MANY_REQUESTS
+            && delayedTill == null
+        ) {
             onRetryWithoutAuthentication()
             return false
         }

@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2014-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ class ConnectionException : IOException {
         httpResult = result
         statusCode = result.statusCode
         url = result.url
-        isHardError = isHardFromStatusCode(isHardFromCause(result.getException()), statusCode)
+        isHardError = statusCode.isHard || isHardFromCause(result.getException())
     }
 
     constructor(throwable: Throwable?) : this(null, throwable)
@@ -49,12 +49,14 @@ class ConnectionException : IOException {
         if (toAppend.isNullOrBlank()) this
         else ConnectionException(statusCode, "$message. $toAppend", cause, url, isHardError)
 
-    private constructor(statusCode: StatusCode, detailMessage: String?,
-                        throwable: Throwable?, url: URL?, isHardIn: Boolean) : super(detailMessage, throwable) {
+    private constructor(
+        statusCode: StatusCode, detailMessage: String?,
+        throwable: Throwable?, url: URL?, isHardIn: Boolean
+    ) : super(detailMessage, throwable) {
         httpResult = null
         this.statusCode = statusCode
         this.url = url
-        isHardError = isHardFromStatusCode(isHardIn || isHardFromCause(throwable), statusCode)
+        isHardError = isHardIn || statusCode.isHard || isHardFromCause(throwable)
     }
 
     override fun toString(): String {
@@ -119,14 +121,10 @@ class ConnectionException : IOException {
         }
 
         private fun isHardFromCause(cause: Throwable?): Boolean = when (cause) {
-            null -> false
             is ConnectionException -> cause.isHardError
             is java.net.UnknownHostException -> true
             else -> false
         }
 
-        private fun isHardFromStatusCode(isHardIn: Boolean, statusCode: StatusCode?): Boolean {
-            return isHardIn || statusCode != StatusCode.UNKNOWN && statusCode != StatusCode.OK
-        }
     }
 }
