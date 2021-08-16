@@ -79,13 +79,12 @@ interface HttpConnectionInterface {
         return request.validate()
             .flatMap(Throttler::beforeExecution)
             .map { obj: HttpRequest -> obj.newResult() }
-            .map { result: HttpReadResult ->
-                if (result.request.verb == Verb.POST) postRequest(result)
-                else getRequestInner(result)
+            .flatMap { result: HttpReadResult ->
+                if (result.request.verb == Verb.POST) postRequest(result).toTryResult()
+                else getRequestInner(result).toTryResult()
             }
             .also(Throttler::afterExecution)
             .onSuccess { result: HttpReadResult -> result.logResponse() }
-            .flatMap { result: HttpReadResult -> result.toTryResult() }
     }
 
     fun postRequest(result: HttpReadResult): HttpReadResult {
