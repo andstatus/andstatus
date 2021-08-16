@@ -268,8 +268,8 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
                     (if (toExpect == 1) "" else "s") + " " +
                     DemoData.demoData.testRunUid
             Espresso.onView(ViewMatchers.withId(R.id.note_name_edit)).perform(ReplaceTextAction(noteName))
-            Espresso.onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
             Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
+            Espresso.onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
             Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText(content)))
             attachImage(test, editorView, DemoData.demoData.localImageTestUri2)
             if (toAdd > 1) {
@@ -304,8 +304,9 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             val selectorActivity = test.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 25000)
             Assert.assertTrue(selectorActivity != null)
             ActivityTestHelper.waitViewInvisible(method, editorView)
-            DbUtils.waitMs(method, 10000)
+            DbUtils.waitMs(method, 5000)
             selectorActivity.finish()
+            DbUtils.waitMs(method, 5000)
             MyLog.i(method, "Callback from a selector")
             val intent2 = Intent()
             intent2.setDataAndType(imageUri, MyContentType.Companion.uri2MimeType(test.activity.contentResolver, imageUri,
