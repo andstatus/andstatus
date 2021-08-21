@@ -285,6 +285,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText("$content ")))
             Espresso.onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
             ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>(method, test.activity)
+            DbUtils.waitMs(method, 4000)
             MyLog.v(test, "$method ended")
         }
 
@@ -304,9 +305,9 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             val selectorActivity = test.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 25000)
             Assert.assertTrue(selectorActivity != null)
             ActivityTestHelper.waitViewInvisible(method, editorView)
-            DbUtils.waitMs(method, 5000)
+            DbUtils.waitMs(method, 3000)
             selectorActivity.finish()
-            DbUtils.waitMs(method, 5000)
+            DbUtils.waitMs(method, 3000)
             MyLog.i(method, "Callback from a selector")
             val intent2 = Intent()
             intent2.setDataAndType(imageUri, MyContentType.Companion.uri2MimeType(test.activity.contentResolver, imageUri,
