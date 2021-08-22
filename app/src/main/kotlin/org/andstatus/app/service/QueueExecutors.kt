@@ -57,7 +57,7 @@ class QueueExecutors(private val myService: MyService) {
         if (maxToAdd < 1) return
 
         val toAdd = min(
-            myService.myContext.queues.getAccessor(accessorType).countToExecuteNow().toInt() -
+            myService.myContext.queues.getAccessor(accessorType).countToExecuteNow.toInt() -
                     // The below executors will take commands soon
                     executors.count { it.accessorType == accessorType && it.executedCounter.get() == 0L },
             maxToAdd)

@@ -167,9 +167,8 @@ object MyPreferences {
         SharedPreferencesUtil.putBoolean(KEY_SYNC_OVER_WIFI_ONLY, overWiFi)
     }
 
-    fun isSyncWhileUsingApplicationEnabled(): Boolean {
-        return SharedPreferencesUtil.getBoolean(KEY_SYNC_WHILE_USING_APPLICATION, true)
-    }
+    val isSyncWhileUsingApplicationEnabled: Boolean
+        get() = SharedPreferencesUtil.getBoolean(KEY_SYNC_WHILE_USING_APPLICATION, true)
 
     fun isDownloadAttachmentsOverWiFiOnly(): Boolean {
         return SharedPreferencesUtil.getBoolean(KEY_DOWNLOAD_ATTACHMENTS_OVER_WIFI_ONLY, true)

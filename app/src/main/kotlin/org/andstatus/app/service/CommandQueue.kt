@@ -19,6 +19,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import io.vavr.control.Try
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.data.DbUtils
@@ -185,7 +186,9 @@ class CommandQueue(val myContext: MyContext) {
             MyLog.d(TAG, "save; Cannot save: context is " + myContext.state)
             return
         }
-        accessors.values.forEach(Consumer { obj: QueueAccessor -> obj.moveCommandsFromPreToMainQueue() })
+        runBlocking {
+            accessors.values.forEach { obj: QueueAccessor -> obj.moveCommandsFromPreToMainQueue() }
+        }
         if (loaded) clearQueuesInDatabase(db)
         val countNotError = save(db, QueueType.CURRENT)
                 .flatMap { acc: Int -> save(db, QueueType.DOWNLOADS).map { i2: Int -> acc + i2 } }
@@ -294,9 +297,8 @@ class CommandQueue(val myContext: MyContext) {
         return false
     }
 
-    fun isAnythingToExecuteNow(): Boolean {
-        return accessors.values.stream().anyMatch { obj: QueueAccessor -> obj.isAnythingToExecuteNow() }
-    }
+    suspend fun isAnythingToExecuteNow(): Boolean =
+        accessors.values.any { obj: QueueAccessor -> obj.isAnythingToExecuteNow() }
 
     enum class AccessorType(val title: String, val numberOfExecutors: Int) {
         GENERAL("General", 2),

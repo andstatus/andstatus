@@ -42,6 +42,7 @@ import org.andstatus.app.timeline.meta.TimelineTitle
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.BundleUtils
 import org.andstatus.app.util.I18n
+import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
@@ -64,7 +65,7 @@ class CommandData private constructor(
          * It holds actorId for command, which need such parameter (not only for a timeline)
          */
         val commandTimeline: CommandTimeline,
-        createdDate: Long) : Comparable<CommandData>, Taggable {
+        createdDate: Long) : Comparable<CommandData>, Taggable, IsEmpty {
 
     private val commandId: Long = if (commandId == 0L) MyLog.uniqueCurrentTimeMS else commandId
     private val createdDate: Long = if (createdDate > 0) createdDate else this.commandId
@@ -88,6 +89,11 @@ class CommandData private constructor(
      * Used for Actor search also  */
     private var username: String = ""
     private var commandResult: CommandResult = CommandResult()
+
+    init {
+        resetRetries()
+    }
+
     private fun setTrimmedNoteContentAsDescription(noteId: Long) {
         if (noteId != 0L) {
             description = trimConditionally(
@@ -142,7 +148,7 @@ class CommandData private constructor(
     }
 
     override fun toString(): String {
-        if (this === EMPTY) return MyStringBuilder.formatKeyValue(this, "EMPTY")
+        if (this.isEmpty) return "(no command)"
         val builder = MyStringBuilder()
         builder.withComma("command", command.save())
         builder.withComma("id", commandId)
@@ -175,6 +181,9 @@ class CommandData private constructor(
         result += (prime * itemId).toInt()
         return result
     }
+
+    override val isEmpty: Boolean
+        get() = this == EMPTY
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -495,9 +504,5 @@ class CommandData private constructor(
                 text
             }
         }
-    }
-
-    init {
-        resetRetries()
     }
 }

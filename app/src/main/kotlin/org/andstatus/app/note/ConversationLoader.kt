@@ -50,7 +50,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
     protected val ma: MyAccount = myContext.accounts.getFirstPreferablySucceededForOrigin(origin)
     var conversationIds: MutableSet<Long> = HashSet()
     var fixConversation = false
-    private val sync: Boolean = sync || MyPreferences.isSyncWhileUsingApplicationEnabled()
+    private val sync: Boolean = sync || MyPreferences.isSyncWhileUsingApplicationEnabled
     private var conversationSyncRequested = false
     var mAllowLoadingFromInternet = false
     private val replyLevelComparator: ReplyLevelComparator = ReplyLevelComparator()

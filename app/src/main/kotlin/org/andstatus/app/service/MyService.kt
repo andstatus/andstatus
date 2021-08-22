@@ -251,9 +251,8 @@ class MyService(
         }
     }
 
-    private fun isAnythingToExecuteNow(): Boolean {
-        return myContext.queues.isAnythingToExecuteNow() || executors.isReallyWorking()
-    }
+    private suspend fun isAnythingToExecuteNow(): Boolean =
+        myContext.queues.isAnythingToExecuteNow() || executors.isReallyWorking()
 
     override fun onDestroy() {
         if (initialized.get()) {

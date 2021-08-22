@@ -7,20 +7,19 @@ import org.andstatus.app.util.RelativeTime
 import java.util.concurrent.TimeUnit
 
 class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue.AccessorType) {
-    fun isAnythingToExecuteNow(): Boolean {
+    suspend fun isAnythingToExecuteNow(): Boolean {
         moveCommandsFromPreToMainQueue()
         return (!cq.loaded
-            || isAnythingToExecuteNowIn(mainQueueType())
+            || isAnythingToExecuteNowIn(mainQueueType)
             || isAnythingToExecuteNowIn(QueueType.SKIPPED)
-            || isTimeToProcessRetryQueue() && isAnythingToExecuteNowIn(QueueType.RETRY))
+            || isTimeToProcessRetryQueue && isAnythingToExecuteNowIn(QueueType.RETRY))
     }
 
-    fun countToExecuteNow(): Long {
-        return (countToExecuteNowIn(mainQueueType()) +
+    val countToExecuteNow: Long
+        get() = (countToExecuteNowIn(mainQueueType) +
             countToExecuteNowIn(QueueType.PRE) +
             countToExecuteNowIn(QueueType.SKIPPED) +
-            if (isTimeToProcessRetryQueue()) countToExecuteNowIn(QueueType.RETRY) else 0)
-    }
+            if (isTimeToProcessRetryQueue) countToExecuteNowIn(QueueType.RETRY) else 0)
 
     private fun isForAccessor(cd: CommandData): Boolean {
         val commandForDownloads = (cd.command == CommandEnum.GET_ATTACHMENT
@@ -28,16 +27,14 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
         return (accessorType == CommandQueue.AccessorType.GENERAL) xor commandForDownloads
     }
 
-    private fun mainQueueType(): QueueType {
-        return if (accessorType == CommandQueue.AccessorType.GENERAL) QueueType.CURRENT else QueueType.DOWNLOADS
-    }
+    private val mainQueueType: QueueType
+        get() = if (accessorType == CommandQueue.AccessorType.GENERAL) QueueType.CURRENT else QueueType.DOWNLOADS
 
-    private fun isTimeToProcessRetryQueue(): Boolean {
-        return RelativeTime.moreSecondsAgoThan(
+    private val isTimeToProcessRetryQueue: Boolean
+        get() = RelativeTime.moreSecondsAgoThan(
             cq.mRetryQueueProcessedAt.get(),
             RETRY_QUEUE_PROCESSING_PERIOD_SECONDS
         )
-    }
 
     private fun countToExecuteNowIn(queueType: QueueType): Long {
         var counter: Long = 0
@@ -62,40 +59,43 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
         return false
     }
 
-    suspend fun nextToExecute(queueExecutor: QueueExecutor): CommandData? {
+    suspend fun nextToExecute(queueExecutor: QueueExecutor): CommandData {
         moveCommandsFromPreToMainQueue()
-        var commandData: CommandData?
+        var commandData: CommandData
         do {
-            commandData = cq.get(mainQueueType()).queue.poll()
-            if (commandData == null && isTimeToProcessRetryQueue() && isAnythingToExecuteNowIn(QueueType.RETRY)) {
+            commandData = cq.get(mainQueueType).queue.poll() ?: CommandData.EMPTY
+            if (commandData.isEmpty && isTimeToProcessRetryQueue && isAnythingToExecuteNowIn(QueueType.RETRY)) {
                 moveCommandsFromRetryToMainQueue()
-                commandData = cq.get(mainQueueType()).queue.poll()
+                commandData = cq.get(mainQueueType).queue.poll() ?: CommandData.EMPTY
             }
-            if (commandData == null) {
+            if (commandData.isEmpty) {
                 break
             }
             commandData = findInRetryQueue(commandData)
-            if (commandData != CommandData.EMPTY) {
+            if (commandData.nonEmpty) {
                 commandData = findInErrorQueue(commandData)
             }
-            if (skip(commandData)) {
-                cq.addToQueue(QueueType.SKIPPED, commandData)
-                commandData = null
+            if (commandData.hasDuplicateIn(QueueType.EXECUTING)) {
+                commandData = CommandData.EMPTY
             }
-        } while (commandData == null || commandData == CommandData.EMPTY)
-        if (commandData == CommandData.EMPTY) commandData = null
+            if (skip(commandData)) {
+                if (!commandData.hasDuplicateIn(QueueType.SKIPPED)) {
+                    cq.addToQueue(QueueType.SKIPPED, commandData)
+                }
+                commandData = CommandData.EMPTY
+            }
+        } while (commandData.isEmpty)
 
         MyLog.v(
             queueExecutor, "ToExecute $accessorType in " +
-                (if (cq.myContext.isInForeground) "foreground " +
-                    (if (MyPreferences.isSyncWhileUsingApplicationEnabled()) "enabled" else "disabled")
+                (if (cq.myContext.isInForeground)
+                    "foreground " + (if (MyPreferences.isSyncWhileUsingApplicationEnabled) "enabled" else "disabled")
                 else "background") +
-                ": " + (commandData?.toString() ?: "(no command)")
+                ": " + commandData.toString()
         )
-        if (commandData != null) {
+        if (commandData.nonEmpty) {
             cq.changed = true
             commandData.setManuallyLaunched(false)
-
             cq[QueueType.EXECUTING].addToQueue(commandData)
         }
         return commandData
@@ -104,36 +104,38 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
     private fun skip(commandData: CommandData?): Boolean {
         if (commandData == null || commandData == CommandData.EMPTY) return false
 
-        if (!commandData.isInForeground() && cq.myContext.isInForeground
-            && !MyPreferences.isSyncWhileUsingApplicationEnabled()
+        if (!commandData.isInForeground() && cq.myContext.isInForeground &&
+            !MyPreferences.isSyncWhileUsingApplicationEnabled
         ) {
             return true
         }
-        return if (!commandData.command.getConnectionRequired()
-                .isConnectionStateOk(cq.myContext.connectionState)
-        ) {
-            true
-        } else false
+        return !commandData.command.getConnectionRequired().isConnectionStateOk(cq.myContext.connectionState)
     }
 
-    fun moveCommandsFromPreToMainQueue() {
-        for (cd in CommandQueue.preQueue.queue) {
-            if (cq[mainQueueType()].queue.contains(cd) || cq[QueueType.EXECUTING].queue.contains(cd)) {
-                MyLog.v("") {
-                    "FromPreToMain; Didn't add duplicate, removing: $cd"
-                }
-                CommandQueue.preQueue.queue.remove(cd)
-            } else if (addToMainOrSkipQueue(cd)) {
-                CommandQueue.preQueue.queue.remove(cd)
+    suspend fun moveCommandsFromPreToMainQueue() {
+        CommandQueue.mutex.withLock {
+            for (cd in CommandQueue.preQueue.queue) {
+                if (cd.hasDuplicateInMainOrExecuting || addToMainOrSkipQueue(cd)) CommandQueue.preQueue.queue.remove(cd)
             }
         }
     }
+
+    private val CommandData.hasDuplicateInMainOrExecuting: Boolean
+        get() = this.hasDuplicateIn(QueueType.CURRENT) ||
+            this.hasDuplicateIn(QueueType.DOWNLOADS) || this.hasDuplicateIn(QueueType.EXECUTING)
+
+    private fun CommandData.hasDuplicateIn(queueType: QueueType): Boolean =
+        this.nonEmpty && cq[queueType].queue.contains(this).also {
+            if (it) MyLog.v("") { "Duplicate found in $queueType: $this" }
+        }
 
     suspend fun moveCommandsFromSkippedToMainQueue() {
         CommandQueue.mutex.withLock {
             val queue = cq.get(QueueType.SKIPPED).queue
             for (cd in queue) {
-                if (!skip(cd)) {
+                if (cd.hasDuplicateInMainOrExecuting) {
+                    queue.remove(cd)
+                } else if (!skip(cd)) {
                     queue.remove(cd)
                     if (!addToMainOrSkipQueue(cd)) {
                         queue.add(cd)
@@ -150,7 +152,7 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
         return if (skip(commandData)) {
             cq.addToQueue(QueueType.SKIPPED, commandData)
         } else {
-            cq.addToQueue(mainQueueType(), commandData)
+            cq.addToQueue(mainQueueType, commandData)
         }
     }
 

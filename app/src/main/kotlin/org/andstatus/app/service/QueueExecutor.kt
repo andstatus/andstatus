@@ -27,7 +27,7 @@ class QueueExecutor(myService: MyService, val accessorType: AccessorType) :
         }
         val accessor = myService.myContext.queues.getAccessor(accessorType)
         accessor.moveCommandsFromSkippedToMainQueue()
-        MyLog.v(this) { "Started, to process in ${accessorType.title}:" + accessor.countToExecuteNow()}
+        MyLog.v(this) { "Started, to process in ${accessorType.title}:" + accessor.countToExecuteNow }
         val breakReason: String
         do {
             if (isStopping()) {
@@ -47,7 +47,7 @@ class QueueExecutor(myService: MyService, val accessorType: AccessorType) :
                 break
             }
             val commandData = accessor.nextToExecute(this)
-            if (commandData == null || commandData == CommandData.EMPTY) {
+            if (commandData.isEmpty) {
                 breakReason = "No more commands"
                 break
             }
@@ -68,7 +68,7 @@ class QueueExecutor(myService: MyService, val accessorType: AccessorType) :
             accessor.onPostExecute(commandData)
             myService.broadcastAfterExecutingCommand(commandData)
         } while (true)
-        MyLog.v(this) { "Ended:$breakReason, left:" + accessor.countToExecuteNow() + ", $this" }
+        MyLog.v(this) { "Ended:$breakReason, left:" + accessor.countToExecuteNow + ", $this" }
         myService.myContext.queues.save()
         currentlyExecutingDescription = breakReason
         return TryUtils.TRUE
