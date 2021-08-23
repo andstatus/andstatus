@@ -35,7 +35,7 @@ import org.andstatus.app.util.TryUtils
  * Asynchronously save, delete and send a note, prepared by [NoteEditor]
  */
 class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?, NoteEditorData>(AsyncEnum.QUICK_UI) {
-    val noteEditorCommandEmpty = NoteEditorCommand(NoteEditorData.EMPTY)
+    private val noteEditorCommandEmpty = NoteEditorCommand(NoteEditorData.EMPTY)
 
     @Volatile
     private var command: NoteEditorCommand = noteEditorCommandEmpty
@@ -58,7 +58,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
         )
     }
 
-    private fun savePreviousData() {
+    private suspend fun savePreviousData() {
         if (command.needToSavePreviousData()) {
             MyLog.v(command.currentData) { "Saving previous data:" + command.previousData }
             command.previousData?.save()
@@ -66,7 +66,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
         }
     }
 
-    private fun saveCurrentData() {
+    private suspend fun saveCurrentData() {
         val currentData = command.currentData ?: return
 
         MyLog.v(command.currentData) { "Saving current data: $currentData" }
@@ -90,7 +90,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
         broadcastDataChanged(currentData)
     }
 
-    private fun broadcastDataChanged(data: NoteEditorData) {
+    private suspend fun broadcastDataChanged(data: NoteEditorData) {
         if (data.isEmpty) {
             return
         }

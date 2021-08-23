@@ -80,10 +80,10 @@ abstract class Connection protected constructor() : IsEmpty {
      */
     fun tryApiPath(endpointActor: Actor, routine: ApiRoutineEnum): Try<Uri> {
         return TryUtils.fromOptional(getApiUri(endpointActor, routine)) {
-            ConnectionException(StatusCode.UNSUPPORTED_API, this.javaClass.simpleName +
+            ConnectionException(StatusCode.UNSUPPORTED_API, this::class.simpleName +
                     ": " + "The API is not supported: '$routine'")
         }
-                .onSuccess { uri: Uri -> MyLog.v(this.javaClass.simpleName) { "API '$routine' URI=$uri" } }
+                .onSuccess { uri: Uri -> MyLog.v(this::class.simpleName) { "API '$routine' URI=$uri" } }
     }
 
     /**

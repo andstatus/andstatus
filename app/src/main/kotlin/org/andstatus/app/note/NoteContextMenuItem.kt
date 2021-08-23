@@ -39,8 +39,8 @@ import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.list.ContextMenuItem
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Note
-import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
@@ -53,7 +53,7 @@ import org.andstatus.app.view.MyContextMenu
 
 enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false, val appliedToUnsentNotesAlso: Boolean = false) : ContextMenuItem {
     REPLY(true, false) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             return NoteEditorData.newReplyTo(menu.getNoteId(), menu.getActingAccount())
                     .addMentionsToText()
                     .copySensitiveProperty()
@@ -64,7 +64,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }
     },
     EDIT(true, false) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             return NoteEditorData.load(menu.getMyContext(), menu.getNoteId())
         }
 
@@ -73,7 +73,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }
     },
     RESEND(true, false) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             val ma = menu.getMyContext().accounts.fromActorId(
                     MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, menu.getNoteId()))
             val activityId = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, menu.getNoteId())
@@ -83,7 +83,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }
     },
     REPLY_TO_CONVERSATION_PARTICIPANTS(true, false) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             return NoteEditorData.newReplyTo(menu.getNoteId(), menu.getActingAccount())
                     .setReplyToConversationParticipants(true)
                     .addMentionsToText()
@@ -94,7 +94,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }
     },
     REPLY_TO_MENTIONED_ACTORS(true, false) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             return NoteEditorData.newReplyTo(menu.getNoteId(), menu.getActingAccount())
                     .setReplyToMentionedActors(true)
                     .addMentionsToText()
@@ -130,14 +130,14 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }
     },
     SHARE(true, true) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             val noteShare = NoteShare(menu.getOrigin(), menu.getNoteId(), menu.getAttachedMedia())
             noteShare.share(menu.getActivity())
             return NoteEditorData.EMPTY
         }
     },
     COPY_TEXT(true, true) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             val body = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, menu.getNoteId())
             return NoteEditorData.newEmpty(menu.getActingAccount()).setContent(body, TextMediaType.HTML)
         }
@@ -147,7 +147,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }
     },
     COPY_AUTHOR(true, true) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             val author: Actor = Actor.load(menu.getMyContext(),
                     MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, menu.getNoteId()))
             MyLog.v(this) { "noteId:" + menu.getNoteId() + " -> author:" + author }
@@ -159,7 +159,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }
     },
     NOTES_BY_ACTOR(true, true) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getMyContext().timelines
                             .forUserAtHomeOrigin(TimelineType.SENT, menu.getActor()))
@@ -170,7 +170,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }
     },
     NOTES_BY_AUTHOR(true, true) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getMyContext().timelines
                             .forUserAtHomeOrigin(TimelineType.SENT, menu.getAuthor()))
@@ -275,7 +275,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }
     },
     GET_NOTE(true, false) {
-        override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+        override suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             val status: DownloadStatus = DownloadStatus.load(
                     MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, menu.getNoteId()))
             if (status == DownloadStatus.LOADED) {
@@ -355,7 +355,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
         }.execute(TAG, Unit)
     }
 
-    open fun executeAsync(menu: NoteContextMenu): NoteEditorData {
+    open suspend fun executeAsync(menu: NoteContextMenu): NoteEditorData {
         return NoteEditorData.newEmpty(menu.getActingAccount())
     }
 

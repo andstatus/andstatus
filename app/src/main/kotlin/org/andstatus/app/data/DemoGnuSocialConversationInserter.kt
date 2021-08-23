@@ -126,7 +126,7 @@ class DemoGnuSocialConversationInserter {
                         "image"))
         addActivity(activity)
         val attachments = activity.getNote().attachments
-        Assert.assertEquals(attachments.toString(), 3, attachments.size().toLong())
+        Assert.assertEquals(attachments.toString(), 3, attachments.size.toLong())
         val attachment0 = attachments.list[0]
         val attachment2 = attachments.list[2]
         Assert.assertEquals("Image should be the first $attachments", 0,
@@ -167,7 +167,7 @@ class DemoGnuSocialConversationInserter {
         }
         addActivity(activity)
         val attachments = activity.getNote().attachments
-        Assert.assertEquals(attachments.toString(), (2 * numberOfImages).toLong(), attachments.size().toLong())
+        Assert.assertEquals(attachments.toString(), (2 * numberOfImages).toLong(), attachments.size.toLong())
     }
 
     private fun actorFromOidAndAvatar(actorOid: String, avatarUrl: String?): Actor {

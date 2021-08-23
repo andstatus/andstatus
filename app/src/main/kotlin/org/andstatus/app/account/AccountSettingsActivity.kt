@@ -1276,7 +1276,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
                     TaskResult(status, e.toString())
                 }
                 .recover(Exception::class.java) { e: Exception ->
-                    TaskResult(ResultStatus.CONNECTION_EXCEPTION, "${e.message} (${e.javaClass.name})")
+                    TaskResult(ResultStatus.CONNECTION_EXCEPTION, "${e.message} (${e::class.qualifiedName})")
                 }
         }
 

@@ -293,7 +293,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
             intent.putExtra(EXTRA_HELP_PAGE_INDEX, pageIndex)
             if (context is Activity) {
                 context.startActivity(intent)
-                MyLog.v(HelpActivity::class) { "Finishing " + context.javaClass.simpleName + " and starting me"}
+                MyLog.v(HelpActivity::class) { "Finishing " + context::class.simpleName + " and starting me"}
                 context.finish()
             } else {
                 MyLog.v(HelpActivity::class) {

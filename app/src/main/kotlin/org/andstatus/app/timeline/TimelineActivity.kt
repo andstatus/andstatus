@@ -980,6 +980,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             CommandEnum.GET_ATTACHMENT,
             CommandEnum.GET_AVATAR,
             CommandEnum.UPDATE_NOTE,
+            CommandEnum.UPDATE_MEDIA,
             CommandEnum.DELETE_NOTE,
             CommandEnum.LIKE,
             CommandEnum.UNDO_LIKE,

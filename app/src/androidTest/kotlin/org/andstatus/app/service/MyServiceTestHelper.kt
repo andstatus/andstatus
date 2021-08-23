@@ -51,13 +51,13 @@ class MyServiceTestHelper : MyServiceEventsListener {
             if (isSingleStubbedInstance) {
                 httpConnectionStub = HttpConnectionStub()
                 TestSuite.setHttpConnectionStubInstance(httpConnectionStub)
-                MyContextHolder.myContextHolder.getBlocking().setExpired { this.javaClass.simpleName + " setUp" }
+                MyContextHolder.myContextHolder.getBlocking().setExpired { this::class.simpleName + " setUp" }
             }
             myContext = MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
             if (!myContext.isReady) {
                 val msg = "Context is not ready after the initialization, repeating... $myContext"
                 MyLog.w(this, msg)
-                myContext.setExpired { this.javaClass.simpleName + msg }
+                myContext.setExpired { this::class.simpleName + msg }
                 myContext = MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
                 Assert.assertEquals("Context should be ready", true, myContext.isReady)
             }

@@ -74,16 +74,17 @@ class QueueExecutor(myService: MyService, val accessorType: AccessorType) :
         return TryUtils.TRUE
     }
 
-    private fun addSyncAfterNoteWasSent(myService: MyService, commandDataExecuted: CommandData) {
-        if (commandDataExecuted.getResult().hasError() ||
-            commandDataExecuted.command != CommandEnum.UPDATE_NOTE ||
-            !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)) {
+    private fun addSyncAfterNoteWasSent(myService: MyService, cdExecuted: CommandData) {
+        if (cdExecuted.getResult().hasError() ||
+            (cdExecuted.command != CommandEnum.UPDATE_NOTE && cdExecuted.command != CommandEnum.UPDATE_MEDIA) ||
+            !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)
+        ) {
             return
         }
 
         myService.myContext.queues.addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                commandDataExecuted.getTimeline().myAccountToSync, TimelineType.SENT)
-                .setInForeground(commandDataExecuted.isInForeground()))
+                cdExecuted.getTimeline().myAccountToSync, TimelineType.SENT)
+                .setInForeground(cdExecuted.isInForeground()))
     }
 
     override suspend fun onPostExecute(result: Try<Boolean>) {

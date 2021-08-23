@@ -33,6 +33,7 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.CommandTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.Attachments
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.service.CommandQueue.OneQueue
 import org.andstatus.app.timeline.ListScope
@@ -249,7 +250,9 @@ class CommandData private constructor(
                     builder.withSpace(commandTimeline.origin.name)
                 }
             }
-            CommandEnum.GET_ATTACHMENT, CommandEnum.UPDATE_NOTE -> builder.withSpaceQuoted(trimConditionally(description, summaryOnly))
+            CommandEnum.GET_ATTACHMENT,
+            CommandEnum.UPDATE_NOTE,
+            CommandEnum.UPDATE_MEDIA -> builder.withSpaceQuoted(trimConditionally(description, summaryOnly))
             CommandEnum.GET_TIMELINE -> builder.append(TimelineTitle.from(myContext, getTimeline()).toString())
             CommandEnum.GET_OLDER_TIMELINE -> {
                 builder.append(WhichPage.OLDER.getTitle(myContext.context))
@@ -381,8 +384,12 @@ class CommandData private constructor(
             }
         }
 
-        fun newUpdateStatus(myAccount: MyAccount, unsentActivityId: Long, noteId: Long): CommandData {
-            val commandData = newAccountCommand(CommandEnum.UPDATE_NOTE, myAccount)
+        suspend fun newUpdateStatus(myAccount: MyAccount, unsentActivityId: Long, noteId: Long): CommandData {
+            val hasAttachmentsToUpload: Boolean = Attachments.newLoaded(myAccount.myContext, noteId).toUploadCount > 0
+            val commandData = newAccountCommand(
+                if (hasAttachmentsToUpload) CommandEnum.UPDATE_MEDIA else CommandEnum.UPDATE_NOTE,
+                myAccount
+            )
             commandData.itemId = unsentActivityId
             commandData.setTrimmedNoteContentAsDescription(noteId)
             return commandData

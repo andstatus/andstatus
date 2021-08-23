@@ -49,9 +49,7 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmptyIn
         return DuplicationLink.NONE
     }
 
-    fun isCollapsed(): Boolean {
-        return childrenCount > 0
-    }
+    val isCollapsed: Boolean get() = childrenCount > 0
 
     fun collapse(child: T) {
         getChildren().addAll(child.getChildren())
@@ -67,10 +65,7 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmptyIn
         return true
     }
 
-    override val isEmpty: Boolean
-        get() {
-            return isEmptyIn
-        }
+    override val isEmpty: Boolean get() = isEmptyIn
 
     protected val childrenCount: Int get() = if (isEmpty) 0 else Integer.max(getParent().childrenCount, getChildren().size)
 

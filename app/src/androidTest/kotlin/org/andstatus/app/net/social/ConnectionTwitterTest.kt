@@ -145,7 +145,7 @@ class ConnectionTwitterTest {
         stub.addResponse(org.andstatus.app.test.R.raw.twitter_note_with_media)
         val note = connection.getNote("503799441900314624").get().getNote()
         Assert.assertFalse("note returned", note.isEmpty)
-        Assert.assertEquals("Should have an attachment $note", 1, note.attachments.size().toLong())
+        Assert.assertEquals("Should have an attachment $note", 1, note.attachments.size.toLong())
         Assert.assertEquals("attachment", Attachment.Companion.fromUri("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"),
                 note.attachments.list[0])
         Assert.assertNotSame("attachment", Attachment.Companion.fromUri("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg"),
@@ -159,7 +159,7 @@ class ConnectionTwitterTest {
         Assert.assertFalse("note returned $note", note.isEmpty)
         Assert.assertEquals("Body of this note $note", "Test uploading two images via #AndStatus https://t.co/lJn9QBpWyn",
                 note.content)
-        Assert.assertEquals("Should have two attachments $note", 2, note.attachments.size().toLong())
+        Assert.assertEquals("Should have two attachments $note", 2, note.attachments.size.toLong())
         Assert.assertEquals("attachment", Attachment.Companion.fromUri("https://pbs.twimg.com/media/EKJZzZPWoAICygS.jpg"),
                 note.attachments.list[0])
         Assert.assertEquals("attachment", Attachment.Companion.fromUri("https://pbs.twimg.com/media/EKJZzkYWsAELO-o.jpg"),
@@ -172,7 +172,7 @@ class ConnectionTwitterTest {
         val activity = connection.getNote("1271153637457367042").get()
         val note = activity.getNote()
         Assert.assertFalse("note returned", note.isEmpty)
-        Assert.assertEquals("Should have two attachments $note", 2, note.attachments.size().toLong())
+        Assert.assertEquals("Should have two attachments $note", 2, note.attachments.size.toLong())
         val attachment0 = note.attachments.list[0]
         Assert.assertEquals("attachment 0 $note", Attachment.Companion.fromUriAndMimeType(
                 "https://video.twimg.com/tweet_video/EaQLf5eXkAIhL7_.mp4", "video/mp4"),

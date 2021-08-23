@@ -177,7 +177,7 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
     private fun showDuplicates(itemId: Long) {
         for (page in data.pages) {
             for (ind in page.items.indices.reversed()) {
-                if (page.items[ind].isCollapsed()) {
+                if (page.items[ind].isCollapsed) {
                     if (showDuplicatesOfOneItem(itemId, page, ind)) {
                         return
                     }

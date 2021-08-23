@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2018-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,8 @@ import org.andstatus.app.util.UriUtils
 import java.util.*
 import java.util.stream.Collectors
 
-class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
-    val list: MutableList<Attachment>
-
-    constructor() : this(false) {}
+class Attachments constructor(isEmpty: Boolean = false) : IsEmpty {
+    val list: MutableList<Attachment> = if (isEmpty) mutableListOf() else ArrayList()
 
     fun add(attachment: Attachment): Attachments {
         if (!attachment.isValid() || list.contains(attachment)) return this
@@ -76,10 +74,7 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
         }
     }
 
-    override val isEmpty: Boolean
-        get() {
-            return list.isEmpty()
-        }
+    override val isEmpty: Boolean get() = list.isEmpty()
 
     fun clear() {
         list.clear()
@@ -91,28 +86,20 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
         return attachments
     }
 
-    fun size(): Int {
-        return list.size
-    }
+    val size: Int get() = list.size
 
     override fun toString(): String {
-        return this.javaClass.simpleName + "{" +
-                list +
-                '}'
+        return this::class.simpleName + "{" + list + '}'
     }
 
-    fun toUploadCount(): Long {
-        return list.stream().filter { a: Attachment -> !UriUtils.isDownloadable(a.uri) }.count()
-    }
+    val toUploadCount: Int get() = list.count { !UriUtils.isDownloadable(it.uri) }
 
-    fun getFirstToUpload(): Attachment {
-        return list.stream().filter { a: Attachment -> !UriUtils.isDownloadable(a.uri) }.findFirst().orElse(Attachment.EMPTY)
-    }
+    val firstToUpload: Attachment get() = list.firstOrNull { !UriUtils.isDownloadable(it.uri) } ?: Attachment.EMPTY
 
     companion object {
         val EMPTY: Attachments = Attachments(true)
 
-        fun load(myContext: MyContext, noteId: Long): Attachments {
+        fun newLoaded(myContext: MyContext, noteId: Long): Attachments {
             if (myContext.isEmptyOrExpired || noteId == 0L) return EMPTY
             val downloads: NoteDownloads = NoteDownloads.fromNoteId(myContext, noteId)
             if (downloads.isEmpty) return EMPTY
@@ -138,7 +125,4 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
         }
     }
 
-    init {
-        list = if (isEmpty) mutableListOf() else ArrayList()
-    }
 }

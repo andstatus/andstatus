@@ -430,7 +430,7 @@ class ConnectionPumpioTest {
             note = note.withNewOid(note.oid + "_" + DemoData.demoData.testRunUid)
         }
         Assert.assertNotNull("note returned", note)
-        Assert.assertEquals("has attachment", 1, note.attachments.size().toLong())
+        Assert.assertEquals("has attachment", 1, note.attachments.size.toLong())
         val attachment: Attachment = Attachment.Companion.fromUri("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg")
         Assert.assertEquals("attachment", attachment, note.attachments.list[0])
         Assert.assertEquals("Body text", "<p>Hanging out up in the mountains.</p>\n", note.content)

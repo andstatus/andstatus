@@ -101,8 +101,8 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
         return commandData
     }
 
-    private fun skip(commandData: CommandData?): Boolean {
-        if (commandData == null || commandData == CommandData.EMPTY) return false
+    private fun skip(commandData: CommandData): Boolean {
+        if (commandData.isEmpty) return false
 
         if (!commandData.isInForeground() && cq.myContext.isInForeground &&
             !MyPreferences.isSyncWhileUsingApplicationEnabled

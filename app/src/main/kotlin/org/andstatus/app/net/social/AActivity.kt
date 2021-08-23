@@ -204,7 +204,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     @JvmOverloads
     fun addAttachment(attachment: Attachment, maxAttachments: Int = OriginConfig.MAX_ATTACHMENTS_DEFAULT) {
         val attachments = getNote().attachments.add(attachment)
-        if (attachments.size() > maxAttachments) {
+        if (attachments.size > maxAttachments) {
             attachments.list.removeAt(0)
         }
         setNote(getNote().withAttachments(attachments))

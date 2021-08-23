@@ -107,9 +107,10 @@ class TimelineSyncTracker(private val timeline: Timeline, private val isSyncYoun
 
     fun clearPosition() {
         timeline.forgetPositionsAndDates()
+        timeline.save(timeline.myContext)
     }
 
     companion object {
-        private val TAG: String = TimelineSyncTracker::class.java.simpleName
+        private val TAG: String = TimelineSyncTracker::class.simpleName.toString()
     }
 }

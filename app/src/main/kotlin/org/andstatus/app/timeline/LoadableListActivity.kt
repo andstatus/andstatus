@@ -421,13 +421,22 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
      */
     protected open fun isRefreshNeededAfterExecuting(commandData: CommandData): Boolean =
         when (commandData.command) {
-            CommandEnum.GET_NOTE, CommandEnum.GET_CONVERSATION,
-            CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS ->
-                commandData.getResult().getDownloadedCount() > 0
-            CommandEnum.GET_ACTOR, CommandEnum.UPDATE_NOTE, CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW,
-            CommandEnum.LIKE, CommandEnum.UNDO_LIKE, CommandEnum.ANNOUNCE, CommandEnum.UNDO_ANNOUNCE,
-            CommandEnum.DELETE_NOTE, CommandEnum.GET_ATTACHMENT, CommandEnum.GET_AVATAR ->
-                !commandData.getResult().hasError()
+            CommandEnum.GET_NOTE,
+            CommandEnum.GET_CONVERSATION,
+            CommandEnum.GET_FOLLOWERS,
+            CommandEnum.GET_FRIENDS -> commandData.getResult().getDownloadedCount() > 0
+            CommandEnum.GET_ACTOR,
+            CommandEnum.UPDATE_NOTE,
+            CommandEnum.UPDATE_MEDIA,
+            CommandEnum.FOLLOW,
+            CommandEnum.UNDO_FOLLOW,
+            CommandEnum.LIKE,
+            CommandEnum.UNDO_LIKE,
+            CommandEnum.ANNOUNCE,
+            CommandEnum.UNDO_ANNOUNCE,
+            CommandEnum.DELETE_NOTE,
+            CommandEnum.GET_ATTACHMENT,
+            CommandEnum.GET_AVATAR -> !commandData.getResult().hasError()
             else -> false
         }
 

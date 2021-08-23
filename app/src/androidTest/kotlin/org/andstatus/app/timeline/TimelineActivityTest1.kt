@@ -158,7 +158,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
             found = false
             for (ind in 0 until activity.getListData().size()) {
                 val item: ViewItem<*> = activity.getListData().getItem(ind)
-                if (item.isCollapsed()) {
+                if (item.isCollapsed) {
                     found = true
                     break
                 }

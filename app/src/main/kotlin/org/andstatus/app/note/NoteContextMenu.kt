@@ -97,7 +97,7 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
                                 getActivity(), R.string.menu_item_user_messages,
                                 noteForAnyAccount.actor.actorNameInTimeline))
             }
-            if (viewItem.isCollapsed()) {
+            if (viewItem.isCollapsed) {
                 NoteContextMenuItem.SHOW_DUPLICATES.addTo(menu, order++, R.string.show_duplicates)
             } else if (getActivity().getListData().canBeCollapsed(getActivity().getPositionOfContextMenu())) {
                 NoteContextMenuItem.COLLAPSE_DUPLICATES.addTo(menu, order++, R.string.collapse_duplicates)

@@ -30,7 +30,7 @@ internal class TimelineDataObjActorWrapper(listData: TimelineData<ActivityViewIt
                 val item = listData.getItem(position)
                 if (item.getObjActorItem().getId() == itemId) {
                     return position
-                } else if (item.isCollapsed()) {
+                } else if (item.isCollapsed) {
                     for (child in item.getChildren()) {
                         if (child.getObjActorItem().getId() == itemId) {
                             return position

@@ -167,7 +167,7 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
                     position++
                     if (item.getId() == itemId) {
                         return position
-                    } else if (item.isCollapsed()) {
+                    } else if (item.isCollapsed) {
                         for (child in item.getChildren()) {
                             if (child.getId() == itemId) {
                                 return position

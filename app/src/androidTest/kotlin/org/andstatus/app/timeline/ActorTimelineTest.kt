@@ -16,6 +16,7 @@
 package org.andstatus.app.timeline
 
 import android.content.Intent
+import org.andstatus.app.ActivityTestHelper
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
@@ -29,13 +30,14 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
+import org.junit.Assert.fail
 import org.junit.Test
 
 class ActorTimelineTest : TimelineActivityTest<ActivityViewItem>() {
 
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
-        TestSuite.initializeWithData(this)
+        TestSuite.initialize(this)
         val myContext: MyContext =  MyContextHolder.myContextHolder.getBlocking()
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
@@ -47,6 +49,7 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem>() {
         val timeline = myContext.timelines[TimelineType.SENT, actor, ma.origin]
         Assert.assertFalse("Timeline $timeline", timeline.isCombined)
         timeline.forgetPositionsAndDates()
+        timeline.save(myContext)
         MyLog.i(this, "setUp ended, $timeline")
         return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
@@ -59,16 +62,25 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem>() {
     private fun _openSecondAuthorTimeline() {
         val method = "openSecondAuthorTimeline"
         TestSuite.waitForListLoaded(activity, 10)
+        ActivityTestHelper.hideEditorAndSaveDraft(method, activity)
+        val timeline = activity.getTimeline()
+        Assert.assertFalse("Timeline $timeline", timeline.isCombined)
+        if (findInTimeline()) return
+
+        fail("No follow action by " + DemoData.demoData.conversationAuthorSecondActorOid +
+            " in " + activity.getListData()
+        )
+    }
+
+    private fun findInTimeline(): Boolean {
         val timelineData = activity.getListData()
-        var followItem: ActivityViewItem? = ActivityViewItem.Companion.EMPTY
+        var followItem: ActivityViewItem = ActivityViewItem.EMPTY
         for (position in 0 until timelineData.size()) {
             val item = timelineData.getItem(position)
             if (item.activityType == ActivityType.FOLLOW) {
                 followItem = item
             }
         }
-        Assert.assertNotEquals("No follow action by " + DemoData.demoData.conversationAuthorSecondActorOid
-                + " in " + timelineData,
-                ActivityViewItem.Companion.EMPTY, followItem)
+        return followItem.nonEmpty
     }
 }

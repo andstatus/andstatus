@@ -108,7 +108,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                     HttpRequest.of(ApiRoutineEnum.UPDATE_NOTE, uri)
                             .withPostParams(formParams)
                             .withMediaPartName("media")
-                            .withAttachmentToPost(note.attachments.getFirstToUpload())
+                            .withAttachmentToPost(note.attachments.firstToUpload)
                 }
                 .flatMap(::execute)
                 .flatMap { obj: HttpReadResult -> obj.getJsonObject() }

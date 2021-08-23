@@ -89,7 +89,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Summary", "This is a test spoiler", note.summary)
         Assert.assertEquals("Body", "<p>I&apos;m figuring out how to work with Mastodon</p>", note.content)
         Assert.assertEquals("Note application", "Web", note.via)
-        Assert.assertEquals("Media attachments", 2, note.attachments.size().toLong())
+        Assert.assertEquals("Media attachments", 2, note.attachments.size.toLong())
         val attachment = note.attachments.list[0]
         Assert.assertEquals("Content type", MyContentType.IMAGE, attachment.contentType)
         Assert.assertEquals("Media URI", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
@@ -138,7 +138,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Summary", "", note3.summary)
         MatcherAssert.assertThat("Body", note3.content, CoreMatchers.containsString("Will monitor there"))
         Assert.assertEquals("Note application", "Web", note3.via)
-        Assert.assertEquals("Media attachments", 0, note3.attachments.size().toLong())
+        Assert.assertEquals("Media attachments", 0, note3.attachments.size.toLong())
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  myContext, CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE))
@@ -331,7 +331,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Number of items in the Timeline", 1, timeline.size().toLong())
         val activity = timeline[0] ?: throw IllegalStateException("No activity")
         val note = activity.getNote()
-        Assert.assertEquals("Media attachments " + note.attachments, 2, note.attachments.size().toLong())
+        Assert.assertEquals("Media attachments " + note.attachments, 2, note.attachments.size.toLong())
         val video = note.attachments.list[0]
         Assert.assertEquals("Content type", MyContentType.VIDEO, video.contentType)
         Assert.assertEquals("Media URI", UriUtils.fromString(videoUri),

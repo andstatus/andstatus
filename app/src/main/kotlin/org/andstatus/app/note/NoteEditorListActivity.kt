@@ -81,7 +81,7 @@ abstract class NoteEditorListActivity<T : ViewItem<T>>(clazz: KClass<*>) : Loada
     override fun onReceiveAfterExecutingCommand(commandData: CommandData) {
         super.onReceiveAfterExecutingCommand(commandData)
         when (commandData.command) {
-            CommandEnum.UPDATE_NOTE -> noteEditor?.loadCurrentDraft()
+            CommandEnum.UPDATE_NOTE, CommandEnum.UPDATE_MEDIA -> noteEditor?.loadCurrentDraft()
             else -> {
             }
         }

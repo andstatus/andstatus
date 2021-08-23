@@ -263,7 +263,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             val editorView: View = ActivityTestHelper.openEditor<ActivityViewItem>(method, test.activity)
             assertTextCleared(test)
             TestSuite.waitForIdleSync()
-            val noteName = "A note " + toAdd + " " + test.javaClass.simpleName + " can have a title (name)"
+            val noteName = "A note " + toAdd + " " + test::class.simpleName + " can have a title (name)"
             val content = "Note with " + toExpect + " attachment" +
                     (if (toExpect == 1) "" else "s") + " " +
                     DemoData.demoData.testRunUid

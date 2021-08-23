@@ -30,7 +30,7 @@ internal class TimelineDataNoteWrapper(listData: TimelineData<ActivityViewItem>)
                 val item = listData.getItem(ind)
                 if (item.noteViewItem.getId() == itemId) {
                     return position
-                } else if (item.isCollapsed()) {
+                } else if (item.isCollapsed) {
                     for (child in item.getChildren()) {
                         if (child.noteViewItem.getId() == itemId) {
                             return position

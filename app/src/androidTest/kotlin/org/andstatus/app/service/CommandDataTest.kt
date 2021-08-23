@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.service
 
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.SearchObjects
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
@@ -43,7 +44,7 @@ class CommandDataTest {
     }
 
     @Test
-    fun testQueue() {
+    fun testQueue() = runBlocking {
         val time0 = System.currentTimeMillis()
         var commandData: CommandData = CommandData.Companion.newUpdateStatus(DemoData.demoData.getPumpioConversationAccount(), 1, 4)
         testQueueOneCommandData(commandData, time0)
@@ -111,7 +112,7 @@ class CommandDataTest {
     }
 
     @Test
-    fun testPriority() {
+    fun testPriority() = runBlocking {
         val queue: Queue<CommandData> = PriorityBlockingQueue(100)
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         queue.add(CommandData.Companion.newActorCommand(CommandEnum.GET_FRIENDS, Actor.Companion.fromId(ma.origin, 123), ""))

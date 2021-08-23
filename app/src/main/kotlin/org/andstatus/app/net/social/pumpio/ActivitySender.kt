@@ -101,9 +101,9 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
     private fun buildActivityToSend(activityType: PActivityType): JSONObject {
         val activity = newActivityOfThisAccount(activityType)
         var obj = buildObject(activity)
-        val attachment = note.attachments.getFirstToUpload()
+        val attachment = note.attachments.firstToUpload
         if (attachment.nonEmpty) {
-            if (note.attachments.toUploadCount() > 1) {
+            if (note.attachments.toUploadCount > 1) {
                 MyLog.w(this, "Sending only the first attachment: " + note.attachments) // TODO
             }
             val objectType: PObjectType = PObjectType.fromJson(obj)

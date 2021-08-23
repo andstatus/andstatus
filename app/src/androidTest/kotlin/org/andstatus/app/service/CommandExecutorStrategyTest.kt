@@ -24,8 +24,8 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.http.HttpConnectionStub
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.origin.DiscoveredOrigins
@@ -141,7 +141,7 @@ class CommandExecutorStrategyTest {
         httpConnectionStub.setException(null)
     }
 
-    private fun getCommandDataForUnsentNote(suffix: String?): CommandData {
+    private suspend fun getCommandDataForUnsentNote(suffix: String?): CommandData {
         val body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms"
         val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(ma, body, "", DownloadStatus.SENDING)
         return CommandData.Companion.newUpdateStatus(ma, activity.getId(), activity.getNote().noteId)

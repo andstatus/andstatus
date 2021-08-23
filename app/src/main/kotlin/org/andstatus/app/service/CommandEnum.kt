@@ -22,8 +22,8 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.util.MyLog
 
 /**
- * The command to the MyService or to MyAppWidgetProvider as a
- * enum We use 'code' for persistence
+ * The command to the MyService or to MyAppWidgetProvider as a enum.
+ * We use 'code' for persistence
  *
  * @author yvolk@yurivolkov.com
  */
@@ -33,7 +33,8 @@ enum class CommandEnum constructor(
         /** The id of the string resource with the localized name of this enum to use in UI  */
         private val titleResId: Int = 0,
         /** less value of the  priority means higher priority  */
-        private val priority: Int = 0, private val connectionRequired: ConnectionRequired = ConnectionRequired.ANY) {
+        private val priority: Int = 0,
+        private val connectionRequired: ConnectionRequired = ConnectionRequired.ANY) {
     /** The action is unknown  */
     UNKNOWN("unknown"),
 
@@ -56,6 +57,8 @@ enum class CommandEnum constructor(
 
     /** This command is for sending both public and private notes  */
     UPDATE_NOTE("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC),
+    /** The same as #UPDATE_NOTE but is used to show that some attachment needs to be uploaded */
+    UPDATE_MEDIA("update-media", R.string.button_create_message, -9, ConnectionRequired.DOWNLOAD_ATTACHMENT),
     DELETE_NOTE("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.SYNC),
     GET_NOTE("get-status", R.string.title_command_get_status, -5, ConnectionRequired.SYNC),
     GET_CONVERSATION("get-conversation", R.string.get_conversation, -5, ConnectionRequired.SYNC),

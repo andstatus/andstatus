@@ -166,7 +166,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("conversationOid", "1956322", activity.getNote().conversationOid)
         Assert.assertEquals("Author", "mcscx", activity.getAuthor().getUsername())
         Assert.assertEquals("null Homepage (url) should be treated as blank", "", activity.getAuthor().getHomepage())
-        Assert.assertEquals("has attachment", 1, activity.getNote().attachments.size().toLong())
+        Assert.assertEquals("has attachment", 1, activity.getNote().attachments.size.toLong())
         val attachment: Attachment = Attachment.Companion.fromUri("https://quitter.se/file/mcscx-20131110T222250-427wlgn.png")
         Assert.assertEquals("attachment", attachment, activity.getNote().attachments.list[0])
         return activity

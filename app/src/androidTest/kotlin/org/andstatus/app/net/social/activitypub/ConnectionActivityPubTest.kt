@@ -176,7 +176,7 @@ class ConnectionActivityPubTest {
         Assert.assertEquals("Note updated at " + TestSuite.utcTime(note8.updatedDate),
                 TestSuite.utcTime(2019, Calendar.MARCH, 10, 18, 46, 31).toString(),
                 TestSuite.utcTime(note8.updatedDate).toString())
-        Assert.assertEquals("Media attachments " + note8.attachments, 2, note8.attachments.size().toLong())
+        Assert.assertEquals("Media attachments " + note8.attachments, 2, note8.attachments.size.toLong())
         val attachment0 = note8.attachments.list[0]
         Assert.assertEquals("Content type", MyContentType.IMAGE, attachment0.contentType)
         Assert.assertEquals("Media URI", UriUtils.fromString("https://img.pawoo.net/media_attachments/files/013/102/220/original/b70c78bee2bf7c99.jpg"),
@@ -288,14 +288,21 @@ class ConnectionActivityPubTest {
         val oids = Arrays.asList(
                 "https://queer.hacktivis.me/users/AndStatus/followers"
         )
-        oids.forEach(Consumer { oid: String? -> Assert.assertTrue("Audience should contain $oid\n $activity\n $audience", audience.containsOid(oid)) })
+        oids.forEach { oid: String? ->
+            Assert.assertTrue("Audience should contain $oid\n $activity\n $audience", audience.containsOid(oid))
+        }
         val attachments = activity.getNote().attachments
         Assert.assertTrue("Attachments of $activity", attachments.nonEmpty)
         val executionContext = CommandExecutionContext(
-                 myContext,
-                CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, stub.getData().getMyAccount(), TimelineType.SENT))
+            myContext,
+            CommandData.Companion.newTimelineCommand(
+                CommandEnum.UPDATE_MEDIA,
+                stub.getData().getMyAccount(),
+                TimelineType.SENT
+            )
+        )
         DataUpdater(executionContext).onActivity(activity)
-        val attachmentsStored: Attachments = Attachments.Companion.load( myContext, activity.getNote().noteId)
+        val attachmentsStored: Attachments = Attachments.Companion.newLoaded( myContext, activity.getNote().noteId)
         Assert.assertTrue("Attachments should be stored of $activity\n $attachmentsStored\n",
                 attachmentsStored.nonEmpty)
         Assert.assertEquals("Attachment stored of $activity\n $attachmentsStored\n",

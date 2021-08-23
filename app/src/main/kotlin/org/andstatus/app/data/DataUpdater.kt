@@ -222,7 +222,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 values.put(NoteTable.CONVERSATION_ID, note.getConversationId())
             }
             if (note.getStatus().mayUpdateContent() && shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
-                values.put(NoteTable.ATTACHMENTS_COUNT, note.attachments.size())
+                values.put(NoteTable.ATTACHMENTS_COUNT, note.attachments.size)
             }
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this) {

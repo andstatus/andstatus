@@ -104,7 +104,7 @@ class NoteEditorData private constructor(
         attachedImageFiles = AttachedImageFiles.load(myContext, noteId).also {
             it.list.forEach { imageFile: AttachedMediaFile -> imageFile.preloadImageAsync(CacheName.ATTACHED_IMAGE) }
         }
-        activity.setNote(note.withAttachments(Attachments.load(myContext, noteId)))
+        activity.setNote(note.withAttachments(Attachments.newLoaded(myContext, noteId)))
         MyLog.v(instanceTag) { "Loaded $this" }
     }
 

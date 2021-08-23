@@ -50,7 +50,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     execContext.commandData.command == CommandEnum.LIKE)
             CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW -> followOrStopFollowingActor(getActor(),
                     execContext.commandData.command == CommandEnum.FOLLOW)
-            CommandEnum.UPDATE_NOTE -> updateNote(execContext.commandData.itemId)
+            CommandEnum.UPDATE_NOTE, CommandEnum.UPDATE_MEDIA -> updateNote(execContext.commandData.itemId)
             CommandEnum.DELETE_NOTE -> deleteNote(execContext.commandData.itemId)
             CommandEnum.UNDO_ANNOUNCE -> undoAnnounce(execContext.commandData.itemId)
             CommandEnum.GET_CONVERSATION -> getConversation(execContext.commandData.itemId)
@@ -309,7 +309,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         val method = "updateNote"
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activityId)
         val note: Note = Note.loadContentById(execContext.myContext, noteId)
-                .withAttachments(Attachments.load(execContext.myContext, noteId))
+                .withAttachments(Attachments.newLoaded(execContext.myContext, noteId))
         getNoteOid(method, MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId), false)
                 .filter { obj: String? -> StringUtil.nonEmptyNonTemp(obj) }
                 .map { inReplyToNoteOid: String? ->

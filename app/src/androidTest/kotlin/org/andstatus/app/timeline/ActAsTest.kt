@@ -44,12 +44,14 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
+        val myContext: MyContext =  MyContextHolder.myContextHolder.getBlocking()
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+        myContext.accounts.setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin)
+        val timeline: Timeline =  myContext.timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin)
         timeline.forgetPositionsAndDates()
+        timeline.save(myContext)
         return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
 

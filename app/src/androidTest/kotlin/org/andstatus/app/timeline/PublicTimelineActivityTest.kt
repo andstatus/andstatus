@@ -48,11 +48,13 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.gnusocialTestOriginName)
+        val myContext = MyContextHolder.myContextHolder.getBlocking()
+        val origin: Origin =  myContext.origins.fromName(DemoData.demoData.gnusocialTestOriginName)
         Assert.assertTrue(origin.toString(), origin.isValid())
         MyLog.i(this, "setUp ended")
-        return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines
-                .get(TimelineType.PUBLIC, Actor.EMPTY, origin).getUri())
+        val timeline = myContext.timelines.get(TimelineType.PUBLIC, Actor.EMPTY, origin)
+        timeline.save(myContext)
+        return Intent(Intent.ACTION_VIEW,  timeline.getUri())
     }
 
     @Test

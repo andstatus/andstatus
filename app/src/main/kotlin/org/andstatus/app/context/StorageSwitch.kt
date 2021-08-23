@@ -316,7 +316,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
                 MyLog.w(this, "Result is $result")
                 Toast.makeText(mContext, mContext.getString(R.string.error), Toast.LENGTH_LONG).show()
             }.onSuccess { taskResult ->
-                MyLog.d(this, this.javaClass.simpleName + " ended, "
+                MyLog.d(this, this::class.simpleName + " ended, "
                         + if (taskResult.success) if (taskResult.moved) "moved" else "didn't move" else "failed")
                 if (!taskResult.success) {
                     taskResult.messageBuilder.insert(0, mContext.getString(R.string.error) + ": ")

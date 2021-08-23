@@ -156,7 +156,9 @@ class CommandQueue(val myContext: MyContext) {
                 } else {
                     if (queue.offer(cd)) {
                         count++
-                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.command == CommandEnum.UPDATE_NOTE)) {
+                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.command == CommandEnum.UPDATE_NOTE ||
+                                cd.command == CommandEnum.UPDATE_MEDIA)
+                        ) {
                             MyLog.v(TAG, "$method; $count: $cd")
                         }
                     } else {
@@ -222,7 +224,8 @@ class CommandQueue(val myContext: MyContext) {
                         db.insert(CommandTable.TABLE_NAME, null, values)
                         count++
                         commands.add(cd)
-                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.command == CommandEnum.UPDATE_NOTE)) {
+                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.command == CommandEnum.UPDATE_NOTE ||
+                                cd.command == CommandEnum.UPDATE_MEDIA)) {
                             MyLog.v(TAG, method + "; " + count + ": " + cd.toString())
                         }
                         if (myContext.isTestRun && queue.contains(cd)) {
