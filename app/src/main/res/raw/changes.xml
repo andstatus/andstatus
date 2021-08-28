@@ -1,6 +1,6 @@
 <?xml-stylesheet type='text/xsl' href='changes2html.xsl' encoding="utf-8"?>
 <!--
-	Copyright (C) 2012-2020 yvolk (Yuri Volkov), http://yurivolkov.com
+	Copyright (C) 2012-2021 yvolk (Yuri Volkov), http://yurivolkov.com
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -29,11 +29,13 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="59.03" android:versionCode="347"
-        versionDate="2021-08-15"
-        versionTitle="Fix crash when clicking on an image">
+    <release android:versionName="59.04" android:versionCode="348"
+        versionDate="2021-08-28"
+        versionTitle="Send a note with an attachment on Wi-Fi only">
         <changes>
-            <change>Fix crash when clicking on an image</change>
+            <change>Don't send a note with an attachment when download of attachments is not allowed e.g. when
+                "Download attachment over Wi-Fi only" is set and we are not on Wi-Fi connection.
+            </change>
         </changes>
     </release>
     <release android:versionName="59.02" android:versionCode="346"

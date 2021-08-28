@@ -20,8 +20,8 @@ android {
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
 
     defaultConfig {
-        versionCode = 347
-        versionName = "59.03"
+        versionCode = 348
+        versionName = "59.04"
 
         applicationId = "org.andstatus.app"
         minSdk = rootProject.extra["minSdk"] as Int

@@ -1,7 +1,2 @@
-v.59.03 Fix crash when clicking on an image.
-v.59.02 Faster timelines and images downloading:
-now up to 2 processes load timelines and up to 4 processes load images concurrently.
-
-Fixed long timeouts during attempts to load files from non-working server over SSL.
-
-Maximum local storage (cache) size increased up to 10 million notes and 100 years.
+v.59.04 Don't send a note with an attachment when download of attachments is not allowed e.g. when
+"Download attachment over Wi-Fi only" is set and we are not on Wi-Fi connection.
