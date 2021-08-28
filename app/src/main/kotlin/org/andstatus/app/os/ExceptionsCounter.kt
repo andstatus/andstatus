@@ -73,7 +73,7 @@ object ExceptionsCounter {
         DialogFactory.dismissSafely(diskIoDialog)
         val text: String = StringUtil.format( MyContextHolder.myContextHolder.getNow().context, R.string.database_disk_io_error,
                 diskIoExceptionsCount.get())
-        diskIoDialog = DialogFactory.showOkAlertDialog(ExceptionsCounter::class.java,  MyContextHolder.myContextHolder.getNow().context,
+        diskIoDialog = DialogFactory.showOkAlertDialog(ExceptionsCounter::class,  MyContextHolder.myContextHolder.getNow().context,
                 R.string.app_name, text)
     }
 }

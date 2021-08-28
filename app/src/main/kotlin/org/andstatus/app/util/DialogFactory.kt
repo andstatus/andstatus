@@ -35,18 +35,18 @@ object DialogFactory {
     private val DIALOG_TITLE_KEY: String = "title"
     private val DIALOG_MESSAGE_KEY: String = "message"
 
-    fun showOkAlertDialog(method: Any, context: Context, @StringRes titleId: Int, @StringRes summaryId: Int): Dialog {
-        return showOkAlertDialog(method, context, titleId, context.getText(summaryId))
+    fun showOkAlertDialog(anyTag: Any, context: Context, @StringRes titleId: Int, @StringRes summaryId: Int): Dialog {
+        return showOkAlertDialog(anyTag, context, titleId, context.getText(summaryId))
     }
 
-    fun showOkAlertDialog(method: Any, context: Context, @StringRes titleId: Int, summary: CharSequence?): Dialog {
+    fun showOkAlertDialog(anyTag: Any, context: Context, @StringRes titleId: Int, summary: CharSequence?): Dialog {
         val dialog = AlertDialog.Builder(context)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle(titleId)
                 .setMessage(I18n.trimTextAt(summary, 1000))
                 .setPositiveButton(android.R.string.ok) { dialog1: DialogInterface, whichButton: Int -> dialog1.dismiss() }
                 .create()
-        if (!Activity::class.java.isAssignableFrom(context.javaClass)) {
+        if (!(context is Activity)) {
             // See http://stackoverflow.com/questions/32224452/android-unable-to-add-window-permission-denied-for-this-window-type
             // and maybe http://stackoverflow.com/questions/17059545/show-dialog-alert-from-a-non-activity-class-in-android
             dialog.window?.setType(WindowManager.LayoutParams.TYPE_TOAST)
@@ -55,10 +55,10 @@ object DialogFactory {
             dialog.show()
         } catch (e: Exception) {
             try {
-                MyLog.w(method, "Couldn't open alert dialog with the text: $summary", e)
+                MyLog.w(anyTag, "Couldn't open alert dialog with the text: $summary", e)
                 Toast.makeText(context, summary, Toast.LENGTH_LONG).show()
             } catch (e2: Exception) {
-                MyLog.w(method, "Couldn't send toast with the text: $summary", e2)
+                MyLog.w(anyTag, "Couldn't send toast with the text: $summary", e2)
             }
         }
         return dialog

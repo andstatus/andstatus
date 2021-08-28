@@ -51,8 +51,22 @@ class ApiDebugger(private val myContext: MyContext, private val activityContext:
 
     private fun debugApiSync(results: Try<HttpReadResult>) {
         results
-                .onSuccess { result: HttpReadResult -> DialogFactory.showOkAlertDialog(this, activityContext, android.R.string.ok, result.getResponse()) }
-                .onFailure { e: Throwable -> DialogFactory.showOkAlertDialog(this, activityContext, R.string.error_connection_error, e.toString()) }
+            .onSuccess { result: HttpReadResult ->
+                DialogFactory.showOkAlertDialog(
+                    this,
+                    activityContext,
+                    android.R.string.ok,
+                    result.getResponse()
+                )
+            }
+            .onFailure { e: Throwable ->
+                DialogFactory.showOkAlertDialog(
+                    this,
+                    activityContext,
+                    R.string.error_connection_error,
+                    e.toString()
+                )
+            }
     }
 
     companion object {

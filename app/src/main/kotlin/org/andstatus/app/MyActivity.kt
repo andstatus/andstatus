@@ -28,6 +28,7 @@ import androidx.fragment.app.Fragment
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyTheme
+import org.andstatus.app.util.DialogFactory
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.Identified
 import org.andstatus.app.util.MyLog
@@ -143,7 +144,10 @@ open class MyActivity(
         try {
             super.startActivityForResult(intent, requestCode)
         } catch (e: Exception) {
-            MyLog.w(this, "startActivityForResult requestCode:$requestCode, intent:$intent", e)
+            val text: String = "startActivityForResult requestCode:$requestCode, intent:$intent\n" +
+                "${e::class.qualifiedName}: ${e.message}"
+            MyLog.w(this, text, e)
+            DialogFactory.showOkAlertDialog(this, this, R.string.app_name, text)
         }
     }
 
