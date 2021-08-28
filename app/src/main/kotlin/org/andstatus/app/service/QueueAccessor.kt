@@ -7,13 +7,11 @@ import org.andstatus.app.util.RelativeTime
 import java.util.concurrent.TimeUnit
 
 class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue.AccessorType) {
-    suspend fun isAnythingToExecuteNow(): Boolean {
-        moveCommandsFromPreToMainQueue()
-        return (!cq.loaded
-            || isAnythingToExecuteNowIn(mainQueueType)
-            || isAnythingToExecuteNowIn(QueueType.SKIPPED)
-            || isTimeToProcessRetryQueue && isAnythingToExecuteNowIn(QueueType.RETRY))
-    }
+
+    fun isAnythingToExecuteNow(): Boolean = !cq.loaded ||
+        isAnythingToExecuteNowIn(mainQueueType) ||
+        isAnythingToExecuteNowIn(QueueType.SKIPPED) ||
+        isTimeToProcessRetryQueue && isAnythingToExecuteNowIn(QueueType.RETRY)
 
     val countToExecuteNow: Long
         get() = (countToExecuteNowIn(mainQueueType) +
@@ -61,44 +59,46 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
 
     suspend fun nextToExecute(queueExecutor: QueueExecutor): CommandData {
         moveCommandsFromPreToMainQueue()
-        var commandData: CommandData
-        do {
-            commandData = cq.get(mainQueueType).queue.poll() ?: CommandData.EMPTY
-            if (commandData.isEmpty && isTimeToProcessRetryQueue && isAnythingToExecuteNowIn(QueueType.RETRY)) {
-                moveCommandsFromRetryToMainQueue()
+        CommandQueue.mutex.withLock {
+            var commandData: CommandData
+            do {
                 commandData = cq.get(mainQueueType).queue.poll() ?: CommandData.EMPTY
-            }
-            if (commandData.isEmpty) {
-                break
-            }
-            commandData = findInRetryQueue(commandData)
-            if (commandData.nonEmpty) {
-                commandData = findInErrorQueue(commandData)
-            }
-            if (commandData.hasDuplicateIn(QueueType.EXECUTING)) {
-                commandData = CommandData.EMPTY
-            }
-            if (skip(commandData)) {
-                if (!commandData.hasDuplicateIn(QueueType.SKIPPED)) {
-                    cq.addToQueue(QueueType.SKIPPED, commandData)
+                if (commandData.isEmpty && isTimeToProcessRetryQueue && isAnythingToExecuteNowIn(QueueType.RETRY)) {
+                    moveCommandsFromRetryToMainQueue()
+                    commandData = cq.get(mainQueueType).queue.poll() ?: CommandData.EMPTY
                 }
-                commandData = CommandData.EMPTY
-            }
-        } while (commandData.isEmpty)
+                if (commandData.isEmpty) {
+                    break
+                }
+                commandData = findInRetryQueue(commandData)
+                if (commandData.nonEmpty) {
+                    commandData = findInErrorQueue(commandData)
+                }
+                if (commandData.hasDuplicateIn(QueueType.EXECUTING)) {
+                    commandData = CommandData.EMPTY
+                }
+                if (skip(commandData)) {
+                    if (!commandData.hasDuplicateIn(QueueType.SKIPPED)) {
+                        cq.addToQueue(QueueType.SKIPPED, commandData)
+                    }
+                    commandData = CommandData.EMPTY
+                }
+            } while (commandData.isEmpty)
 
-        MyLog.v(
-            queueExecutor, "ToExecute $accessorType in " +
-                (if (cq.myContext.isInForeground)
-                    "foreground " + (if (MyPreferences.isSyncWhileUsingApplicationEnabled) "enabled" else "disabled")
-                else "background") +
-                ": " + commandData.toString()
-        )
-        if (commandData.nonEmpty) {
-            cq.changed = true
-            commandData.setManuallyLaunched(false)
-            cq[QueueType.EXECUTING].addToQueue(commandData)
+            if (commandData.nonEmpty) {
+                MyLog.v(
+                    queueExecutor, "ToExecute $accessorType in " +
+                        (if (cq.myContext.isInForeground)
+                            "foreground " + (if (MyPreferences.isSyncWhileUsingApplicationEnabled) "enabled" else "disabled")
+                        else "background") +
+                        ": " + commandData.toString()
+                )
+                cq.changed = true
+                commandData.setManuallyLaunched(false)
+                cq[QueueType.EXECUTING].addToQueue(commandData)
+            }
+            return commandData
         }
-        return commandData
     }
 
     private fun skip(commandData: CommandData): Boolean {
@@ -156,68 +156,62 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
         }
     }
 
-    private suspend fun moveCommandsFromRetryToMainQueue() {
-        CommandQueue.mutex.withLock {
-            val queue = cq.get(QueueType.RETRY).queue
-            for (cd in queue) {
-                if (cd.isTimeToRetry && addToMainOrSkipQueue(cd)) {
-                    queue.remove(cd)
-                    cq.changed = true
-                    MyLog.v(CommandQueue.TAG) { "Moved from Retry to Main queue: $cd" }
-                }
+    private fun moveCommandsFromRetryToMainQueue() {
+        val queue = cq.get(QueueType.RETRY).queue
+        for (cd in queue) {
+            if (cd.isTimeToRetry && addToMainOrSkipQueue(cd)) {
+                queue.remove(cd)
+                cq.changed = true
+                MyLog.v(CommandQueue.TAG) { "Moved from Retry to Main queue: $cd" }
             }
-            cq.mRetryQueueProcessedAt.set(System.currentTimeMillis())
         }
+        cq.mRetryQueueProcessedAt.set(System.currentTimeMillis())
     }
 
-    private suspend fun findInRetryQueue(cdIn: CommandData): CommandData {
+    private fun findInRetryQueue(cdIn: CommandData): CommandData {
         val queue = cq.get(QueueType.RETRY).queue
         var cdOut = cdIn
         if (queue.contains(cdIn)) {
-            CommandQueue.mutex.withLock {
-                for (cd in queue) {
-                    if (cd == cdIn) {
-                        cd.resetRetries()
-                        if (cdIn.isManuallyLaunched() || cd.isTimeToRetry) {
-                            cdOut = cd
-                            queue.remove(cd)
-                            cq.changed = true
-                            MyLog.v(CommandQueue.TAG) { "Returned from Retry queue: $cd" }
-                        } else {
-                            cdOut = CommandData.EMPTY
-                            MyLog.v(CommandQueue.TAG) { "Found in Retry queue, but left there: $cd" }
-                        }
-                        break
+            for (cd in queue) {
+                if (cd == cdIn) {
+                    cd.resetRetries()
+                    if (cdIn.isManuallyLaunched() || cd.isTimeToRetry) {
+                        cdOut = cd
+                        queue.remove(cd)
+                        cq.changed = true
+                        MyLog.v(CommandQueue.TAG) { "Returned from Retry queue: $cd" }
+                    } else {
+                        cdOut = CommandData.EMPTY
+                        MyLog.v(CommandQueue.TAG) { "Found in Retry queue, but left there: $cd" }
                     }
+                    break
                 }
             }
         }
         return cdOut
     }
 
-    private suspend fun findInErrorQueue(cdIn: CommandData): CommandData {
+    private fun findInErrorQueue(cdIn: CommandData): CommandData {
         val queue = cq.get(QueueType.ERROR).queue
         var cdOut = cdIn
         if (queue.contains(cdIn)) {
-            CommandQueue.mutex.withLock {
-                for (cd in queue) {
-                    if (cd == cdIn) {
-                        if (cdIn.isManuallyLaunched() || cd.isTimeToRetry) {
-                            cdOut = cd
-                            queue.remove(cd)
-                            cq.changed = true
-                            MyLog.v(CommandQueue.TAG) { "Returned from Error queue: $cd" }
-                            cd.resetRetries()
-                        } else {
-                            cdOut = CommandData.EMPTY
-                            MyLog.v(CommandQueue.TAG) { "Found in Error queue, but left there: $cd" }
-                        }
+            for (cd in queue) {
+                if (cd == cdIn) {
+                    if (cdIn.isManuallyLaunched() || cd.isTimeToRetry) {
+                        cdOut = cd
+                        queue.remove(cd)
+                        cq.changed = true
+                        MyLog.v(CommandQueue.TAG) { "Returned from Error queue: $cd" }
+                        cd.resetRetries()
                     } else {
-                        if (cd.executedMoreSecondsAgoThan(MAX_SECONDS_IN_ERROR_QUEUE)) {
-                            queue.remove(cd)
-                            cq.changed = true
-                            MyLog.i(CommandQueue.TAG, "Removed old from Error queue: $cd")
-                        }
+                        cdOut = CommandData.EMPTY
+                        MyLog.v(CommandQueue.TAG) { "Found in Error queue, but left there: $cd" }
+                    }
+                } else {
+                    if (cd.executedMoreSecondsAgoThan(MAX_SECONDS_IN_ERROR_QUEUE)) {
+                        queue.remove(cd)
+                        cq.changed = true
+                        MyLog.i(CommandQueue.TAG, "Removed old from Error queue: $cd")
                     }
                 }
             }

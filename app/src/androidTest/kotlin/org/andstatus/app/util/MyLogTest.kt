@@ -71,7 +71,7 @@ class MyLogTest {
 
     private class LazyClass {
         override fun toString(): String {
-            lazyTest = this::class.simpleName.toString()
+            lazyTest = this::class.simpleName!!
             return "from" + this::class.simpleName
         }
     }

@@ -19,6 +19,7 @@ import android.text.TextUtils
 import androidx.annotation.RawRes
 import io.vavr.control.CheckedFunction
 import org.andstatus.app.data.DbUtils
+import org.andstatus.app.net.http.StatusCode.Companion.STATUS_CODE_INT_NOT_FOUND
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RawResourceUtils
@@ -117,6 +118,11 @@ class HttpConnectionStub : HttpConnection() {
         result.strResponse = getNextResponse()
         responseStreamSupplier?.let {
             result.readStream("", it)
+        }
+        if (result.strResponse.isEmpty() &&
+            (result.request.fileResult == null || responseStreamSupplier == null)
+        ) {
+            result.setStatusCodeInt(STATUS_CODE_INT_NOT_FOUND)
         }
         results.add(result)
         MyLog.v(
@@ -233,6 +239,9 @@ class HttpConnectionStub : HttpConnection() {
             responses.forEach(Consumer { r: String? ->
                 builder.append("\nResponse: ${r.toString()}")
             })
+        }
+        responseStreamSupplier?.let {
+            builder.append("\nResponse stream supplier: $it")
         }
         if (exception != null) {
             builder.append("\nexception=")

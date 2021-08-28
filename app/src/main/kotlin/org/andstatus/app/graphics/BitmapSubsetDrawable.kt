@@ -21,11 +21,12 @@ import android.graphics.ColorFilter
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import org.andstatus.app.util.MyLog
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class BitmapSubsetDrawable(val bitmap: Bitmap, val srcRect: Rect) : Drawable() {
+class BitmapSubsetDrawable(val bitmap: Bitmap, val srcRect: Rect, val imageId: Long) : Drawable() {
 
     override fun getIntrinsicWidth(): Int {
         return srcRect.width()
@@ -36,7 +37,11 @@ class BitmapSubsetDrawable(val bitmap: Bitmap, val srcRect: Rect) : Drawable() {
     }
 
     override fun draw(canvas: Canvas) {
-        canvas.drawBitmap(bitmap, srcRect, bounds, null)
+        try {
+            canvas.drawBitmap(bitmap, srcRect, bounds, null)
+        } catch (e: Exception) {
+            MyLog.w(this, "Failed to draw imageId:$imageId, $this", e)
+        }
     }
 
     override fun setAlpha(alpha: Int) {

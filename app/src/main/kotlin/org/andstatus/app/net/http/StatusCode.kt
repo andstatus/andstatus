@@ -38,6 +38,8 @@ enum class StatusCode(val isHard: Boolean) {
     SERVER_ERROR(true);
 
     companion object {
+        const val STATUS_CODE_INT_NOT_FOUND = 404
+
         fun fromResponseCode(responseCode: Int): StatusCode {
             return when (responseCode) {
                 200, 201, 304 -> OK
@@ -45,7 +47,7 @@ enum class StatusCode(val isHard: Boolean) {
                 400 -> BAD_REQUEST
                 401 -> UNAUTHORIZED
                 403 -> FORBIDDEN
-                404 -> NOT_FOUND
+                STATUS_CODE_INT_NOT_FOUND -> NOT_FOUND
                 411 -> LENGTH_REQUIRED
                 413 -> REQUEST_ENTITY_TOO_LARGE
                 429 -> TOO_MANY_REQUESTS

@@ -101,7 +101,6 @@ class MyService(
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        MyLog.v(this) { "onStartCommand: startid=$startId" }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForeground()
         }
@@ -121,16 +120,19 @@ class MyService(
 
     private val intentReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context?, intent: Intent?) {
-            MyLog.v(this) { "onReceive " + intent.toString() }
-            receiveCommand(intent, 0)
+            receiveCommand(intent, null)
         }
     }
 
-    private fun receiveCommand(intent: Intent?, startId: Int) {
+    private fun receiveCommand(intent: Intent?, startId: Int?) {
         val commandData: CommandData = CommandData.fromIntent(myContext, intent)
+        MyLog.v(this) {
+            "receiveCommand; ${commandData.command}" +
+                (intent?.let { ", intent:$intent" } ?: "") +
+                (startId?.let { ", startId:$it" } ?: "")
+        }
         when (commandData.command) {
             CommandEnum.STOP_SERVICE -> {
-                MyLog.v(this) { "receiveCommand ${commandData.command}" }
                 stopDelayed(false)
             }
             CommandEnum.BROADCAST_SERVICE_STATE -> {
@@ -215,12 +217,16 @@ class MyService(
         if (!initialized.get()) return
 
         CoroutineScope(Dispatchers.Default).launch {
-            if (isStopping.get() || !myContext.isReady || isForcedToStop() || (!isAnythingToExecuteNow()
+            val shouldStop = isStopping.get() || !myContext.isReady || isForcedToStop()
+            val needToExecute = !shouldStop && isAnythingToExecuteNow()
+            MyLog.v(this@MyService) {
+                val method = this@MyService::startStopExecution.name
+                "$method; shouldStop:$shouldStop, needToExecute:$needToExecute"
+            }
+            if (shouldStop || (!needToExecute
                         && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))) {
                 stopDelayed(false)
-            } else if (isAnythingToExecuteNow()) {
-                startExecution()
-            }
+            } else if (needToExecute) startExecution()
         }
     }
 

@@ -68,7 +68,7 @@ class CommandData private constructor(
         val commandTimeline: CommandTimeline,
         createdDate: Long) : Comparable<CommandData>, Taggable, IsEmpty {
 
-    private val commandId: Long = if (commandId == 0L) MyLog.uniqueCurrentTimeMS else commandId
+    val commandId: Long = if (commandId == 0L) MyLog.uniqueCurrentTimeMS else commandId
     private val createdDate: Long = if (createdDate > 0) createdDate else this.commandId
     private var description: String = ""
 
@@ -346,10 +346,6 @@ class CommandData private constructor(
         getResult().resetRetries(command)
     }
 
-    fun getCommandId(): Long {
-        return commandId
-    }
-
     fun getCreatedDate(): Long {
         return createdDate
     }
@@ -373,6 +369,7 @@ class CommandData private constructor(
     companion object {
         private val TAG: String = CommandData::class.java.simpleName
         val EMPTY = newCommand(CommandEnum.EMPTY)
+
         fun newSearch(searchObjects: SearchObjects?,
                       myContext: MyContext, origin: Origin, queryString: String?): CommandData {
             return if (searchObjects == SearchObjects.NOTES) {

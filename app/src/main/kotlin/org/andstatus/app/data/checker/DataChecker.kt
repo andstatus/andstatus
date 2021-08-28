@@ -61,7 +61,7 @@ abstract class DataChecker {
     }
 
     private fun checkerName(): String {
-        return this::class.simpleName.toString()
+        return this::class.simpleName!!
     }
 
     /**
@@ -141,7 +141,7 @@ abstract class DataChecker {
                 val scope = "All"
                 val selectedCheckers = allCheckers.stream()
                         .filter { c: DataChecker -> scope.contains("All") ||
-                            scope.contains(c::class.simpleName.toString()) }
+                            scope.contains(c::class.simpleName!!) }
                         .collect(Collectors.toList())
                 for (checker in selectedCheckers) {
                     if (logger.isCancelled) break

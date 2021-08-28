@@ -56,8 +56,7 @@ class DemoGnuSocialConversationInserter {
                 "https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png")
         val author2 = actorFromOidAndAvatar("2",
                 "http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png")
-        val author3 = actorFromOidAndAvatar("3",
-                "http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif")
+        val author3 = actorFromOidAndAvatar("3", "https://icons8.com/icon/39874/cheburashka")
         val author4 = actorFromOidAndAvatar("4", "")
         val minus1 = buildActivity(author2, "Older one note", null, null)
         val selected = buildActivity(author1, "Selected note", minus1, null)

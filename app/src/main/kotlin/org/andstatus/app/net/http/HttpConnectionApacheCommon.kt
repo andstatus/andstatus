@@ -113,7 +113,7 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
         fun setStatusCodeAndHeaders(result: HttpReadResult, httpResponse: HttpResponse) {
             val statusLine = httpResponse.getStatusLine()
             result.statusLine = statusLine.toString()
-            result.setStatusCode(statusLine.statusCode)
+            result.setStatusCodeInt(statusLine.statusCode)
             result.setHeaders(Arrays.stream(httpResponse.getAllHeaders()), { obj: Header -> obj.getName() }, { obj: Header -> obj.getValue() })
         }
     }

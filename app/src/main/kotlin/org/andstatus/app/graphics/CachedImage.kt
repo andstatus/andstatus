@@ -38,7 +38,7 @@ class CachedImage : IsEmpty {
         id = imageId
         this.foreignBitmap = foreignBitmap
         this.bitmap = bitmap
-        source = BitmapSubsetDrawable(bitmap, srcRect)
+        source = BitmapSubsetDrawable(bitmap, srcRect, imageId)
     }
 
     constructor(imageId: Long, drawable: Drawable) {

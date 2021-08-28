@@ -255,7 +255,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
         private val UTF_8: String = "UTF-8"
 
         fun setStatusCodeAndHeaders(result: HttpReadResult, conn: HttpURLConnection) {
-            result.setStatusCode(conn.responseCode)
+            result.setStatusCodeInt(conn.responseCode)
             try {
                 result.setHeaders(
                     conn.headerFields.entries.stream().flatMap { entry ->

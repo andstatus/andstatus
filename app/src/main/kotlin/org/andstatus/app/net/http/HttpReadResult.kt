@@ -49,7 +49,7 @@ class HttpReadResult(val request: HttpRequest) {
     private var exception: Exception? = null
     var strResponse: String = ""
     var statusLine: String = ""
-    private var intStatusCode = 0
+    private var statusCodeInt = 0
     var statusCode: StatusCode = StatusCode.UNKNOWN
         private set
 
@@ -118,9 +118,9 @@ class HttpReadResult(val request: HttpRequest) {
         return this
     }
 
-    fun setStatusCode(intStatusCodeIn: Int) {
-        intStatusCode = intStatusCodeIn
-        statusCode = StatusCode.fromResponseCode(intStatusCodeIn)
+    fun setStatusCodeInt(statusCodeInt: Int) {
+        this.statusCodeInt = statusCodeInt
+        statusCode = StatusCode.fromResponseCode(statusCodeInt)
     }
 
     fun appendToLog(chars: CharSequence?) {
@@ -140,7 +140,7 @@ class HttpReadResult(val request: HttpRequest) {
     override fun toString(): String {
         return (logMsg()
                 + (if (statusCode == StatusCode.OK || statusLine.isEmpty()) "" else "; statusLine:'$statusLine'")
-                + (if (intStatusCode == 0) "" else "; statusCode:$statusCode ($intStatusCode)")
+                + (if (statusCodeInt == 0) "" else "; statusCode:$statusCode ($statusCodeInt)")
                 + (if (redirected) "; redirected" else "")
                 + "; url:'$url'"
                 + (if (retriedWithoutAuthentication) "; retried without auth" else "")

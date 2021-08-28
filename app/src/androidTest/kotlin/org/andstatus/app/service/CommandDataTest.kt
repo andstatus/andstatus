@@ -85,7 +85,7 @@ class CommandDataTest {
         val commandData2 = queues[QueueType.ERROR].queue.poll() ?: throw IllegalStateException("No data")
         Assert.assertEquals(commandData, commandData2)
         // Below fields are not included in equals
-        Assert.assertEquals(commandData.getCommandId(), commandData2.getCommandId())
+        Assert.assertEquals(commandData.commandId, commandData2.commandId)
         Assert.assertEquals(commandData.getCreatedDate(), commandData2.getCreatedDate())
         Assert.assertEquals(commandData.getResult().getLastExecutedDate(), commandData2.getResult().getLastExecutedDate())
         Assert.assertEquals(commandData.getResult().getExecutionCount().toLong(), commandData2.getResult().getExecutionCount().toLong())

@@ -60,7 +60,7 @@ class DemoConversationInserter {
         author3.setHomepage("http://johnsmith.com/welcome")
         author3.setCreatedDate(GregorianCalendar(2011, 5, 12).timeInMillis)
         author3.setSummary("I am an ordinary guy, interested in computer science")
-        author3.setAvatarUrl("http://www.large-icons.com/stock-icons/free-large-android/48x48/happy-robot.gif")
+        author3.setAvatarUrl("https://img.icons8.com/office/2x/bot.png")
         author3.build()
         val author4 = buildActorFromOid("acct:fourthWithoutAvatar@pump.example.com")
         author4.setRealName("Real Fourth")
@@ -113,7 +113,7 @@ class DemoConversationInserter {
         MatcherAssert.assertThat("The user '${author2.getUsername()}' should not be a recipient ${reply5.getNote()} ",
                 reply5.getNote().audience().getNonSpecialActors(), CoreMatchers.not(CoreMatchers.hasItem(author2)))
         val reblogger1 = buildActorFromOid("acct:reblogger@" + DemoData.demoData.pumpioMainHost)
-        reblogger1.setAvatarUrl("http://www.large-icons.com/stock-icons/free-large-android/48x48/dog-robot.gif")
+        reblogger1.setAvatarUrl("https://img.icons8.com/fluency/2x/dog.png")
         val reblogOf5 = buildActivity(reblogger1, ActivityType.ANNOUNCE)
         reblogOf5.setNote(reply5.getNote().shallowCopy())
         reblogOf5.setSubscribedByMe(TriState.TRUE)

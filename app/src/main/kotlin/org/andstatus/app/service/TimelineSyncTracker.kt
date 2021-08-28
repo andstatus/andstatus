@@ -111,6 +111,6 @@ class TimelineSyncTracker(private val timeline: Timeline, private val isSyncYoun
     }
 
     companion object {
-        private val TAG: String = TimelineSyncTracker::class.simpleName.toString()
+        private val TAG: String = TimelineSyncTracker::class.simpleName!!
     }
 }

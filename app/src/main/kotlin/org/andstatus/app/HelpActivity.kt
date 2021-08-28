@@ -297,10 +297,10 @@ class HelpActivity : MyActivity(HelpActivity::class) {
                 context.finish()
             } else {
                 MyLog.v(HelpActivity::class) {
-                    "Starting me from " + context.getApplicationContext()::class.simpleName ?: "NoName"
+                    "Starting me from " + context.applicationContext::class.simpleName
                 }
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.getApplicationContext().startActivity(intent)
+                context.applicationContext.startActivity(intent)
             }
         }
     }

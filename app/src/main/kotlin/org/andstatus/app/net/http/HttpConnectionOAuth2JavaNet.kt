@@ -181,7 +181,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
     }
 
     private fun setStatusCodeAndHeaders(result: HttpReadResult, response: Response) {
-        result.setStatusCode(response.code)
+        result.setStatusCodeInt(response.code)
         result.setHeaders(response.headers.entries.stream(), { it.key }, { it.value })
     }
 

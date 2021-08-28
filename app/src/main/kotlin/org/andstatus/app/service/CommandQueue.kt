@@ -21,6 +21,7 @@ import android.database.sqlite.SQLiteDatabase
 import io.vavr.control.Try
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.DbUtils.closeSilently
@@ -87,7 +88,7 @@ class CommandQueue(val myContext: MyContext) {
                     return true
                 }
             }
-            if (queueType == QueueType.CURRENT && queueType == QueueType.DOWNLOADS) {
+            if (queueType == QueueType.CURRENT || queueType == QueueType.DOWNLOADS) {
                 commandData.getResult().prepareForLaunch()
             }
             MyLog.v(TAG) { "Adding to $queueType queue $commandData" }
@@ -112,20 +113,24 @@ class CommandQueue(val myContext: MyContext) {
         return queues.get(queueType) ?: throw IllegalArgumentException("Unknown queueType $queueType")
     }
 
-    @Synchronized
     fun load(): CommandQueue {
         if (loaded) {
             MyLog.v(TAG, "Already loaded")
         } else {
-            val stopWatch: StopWatch = StopWatch.createStarted()
-            val count = (load(QueueType.CURRENT) + load(QueueType.DOWNLOADS)
-                    + load(QueueType.SKIPPED) + load(QueueType.RETRY))
-            val countError = load(QueueType.ERROR)
-            MyLog.i(TAG, "commandQueueInitializedMs:" + stopWatch.time + ";"
-                    + (if (count > 0) Integer.toString(count) else " no") + " msg in queues"
-                    + if (countError > 0) ", plus $countError in Error queue" else ""
-            )
-            loaded = true
+            runBlocking {
+                mutex.withLock {
+                    val stopWatch: StopWatch = StopWatch.createStarted()
+                    val count = (load(QueueType.CURRENT) + load(QueueType.DOWNLOADS)
+                        + load(QueueType.SKIPPED) + load(QueueType.RETRY))
+                    val countError = load(QueueType.ERROR)
+                    MyLog.i(TAG, "commandQueueInitializedMs:" + stopWatch.time + ";"
+                        + (if (count > 0) Integer.toString(count) else " no") + " msg in queues"
+                        + if (countError > 0) ", plus $countError in Error queue" else ""
+                    )
+                    loaded = true
+                }
+            }
+
         }
         return this
     }
@@ -173,7 +178,6 @@ class CommandQueue(val myContext: MyContext) {
         return count
     }
 
-    @Synchronized
     fun save() {
         if (!changed && preQueue.isEmpty()) {
             MyLog.v(TAG) { "save; Nothing to save. changed:" + changed + "; preQueueIsEmpty:" + preQueue.isEmpty() }
@@ -189,20 +193,23 @@ class CommandQueue(val myContext: MyContext) {
             return
         }
         runBlocking {
-            accessors.values.forEach { obj: QueueAccessor -> obj.moveCommandsFromPreToMainQueue() }
+            accessors.values.forEach { accessor -> accessor.moveCommandsFromPreToMainQueue() }
+            mutex.withLock {
+                if (loaded) clearQueuesInDatabase(db)
+                val countNotError = save(db, QueueType.CURRENT)
+                    .flatMap { acc: Int -> save(db, QueueType.DOWNLOADS).map { i2: Int -> acc + i2 } }
+                    .flatMap { acc: Int -> save(db, QueueType.SKIPPED).map { i2: Int -> acc + i2 } }
+                    .flatMap { acc: Int -> save(db, QueueType.RETRY).map { i2: Int -> acc + i2 } }
+                val countError = save(db, QueueType.ERROR)
+                MyLog.d(
+                    TAG, (if (loaded) "Queues saved" else "Saved new queued commands only") + ", " +
+                        if (countNotError.isFailure || countError.isFailure()) " Error saving commands!"
+                        else (if (countNotError.get() > 0) Integer.toString(countNotError.get()) else "no") + " commands" +
+                            if (countError.get() > 0) ", plus " + countError.get() + " in Error queue" else ""
+                )
+                changed = false
+            }
         }
-        if (loaded) clearQueuesInDatabase(db)
-        val countNotError = save(db, QueueType.CURRENT)
-                .flatMap { acc: Int -> save(db, QueueType.DOWNLOADS).map { i2: Int -> acc + i2 } }
-                .flatMap { acc: Int -> save(db, QueueType.SKIPPED).map { i2: Int -> acc + i2 } }
-                .flatMap { acc: Int -> save(db, QueueType.RETRY).map { i2: Int -> acc + i2 } }
-        val countError = save(db, QueueType.ERROR)
-        MyLog.d(TAG, (if (loaded) "Queues saved" else "Saved new queued commands only") + ", " +
-            if (countNotError.isFailure || countError.isFailure()) " Error saving commands!"
-            else (if (countNotError.get() > 0) Integer.toString(countNotError.get()) else "no") + " commands" +
-                    if (countError.get() > 0) ", plus " + countError.get() + " in Error queue" else ""
-        )
-        changed = false
     }
 
     /** @return Number of items persisted
@@ -247,7 +254,6 @@ class CommandQueue(val myContext: MyContext) {
         return Try.success(count)
     }
 
-    @Synchronized
     private fun clearQueuesInDatabase(db: SQLiteDatabase): Try<Unit> {
         val method = "clearQueuesInDatabase"
         try {
@@ -300,8 +306,10 @@ class CommandQueue(val myContext: MyContext) {
         return false
     }
 
-    suspend fun isAnythingToExecuteNow(): Boolean =
-        accessors.values.any { obj: QueueAccessor -> obj.isAnythingToExecuteNow() }
+    suspend fun isAnythingToExecuteNow(): Boolean = accessors.values.let {
+        it.forEach { accessor -> accessor.moveCommandsFromPreToMainQueue() }
+        it.any { accessor -> accessor.isAnythingToExecuteNow() }
+    }
 
     enum class AccessorType(val title: String, val numberOfExecutors: Int) {
         GENERAL("General", 2),
@@ -346,7 +354,7 @@ class CommandQueue(val myContext: MyContext) {
     }
 
     companion object {
-        internal val TAG: String = CommandQueue::class.java.simpleName
+        internal val TAG: String = CommandQueue::class.simpleName!!
         private const val INITIAL_CAPACITY = 100
         internal val mutex = Mutex()
         val preQueue: OneQueue = OneQueue(QueueType.PRE)

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2021 yvolk (Yuri Volkov), http://yurivolkov.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.andstatus.app.service
 
 import org.andstatus.app.account.MyAccountTest
@@ -24,18 +39,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
     @Volatile
     var connectionInstanceId: Long = 0
 
-    @Volatile
-    var listenedCommand: CommandData = CommandData.Companion.EMPTY
-        set(value) {
-            field = value
-            MyLog.v(this, "setListenedCommand; " + value)
-        }
-
-    @Volatile
-    var executionStartCount: Long = 0
-
-    @Volatile
-    var executionEndCount: Long = 0
+    private val commandMonitor = CommandMonitor()
 
     @Volatile
     var serviceStopped = false
@@ -85,27 +89,33 @@ class MyServiceTestHelper : MyServiceEventsListener {
         myContext.queues.clear()
     }
 
-    fun sendListenedCommand() {
-        MyServiceManager.Companion.sendCommandIgnoringServiceAvailability(listenedCommand)
-    }
+    fun sendCommand(command: CommandData, onSending: (CommandCounter) -> String): CommandCounter =
+        commandMonitor.setCommand(command).also {
+            MyLog.i(this, onSending(it))
+            MyServiceManager.Companion.sendCommandIgnoringServiceAvailability(it.command)
+        }
 
     /** @return true if execution started
      */
-    fun waitForStartOfCommandExecution(logMsg: String?, count0: Long, expectStarted: TriState): Boolean {
-        val method = this::waitForStartOfCommandExecution.name + " " + logMsg
+    fun waitForCommandStart(logMsg: String?, count0: CommandCounter, expectStarted: TriState): Boolean {
+        val method = this::waitForCommandStart.name
         val stopWatch: StopWatch = StopWatch.createStarted()
         val criteria = expectStarted.select(
-            "check if count > $count0",
-            "check for no new execution, count0 = $count0",
-            "just waiting, count0 = $count0"
+            "check if count > ${count0.startCount}",
+            "check for no new execution, count0 = ${count0.startCount}",
+            "just waiting, count0 = ${count0.startCount}"
         )
-        MyLog.v(this, "$method; started, count=$executionStartCount, $criteria, $listenedCommand")
+        MyLog.v(this, "$method; started. $logMsg count=${commandMonitor.startCount}, $criteria, ${commandMonitor.command}")
         var found = false
         var locEvent = "none"
         for (pass in 0..999) {
-            if (executionStartCount > count0) {
+            if (commandMonitor.command != count0.command) {
+                locEvent = "other command is monitored"
+                break
+            }
+            if (commandMonitor.startCount > count0.startCount) {
                 found = true
-                locEvent = "count: $executionStartCount > $count0"
+                locEvent = "count: ${commandMonitor.startCount} > ${count0.startCount}"
                 break
             }
             if (DbUtils.waitMs(method, 30)) {
@@ -113,8 +123,8 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 break
             }
         }
-        val logMsgEnd = "$method; ended, found=$found, count=$executionStartCount, $criteria; " +
-                "waiting ended on:$locEvent, ${stopWatch.time} ms, $listenedCommand"
+        val logMsgEnd = "$method; ended, found:$found; $logMsg; count:${commandMonitor.startCount}, $criteria; " +
+            "waiting ended on:$locEvent, ${stopWatch.time} ms, ${commandMonitor.command}"
         MyLog.v(this, logMsgEnd)
         if (expectStarted != TriState.UNKNOWN) {
             Assert.assertEquals(logMsgEnd, expectStarted.toBoolean(false), found)
@@ -122,15 +132,20 @@ class MyServiceTestHelper : MyServiceEventsListener {
         return found
     }
 
-    fun waitForEndOfCommandExecution(count0: Long): Boolean {
-        val method = this::waitForEndOfCommandExecution.name
+    fun waitForCommandEnd(count0: CommandCounter): Boolean {
+        val method = this::waitForCommandEnd.name
         val stopWatch: StopWatch = StopWatch.createStarted()
+        MyLog.v(this, "$method; started. count:${commandMonitor.endCount}")
         var found = false
-        var locEvent = "none"
+        var locEvent = "none, count:${commandMonitor.endCount}, count0:${count0.endCount}"
         for (pass in 0..999) {
-            if (executionEndCount > count0) {
+            if (commandMonitor.command != count0.command) {
+                locEvent = "other command is monitored"
+                break
+            }
+            if (commandMonitor.endCount > count0.endCount) {
                 found = true
-                locEvent = "count: $executionEndCount > $count0"
+                locEvent = "count: ${commandMonitor.endCount} > ${count0.endCount}"
                 break
             }
             if (DbUtils.waitMs(method, 30)) {
@@ -139,9 +154,9 @@ class MyServiceTestHelper : MyServiceEventsListener {
             }
         }
         MyLog.v(
-            this, method + " ended " +
-                " " + found + ", event:" + locEvent + ", count0=" + count0 +
-                ", ${stopWatch.time} ms, " + listenedCommand
+            this, "$method; ended." +
+                " found:" + found + ", event:" + locEvent +
+                ", ${stopWatch.time} ms, " + commandMonitor.command
         )
         return found
     }
@@ -168,10 +183,10 @@ class MyServiceTestHelper : MyServiceEventsListener {
 
     fun stopService(clearQueue: Boolean): Boolean {
         MyServiceManager.stopService()
-        return waitForServiceStopped(clearQueue)
+        return waitForServiceStop(clearQueue)
     }
 
-    fun waitForServiceStopped(clearQueue: Boolean): Boolean {
+    fun waitForServiceStop(clearQueue: Boolean): Boolean {
         val method = "waitForServiceStopped"
         val stopWatch: StopWatch = StopWatch.createStarted()
         MyLog.v(this, "$method started")
@@ -200,30 +215,17 @@ class MyServiceTestHelper : MyServiceEventsListener {
     }
 
     override fun onReceive(commandData: CommandData, myServiceEvent: MyServiceEvent) {
-        var locEvent = "ignored"
         when (myServiceEvent) {
             MyServiceEvent.BEFORE_EXECUTING_COMMAND -> {
-                if (commandData == listenedCommand) {
-                    executionStartCount++
-                    locEvent = "execution started"
-                }
+                commandMonitor.onStart(commandData)
                 serviceStopped = false
             }
-            MyServiceEvent.AFTER_EXECUTING_COMMAND -> if (commandData == listenedCommand) {
-                executionEndCount++
-                locEvent = "execution ended"
-            }
-            MyServiceEvent.ON_STOP -> {
-                serviceStopped = true
-                locEvent = "service stopped"
-            }
+            MyServiceEvent.AFTER_EXECUTING_COMMAND -> commandMonitor.onEnd(commandData)
+            MyServiceEvent.ON_STOP -> serviceStopped = true
             else -> {
             }
         }
-        MyLog.v(
-            this, "onReceive; " + locEvent + ", " + commandData + ", event:" + myServiceEvent +
-                    ", requestsCounter:" + httpConnectionStub?.getRequestsCounter()
-        )
+        MyLog.v(this, "onReceive; $myServiceEvent, $commandData")
     }
 
     fun tearDown() {
