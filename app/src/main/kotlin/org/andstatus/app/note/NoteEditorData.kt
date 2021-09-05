@@ -42,15 +42,14 @@ import org.andstatus.app.net.social.Audience
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.timeline.meta.Timeline
-import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.StringUtil
 import java.util.*
-import java.util.stream.Collectors
 
 class NoteEditorData private constructor(
     val ma: MyAccount,
@@ -249,19 +248,25 @@ class NoteEditorData private constructor(
     }
 
     private fun addConversationParticipantsBeforeText() {
-        val loader = ConversationLoaderFactory().getLoader(
-                ConversationViewItem.EMPTY,  MyContextHolder.myContextHolder.getNow(), ma.origin, getInReplyToNoteId(), false)
-        loader.load()
-        addActorsBeforeText(loader.getList().stream()
-                .filter { obj: ConversationViewItem -> obj.isActorAConversationParticipant() }
-                .map { o: ConversationViewItem -> o.author.actor }.collect(Collectors.toList()))
+        ConversationLoader.newLoader(
+            ConversationViewItem.EMPTY,
+            MyContextHolder.myContextHolder.getNow(), ma.origin, getInReplyToNoteId(), false
+        )
+            .load()
+            .getList()
+            .filter { conversationViewItem -> conversationViewItem.isActorAConversationParticipant() }
+            .map { conversationViewItem -> conversationViewItem.author.actor }
+            .toMutableList()
+            .let { addActorsBeforeText(it) }
     }
 
     private fun addMentionedActorsBeforeText() {
-        val loader = MentionedActorsLoader(myContext, ma.origin,
-                getInReplyToNoteId())
-        loader.load()
-        addActorsBeforeText(loader.getList().stream().map { obj: ActorViewItem -> obj.actor }.collect(Collectors.toList()))
+        MentionedActorsLoader(myContext, ma.origin, getInReplyToNoteId())
+            .load()
+            .getList()
+            .map { actorViewItem: ActorViewItem -> actorViewItem.actor }
+            .toMutableList()
+            .let { addActorsBeforeText(it) }
     }
 
     fun addActorsBeforeText(toMention: MutableList<Actor>): NoteEditorData {

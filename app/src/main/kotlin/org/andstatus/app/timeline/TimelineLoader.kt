@@ -31,12 +31,13 @@ import java.util.function.Consumer
 /**
  * @author yvolk@yurivolkov.com
  */
-class TimelineLoader<T : ViewItem<T>>(params: TimelineParameters, instanceId: Long) : SyncLoader<T>() {
-    private val params: TimelineParameters
-    private val page: TimelinePage<T>
-    private val instanceId: Long
+class TimelineLoader<T : ViewItem<T>>(
+    private val params: TimelineParameters,
+    private val instanceId: Long,
+    private val page: TimelinePage<T> = TimelinePage(params, ArrayList())
+) : SyncLoader<T>(page.items) {
 
-    override fun load(publisher: ProgressPublisher?) {
+    override fun load(publisher: ProgressPublisher?): SyncLoader<T> {
         val method = "load"
         val stopWatch: StopWatch = StopWatch.createStarted()
         if (MyLog.isDebugEnabled()) {
@@ -53,6 +54,7 @@ class TimelineLoader<T : ViewItem<T>>(params: TimelineParameters, instanceId: Lo
                     + " to " + MyLog.formatDateTime(page.params.maxDateLoaded)
                     + ", " + stopWatch.time + "ms")
         }
+        return this
     }
 
     private fun queryDatabase(): Cursor? {
@@ -64,7 +66,7 @@ class TimelineLoader<T : ViewItem<T>>(params: TimelineParameters, instanceId: Lo
         var cursor: Cursor? = null
         for (attempt in 0..2) {
             try {
-                cursor = getParams().queryDatabase()
+                cursor = params.queryDatabase()
                 break
             } catch (e: IllegalStateException) {
                 val message = "Attempt $attempt to prepare cursor"
@@ -94,7 +96,7 @@ class TimelineLoader<T : ViewItem<T>>(params: TimelineParameters, instanceId: Lo
                     do {
                         rowsCount++
                         val item: T = page.getEmptyItem().fromCursor(params.getMyContext(), cursor)
-                        getParams().rememberItemDateLoaded(item.getDate())
+                        params.rememberItemDateLoaded(item.getDate())
                         items.add(item)
                     } while (cursor.moveToNext())
                 }
@@ -102,7 +104,7 @@ class TimelineLoader<T : ViewItem<T>>(params: TimelineParameters, instanceId: Lo
                 cursor.close()
             }
         }
-        getParams().rowsLoaded = rowsCount
+        params.rowsLoaded = rowsCount
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, method + " ended; " + rowsCount + " rows, " + stopWatch.time + "ms")
         }
@@ -112,7 +114,7 @@ class TimelineLoader<T : ViewItem<T>>(params: TimelineParameters, instanceId: Lo
     private fun loadActors(items: MutableList<T>): MutableList<T> {
         if (items.isEmpty() && !params.timeline.hasActorProfile()) return items
         val loader = ActorsLoader(params.getMyContext(), ActorsScreenType.ACTORS_AT_ORIGIN,
-                getParams().timeline.getOrigin(), 0, "")
+            params.timeline.getOrigin(), 0, "")
         items.forEach(Consumer { item: T -> item.addActorsToLoad(loader) })
         if (params.timeline.timelineType.hasActorProfile()) loader.addActorToList(params.timeline.actor)
         if (loader.getList().isEmpty()) return items
@@ -128,10 +130,10 @@ class TimelineLoader<T : ViewItem<T>>(params: TimelineParameters, instanceId: Lo
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "$method started")
         }
-        val filter = TimelineFilter(getParams().timeline)
+        val filter = TimelineFilter(params.timeline)
         var rowsCount = 0
         var filteredOutCount = 0
-        val reversedOrder = getParams().isSortOrderAscending()
+        val reversedOrder = params.isSortOrderAscending()
         for (item in items) {
             rowsCount++
             if (item.matches(filter)) {
@@ -143,33 +145,27 @@ class TimelineLoader<T : ViewItem<T>>(params: TimelineParameters, instanceId: Lo
             } else {
                 filteredOutCount++
                 if (MyLog.isVerboseEnabled() && filteredOutCount < 6) {
-                    MyLog.v(this, filteredOutCount.toString() + " Filtered out: "
-                            + I18n.trimTextAt(item.toString(), 200))
+                    MyLog.v(
+                        this, filteredOutCount.toString() + " Filtered out: "
+                            + I18n.trimTextAt(item.toString(), 200)
+                    )
                 }
             }
         }
         if (MyLog.isDebugEnabled()) {
-            MyLog.d(this, method + " ended; Filtered out " + filteredOutCount + " of " + rowsCount
-                    + " rows, " + stopWatch.time + "ms")
+            MyLog.d(
+                this, method + " ended; Filtered out " + filteredOutCount + " of " + rowsCount
+                    + " rows, " + stopWatch.time + "ms"
+            )
         }
     }
 
-    fun getParams(): TimelineParameters {
-        return params
-    }
-
     override fun toString(): String {
-        return MyStringBuilder.formatKeyValue(this, getParams())
+        return MyStringBuilder.formatKeyValue(this, params)
     }
 
     fun getPage(): TimelinePage<T> {
         return page
     }
 
-    init {
-        this.params = params
-        page = TimelinePage(getParams(), ArrayList())
-        items = page.items
-        this.instanceId = instanceId
-    }
 }

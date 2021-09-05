@@ -28,6 +28,7 @@ import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.list.SyncLoader
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Note
+import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
@@ -40,17 +41,18 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.stream.Collectors
+import kotlin.collections.ArrayList
 
 abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
                                   protected val myContext: MyContext,
                                   origin: Origin,
                                   private val selectedNoteId: Long,
-                                  sync: Boolean) :
+                                  syncWithInternet: Boolean) :
         SyncLoader<ConversationViewItem>() {
     protected val ma: MyAccount = myContext.accounts.getFirstPreferablySucceededForOrigin(origin)
     var conversationIds: MutableSet<Long> = HashSet()
     var fixConversation = false
-    private val sync: Boolean = sync || MyPreferences.isSyncWhileUsingApplicationEnabled
+    private val syncWithInternet: Boolean = syncWithInternet || MyPreferences.isSyncWhileUsingApplicationEnabled
     private var conversationSyncRequested = false
     var mAllowLoadingFromInternet = false
     private val replyLevelComparator: ReplyLevelComparator = ReplyLevelComparator()
@@ -58,7 +60,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
     private var mProgress: ProgressPublisher? = null
     private val idsOfItemsToFind: MutableList<Long> = ArrayList()
 
-    override fun load(publisher: ProgressPublisher?) {
+    override fun load(publisher: ProgressPublisher?): ConversationLoader {
         mProgress = publisher
         load1()
         if (fixConversation) {
@@ -71,6 +73,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
         loadActors(items)
         items.sortWith(replyLevelComparator)
         enumerateNotes()
+        return this
     }
 
     private fun load1() {
@@ -78,7 +81,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
         cachedConversationItems.clear()
         idsOfItemsToFind.clear()
         items.clear()
-        if (sync) {
+        if (syncWithInternet) {
             requestConversationSync(selectedNoteId)
         }
         val nonLoaded = getItem(selectedNoteId,
@@ -277,6 +280,17 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
 
     companion object {
         private const val MAX_INDENT_LEVEL = 19
+
+        fun newLoader(emptyItem: ConversationViewItem, myContext: MyContext, origin: Origin, noteId: Long,
+                      syncWithInternet: Boolean): ConversationLoader {
+            val isRecursive = origin.originType.isPrivateNoteAllowsReply ||
+                Visibility.fromNoteId(noteId).id < Visibility.PRIVATE.id
+            return if (isRecursive) {
+                RecursiveConversationLoader(emptyItem, myContext, origin, noteId, syncWithInternet)
+            } else {
+                PrivateNotesConversationLoader(emptyItem, myContext, origin, noteId, syncWithInternet)
+            }
+        }
     }
 
 }

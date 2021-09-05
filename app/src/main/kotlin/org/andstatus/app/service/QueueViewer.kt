@@ -32,7 +32,6 @@ import org.andstatus.app.timeline.BaseTimelineAdapter
 import org.andstatus.app.timeline.LoadableListActivity
 import org.andstatus.app.timeline.WhichPage
 import org.andstatus.app.util.MyLog
-import java.util.*
 
 class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
 
@@ -43,7 +42,7 @@ class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
 
     override fun newSyncLoader(args: Bundle?): SyncLoader<QueueData> {
         return object : SyncLoader<QueueData>() {
-            override fun load(publisher: ProgressPublisher?) {
+            override fun load(publisher: ProgressPublisher?): SyncLoader<QueueData> {
                 val queueTypes = arrayOf<QueueType>(QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR)
                 for (queueType in queueTypes) {
                     myContext.queues[queueType].forEach { cd ->
@@ -51,6 +50,7 @@ class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
                     }
                 }
                 items.sort()
+                return this
             }
         }
     }

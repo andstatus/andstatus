@@ -35,7 +35,7 @@ open class ActorsLoader(val myContext: MyContext,
         mAllowLoadingFromInternet = ma.isValidAndSucceeded()
     }
 
-    override fun load(publisher: ProgressPublisher?) {
+    override fun load(publisher: ProgressPublisher?) : SyncLoader<ActorViewItem> {
         val method = "load"
         val stopWatch: StopWatch = StopWatch.createStarted()
         if (MyLog.isDebugEnabled()) {
@@ -51,6 +51,7 @@ open class ActorsLoader(val myContext: MyContext,
             items.add(ActorViewItem.newEmpty(myContext.context
                     .getText(R.string.nothing_in_the_loadable_list).toString()))
         }
+        return this
     }
 
     fun addActorIdToList(origin: Origin, actorId: Long): Actor {

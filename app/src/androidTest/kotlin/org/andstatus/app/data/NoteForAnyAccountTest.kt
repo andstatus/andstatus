@@ -8,20 +8,24 @@ import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.ActivityType
 import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.util.MyLog
-import org.junit.Assert
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.containsInAnyOrder
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
 class NoteForAnyAccountTest {
     @Before
     fun setUp() {
-        TestSuite.initializeWithData(this)
+        TestSuite.initializeWithAccounts(this)
     }
 
     @Test
     fun testAReply() {
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
-        Assert.assertTrue(ma.isValid)
+        assertTrue(ma.isValid)
         val mi = DemoNoteInserter(ma)
         val accountActor = ma.actor
         val activity1 = mi.buildActivity(accountActor, "", "My testing note", null,
@@ -30,12 +34,14 @@ class NoteForAnyAccountTest {
         val nfaActivity1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 activity1.getId(), activity1.getNote().noteId)
         val dataActivity1 = NoteContextMenuData(nfaActivity1, ma)
-        Assert.assertTrue(dataActivity1.isAuthor)
-        Assert.assertTrue(dataActivity1.isActor)
-        Assert.assertTrue(dataActivity1.isSubscribed)
-        Assert.assertEquals(Visibility.PUBLIC, nfaActivity1.visibility)
-        Assert.assertTrue(dataActivity1.isTiedToThisAccount())
-        Assert.assertTrue(dataActivity1.hasPrivateAccess())
+        assertTrue(dataActivity1.isAuthor)
+        assertTrue(dataActivity1.isActor)
+        assertTrue(dataActivity1.isSubscribed)
+        assertEquals(Visibility.PUBLIC, nfaActivity1.visibility)
+        assertTrue(dataActivity1.isConversationParticipant)
+        assertTrue(dataActivity1.isTiedToThisAccount())
+        assertTrue(dataActivity1.hasPrivateAccess())
+
         val author2 = mi.buildActorFromOid("acct:a2." + DemoData.demoData.testRunUid + "@pump.example.com")
         val replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.getUsername()
                 + " Replying to you privately", activity1, null, DownloadStatus.LOADED)
@@ -44,11 +50,13 @@ class NoteForAnyAccountTest {
         val nfaReplyTo1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 replyTo1.getId(), replyTo1.getNote().noteId)
         val dataReplyTo1 = NoteContextMenuData(nfaReplyTo1, ma)
-        Assert.assertFalse(dataReplyTo1.isAuthor)
-        Assert.assertFalse(dataReplyTo1.isActor)
-        Assert.assertEquals(Visibility.PRIVATE, nfaReplyTo1.visibility)
-        Assert.assertTrue(dataReplyTo1.isTiedToThisAccount())
-        Assert.assertTrue(dataReplyTo1.hasPrivateAccess())
+        assertFalse(dataReplyTo1.isAuthor)
+        assertFalse(dataReplyTo1.isActor)
+        assertEquals(Visibility.PRIVATE, nfaReplyTo1.visibility)
+        assertTrue(dataReplyTo1.isConversationParticipant)
+        assertTrue(dataReplyTo1.isTiedToThisAccount())
+        assertTrue(dataReplyTo1.hasPrivateAccess())
+
         val author3 = mi.buildActorFromOid("acct:b3." + DemoData.demoData.testRunUid + "@pumpity.example.com")
         val reply2 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " Replying publicly to the second author", replyTo1, null, DownloadStatus.LOADED)
@@ -56,13 +64,17 @@ class NoteForAnyAccountTest {
         mi.onActivity(reply2)
         val nfaReply2 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 0, reply2.getNote().noteId)
+        assertThat(nfaReply2.conversationParticipants.map { it.author.actor },
+            containsInAnyOrder(accountActor, author2, author3))
         val dataReply2 = NoteContextMenuData(nfaReply2, ma)
-        Assert.assertFalse(dataReply2.isAuthor)
-        Assert.assertFalse(dataReply2.isActor)
-        Assert.assertEquals(Visibility.PUBLIC_AND_TO_FOLLOWERS, nfaReply2.visibility)
-        Assert.assertFalse(dataReply2.isTiedToThisAccount())
-        Assert.assertFalse(dataReply2.hasPrivateAccess())
-        Assert.assertFalse(dataReply2.reblogged)
+        assertFalse(dataReply2.isAuthor)
+        assertFalse(dataReply2.isActor)
+        assertEquals(Visibility.PUBLIC_AND_TO_FOLLOWERS, nfaReply2.visibility)
+        assertTrue(dataReply2.isConversationParticipant)
+        assertTrue(dataReply2.isTiedToThisAccount())
+        assertFalse(dataReply2.hasPrivateAccess())
+        assertFalse(dataReply2.reblogged)
+
         val reblogged1 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED)
         val anotherMan = mi.buildActorFromOid("acct:c4." + DemoData.demoData.testRunUid + "@pump.example.com")
@@ -76,12 +88,13 @@ class NoteForAnyAccountTest {
         val nfaReblogged1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 0, reblogged1.getNote().noteId)
         val dataReblogged1 = NoteContextMenuData(nfaReblogged1, ma)
-        Assert.assertFalse(dataReblogged1.isAuthor)
-        Assert.assertFalse(dataReblogged1.isActor)
-        Assert.assertFalse(dataReblogged1.isSubscribed)
-        Assert.assertEquals(Visibility.PRIVATE, nfaReblogged1.visibility)
-        Assert.assertFalse(dataReblogged1.isTiedToThisAccount())
-        Assert.assertFalse(dataReblogged1.hasPrivateAccess())
-        Assert.assertFalse(dataReblogged1.reblogged)
+        assertFalse(dataReblogged1.isAuthor)
+        assertFalse(dataReblogged1.isActor)
+        assertFalse(dataReblogged1.isSubscribed)
+        assertEquals(Visibility.PRIVATE, nfaReblogged1.visibility)
+        assertTrue(dataReblogged1.isConversationParticipant)
+        assertTrue(dataReblogged1.isTiedToThisAccount())
+        assertFalse(dataReblogged1.hasPrivateAccess())
+        assertFalse(dataReblogged1.reblogged)
     }
 }

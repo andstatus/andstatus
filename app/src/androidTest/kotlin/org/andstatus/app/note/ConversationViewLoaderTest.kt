@@ -30,7 +30,7 @@ class ConversationViewLoaderTest : ProgressPublisher {
 
     @Test
     fun testLoad() {
-        val loader = ConversationLoaderFactory().getLoader(
+        val loader = ConversationLoader.newLoader(
                 ConversationViewItem.Companion.EMPTY,  MyContextHolder.myContextHolder.getNow(), origin, selectedNoteId, false)
         progressCounter = 0
         loader.load(this)

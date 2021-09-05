@@ -19,7 +19,6 @@ import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
-import java.util.stream.Collectors
 
 /**
  * Helper class to find out a relation of a Note to [.myAccount]
@@ -32,6 +31,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     var isAuthor = false
     var isActor = false
     private var isRecipient = false
+    var isConversationParticipant = false
     var favorited = false
     var reblogged = false
     var actorFollowed = false
@@ -47,14 +47,19 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
         isRecipient = noteForAnyAccount.audience.findSame(myAccount.actor).isSuccess
         isAuthor = myAccount.actorId == noteForAnyAccount.author.actorId
         isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded()
+        isConversationParticipant = noteForAnyAccount.conversationParticipants
+            .any { conversationViewItem -> conversationViewItem.author.actor.isSame(myAccount.actor) }
+
         val actorToNote = MyQuery.favoritedAndReblogged(noteForAnyAccount.myContext,
-                noteForAnyAccount.noteId, myAccount.actorId)
+            noteForAnyAccount.noteId, myAccount.actorId)
         favorited = actorToNote.favorited
         reblogged = actorToNote.reblogged
         isSubscribed = actorToNote.subscribed
         authorFollowed = myAccount.isFollowing(noteForAnyAccount.author)
         isActor = noteForAnyAccount.actor.actorId == myAccount.actorId
-        actorFollowed = !isActor && if (noteForAnyAccount.actor.actorId == noteForAnyAccount.author.actorId) authorFollowed else myAccount.isFollowing(noteForAnyAccount.actor)
+        actorFollowed = !isActor &&
+            if (noteForAnyAccount.actor.actorId == noteForAnyAccount.author.actorId) authorFollowed
+            else myAccount.isFollowing(noteForAnyAccount.actor)
     }
 
     fun getMyAccount(): MyAccount {
@@ -66,8 +71,8 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     }
 
     fun isTiedToThisAccount(): Boolean {
-        return (isRecipient || favorited || reblogged || isAuthor
-                || actorFollowed || authorFollowed)
+        return (isRecipient || favorited || reblogged || isAuthor ||
+            isConversationParticipant || actorFollowed || authorFollowed)
     }
 
     fun hasPrivateAccess(): Boolean {
@@ -98,6 +103,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     companion object {
         private val TAG: String = NoteContextMenuData::class.java.simpleName
         val EMPTY: NoteContextMenuData = NoteContextMenuData(NoteForAnyAccount.EMPTY, MyAccount.EMPTY)
+
         fun getBestAccountToDownloadNote(myContext: MyContext, noteId: Long): MyAccount {
             val noteForAnyAccount = NoteForAnyAccount(myContext, 0, noteId)
             var subscribedFound = false
@@ -115,27 +121,30 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
                     bestFit = menuData
                 }
             }
-            return if (bestFit == EMPTY) myContext.accounts.getFirstPreferablySucceededForOrigin(noteForAnyAccount.origin) else bestFit.myAccount
+            return if (bestFit == EMPTY) myContext.accounts.getFirstPreferablySucceededForOrigin(noteForAnyAccount.origin)
+            else bestFit.myAccount
         }
 
         private fun getMenuData(myContext: MyContext, noteForAnyAccount: NoteForAnyAccount): MutableList<NoteContextMenuData> {
-            return myContext.accounts.succeededForSameOrigin(noteForAnyAccount.origin).stream()
-                    .map { a: MyAccount -> NoteContextMenuData(noteForAnyAccount, a) }.collect(Collectors.toList())
+            return myContext.accounts.succeededForSameOrigin(noteForAnyAccount.origin)
+                    .map { a: MyAccount -> NoteContextMenuData(noteForAnyAccount, a) }.toMutableList()
         }
 
         fun getAccountToActOnNote(myContext: MyContext, activityId: Long, noteId: Long,
-                                  myActingAccount: MyAccount,
+                                  selectedActingAccount: MyAccount,
                                   currentAccount: MyAccount): NoteContextMenuData {
             val noteForAnyAccount = NoteForAnyAccount(myContext, activityId, noteId)
             val menuDataList = getMenuData(myContext, noteForAnyAccount)
-            val acting = menuDataList.stream().filter { atn: NoteContextMenuData -> atn.myAccount == myActingAccount }
-                    .findAny().orElse(EMPTY)
+            val acting = menuDataList.firstOrNull { menuData: NoteContextMenuData -> menuData.myAccount == selectedActingAccount }
+                ?: EMPTY
             if (acting != EMPTY) return acting
-            var bestFit = menuDataList.stream().filter { atn: NoteContextMenuData -> atn.myAccount == currentAccount }
-                    .findAny().orElse(EMPTY)
+            var bestFit =
+                menuDataList.firstOrNull { menuData: NoteContextMenuData -> menuData.myAccount == currentAccount }
+                    ?: EMPTY
             for (menuData in menuDataList) {
-                if (!bestFit.myAccount.isValidAndSucceeded()) {
+                if (menuData.isConversationParticipant) {
                     bestFit = menuData
+                    break
                 }
                 if (menuData.hasPrivateAccess()) {
                     bestFit = menuData
@@ -145,6 +154,9 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
                     bestFit = menuData
                 }
                 if (menuData.isTiedToThisAccount() && !bestFit.isTiedToThisAccount()) {
+                    bestFit = menuData
+                }
+                if (!bestFit.myAccount.isValidAndSucceeded()) {
                     bestFit = menuData
                 }
             }

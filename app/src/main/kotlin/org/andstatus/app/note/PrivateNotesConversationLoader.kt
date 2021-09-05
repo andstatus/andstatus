@@ -31,8 +31,8 @@ import org.andstatus.app.timeline.meta.TimelineType
  * @author yvolk@yurivolkov.com
  */
 class PrivateNotesConversationLoader(emptyItem: ConversationViewItem, myContext: MyContext, origin: Origin,
-                                     selectedNoteId: Long, sync: Boolean) :
-        ConversationLoader(emptyItem, myContext, origin, selectedNoteId, sync) {
+                                     selectedNoteId: Long, syncWithInternet: Boolean) :
+        ConversationLoader(emptyItem, myContext, origin, selectedNoteId, syncWithInternet) {
 
     override fun load2(nonLoaded: ConversationViewItem) {
         val actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, nonLoaded.getNoteId())

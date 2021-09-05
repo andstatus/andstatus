@@ -137,6 +137,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
     }
 
     protected abstract fun findBestAccountForDownload(): MyAccount
+
     fun setConnectionStub(connectionStub: Connection?): FileDownloader {
         this.connectionStub = connectionStub
         return this

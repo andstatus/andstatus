@@ -24,6 +24,8 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Audience
 import org.andstatus.app.net.social.Audience.Companion.fromNoteId
 import org.andstatus.app.net.social.Visibility
+import org.andstatus.app.note.ConversationLoader
+import org.andstatus.app.note.ConversationViewItem
 import org.andstatus.app.note.NoteDownloads
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.util.I18n
@@ -35,13 +37,13 @@ import org.andstatus.app.util.StringUtil
  * Helper class to find out a relation of a Note with [.noteId] to MyAccount-s
  * @author yvolk@yurivolkov.com
  */
-class NoteForAnyAccount(val myContext: MyContext, activityId: Long, noteId: Long) {
+class NoteForAnyAccount(val myContext: MyContext, activityId: Long, val noteId: Long) {
     val origin: Origin = if (myContext.isEmpty) Origin.EMPTY else myContext.origins.fromId(MyQuery.noteIdToOriginId(noteId))
-    val noteId: Long
     private var noteOid: String = ""
     val status: DownloadStatus
     val author: Actor
     val actor: Actor
+    val conversationParticipants: List<ConversationViewItem>
     val downloads: NoteDownloads
     val visibility: Visibility
     var audience: Audience
@@ -65,7 +67,6 @@ class NoteForAnyAccount(val myContext: MyContext, activityId: Long, noteId: Long
     }
 
     init {
-        this.noteId = noteId
         val db = myContext.database
         var authorId: Long = 0
         var statusLoc = DownloadStatus.UNKNOWN
@@ -95,6 +96,11 @@ class NoteForAnyAccount(val myContext: MyContext, activityId: Long, noteId: Long
         status = statusLoc
         visibility = visibilityLoc
         audience = fromNoteId(origin, noteId) // Now all users, mentioned in a body, are members of Audience
+        conversationParticipants = if (myContext.isEmpty || origin.isEmpty || noteId == 0L) emptyList()
+        else ConversationLoader.newLoader(ConversationViewItem.EMPTY, myContext, origin, noteId, false)
+            .load()
+            .getList()
+            .filter { conversationViewItem -> conversationViewItem.isActorAConversationParticipant() }
         author = Actor.load(myContext, authorId)
         downloads = NoteDownloads.fromNoteId(myContext, noteId)
         val actorId: Long = if (activityId == 0L) {

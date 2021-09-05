@@ -127,19 +127,22 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
 
     override fun newSyncLoader(args: Bundle?): SyncLoader<ManageTimelinesViewItem> {
         return object : SyncLoader<ManageTimelinesViewItem>() {
-            override fun load(publisher: ProgressPublisher?) {
+            override fun load(publisher: ProgressPublisher?): SyncLoader<ManageTimelinesViewItem> {
                 items = myContext.timelines
-                        .stream()
-                        .map { timeline: Timeline ->
-                            ManageTimelinesViewItem(myContext, timeline,
-                                    MyAccount.EMPTY, false)
-                        }
-                        .sorted(ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))
-                        .collect(Collectors.toList())
+                    .stream()
+                    .map { timeline: Timeline ->
+                        ManageTimelinesViewItem(
+                            myContext, timeline,
+                            MyAccount.EMPTY, false
+                        )
+                    }
+                    .sorted(ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))
+                    .collect(Collectors.toList())
                 countersSince = items.stream().map { item: ManageTimelinesViewItem -> item.countSince }
-                        .filter { count: Long -> count > 0 }
-                        .min { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }
-                        .orElse(0L)
+                    .filter { count: Long -> count > 0 }
+                    .min { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }
+                    .orElse(0L)
+                return this
             }
         }
     }

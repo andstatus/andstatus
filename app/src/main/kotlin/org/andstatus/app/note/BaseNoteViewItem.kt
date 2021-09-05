@@ -297,7 +297,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
     override fun toString(): String {
         return MyStringBuilder.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40).toString() + ", "
                 + getDetails(myContext.context, false)
-                + "', actorId:" + author.getActorId() + ", " + noteStatus
+                + "', authorId:" + author.getActorId() + ", " + noteStatus
         )
     }
 

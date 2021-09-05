@@ -174,7 +174,7 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(Conver
     }
 
     override fun newSyncLoader(args: Bundle?): SyncLoader<ConversationViewItem> {
-        return ConversationLoaderFactory().getLoader(ConversationViewItem.EMPTY,
+        return ConversationLoader.newLoader(ConversationViewItem.EMPTY,
                 myContext, origin, centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key))
     }
 

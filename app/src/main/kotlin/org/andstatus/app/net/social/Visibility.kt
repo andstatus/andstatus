@@ -23,7 +23,12 @@ import org.andstatus.app.database.table.NoteTable
 /** @author yvolk@yurivolkov.com
  */
 enum class Visibility(val id: Long) {
-    UNKNOWN(3), PUBLIC_AND_TO_FOLLOWERS(4), PUBLIC(5), NOT_PUBLIC_NEEDS_CLARIFICATION(6), TO_FOLLOWERS(8), PRIVATE(10);
+    UNKNOWN(3),
+    PUBLIC_AND_TO_FOLLOWERS(4),
+    PUBLIC(5),
+    NOT_PUBLIC_NEEDS_CLARIFICATION(6),
+    TO_FOLLOWERS(8),
+    PRIVATE(10);
 
     fun isKnown(): Boolean {
         return this != UNKNOWN
