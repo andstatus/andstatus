@@ -24,7 +24,15 @@ import java.util.*
  * Types of events, about which a User may be notified and which are shown in the "Notifications" timeline
  */
 enum class NotificationEventType(id: Int, preferenceKey: String?, defaultValue: Boolean, titleResId: Int) : IsEmpty {
-    ANNOUNCE(1, "notifications_announce", true, R.string.notification_events_announce), FOLLOW(2, "notifications_follow", true, R.string.notification_events_follow), LIKE(3, "notifications_like", true, R.string.notification_events_like), MENTION(4, "notifications_mention", true, R.string.notification_events_mention), OUTBOX(5, "notifications_outbox", true, R.string.notification_events_outbox), PRIVATE(6, "notifications_private", true, R.string.notification_events_private), SERVICE_RUNNING(8, "", true, R.string.syncing), HOME(9, "notifications_home", true, R.string.options_menu_home_timeline_cond), EMPTY(0, "", false, R.string.empty_in_parenthesis);
+    ANNOUNCE(1, "notifications_announce", true, R.string.notification_events_announce),
+    FOLLOW(2, "notifications_follow", true, R.string.notification_events_follow),
+    LIKE(3, "notifications_like", true, R.string.notification_events_like),
+    MENTION(4, "notifications_mention", true, R.string.notification_events_mention),
+    OUTBOX(5, "notifications_outbox", true, R.string.notification_events_outbox),
+    PRIVATE(6, "notifications_private", true, R.string.notification_events_private),
+    SERVICE_RUNNING(8, "", true, R.string.syncing),
+    HOME(9, "notifications_home", false, R.string.options_menu_home_timeline_cond),
+    EMPTY(0, "", false, R.string.empty_in_parenthesis);
 
     val id: Long
     val preferenceKey: String?

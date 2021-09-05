@@ -64,6 +64,6 @@
         <org.andstatus.app.context.MultilineCheckBoxPreference android:key="notifications_home"
             android:title="@string/options_menu_home_timeline_cond"
             android:summary="@string/options_menu_home_timeline"
-            android:defaultValue="true" />
+            android:defaultValue="false" />
 	</PreferenceCategory>
 </PreferenceScreen>
