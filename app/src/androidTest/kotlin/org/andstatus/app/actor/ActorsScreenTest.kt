@@ -58,7 +58,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
 
     @Test
     fun testActorsOfNote() {
-        val method = "testActorsOfNote"
+        val method = this::testActorsOfNote.name
         TestSuite.waitForListLoaded(activity, 2)
         val helper = ListActivityTestHelper<TimelineActivity<*>>(activity, ActorsScreen::class.java)
         val content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId)
@@ -70,8 +70,8 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals(logMsg, "unknownUser@example.com", actors[2].uniqueName)
         Assert.assertEquals(logMsg, "unknownuser@example.com", actors[2].getWebFingerId())
         val actorsScreen = Try.of { tryToOpenActorsScreen(method, helper, logMsg) }
-                .recover(java.lang.AssertionError::class.java) { e: java.lang.AssertionError? -> tryToOpenActorsScreen(method, helper, logMsg) }
-                .getOrElseThrow { detailMessage: Throwable? -> AssertionError(detailMessage) }
+            .recover(Throwable::class.java) { tryToOpenActorsScreen(method, helper, logMsg) }
+            .getOrElseThrow { it }
         val listItems = actorsScreen.getListLoader().getList()
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
         val actorE: Actor =  MyContextHolder.myContextHolder.getNow().users.actors.values.stream()
@@ -97,8 +97,8 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
                 break
             }
         }
-        Assert.assertTrue("No view item. $logMsg\nThe note was not found in the timeline $timelineData", item.nonEmpty)
-        Assert.assertTrue("Invoked Context menu for $logMsg", helper.invokeContextMenuAction4ListItemId(method,
+        Assert.assertTrue("$method; No view item. $logMsg\nThe note was not found in the timeline $timelineData", item.nonEmpty)
+        Assert.assertTrue("$method; Invoked Context menu for $logMsg", helper.invokeContextMenuAction4ListItemId(method,
                 item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, org.andstatus.app.R.id.note_wrapper))
         val actorsScreen = helper.waitForNextActivity(method, 25000) as ActorsScreen
         TestSuite.waitForListLoaded(actorsScreen, 1)

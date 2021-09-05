@@ -63,11 +63,11 @@ class LargeImageTest {
         var foundFailed = false
         StopWatch.tillPassedSeconds(20) {
             delay(500)
-            (myContext.queues[QueueType.ERROR].queue.any { commandData ->
+            (myContext.queues[QueueType.ERROR].any { commandData ->
                 commandData.itemId == dd.downloadId &&
                     commandData.command == CommandEnum.GET_ATTACHMENT
             } ||
-                myContext.queues[QueueType.ERROR].queue.any { commandData ->
+                myContext.queues[QueueType.ERROR].any { commandData ->
                     commandData.itemId == dd.downloadId &&
                         commandData.command == CommandEnum.GET_ATTACHMENT
                 })
@@ -80,11 +80,11 @@ class LargeImageTest {
                 " with id:${dd.downloadId} ($dd)"
         )
         MyLog.i(method, "Error queue:")
-        myContext.queues[QueueType.ERROR].queue.forEachIndexed { index, commandData ->
+        myContext.queues[QueueType.ERROR].forEachIndexed { index, commandData ->
             MyLog.i(method, "$index: $commandData")
         }
         MyLog.i(method, "Retry queue")
-        myContext.queues[QueueType.RETRY].queue.forEachIndexed { index, commandData ->
+        myContext.queues[QueueType.RETRY].forEachIndexed { index, commandData ->
             MyLog.i(method, "$index: $commandData")
         }
 

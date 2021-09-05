@@ -304,13 +304,12 @@ class CommandData private constructor(
 
     /** @return true if the command was deleted
      */
-    fun deleteFromQueue(oneQueue: OneQueue): Boolean {
-        val queue = oneQueue.queue
+    fun deleteFromQueue(queue: OneQueue): Boolean {
         val deleted = AtomicBoolean(false)
-        val method = "deleteFromQueue " + oneQueue.queueType
-        for (cd in queue) {
+        val method = "deleteFromQueue " + queue.queueType
+        queue.forEachEx { cd ->
             if (cd.commandId == commandId) {
-                if (queue.remove(cd)) {
+                if (remove(cd)) {
                     deleted.set(true)
                 }
                 getResult().incrementDownloadedCount()
@@ -381,7 +380,7 @@ class CommandData private constructor(
             }
         }
 
-        suspend fun newUpdateStatus(myAccount: MyAccount, unsentActivityId: Long, noteId: Long): CommandData {
+        fun newUpdateStatus(myAccount: MyAccount, unsentActivityId: Long, noteId: Long): CommandData {
             val hasAttachmentsToUpload: Boolean = Attachments.newLoaded(myAccount.myContext, noteId).toUploadCount > 0
             val commandData = newAccountCommand(
                 if (hasAttachmentsToUpload) CommandEnum.UPDATE_MEDIA else CommandEnum.UPDATE_NOTE,
@@ -458,28 +457,24 @@ class CommandData private constructor(
             return intent?.extras?.let { fromBundle(myContext, it) } ?: EMPTY
         }
 
-        private fun fromBundle(myContext: MyContext, bundle: Bundle): CommandData {
-            val commandData: CommandData?
-            val command: CommandEnum = CommandEnum.fromBundle(bundle)
-            when (command) {
-                CommandEnum.UNKNOWN, CommandEnum.EMPTY -> commandData = EMPTY
-                else -> {
-                    commandData = CommandData(
-                            bundle.getLong(IntentExtra.COMMAND_ID.key, 0),
-                            command,
-                            MyAccount.fromBundle(myContext, bundle),
-                            CommandTimeline.of(Timeline.fromBundle(myContext, bundle)),
-                            bundle.getLong(IntentExtra.CREATED_DATE.key))
-                    commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key)
-                    commandData.setUsername(BundleUtils.getString(bundle, IntentExtra.USERNAME))
-                    commandData.description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION)
-                    commandData.mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key)
-                    commandData.mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key)
-                    commandData.commandResult = bundle.getParcelable(IntentExtra.COMMAND_RESULT.key) ?: CommandResult()
+        private fun fromBundle(myContext: MyContext, bundle: Bundle): CommandData =
+            when (val command: CommandEnum = CommandEnum.fromBundle(bundle)) {
+                CommandEnum.UNKNOWN, CommandEnum.EMPTY -> EMPTY
+                else -> CommandData(
+                    bundle.getLong(IntentExtra.COMMAND_ID.key, 0),
+                    command,
+                    MyAccount.fromBundle(myContext, bundle),
+                    CommandTimeline.of(Timeline.fromBundle(myContext, bundle)),
+                    bundle.getLong(IntentExtra.CREATED_DATE.key)
+                ).apply {
+                    itemId = bundle.getLong(IntentExtra.ITEM_ID.key)
+                    setUsername(BundleUtils.getString(bundle, IntentExtra.USERNAME))
+                    description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION)
+                    mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key)
+                    mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key)
+                    commandResult = bundle.getParcelable(IntentExtra.COMMAND_RESULT.key) ?: CommandResult()
                 }
             }
-            return commandData
-        }
 
         fun fromCursor(myContext: MyContext, cursor: Cursor): CommandData {
             val command: CommandEnum = CommandEnum.load(DbUtils.getString(cursor, CommandTable.COMMAND_CODE))

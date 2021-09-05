@@ -315,7 +315,7 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
     fun waitForNextActivity(methodExt: String?, timeOut: Long): Activity? {
         val nextActivity = InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(mActivityMonitor, timeOut)
         MyLog.v(methodExt, "After waitForMonitor: $nextActivity")
-        Assert.assertNotNull("Next activity is opened and captured", nextActivity)
+        Assert.assertNotNull("$methodExt; Next activity should be created", nextActivity)
         TestSuite.waitForListLoaded(nextActivity, 2)
         mActivityMonitor = null
         return nextActivity

@@ -201,10 +201,10 @@ class MyServiceTests: IgnoredInTravis2() {
         val queues: CommandQueue = MyContextHolder.myContextHolder.getBlocking().queues
         MyLog.i(this, "$method; Queues1:$queues")
         assertEquals("First command should be in error queue $queues",
-            Optional.of(QueueType.ERROR), queues.inWhichQueue(cd1Home.command).map { q: CommandQueue.OneQueue -> q.queueType })
+            Optional.of(QueueType.ERROR), queues.findQueue(cd1Home.command).map { q: CommandQueue.OneQueue -> q.queueType })
         MatcherAssert.assertThat(
             "Second command should be in the Main or Skip queue $queues",
-            queues.inWhichQueue(cd2Interactions.command).map { q: CommandQueue.OneQueue -> q.queueType },
+            queues.findQueue(cd2Interactions.command).map { q: CommandQueue.OneQueue -> q.queueType },
             Matchers.`is`(
                 Matchers.`in`<Optional<QueueType>>(
                     listOf(
@@ -227,10 +227,10 @@ class MyServiceTests: IgnoredInTravis2() {
         MyLog.i(this, "$method; Queues2:$queues")
         assertEquals("Third command shouldn't be in any queue $queues",
             Optional.empty<Any?>(),
-            queues.inWhichQueue(cd3PublicForeground.command).map { q: CommandQueue.OneQueue -> q.queueType })
+            queues.findQueue(cd3PublicForeground.command).map { q: CommandQueue.OneQueue -> q.queueType })
         MatcherAssert.assertThat(
             "Second command should be in the Main or Skip queue $queues",
-            queues.inWhichQueue(cd2Interactions.command).map { q: CommandQueue.OneQueue -> q.queueType },
+            queues.findQueue(cd2Interactions.command).map { q: CommandQueue.OneQueue -> q.queueType },
             Matchers.`is`(
                 Matchers.`in`<Optional<QueueType>>(
                     listOf(

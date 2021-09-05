@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2018 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2016-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,12 @@ import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TryUtils
 import java.util.*
 import java.util.concurrent.PriorityBlockingQueue
-import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  */
 class CommandQueue(val myContext: MyContext) {
-    val mRetryQueueProcessedAt: AtomicLong = AtomicLong()
     private val queues: MutableMap<QueueType, OneQueue> = EnumMap(QueueType::class.java)
     private val generalAccessor: QueueAccessor
     private val accessors: MutableMap<AccessorType, QueueAccessor> = EnumMap(AccessorType::class.java)
@@ -50,24 +48,25 @@ class CommandQueue(val myContext: MyContext) {
     @Volatile
     internal var changed = false
 
-    class OneQueue(val queueType: QueueType) {
-        var queue: Queue<CommandData> = PriorityBlockingQueue(INITIAL_CAPACITY)
-        fun clear() {
+    class OneQueue(
+        val cq: CommandQueue?,
+        val queueType: QueueType,
+        private val queue: Queue<CommandData> = PriorityBlockingQueue(INITIAL_CAPACITY)
+    ) : Queue<CommandData> by queue {
+
+        override fun clear() {
             queue.clear()
+            cq?.changed = true
         }
 
-        fun isEmpty(): Boolean {
-            return queue.isEmpty()
+        inline fun forEachEx(action: OneQueue.(CommandData) -> Unit) {
+            for (element in this) action(element)
         }
 
-        private fun hasForegroundTasks(): Boolean {
-            for (commandData in queue) {
-                if (commandData.isInForeground()) {
-                    return true
-                }
+        override fun remove(commandData: CommandData): Boolean =
+            queue.remove(commandData).also {
+                if (it) cq?.changed = true
             }
-            return false
-        }
 
         fun addToQueue(commandData: CommandData): Boolean {
             when (commandData.command) {
@@ -79,11 +78,11 @@ class CommandQueue(val myContext: MyContext) {
                 }
             }
             if (queueType.onAddRemoveExisting) {
-                if (queue.remove(commandData)) {
+                if (remove(commandData)) {
                     MyLog.v(TAG) { "Removed equal command from $queueType queue" }
                 }
             } else {
-                if (queue.contains(commandData)) {
+                if (contains(commandData)) {
                     MyLog.v(TAG) { "Didn't add to $queueType queue. Already found $commandData" }
                     return true
                 }
@@ -92,15 +91,12 @@ class CommandQueue(val myContext: MyContext) {
                 commandData.getResult().prepareForLaunch()
             }
             MyLog.v(TAG) { "Adding to $queueType queue $commandData" }
-            if (queue.offer(commandData)) {
+            if (offer(commandData)) {
+                cq?.changed = true
                 return true
             }
-            MyLog.e(TAG, "Couldn't add to the " + queueType + " queue, size=" + queue.size)
+            MyLog.e(TAG, "Couldn't add to the $queueType queue, size=$size")
             return false
-        }
-
-        fun size(): Int {
-            return queue.size
         }
     }
 
@@ -113,6 +109,8 @@ class CommandQueue(val myContext: MyContext) {
         return queues.get(queueType) ?: throw IllegalArgumentException("Unknown queueType $queueType")
     }
 
+    fun pollOrEmpty(queueType: QueueType): CommandData = get(queueType).poll() ?: CommandData.EMPTY
+
     fun load(): CommandQueue {
         if (loaded) {
             MyLog.v(TAG, "Already loaded")
@@ -123,9 +121,10 @@ class CommandQueue(val myContext: MyContext) {
                     val count = (load(QueueType.CURRENT) + load(QueueType.DOWNLOADS)
                         + load(QueueType.SKIPPED) + load(QueueType.RETRY))
                     val countError = load(QueueType.ERROR)
-                    MyLog.i(TAG, "commandQueueInitializedMs:" + stopWatch.time + ";"
-                        + (if (count > 0) Integer.toString(count) else " no") + " msg in queues"
-                        + if (countError > 0) ", plus $countError in Error queue" else ""
+                    MyLog.i(
+                        TAG, "commandQueueInitializedMs:" + stopWatch.time + ";"
+                            + (if (count > 0) Integer.toString(count) else " no") + " msg in queues"
+                            + if (countError > 0) ", plus $countError in Error queue" else ""
                     )
                     loaded = true
                 }
@@ -139,8 +138,7 @@ class CommandQueue(val myContext: MyContext) {
      */
     private fun load(queueType: QueueType): Int {
         val method = "loadQueue-" + queueType.save()
-        val oneQueue = get(queueType)
-        val queue = oneQueue.queue
+        val queue = get(queueType)
         var count = 0
         val db = myContext.database
         if (db == null) {
@@ -148,7 +146,7 @@ class CommandQueue(val myContext: MyContext) {
             return 0
         }
         val sql = ("SELECT * FROM " + CommandTable.TABLE_NAME + " WHERE " + CommandTable.QUEUE_TYPE + "='"
-                + queueType.save() + "'")
+            + queueType.save() + "'")
         var c: Cursor? = null
         try {
             c = db.rawQuery(sql, null)
@@ -216,8 +214,7 @@ class CommandQueue(val myContext: MyContext) {
      */
     private fun save(db: SQLiteDatabase, queueType: QueueType): Try<Int> {
         val method = "save-" + queueType.save()
-        val oneQueue = get(queueType)
-        val queue = oneQueue.queue
+        val queue = get(queueType)
         var count = 0
         try {
             if (!queue.isEmpty()) {
@@ -232,8 +229,9 @@ class CommandQueue(val myContext: MyContext) {
                         count++
                         commands.add(cd)
                         if (MyLog.isVerboseEnabled() && (count < 6 || cd.command == CommandEnum.UPDATE_NOTE ||
-                                cd.command == CommandEnum.UPDATE_MEDIA)) {
-                            MyLog.v(TAG, method + "; " + count + ": " + cd.toString())
+                                cd.command == CommandEnum.UPDATE_MEDIA)
+                        ) {
+                            MyLog.v(TAG, "$method; $count: $cd")
                         }
                         if (myContext.isTestRun && queue.contains(cd)) {
                             MyLog.e(TAG, "$method; Duplicate command in a queue:$count $cd")
@@ -243,8 +241,10 @@ class CommandQueue(val myContext: MyContext) {
                 val left = queue.size
                 // And add all commands back to the queue, so we won't need to reload them from a database
                 commands.forEach(Consumer { e: CommandData -> queue.offer(e) })
-                MyLog.d(TAG, method + "; " + count + " saved" +
-                        if (left == 0) " all" else ", $left left")
+                MyLog.d(
+                    TAG, method + "; " + count + " saved" +
+                        if (left == 0) " all" else ", $left left"
+                )
             }
         } catch (e: Exception) {
             val msgLog = method + "; " + count + " saved, " + queue.size + " left."
@@ -271,17 +271,14 @@ class CommandQueue(val myContext: MyContext) {
         for ((_, value) in queues) {
             value.clear()
         }
-        changed = true
         save()
         MyLog.v(TAG, "Queues cleared")
         return TryUtils.SUCCESS
     }
 
     fun deleteCommand(commandData: CommandData): Try<Unit> {
-        for (oneQueue in queues.values) {
-            if (commandData.deleteFromQueue(oneQueue)) {
-                changed = true
-            }
+        for (queue in queues.values) {
+            commandData.deleteFromQueue(queue)
         }
         if (commandData.getResult().getDownloadedCount() == 0L) {
             commandData.getResult().incrementParseExceptions()
@@ -291,20 +288,9 @@ class CommandQueue(val myContext: MyContext) {
         return TryUtils.SUCCESS
     }
 
-    fun totalSizeToExecute(): Int =
-        queues.entries.fold(0) { acc, (key, value) ->
-            if (key.executable) acc + value.size() else acc
-        }
-
-    /** @return true if success
-     */
-    fun addToQueue(queueTypeIn: QueueType, commandData: CommandData): Boolean {
-        if (get(queueTypeIn).addToQueue(commandData)) {
-            changed = true
-            return true
-        }
-        return false
-    }
+    /** @return true if success */
+    fun addToQueue(queueTypeIn: QueueType, commandData: CommandData): Boolean =
+        get(queueTypeIn).addToQueue(commandData)
 
     suspend fun isAnythingToExecuteNow(): Boolean = accessors.values.let {
         it.forEach { accessor -> accessor.moveCommandsFromPreToMainQueue() }
@@ -317,23 +303,22 @@ class CommandQueue(val myContext: MyContext) {
     }
 
     fun getFromAnyQueue(dataIn: CommandData): CommandData {
-        return inWhichQueue(dataIn)
-                .map { oneQueue: OneQueue -> getFromQueue(oneQueue.queueType, dataIn) }
-                .orElse(CommandData.EMPTY)
+        return findQueue(dataIn)
+            .map { queue: OneQueue -> getFromQueue(queue.queueType, dataIn) }
+            .orElse(CommandData.EMPTY)
     }
 
     fun getFromQueue(queueType: QueueType, dataIn: CommandData): CommandData {
-        for (data in get(queueType).queue) {
+        for (data in get(queueType)) {
             if (dataIn == data) return data
         }
         return CommandData.EMPTY
     }
 
-    fun inWhichQueue(commandData: CommandData?): Optional<OneQueue> {
-        for (oneQueue in queues.values) {
-            val queue = oneQueue.queue
+    fun findQueue(commandData: CommandData?): Optional<OneQueue> {
+        for (queue in queues.values) {
             if (queue.contains(commandData)) {
-                return Optional.of(oneQueue)
+                return Optional.of(queue)
             }
         }
         return Optional.empty()
@@ -342,11 +327,10 @@ class CommandQueue(val myContext: MyContext) {
     override fun toString(): String {
         val builder = MyStringBuilder()
         var count: Long = 0
-        for (oneQueue in queues.values) {
-            val queue = oneQueue.queue
+        for (queue in queues.values) {
             if (!queue.isEmpty()) {
                 count += queue.size.toLong()
-                builder.withComma(oneQueue.queueType.toString(), queue.toString())
+                builder.withComma(queue.queueType.toString(), queue.toString())
             }
         }
         builder.withComma("sizeOfAllQueues", count)
@@ -357,16 +341,16 @@ class CommandQueue(val myContext: MyContext) {
         internal val TAG: String = CommandQueue::class.simpleName!!
         private const val INITIAL_CAPACITY = 100
         internal val mutex = Mutex()
-        val preQueue: OneQueue = OneQueue(QueueType.PRE)
+        val preQueue: OneQueue = OneQueue(null, QueueType.PRE)
 
         fun addToPreQueue(commandData: CommandData) {
-             preQueue.addToQueue(commandData)
+            preQueue.addToQueue(commandData)
         }
     }
 
     init {
         for (queueType in QueueType.values()) {
-            if (queueType.createQueue) queues[queueType] = OneQueue(queueType)
+            if (queueType.createQueue) queues[queueType] = OneQueue(this, queueType)
         }
         queues[QueueType.PRE] = preQueue
         generalAccessor = QueueAccessor(this, AccessorType.GENERAL)

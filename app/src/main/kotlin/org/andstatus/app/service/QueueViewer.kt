@@ -46,12 +46,11 @@ class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
             override fun load(publisher: ProgressPublisher?) {
                 val queueTypes = arrayOf<QueueType>(QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR)
                 for (queueType in queueTypes) {
-                    val oneQueue = myContext.queues[queueType]
-                    for (commandData in oneQueue.queue) {
-                        items.add(QueueData.getNew(queueType, commandData))
+                    myContext.queues[queueType].forEach { cd ->
+                        items.add(QueueData.getNew(queueType, cd))
                     }
                 }
-                Collections.sort(items)
+                items.sort()
             }
         }
     }
