@@ -92,7 +92,7 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
         var found = false
         Assert.assertNotNull("Timeline activity is null", timelineActivity)
         for (attempt in 0..5) {
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             val probe = Runnable {
                 val item = timelineActivity.findViewById<TextView?>(R.id.timelineTypeButton)
                 if (item != null) {
@@ -114,7 +114,7 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
         val method = "assertNotesArePublic"
         var msgCount = 0
         for (attempt in 0..2) {
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             msgCount = oneAttempt(timelineActivity, publicNoteText)
             if (msgCount > 0 || DbUtils.waitMs(method, 2000 * (attempt + 1))) {
                 break

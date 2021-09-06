@@ -17,9 +17,13 @@ package org.andstatus.app.util
 
 import android.view.View
 import android.widget.Checkable
+import androidx.test.espresso.Espresso
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
+import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers
 import org.hamcrest.Description
 import org.hamcrest.Matcher
@@ -53,6 +57,22 @@ object EspressoUtils {
                 if (checkableView.isChecked != checked) {
                     checkableView.isChecked = checked
                 }
+            }
+        }
+    }
+
+    fun waitForIdleSync() {
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        try {
+            Espresso.onView(isRoot()).perform(waitMs(200))
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+            Espresso.onView(isRoot()).perform(waitMs(1000))
+        } catch (e: Throwable) {
+            // Exception can happen when no activities are running
+            runBlocking {
+                delay(200)
+                InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+                delay(1000)
             }
         }
     }

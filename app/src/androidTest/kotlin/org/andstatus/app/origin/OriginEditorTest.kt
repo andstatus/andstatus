@@ -29,6 +29,7 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.lang.SelectableEnumList
 import org.andstatus.app.net.http.SslModeEnum
+import org.andstatus.app.util.EspressoUtils.waitForIdleSync
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
@@ -96,8 +97,7 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
             // and onCreate occurs only once.
             activity.onNewIntent(intent)
         }
-        getInstrumentation().waitForIdleSync()
-        DbUtils.waitMs(method, 200)
+        waitForIdleSync()
         val buttonSave = activity.findViewById<Button?>(R.id.button_save)
         val spinnerOriginType = activity.findViewById<Spinner?>(R.id.origin_type)
         val editTextOriginName = activity.findViewById<EditText?>(R.id.origin_name)
@@ -126,7 +126,7 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
         }
         MyLog.v(this, "$method-Log before run clicker 1")
         activity.runOnUiThread(clicker)
-        getInstrumentation().waitForIdleSync()
+        waitForIdleSync()
         DbUtils.waitMs(method, 200)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(originName)
         assertEquals("Origin '$originName' added", originName, origin.name)

@@ -31,6 +31,8 @@ import org.andstatus.app.list.ContextMenuItem
 import org.andstatus.app.list.MyBaseListActivity
 import org.andstatus.app.note.BaseNoteViewItem
 import org.andstatus.app.note.NoteViewItem
+import org.andstatus.app.util.EspressoUtils
+import org.andstatus.app.util.EspressoUtils.waitForIdleSync
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.view.SelectorDialog
 import org.junit.Assert
@@ -54,14 +56,16 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
     /**
      * @return success
      */
-    fun invokeContextMenuAction4ListItemId(methodExt: String, listItemId: Long, menuItem: ContextMenuItem,
-                                           childViewId: Int): Boolean {
+    fun invokeContextMenuAction4ListItemId(
+        methodExt: String, listItemId: Long, menuItem: ContextMenuItem,
+        childViewId: Int
+    ): Boolean {
         val method = "invokeContextMenuAction4ListItemId"
         requireNotNull(mActivity)
         var success = false
         var msg = ""
         for (attempt in 1..3) {
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             val position = getPositionOfListItemId(listItemId)
             msg = "listItemId=$listItemId; menu Item=$menuItem; position=$position; attempt=$attempt"
             MyLog.v(this, msg)
@@ -79,14 +83,16 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
             }
         }
         MyLog.v(methodExt, "$method ended $success; $msg")
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         return success
     }
 
     @JvmOverloads
-    fun selectListPosition(methodExt: String?, positionIn: Int,
-                           listView: ListView? = mActivity?.listView,
-                           listAdapter: ListAdapter? = getListAdapter()) {
+    fun selectListPosition(
+        methodExt: String?, positionIn: Int,
+        listView: ListView? = mActivity?.listView,
+        listAdapter: ListAdapter? = getListAdapter()
+    ) {
         val method = "selectListPosition"
         if (listView == null || listAdapter == null) {
             MyLog.v(methodExt, "$method no listView or adapter")
@@ -98,11 +104,13 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
             if (listAdapter.getCount() <= position) {
                 position = listAdapter.getCount() - 1
             }
-            MyLog.v(methodExt, method + " on setSelection " + position
-                    + " of " + (listAdapter.getCount() - 1))
+            MyLog.v(
+                methodExt, method + " on setSelection " + position
+                    + " of " + (listAdapter.getCount() - 1)
+            )
             listView.setSelectionFromTop(position, 0)
         }
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         MyLog.v(methodExt, "$method ended")
     }
 
@@ -112,8 +120,10 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
      * Note: This method cannot be invoked on the main thread.
      * See https://github.com/google/google-authenticator-android/blob/master/tests/src/com/google/android/apps/authenticator/TestUtilities.java
      */
-    private fun invokeContextMenuAction(methodExt: String, activity: MyBaseListActivity,
-                                        position: Int, menuItemId: Int, childViewId: Int): Boolean {
+    private fun invokeContextMenuAction(
+        methodExt: String, activity: MyBaseListActivity,
+        position: Int, menuItemId: Int, childViewId: Int
+    ): Boolean {
         val method = "invokeContextMenuAction"
         MyLog.v(methodExt, "$method started on menuItemId=$menuItemId at position=$position")
         var success = false
@@ -127,9 +137,11 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
                 success = true
                 break
             }
-            MyLog.i(methodExt, method + "; Context menu created for position " + mActivity?.getPositionOfContextMenu()
+            MyLog.i(
+                methodExt, method + "; Context menu created for position " + mActivity?.getPositionOfContextMenu()
                     + " instead of " + position
-                    + "; was set to " + position1 + "; attempt " + attempt)
+                    + "; was set to " + position1 + "; attempt " + attempt
+            )
             position1 = position + (position1 - (mActivity?.getPositionOfContextMenu() ?: 0))
         }
         if (success) {
@@ -137,7 +149,7 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
                 MyLog.v(methodExt, "$method; before performContextMenuIdentifierAction")
                 activity.getWindow().performContextMenuIdentifierAction(menuItemId, 0)
             }
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
         }
         MyLog.v(methodExt, "$method ended $success")
         return success
@@ -160,8 +172,8 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
         val viewToClick = childView ?: parentView
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             val msg = ("performLongClick on "
-                    + (if (childViewId == 0) "" else "child $childViewId ")
-                    + viewToClick + " at position " + position)
+                + (if (childViewId == 0) "" else "child $childViewId ")
+                + viewToClick + " at position " + position)
             MyLog.v(methodExt, msg)
             try {
                 viewToClick.performLongClick()
@@ -169,7 +181,7 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
                 MyLog.e(msg, e)
             }
         }
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         return true
     }
 
@@ -185,7 +197,7 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
                 }
             }
         }
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
     }
 
     // See http://stackoverflow.com/questions/24811536/android-listview-get-item-view-by-position
@@ -210,8 +222,10 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
             val childIndex = position - firstListItemPosition
             listView.getChildAt(childIndex)
         }
-        MyLog.v(this, method + ": pos:" + position + ", first:" + firstListItemPosition
-                + ", last:" + lastListItemPosition + ", view:" + view)
+        MyLog.v(
+            this, method + ": pos:" + position + ", first:" + firstListItemPosition
+                + ", last:" + lastListItemPosition + ", view:" + view
+        )
         return view
     }
 
@@ -223,7 +237,8 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
         return findListItemId("Loaded reply") { item: BaseNoteViewItem<*> ->
             if (item.inReplyToNoteId != 0L && item.noteStatus == DownloadStatus.LOADED && predicate.test(item)) {
                 val statusOfReplied: DownloadStatus = DownloadStatus.Companion.load(
-                        MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, item.inReplyToNoteId))
+                    MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, item.inReplyToNoteId)
+                )
                 statusOfReplied == DownloadStatus.LOADED
             } else false
         }
@@ -282,9 +297,11 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
     }
 
     @JvmOverloads
-    fun clickListAtPosition(methodExt: String?, position: Int,
-                            listView: ListView? = mActivity?.listView,
-                            listAdapter: ListAdapter? = getListAdapter()) {
+    fun clickListAtPosition(
+        methodExt: String?, position: Int,
+        listView: ListView? = mActivity?.listView,
+        listAdapter: ListAdapter? = getListAdapter()
+    ) {
         val method = "clickListAtPosition"
         if (listView == null || listAdapter == null) {
             MyLog.v(methodExt, "$method no listView or adapter")
@@ -299,21 +316,23 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
             // One of the two should work
             viewToClick?.performClick()
             listView.performItemClick(
-                    viewToClick,
-                    position + listView.getHeaderViewsCount(), listItemId)
+                viewToClick,
+                position + listView.getHeaderViewsCount(), listItemId
+            )
             MyLog.v(methodExt, "afterClick $msgLog")
         }
         MyLog.v(methodExt, "$method ended, $msgLog")
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
     }
 
     fun addMonitor(classOfActivity: Class<out Activity>) {
         mActivityMonitor = InstrumentationRegistry.getInstrumentation()
-                .addMonitor(classOfActivity.getName(), null, false)
+            .addMonitor(classOfActivity.getName(), null, false)
     }
 
     fun waitForNextActivity(methodExt: String?, timeOut: Long): Activity? {
-        val nextActivity = InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(mActivityMonitor, timeOut)
+        val nextActivity =
+            InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(mActivityMonitor, timeOut)
         MyLog.v(methodExt, "After waitForMonitor: $nextActivity")
         Assert.assertNotNull("$methodExt; Next activity should be created", nextActivity)
         TestSuite.waitForListLoaded(nextActivity, 2)
@@ -326,8 +345,9 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
         var selectorDialog: SelectorDialog? = null
         var isVisible = false
         for (ind in 0..19) {
-            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-            selectorDialog = mActivity?.getSupportFragmentManager()?.findFragmentByTag(dialogTagToMonitor) as SelectorDialog?
+            waitForIdleSync()
+            selectorDialog =
+                mActivity?.getSupportFragmentManager()?.findFragmentByTag(dialogTagToMonitor) as SelectorDialog?
             if (selectorDialog != null && selectorDialog.isVisible) {
                 isVisible = true
                 break
@@ -336,7 +356,10 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
                 break
             }
         }
-        Assert.assertTrue("$methodExt: Didn't find SelectorDialog with tag:'$dialogTagToMonitor'", selectorDialog != null)
+        Assert.assertTrue(
+            "$methodExt: Didn't find SelectorDialog with tag:'$dialogTagToMonitor'",
+            selectorDialog != null
+        )
         Assert.assertTrue(isVisible)
         val list = selectorDialog?.listView
         requireNotNull(list)
@@ -346,7 +369,7 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
             if (DbUtils.waitMs(method, 2000)) {
                 break
             }
-            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+            waitForIdleSync()
             val itemsCountNew = list.count
             MyLog.v(methodExt, "waitForSelectorDialog; countNew=$itemsCountNew, prev=$itemsCount, min=$minCount")
             if (itemsCountNew >= minCount && itemsCount == itemsCountNew) {
@@ -354,8 +377,10 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
             }
             itemsCount = itemsCountNew
         }
-        Assert.assertTrue("There are $itemsCount items (min=$minCount) in the list of $dialogTagToMonitor",
-                itemsCount >= minCount)
+        Assert.assertTrue(
+            "There are $itemsCount items (min=$minCount) in the list of $dialogTagToMonitor",
+            itemsCount >= minCount
+        )
         return selectorDialog
     }
 
@@ -392,8 +417,10 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
             val childIndex = position - firstListItemPosition
             listView.getChildAt(childIndex)
         }
-        MyLog.v(this, method + ": pos:" + position + ", first:" + firstListItemPosition
-                + ", last:" + lastListItemPosition + ", view:" + view)
+        MyLog.v(
+            this, method + ": pos:" + position + ", first:" + firstListItemPosition
+                + ", last:" + lastListItemPosition + ", view:" + view
+        )
         return view
     }
 
@@ -410,12 +437,14 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
         }
         InstrumentationRegistry.getInstrumentation().runOnMainSync(clicker)
         MyLog.v(methodExt, "After click view")
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
     }
 
     companion object {
-        fun <T : MyBaseListActivity> newForSelectorDialog(activity: T?,
-                                                           dialogTagToMonitor: String?): ListActivityTestHelper<T> {
+        fun <T : MyBaseListActivity> newForSelectorDialog(
+            activity: T?,
+            dialogTagToMonitor: String?
+        ): ListActivityTestHelper<T> {
             val helper = ListActivityTestHelper(activity)
             helper.dialogTagToMonitor = dialogTagToMonitor
             return helper

@@ -27,6 +27,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
+import org.andstatus.app.util.EspressoUtils
 import org.hamcrest.CoreMatchers
 import org.junit.After
 import org.junit.Assert
@@ -52,22 +53,38 @@ class HelpActivityTest : ActivityTest<HelpActivity>() {
 
     @Test
     fun test() {
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         val mFlipper = mActivityRule.activity.findViewById<ViewPager?>(R.id.help_flipper)
         Assert.assertNotNull(mFlipper)
-        Assert.assertEquals("At Changelog page", HelpActivity.Companion.PAGE_CHANGELOG.toLong(), mFlipper.currentItem.toLong())
+        Assert.assertEquals(
+            "At Changelog page",
+            HelpActivity.Companion.PAGE_CHANGELOG.toLong(),
+            mFlipper.currentItem.toLong()
+        )
         DbUtils.waitMs("test", 500)
         Espresso.onView(ViewMatchers.withId(R.id.button_help_learn_more)).perform(ViewActions.click())
-        Assert.assertEquals("At User Guide", HelpActivity.Companion.PAGE_USER_GUIDE.toLong(), mFlipper.currentItem.toLong())
+        Assert.assertEquals(
+            "At User Guide",
+            HelpActivity.Companion.PAGE_USER_GUIDE.toLong(),
+            mFlipper.currentItem.toLong()
+        )
         Espresso.onView(ViewMatchers.withId(R.id.button_help_learn_more)).perform(ViewActions.click())
         Assert.assertEquals("At Logo page", HelpActivity.Companion.PAGE_LOGO.toLong(), mFlipper.currentItem.toLong())
-        Espresso.onView(ViewMatchers.withId(R.id.splash_application_version)).check(ViewAssertions.matches(ViewMatchers.withText(CoreMatchers.containsString(
-            MyContextHolder.myContextHolder
-                .executionMode.code
-        ))))
+        Espresso.onView(ViewMatchers.withId(R.id.splash_application_version)).check(
+            ViewAssertions.matches(
+                ViewMatchers.withText(
+                    CoreMatchers.containsString(
+                        MyContextHolder.myContextHolder
+                            .executionMode.code
+                    )
+                )
+            )
+        )
         DbUtils.waitMs("test", 500)
-        val helper = ActivityTestHelper(mActivityRule.activity,
-                MySettingsActivity::class.java)
+        val helper = ActivityTestHelper(
+            mActivityRule.activity,
+            MySettingsActivity::class.java
+        )
         //       openActionBarOverflowOrOptionsMenu(InstrumentationRegistry.getTargetContext());
         Espresso.onView(ViewMatchers.withId(R.id.preferences_menu_id)).perform(ViewActions.click())
         val nextActivity = helper.waitForNextActivity("Clicking on Settings menu item", 10000)

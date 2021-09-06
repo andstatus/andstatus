@@ -35,6 +35,7 @@ import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.MyLog
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
@@ -106,7 +107,7 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         val method = "getClipboardText"
         return try {
             MyLog.v(methodExt, "$method started")
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             val reader = ClipboardReader()
             getInstrumentation().runOnMainSync(reader)
             MyLog.v(methodExt, method + "; clip='" + reader.clip + "'")
@@ -114,7 +115,7 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
 
             val item = clip.getItemAt(0)
             val text = (if (item.htmlText.isNullOrEmpty()) item.text else item.htmlText)
-                    .toString()
+                .toString()
             MyLog.v(methodExt, "$method ended. Text: $text")
             text
         } catch (e: Exception) {

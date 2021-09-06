@@ -34,6 +34,7 @@ import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyLog
@@ -65,8 +66,9 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
         val actorUniqueName = "me" + DemoData.demoData.testRunUid + "@mastodon.example.com"
         val content = "Sending note to the unknown yet Actor @$actorUniqueName"
         // TypeTextAction doesn't work here due to auto-correction
-        Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
-        TestSuite.waitForIdleSync()
+        Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.noteBodyEditText))
+            .perform(ReplaceTextAction(content))
+        EspressoUtils.waitForIdleSync()
         ActivityTestHelper.clickSendButton(method, activity)
         val noteId: Long = ActivityTestHelper.waitAndGetIdOfStoredNote(method, content)
         val note: Note = Note.Companion.loadContentById(stub.connection.myContext(), noteId)
@@ -74,7 +76,7 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals("Visibility $note", Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().visibility)
         Assert.assertFalse("Not sensitive $note", note.isSensitive())
         Assert.assertTrue("Audience should contain $actorUniqueName\n $note",
-                note.audience().getNonSpecialActors().stream().anyMatch { a: Actor -> actorUniqueName == a.uniqueName })
+            note.audience().getNonSpecialActors().stream().anyMatch { a: Actor -> actorUniqueName == a.uniqueName })
     }
 
     @Test
@@ -89,11 +91,12 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
         ActivityTestHelper.openEditor(method, activity)
         val content = "Sending sensitive note " + DemoData.demoData.testRunUid
         Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.is_sensitive))
-                .check(ViewAssertions.matches(ViewMatchers.isNotChecked()))
-                .perform(ViewActions.scrollTo(), ViewActions.click())
+            .check(ViewAssertions.matches(ViewMatchers.isNotChecked()))
+            .perform(ViewActions.scrollTo(), ViewActions.click())
         // TypeTextAction doesn't work here due to auto-correction
-        Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
-        TestSuite.waitForIdleSync()
+        Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.noteBodyEditText))
+            .perform(ReplaceTextAction(content))
+        EspressoUtils.waitForIdleSync()
         ActivityTestHelper.clickSendButton(method, activity)
         val noteId: Long = ActivityTestHelper.waitAndGetIdOfStoredNote(method, content)
         val note: Note = Note.Companion.loadContentById(stub.connection.myContext(), noteId)
@@ -104,10 +107,14 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
         val postedObject = result.request.postParams.get()
         val jso = postedObject.getJSONObject("object")
         Assert.assertFalse("No name $postedObject", jso.has("name"))
-        Assert.assertEquals("Note content $postedObject", content,
-                MyHtml.htmlToPlainText(jso.getString("content")))
-        Assert.assertEquals("Sensitive $postedObject", "true",
-                JsonUtils.optString(jso, "sensitive", "(not found)"))
+        Assert.assertEquals(
+            "Note content $postedObject", content,
+            MyHtml.htmlToPlainText(jso.getString("content"))
+        )
+        Assert.assertEquals(
+            "Sensitive $postedObject", "true",
+            JsonUtils.optString(jso, "sensitive", "(not found)")
+        )
     }
 
     @Test

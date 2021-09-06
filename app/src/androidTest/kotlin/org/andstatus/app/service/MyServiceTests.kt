@@ -31,6 +31,7 @@ import org.andstatus.app.origin.Origin
 import org.andstatus.app.os.ExceptionsCounter
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.IgnoredInTravis2
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
@@ -89,7 +90,7 @@ class MyServiceTests: IgnoredInTravis2() {
     @Before
     fun setUp() {
         MyLog.i(this, "setUp started")
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         ma = MyContextHolder.myContextHolder.getNow().accounts.getFirstSucceeded().also { myAccount ->
             assertTrue("No successfully verified accounts", myAccount.isValidAndSucceeded())
         }
@@ -201,7 +202,8 @@ class MyServiceTests: IgnoredInTravis2() {
         val queues: CommandQueue = MyContextHolder.myContextHolder.getBlocking().queues
         MyLog.i(this, "$method; Queues1:$queues")
         assertEquals("First command should be in error queue $queues",
-            Optional.of(QueueType.ERROR), queues.findQueue(cd1Home.command).map { q: CommandQueue.OneQueue -> q.queueType })
+            Optional.of(QueueType.ERROR),
+            queues.findQueue(cd1Home.command).map { q: CommandQueue.OneQueue -> q.queueType })
         MatcherAssert.assertThat(
             "Second command should be in the Main or Skip queue $queues",
             queues.findQueue(cd2Interactions.command).map { q: CommandQueue.OneQueue -> q.queueType },
@@ -325,8 +327,10 @@ class MyServiceTests: IgnoredInTravis2() {
     }
 
     // We need to generate new command in order to have new unique ID for it. This is how it works in app itself
-    private fun sendAvatarCommand(actor: Actor, manuallyLaunched: Boolean,
-                          onSending: (CommandCounter) -> String): CommandCounter {
+    private fun sendAvatarCommand(
+        actor: Actor, manuallyLaunched: Boolean,
+        onSending: (CommandCounter) -> String
+    ): CommandCounter {
         val command: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, actor, "")
         if (manuallyLaunched) {
             command.setManuallyLaunched(true)

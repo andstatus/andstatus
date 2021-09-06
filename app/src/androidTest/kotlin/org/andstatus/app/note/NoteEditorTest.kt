@@ -52,6 +52,7 @@ import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyHtmlTest
 import org.andstatus.app.util.MyLog
@@ -77,20 +78,29 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         }
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+        MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
         data = getStaticData(ma)
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor,  Origin.EMPTY)
+        val timeline: Timeline =
+            MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor, Origin.EMPTY)
         MyLog.i(this, "setUp ended, $timeline")
         return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
 
     private fun getStaticData(ma: MyAccount): NoteEditorData {
-        return NoteEditorData.Companion.newReplyTo(MyQuery.oidToId(OidEnum.NOTE_OID, ma.origin.id,
-                DemoData.demoData.conversationEntryNoteOid), ma)
-                .addToAudience(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.origin.id,
-                        DemoData.demoData.conversationEntryAuthorOid))
-                .addMentionsToText()
-                .setContent(MyHtmlTest.twitterBodyTypedPlain + " " + DemoData.demoData.testRunUid, TextMediaType.PLAIN)
+        return NoteEditorData.Companion.newReplyTo(
+            MyQuery.oidToId(
+                OidEnum.NOTE_OID, ma.origin.id,
+                DemoData.demoData.conversationEntryNoteOid
+            ), ma
+        )
+            .addToAudience(
+                MyQuery.oidToId(
+                    OidEnum.ACTOR_OID, ma.origin.id,
+                    DemoData.demoData.conversationEntryAuthorOid
+                )
+            )
+            .addMentionsToText()
+            .setContent(MyHtmlTest.twitterBodyTypedPlain + " " + DemoData.demoData.testRunUid, TextMediaType.PLAIN)
     }
 
     @Test
@@ -123,7 +133,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         val editorView: View = ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
         val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
         getInstrumentation().runOnMainSync { editor.startEditingNote(data) }
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         ActivityTestHelper.waitViewVisible(method, editorView)
         assertInitialText("Initial text")
         MyLog.v(this, "$method ended")
@@ -157,8 +167,10 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
     private fun assertInitialText(description: String) {
         val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
         val textView = activity.findViewById<TextView?>(R.id.noteBodyEditText)
-        ActivityTestHelper.waitTextInAView(description, textView,
-                MyHtml.fromContentStored(data.getContent(), TextMediaType.PLAIN))
+        ActivityTestHelper.waitTextInAView(
+            description, textView,
+            MyHtml.fromContentStored(data.getContent(), TextMediaType.PLAIN)
+        )
         Assert.assertEquals(description, data.toTestSummary(), editor.getData().toTestSummary())
     }
 
@@ -166,30 +178,39 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
     fun editLoadedNote() {
         val method = "editLoadedNote"
         TestSuite.waitForListLoaded(activity, 2)
-        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity,
-                ConversationActivity::class.java)
-        val listItemId = helper.findListItemId("My loaded note, actorId:" + data.getMyAccount().actorId
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(
+            activity,
+            ConversationActivity::class.java
+        )
+        val listItemId = helper.findListItemId(
+            "My loaded note, actorId:" + data.getMyAccount().actorId
         ) { item: BaseNoteViewItem<*> ->
             (item.author.getActorId() == data.getMyAccount().actorId
-                    && item.noteStatus == DownloadStatus.LOADED)
+                && item.noteStatus == DownloadStatus.LOADED)
         }
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)
         var logMsg = ("itemId=" + listItemId + ", noteId=" + noteId + " text='"
-                + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'")
-        val invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
-                NoteContextMenuItem.EDIT, R.id.note_wrapper)
+            + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'")
+        val invoked = helper.invokeContextMenuAction4ListItemId(
+            method, listItemId,
+            NoteContextMenuItem.EDIT, R.id.note_wrapper
+        )
         logMsg += ";" + if (invoked) "" else " failed to invoke Edit menu item,"
         Assert.assertTrue(logMsg, invoked)
         ActivityTestHelper.closeContextMenu(activity)
         val editorView = activity.findViewById<View?>(R.id.note_editor)
         ActivityTestHelper.waitViewVisible("$method $logMsg", editorView)
-        Assert.assertEquals("Loaded note should be in DRAFT state on Edit start: $logMsg", DownloadStatus.DRAFT,
-                getDownloadStatus(noteId))
+        Assert.assertEquals(
+            "Loaded note should be in DRAFT state on Edit start: $logMsg", DownloadStatus.DRAFT,
+            getDownloadStatus(noteId)
+        )
         val helper2 = ActivityTestHelper<TimelineActivity<*>>(activity)
         helper2.clickMenuItem("$method clicker Discard $logMsg", R.id.discardButton)
         ActivityTestHelper.waitViewInvisible("$method $logMsg", editorView)
-        Assert.assertEquals("Loaded note should be unchanged after Discard: $logMsg", DownloadStatus.LOADED,
-                waitForDownloadStatus(noteId, DownloadStatus.LOADED))
+        Assert.assertEquals(
+            "Loaded note should be unchanged after Discard: $logMsg", DownloadStatus.LOADED,
+            waitForDownloadStatus(noteId, DownloadStatus.LOADED)
+        )
     }
 
     private fun waitForDownloadStatus(noteId: Long, expected: DownloadStatus): DownloadStatus {
@@ -211,43 +232,54 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         val method = "replying"
         TestSuite.waitForListLoaded(activity, 2)
         val editorView: View = ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
-        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity,
-                ConversationActivity::class.java)
-        val viewItem = helper.findListItem("Some others loaded note"
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(
+            activity,
+            ConversationActivity::class.java
+        )
+        val viewItem = helper.findListItem(
+            "Some others loaded note"
         ) { item: BaseNoteViewItem<*> ->
             (item.author.getActorId() != data.getMyAccount().actorId
-                    && item.noteStatus == DownloadStatus.LOADED)
+                && item.noteStatus == DownloadStatus.LOADED)
         } as ActivityViewItem
         val listItemId = viewItem.getId()
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)
         var logMsg = ("itemId=" + listItemId + ", noteId=" + noteId + " text='"
-                + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'")
+            + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'")
         Assert.assertEquals(logMsg, viewItem.noteViewItem.getId(), noteId)
-        val invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
-                NoteContextMenuItem.REPLY, R.id.note_wrapper)
+        val invoked = helper.invokeContextMenuAction4ListItemId(
+            method, listItemId,
+            NoteContextMenuItem.REPLY, R.id.note_wrapper
+        )
         logMsg += ";" + if (invoked) "" else " failed to invoke Reply menu item,"
         Assert.assertTrue(logMsg, invoked)
         ActivityTestHelper.closeContextMenu(activity)
         ActivityTestHelper.waitViewVisible("$method $logMsg", editorView)
         onView(ViewMatchers.withId(R.id.noteBodyEditText))
-                .check(ViewAssertions.matches(ViewMatchers.withText(CoreMatchers.startsWith("@"))))
-        TestSuite.waitForIdleSync()
+            .check(ViewAssertions.matches(ViewMatchers.withText(CoreMatchers.startsWith("@"))))
+        EspressoUtils.waitForIdleSync()
         val content = "Replying to you during " + DemoData.demoData.testRunUid
         val bodyText = editorView.findViewById<EditText?>(R.id.noteBodyEditText)
         // Espresso types in the centre, unfortunately, so we need to retype text
         onView(ViewMatchers.withId(R.id.noteBodyEditText))
-                .perform(ReplaceTextAction(bodyText.text.toString().trim { it <= ' ' }
+            .perform(ReplaceTextAction(bodyText.text.toString().trim { it <= ' ' }
                 + " " + content))
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>("$method Save draft $logMsg", activity)
         val draftNoteId: Long = ActivityTestHelper.waitAndGetIdOfStoredNote("$method $logMsg", content)
-        Assert.assertEquals("Saved note should be in DRAFT state: $logMsg", DownloadStatus.DRAFT,
-                getDownloadStatus(draftNoteId))
-        Assert.assertEquals("Wrong id of inReplyTo note of '$content': $logMsg", noteId,
-                MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, draftNoteId))
+        Assert.assertEquals(
+            "Saved note should be in DRAFT state: $logMsg", DownloadStatus.DRAFT,
+            getDownloadStatus(draftNoteId)
+        )
+        Assert.assertEquals(
+            "Wrong id of inReplyTo note of '$content': $logMsg", noteId,
+            MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, draftNoteId)
+        )
         val audience: Audience = fromNoteId(data.getMyAccount().origin, draftNoteId)
-        Assert.assertTrue("Audience of a reply to $viewItem\n $audience",
-                audience.findSame(viewItem.noteViewItem.author.actor).isSuccess)
+        Assert.assertTrue(
+            "Audience of a reply to $viewItem\n $audience",
+            audience.findSame(viewItem.noteViewItem.author.actor).isSuccess
+        )
     }
 
     companion object {
@@ -265,57 +297,79 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             ActivityTestHelper.hideEditorAndSaveDraft(method, test.activity)
             val editorView: View = ActivityTestHelper.openEditor(method, test.activity)
             assertTextCleared(test)
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             val noteName = "A note " + toAdd + " " + test::class.simpleName + " can have a title (name)"
             val content = "Note with " + toExpect + " attachment" +
-                    (if (toExpect == 1) "" else "s") + " " +
-                    DemoData.demoData.testRunUid
+                (if (toExpect == 1) "" else "s") + " " +
+                DemoData.demoData.testRunUid
             onView(ViewMatchers.withId(R.id.note_name_edit)).perform(ReplaceTextAction(noteName))
             onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
             onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
-            onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText(content)))
+            onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(
+                ViewAssertions.matches(
+                    ViewMatchers.withText(
+                        content
+                    )
+                )
+            )
             attachImage(test, editorView, DemoData.demoData.localImageTestUri2)
             if (toAdd > 1) {
                 attachImage(test, editorView, DemoData.demoData.localGifTestUri)
             }
             val editor = test.activity.getNoteEditor() ?: throw IllegalStateException("No editor")
-            Assert.assertEquals("All image attached " + editor.getData().getAttachedImageFiles(), toExpect.toLong(),
-                    editor.getData().getAttachedImageFiles().list.size.toLong())
+            Assert.assertEquals(
+                "All image attached " + editor.getData().getAttachedImageFiles(), toExpect.toLong(),
+                editor.getData().getAttachedImageFiles().list.size.toLong()
+            )
             if (toAdd > 1) {
                 val mediaFile = editor.getData().getAttachedImageFiles().list[if (toExpect == 1) 0 else 1]
-                Assert.assertEquals("Should be animated $mediaFile", MyContentType.ANIMATED_IMAGE, mediaFile.contentType)
+                Assert.assertEquals(
+                    "Should be animated $mediaFile",
+                    MyContentType.ANIMATED_IMAGE,
+                    mediaFile.contentType
+                )
             }
             onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText("$content ")))
             onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
             ActivityTestHelper.hideEditorAndSaveDraft(method, test.activity)
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             MyLog.v(test, "$method ended")
         }
 
         private fun attachImage(test: TimelineActivityTest<ActivityViewItem>, editorView: View, imageUri: Uri) {
             val method = "attachImage"
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             val helper = ActivityTestHelper<TimelineActivity<*>>(test.activity)
             test.activity.setSelectorActivityStub(helper)
             helper.clickMenuItem("$method clicker attach_menu_id", R.id.attach_menu_id)
             Assert.assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id))
             test.activity.setSelectorActivityStub(null)
             val activityMonitor = test.getInstrumentation()
-                    .addMonitor(HelpActivity::class.java.name, null, false)
+                .addMonitor(HelpActivity::class.java.name, null, false)
             val intent1 = Intent(test.activity, HelpActivity::class.java)
             intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             test.activity.applicationContext.startActivity(intent1)
             val selectorActivity = test.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 25000)
             Assert.assertTrue(selectorActivity != null)
             ActivityTestHelper.waitViewInvisible(method, editorView)
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             selectorActivity.finish()
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             MyLog.i(method, "Callback from a selector")
             val intent2 = Intent()
-            intent2.setDataAndType(imageUri, MyContentType.Companion.uri2MimeType(test.activity.contentResolver, imageUri,
-                    MyContentType.IMAGE.generalMimeType))
-            test.activity.runOnUiThread { test.activity.onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, intent2) }
+            intent2.setDataAndType(
+                imageUri, MyContentType.Companion.uri2MimeType(
+                    test.activity.contentResolver, imageUri,
+                    MyContentType.IMAGE.generalMimeType
+                )
+            )
+            test.activity.runOnUiThread {
+                test.activity.onActivityResult(
+                    ActivityRequestCode.ATTACH.id,
+                    Activity.RESULT_OK,
+                    intent2
+                )
+            }
             val editor = test.activity.getNoteEditor() ?: throw IllegalStateException("No editor")
             for (attempt in 0..3) {
                 ActivityTestHelper.waitViewVisible(method, editorView)
@@ -324,16 +378,21 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
                     break
                 }
             }
-            Assert.assertTrue("Image attached", editor.getData().getAttachedImageFiles()
-                    .forUri(imageUri).isPresent)
+            Assert.assertTrue(
+                "Image attached", editor.getData().getAttachedImageFiles()
+                    .forUri(imageUri).isPresent
+            )
         }
 
         private fun assertTextCleared(test: TimelineActivityTest<ActivityViewItem>) {
             val editor = test.activity.getNoteEditor()
             Assert.assertTrue("Editor is not null", editor != null)
-            Assert.assertEquals(NoteEditorData.Companion.newEmpty(
-                    test.activity.myContext.accounts.currentAccount).toTestSummary(),
-                    editor?.getData()?.toTestSummary())
+            Assert.assertEquals(
+                NoteEditorData.Companion.newEmpty(
+                    test.activity.myContext.accounts.currentAccount
+                ).toTestSummary(),
+                editor?.getData()?.toTestSummary()
+            )
         }
     }
 }

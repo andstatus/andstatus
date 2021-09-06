@@ -42,6 +42,7 @@ import org.andstatus.app.service.MyServiceEventsBroadcaster
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.service.MyServiceState
 import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.view.SelectorDialog
 import org.junit.Assert
@@ -114,7 +115,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         ListActivityTestHelper(activity).selectListPosition(method, position0)
         var itemIdOfSelected: Long = 0
         for (attempt in 0..9) {
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             if (LoadableListPosition.Companion.getViewOfPosition(getListView(), position0) != null) {
                 itemIdOfSelected = activity.getListAdapter().getItemId(position0)
                 if (itemIdOfSelected > 0) break
@@ -129,7 +130,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         var pos2 = getCurrentListPosition().logV("$method; just after adding new content")
         var updatedAt2: Long = 0
         for (attempt in 0..9) {
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             updatedAt2 = activity.getListData().updatedAt
             if (updatedAt2 > updatedAt1) break
         }
@@ -138,7 +139,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         var found = false
         var attempt = 0
         while (attempt < 10 && !found) {
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             pos2 = getCurrentListPosition().logV("$method; waiting for list reposition $attempt")
             positionOfItem = activity.getListAdapter().getPositionById(pos1.itemId)
             if (positionOfItem >= pos2.position - 1 && positionOfItem <= pos2.position + 1) {

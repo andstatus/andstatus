@@ -1,7 +1,7 @@
 package org.andstatus.app.backup
 
 import org.andstatus.app.context.ActivityTest
-import org.andstatus.app.data.DbUtils
+import org.andstatus.app.util.EspressoUtils.waitForIdleSync
 import org.junit.Test
 
 class RestoreActivityTest : ActivityTest<RestoreActivity>() {
@@ -14,7 +14,6 @@ class RestoreActivityTest : ActivityTest<RestoreActivity>() {
     fun testOpenActivity() {
         val method = "testOpenActivity"
         activity
-        getInstrumentation().waitForIdleSync()
-        DbUtils.waitMs(method, 500)
+        waitForIdleSync()
     }
 }

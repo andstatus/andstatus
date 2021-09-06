@@ -20,6 +20,7 @@ import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.service.MyServiceTestHelper
+import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.view.SelectorDialog
 import org.junit.After
@@ -59,24 +60,24 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.waitForListLoaded(activity, 4)
 
         val listActivityTestHelper: ListActivityTestHelper<TimelineActivity<*>> =
-                ListActivityTestHelper.newForSelectorDialog(activity, SelectorDialog.Companion.dialogTag)
+            ListActivityTestHelper.newForSelectorDialog(activity, SelectorDialog.Companion.dialogTag)
         listActivityTestHelper.selectIdFromSelectorDialog(method, ma.actorId)
         val editorView = activity.findViewById<View?>(R.id.note_editor)
         ActivityTestHelper.waitViewVisible(method, editorView)
         val details = editorView.findViewById<TextView?>(R.id.noteEditDetails)
         val textToFind: String = myContext.context.getText(R.string.label_with_media).toString()
         ActivityTestHelper.waitTextInAView(method, details, textToFind)
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         val content = "Test note with a shared image " + DemoData.demoData.testRunUid
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
 
         ActivityTestHelper.clickSendButton(method, activity)
         val found = mService.waitForCondition {
             getHttp().substring2PostedPath("statuses/update").isNotEmpty()
         }
         val message = ("Data was posted " + mService.getHttp().getPostedCounter() + " times; " +
-                mService.getHttp().getResults().toTypedArray().contentToString())
+            mService.getHttp().getResults().toTypedArray().contentToString())
         MyLog.v(this, "$method; $message")
         Assert.assertTrue(message, mService.getHttp().getPostedCounter() > 0)
         Assert.assertTrue(message, found)
@@ -84,8 +85,11 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
         val condition = NoteTable.CONTENT + "='" + content + "'"
         val unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition)
         Assert.assertTrue("Unsent note found: $condition", unsentMsgId != 0L)
-        Assert.assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.Companion.load(
-                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)))
+        Assert.assertEquals(
+            "Status of unsent note", DownloadStatus.SENDING, DownloadStatus.Companion.load(
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)
+            )
+        )
         val dd: DownloadData = DownloadData.Companion.getSingleAttachment(unsentMsgId)
         MyLog.v(this, "$method; $dd")
         Assert.assertEquals("Image URI stored", DemoData.demoData.localImageTestUri2, dd.getUri())

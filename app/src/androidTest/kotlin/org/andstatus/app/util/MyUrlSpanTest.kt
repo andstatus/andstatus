@@ -30,6 +30,7 @@ import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Audience
 import org.andstatus.app.net.social.SpanUtil
+import org.andstatus.app.util.EspressoUtils.waitForIdleSync
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -49,7 +50,7 @@ class MyUrlSpanTest : ActivityTest<HelpActivity>() {
     @Before
     fun setUp() {
         activity
-        getInstrumentation().waitForIdleSync()
+        waitForIdleSync()
     }
 
     @Test

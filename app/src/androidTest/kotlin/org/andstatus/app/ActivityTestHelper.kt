@@ -23,13 +23,13 @@ import android.view.Menu
 import android.view.View
 import android.widget.TextView
 import androidx.test.platform.app.InstrumentationRegistry
-import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.test.SelectorActivityStub
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.ViewItem
+import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import java.util.concurrent.atomic.AtomicBoolean
@@ -60,7 +60,8 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
     }
 
     fun waitForNextActivity(method: String, timeOut: Long): Activity {
-        val nextActivity = InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, timeOut)
+        val nextActivity =
+            InstrumentationRegistry.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, timeOut)
         MyLog.v(this, "$method-Log after waitForMonitor: $nextActivity")
         Assert.assertNotNull("Next activity is opened and captured", nextActivity)
         activityMonitor = null
@@ -69,7 +70,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
 
     fun clickMenuItem(method: String, menuItemResourceId: Int): Boolean {
         Assert.assertTrue(menuItemResourceId != 0)
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         MyLog.v(this, "$method-Log before run clickers")
         val clicked = AtomicBoolean(false)
         clicked.set(InstrumentationRegistry.getInstrumentation().invokeMenuActionSync(mActivity, menuItemResourceId, 0))
@@ -111,7 +112,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
                 }
             })
         }
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         return clicked.get()
     }
 
@@ -134,7 +135,11 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
         selectorRequestCode = requestCode
     }
 
-    private class MenuItemClicker(private val method: String, private val menu: Menu, private val menuItemResourceId: Int) : Runnable {
+    private class MenuItemClicker(
+        private val method: String,
+        private val menu: Menu,
+        private val menuItemResourceId: Int
+    ) : Runnable {
         @Volatile
         var clicked = false
         override fun run() {
@@ -152,11 +157,11 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
                     ok = true
                     break
                 }
-                TestSuite.waitForIdleSync()
+                EspressoUtils.waitForIdleSync()
             }
             MyLog.v(method, if (ok) "Visible" else "Invisible")
             Assert.assertTrue("$method; View is visible", ok)
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             return ok
         }
 
@@ -172,7 +177,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
             }
             MyLog.v(method, if (ok) "Invisible" else "Visible")
             Assert.assertTrue("$method; View is invisible", ok)
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
             return ok
         }
 
@@ -195,12 +200,12 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
         fun closeContextMenu(activity: Activity) {
             val runnable = Runnable { activity.closeContextMenu() }
             activity.runOnUiThread(runnable)
-            TestSuite.waitForIdleSync()
+            EspressoUtils.waitForIdleSync()
         }
 
         fun waitAndGetIdOfStoredNote(method: String?, content: String?): Long {
             val sql = ("SELECT " + BaseColumns._ID + " FROM " + NoteTable.TABLE_NAME + " WHERE "
-                    + NoteTable.CONTENT + " LIKE('%" + content + "%')")
+                + NoteTable.CONTENT + " LIKE('%" + content + "%')")
             var noteId: Long = 0
             for (attempt in 0..9) {
                 noteId = MyQuery.getLongs(sql).stream().findFirst().orElse(0L)
@@ -244,7 +249,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
             val method = "openEditor $logMsg"
             return try {
                 val createNoteButton = activity.getOptionsMenu()?.findItem(R.id.createNoteButton)
-                        ?: throw IllegalStateException("createNoteButton not found")
+                    ?: throw IllegalStateException("createNoteButton not found")
                 val editorView = activity.findViewById<View?>(R.id.note_editor)
                 Assert.assertTrue(editorView != null)
                 if (editorView.visibility != View.VISIBLE) {

@@ -24,6 +24,7 @@ import org.andstatus.app.timeline.ListActivityTestHelper
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.MyLog
 import org.junit.After
 import org.junit.Assert
@@ -38,8 +39,10 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
         myContext.accounts.setCurrentAccount(ma)
-        return Intent(Intent.ACTION_VIEW,
-                 myContext.timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin).getUri())
+        return Intent(
+            Intent.ACTION_VIEW,
+            myContext.timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin).getUri()
+        )
     }
 
     @After
@@ -55,9 +58,9 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         val editorView: View = ActivityTestHelper.openEditor("$method; $step", activity)
         val suffix = "unsent" + DemoData.demoData.testRunUid
         val body = "Test unsent note, which we will try to edit $suffix"
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(body))
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         mService.serviceStopped = false
         ActivityTestHelper.clickSendButton(method, activity)
         val found = mService.waitForCondition {
@@ -67,16 +70,22 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         val unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition)
         step = "Unsent note $unsentMsgId"
         Assert.assertTrue("$method; $step: $condition", unsentMsgId != 0L)
-        Assert.assertEquals("$method; $step", DownloadStatus.SENDING, DownloadStatus.Companion.load(
-                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)))
+        Assert.assertEquals(
+            "$method; $step", DownloadStatus.SENDING, DownloadStatus.Companion.load(
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)
+            )
+        )
         step = "Start editing unsent note $unsentMsgId"
         activity.getNoteEditor()?.startEditingNote(NoteEditorData.Companion.load(myContext, unsentMsgId))
         ActivityTestHelper.waitViewVisible("$method; $step", editorView)
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         step = "Saving previously unsent note $unsentMsgId as a draft"
         ActivityTestHelper.hideEditorAndSaveDraft("$method; $step", activity)
-        Assert.assertEquals("$method; $step", DownloadStatus.DRAFT, DownloadStatus.Companion.load(
-                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)))
+        Assert.assertEquals(
+            "$method; $step", DownloadStatus.DRAFT, DownloadStatus.Companion.load(
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)
+            )
+        )
         MyLog.v(this, "$method ended")
     }
 
@@ -90,10 +99,14 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, itemId)
         val noteOid = MyQuery.idToOid(activity.myContext, OidEnum.NOTE_OID, noteId, 0)
         val logMsg = MyQuery.noteInfoForLog(activity.myContext, noteId)
-        Assert.assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, itemId, NoteContextMenuItem.ANNOUNCE,
-                R.id.note_wrapper))
+        Assert.assertTrue(
+            logMsg, helper.invokeContextMenuAction4ListItemId(
+                method, itemId, NoteContextMenuItem.ANNOUNCE,
+                R.id.note_wrapper
+            )
+        )
         mService.serviceStopped = false
-        TestSuite.waitForIdleSync()
+        EspressoUtils.waitForIdleSync()
         val urlFound = mService.waitForCondition {
             getHttp().getResults().map { it.url?.toExternalForm() ?: "" }
                 .any { it.contains("retweet") && it.contains(noteOid) }
