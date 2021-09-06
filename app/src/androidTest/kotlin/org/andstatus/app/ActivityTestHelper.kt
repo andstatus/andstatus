@@ -152,7 +152,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
                     ok = true
                     break
                 }
-                if (DbUtils.waitMs(method, 1000)) break
+                TestSuite.waitForIdleSync()
             }
             MyLog.v(method, if (ok) "Visible" else "Invisible")
             Assert.assertTrue("$method; View is visible", ok)

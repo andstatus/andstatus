@@ -35,13 +35,16 @@ object ScreenshotOnFailure {
         try {
             runnable.run()
         } catch (tr: Throwable) {
-            activity.runOnUiThread(Runnable { ScreenshotOnFailure.makeScreenshot(activity) })
+            activity.runOnUiThread { makeScreenshot(activity) }
             DbUtils.waitMs(activity, 2000)
-            throw RuntimeException(tr)
+            when(tr) {
+                is AssertionError -> throw tr
+                else -> throw AssertionError("Exception in test: ${tr.message}", tr)
+            }
         }
     }
 
-    fun makeScreenshot(activity: Activity) {
+    private fun makeScreenshot(activity: Activity) {
         try {
             val targetFile = MyLog.getFileInLogDir(MyLog.uniqueDateTimeFormatted() + "-scr.png", true)
             val screenshotManager = ScreenshotManagerBuilder(activity).build()

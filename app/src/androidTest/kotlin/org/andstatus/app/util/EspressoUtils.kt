@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2017-2021: yvolk (Yuri Volkov), http://yurivolkov.com, and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ import android.view.View
 import android.widget.Checkable
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
+import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import org.hamcrest.CoreMatchers
 import org.hamcrest.Description
 import org.hamcrest.Matcher
+
 
 /**
  * From https://stackoverflow.com/a/39650813/297710
@@ -51,6 +53,26 @@ object EspressoUtils {
                 if (checkableView.isChecked != checked) {
                     checkableView.isChecked = checked
                 }
+            }
+        }
+    }
+
+    /**
+     * Perform action of waiting for a specific time.
+     * Solution from https://stackoverflow.com/a/35924943/297710
+     */
+    fun waitMs(millis: Long): ViewAction {
+        return object : ViewAction {
+            override fun getConstraints(): Matcher<View> {
+                return isRoot()
+            }
+
+            override fun getDescription(): String {
+                return "Wait for $millis milliseconds."
+            }
+
+            override fun perform(uiController: UiController, view: View) {
+                uiController.loopMainThreadForAtLeast(millis)
             }
         }
     }

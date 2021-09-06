@@ -22,7 +22,11 @@ import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
+import androidx.test.espresso.Espresso
+import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.HelpActivity
 import org.andstatus.app.MyAction
@@ -32,6 +36,7 @@ import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.ExceptionsCounter
 import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.Permissions
 import org.andstatus.app.util.SharedPreferencesUtil
@@ -255,14 +260,14 @@ object TestSuite {
         Assert.assertTrue(list != null)
         var itemsCount = 0
         do {
-            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+            waitForIdleSync()
             val itemsCountNew = if (list is ListView) list.count else list?.childCount ?: 0
             MyLog.v(TAG, "waitForListLoaded; countNew=$itemsCountNew, prev=$itemsCount, min=$minCount")
             if (itemsCountNew >= minCount && itemsCount == itemsCountNew) {
                 break
             }
             itemsCount = itemsCountNew
-            DbUtils.waitMs(this, 2000) // TODO: Wait for something else to remove the delay
+            waitForIdleSync() // TODO: Wait for something else to remove the delay
         } while(stopWatch.notPassedSeconds(40))
         val msgLog = "There are " + itemsCount + " items (min=" + minCount + ")" +
                 " in the list of " + activity::class.simpleName + ", ${stopWatch.time} ms"
@@ -272,10 +277,19 @@ object TestSuite {
     }
 
     fun waitForIdleSync() {
-        val method = "waitForIdleSync"
-        DbUtils.waitMs(method, 200)
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-        DbUtils.waitMs(method, 1000)
+        try {
+            Espresso.onView(ViewMatchers.isRoot()).perform(EspressoUtils.waitMs(200))
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+            Espresso.onView(ViewMatchers.isRoot()).perform(EspressoUtils.waitMs(1000))
+        } catch (e: Throwable) {
+            // Exception can happen when no activities are running
+            runBlocking {
+                delay(200)
+                InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+                delay(1000)
+            }
+        }
     }
 
     fun isScreenLocked(context: Context): Boolean {

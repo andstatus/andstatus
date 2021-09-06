@@ -21,7 +21,7 @@ import android.net.Uri
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
-import androidx.test.espresso.Espresso
+import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ReplaceTextAction
 import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.matcher.ViewMatchers
@@ -229,13 +229,13 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertTrue(logMsg, invoked)
         ActivityTestHelper.closeContextMenu(activity)
         ActivityTestHelper.waitViewVisible("$method $logMsg", editorView)
-        Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText))
+        onView(ViewMatchers.withId(R.id.noteBodyEditText))
                 .check(ViewAssertions.matches(ViewMatchers.withText(CoreMatchers.startsWith("@"))))
         TestSuite.waitForIdleSync()
         val content = "Replying to you during " + DemoData.demoData.testRunUid
         val bodyText = editorView.findViewById<EditText?>(R.id.noteBodyEditText)
         // Espresso types in the centre, unfortunately, so we need to retype text
-        Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText))
+        onView(ViewMatchers.withId(R.id.noteBodyEditText))
                 .perform(ReplaceTextAction(bodyText.text.toString().trim { it <= ' ' }
                 + " " + content))
         TestSuite.waitForIdleSync()
@@ -252,25 +252,28 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
 
     companion object {
         private val editingStep: AtomicInteger = AtomicInteger()
+
         fun attachImages(test: TimelineActivityTest<ActivityViewItem>, toAdd: Int, toExpect: Int) {
-            ScreenshotOnFailure.screenshotWrapper(test.activity) { _attachImages(test, toAdd, toExpect) }
+            ScreenshotOnFailure.screenshotWrapper(test.activity) {
+                attachImagesInternal(test, toAdd, toExpect)
+            }
         }
 
-        private fun _attachImages(test: TimelineActivityTest<ActivityViewItem>, toAdd: Int, toExpect: Int) {
+        private fun attachImagesInternal(test: TimelineActivityTest<ActivityViewItem>, toAdd: Int, toExpect: Int) {
             val method = "attachImages$toAdd"
             MyLog.v(test, "$method started")
-            ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>(method, test.activity)
-            val editorView: View = ActivityTestHelper.openEditor<ActivityViewItem>(method, test.activity)
+            ActivityTestHelper.hideEditorAndSaveDraft(method, test.activity)
+            val editorView: View = ActivityTestHelper.openEditor(method, test.activity)
             assertTextCleared(test)
             TestSuite.waitForIdleSync()
             val noteName = "A note " + toAdd + " " + test::class.simpleName + " can have a title (name)"
             val content = "Note with " + toExpect + " attachment" +
                     (if (toExpect == 1) "" else "s") + " " +
                     DemoData.demoData.testRunUid
-            Espresso.onView(ViewMatchers.withId(R.id.note_name_edit)).perform(ReplaceTextAction(noteName))
-            Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
-            Espresso.onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
-            Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText(content)))
+            onView(ViewMatchers.withId(R.id.note_name_edit)).perform(ReplaceTextAction(noteName))
+            onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
+            onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
+            onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText(content)))
             attachImage(test, editorView, DemoData.demoData.localImageTestUri2)
             if (toAdd > 1) {
                 attachImage(test, editorView, DemoData.demoData.localGifTestUri)
@@ -282,10 +285,10 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
                 val mediaFile = editor.getData().getAttachedImageFiles().list[if (toExpect == 1) 0 else 1]
                 Assert.assertEquals("Should be animated $mediaFile", MyContentType.ANIMATED_IMAGE, mediaFile.contentType)
             }
-            Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText("$content ")))
-            Espresso.onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
-            ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>(method, test.activity)
-            DbUtils.waitMs(method, 4000)
+            onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText("$content ")))
+            onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
+            ActivityTestHelper.hideEditorAndSaveDraft(method, test.activity)
+            TestSuite.waitForIdleSync()
             MyLog.v(test, "$method ended")
         }
 
@@ -305,9 +308,9 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             val selectorActivity = test.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 25000)
             Assert.assertTrue(selectorActivity != null)
             ActivityTestHelper.waitViewInvisible(method, editorView)
-            DbUtils.waitMs(method, 3000)
+            TestSuite.waitForIdleSync()
             selectorActivity.finish()
-            DbUtils.waitMs(method, 3000)
+            TestSuite.waitForIdleSync()
             MyLog.i(method, "Callback from a selector")
             val intent2 = Intent()
             intent2.setDataAndType(imageUri, MyContentType.Companion.uri2MimeType(test.activity.contentResolver, imageUri,
@@ -318,9 +321,6 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
                 ActivityTestHelper.waitViewVisible(method, editorView)
                 // Due to a race the editor may open before this change first.
                 if (editor.getData().getAttachedImageFiles().forUri(imageUri).isPresent) {
-                    break
-                }
-                if (DbUtils.waitMs(method, 2000)) {
                     break
                 }
             }
