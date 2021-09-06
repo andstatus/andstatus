@@ -59,6 +59,8 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.ScreenshotOnFailure
 import org.hamcrest.CoreMatchers
 import org.junit.Assert
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.properties.Delegates
@@ -342,7 +344,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             val helper = ActivityTestHelper<TimelineActivity<*>>(test.activity)
             test.activity.setSelectorActivityStub(helper)
             helper.clickMenuItem("$method clicker attach_menu_id", R.id.attach_menu_id)
-            Assert.assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id))
+            assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id))
             test.activity.setSelectorActivityStub(null)
             val activityMonitor = test.getInstrumentation()
                 .addMonitor(HelpActivity::class.java.name, null, false)
@@ -350,7 +352,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             test.activity.applicationContext.startActivity(intent1)
             val selectorActivity = test.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 25000)
-            Assert.assertTrue(selectorActivity != null)
+            assertTrue(selectorActivity != null)
             ActivityTestHelper.waitViewInvisible(method, editorView)
             EspressoUtils.waitForIdleSync()
             selectorActivity.finish()
@@ -382,12 +384,13 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
                 "Image attached", editor.getData().getAttachedImageFiles()
                     .forUri(imageUri).isPresent
             )
+            EspressoUtils.waitForIdleSync()
         }
 
         private fun assertTextCleared(test: TimelineActivityTest<ActivityViewItem>) {
             val editor = test.activity.getNoteEditor()
             Assert.assertTrue("Editor is not null", editor != null)
-            Assert.assertEquals(
+            Assert.assertEquals("Editor data should be cleared",
                 NoteEditorData.Companion.newEmpty(
                     test.activity.myContext.accounts.currentAccount
                 ).toTestSummary(),

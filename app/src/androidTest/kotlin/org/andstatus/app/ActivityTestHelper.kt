@@ -173,7 +173,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
                     ok = true
                     break
                 }
-                if (DbUtils.waitMs(method, 1000)) break
+                EspressoUtils.waitForIdleSync()
             }
             MyLog.v(method, if (ok) "Invisible" else "Visible")
             Assert.assertTrue("$method; View is invisible", ok)
@@ -223,6 +223,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
                 val helper = ActivityTestHelper<TimelineActivity<*>>(activity)
                 helper.clickMenuItem("$method hiding editor", R.id.saveDraftButton)
                 waitViewInvisible(method, editorView)
+                EspressoUtils.waitForIdleSync()
                 editorView
             } catch (e: Exception) {
                 Assert.fail("$method failed to hide editor. $e")
