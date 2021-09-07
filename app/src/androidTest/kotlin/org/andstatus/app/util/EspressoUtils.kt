@@ -24,6 +24,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import org.andstatus.app.note.NoteEditorLock
 import org.hamcrest.CoreMatchers
 import org.hamcrest.Description
 import org.hamcrest.Matcher
@@ -59,6 +60,14 @@ object EspressoUtils {
                 }
             }
         }
+    }
+
+    fun waitForEditorUnlocked() {
+        for (attempt in 0..9) {
+            waitForIdleSync()
+            if (NoteEditorLock.isLockReleased) break
+        }
+        waitForIdleSync()
     }
 
     fun waitForIdleSync() {

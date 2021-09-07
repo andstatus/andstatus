@@ -30,6 +30,7 @@ import org.andstatus.app.test.SelectorActivityStub
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.ViewItem
 import org.andstatus.app.util.EspressoUtils
+import org.andstatus.app.util.EspressoUtils.waitForEditorUnlocked
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import java.util.concurrent.atomic.AtomicBoolean
@@ -219,11 +220,12 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
         fun <T : ViewItem<T>> hideEditorAndSaveDraft(method: String, activity: TimelineActivity<T>): View {
             return try {
                 val editorView = activity.findViewById<View?>(R.id.note_editor)
-                if (editorView.visibility != View.VISIBLE) return editorView
-                val helper = ActivityTestHelper<TimelineActivity<*>>(activity)
-                helper.clickMenuItem("$method hiding editor", R.id.saveDraftButton)
-                waitViewInvisible(method, editorView)
-                EspressoUtils.waitForIdleSync()
+                if (editorView.visibility == View.VISIBLE) {
+                    val helper = ActivityTestHelper<TimelineActivity<*>>(activity)
+                    helper.clickMenuItem("$method hiding editor", R.id.saveDraftButton)
+                    waitViewInvisible(method, editorView)
+                }
+                waitForEditorUnlocked()
                 editorView
             } catch (e: Exception) {
                 Assert.fail("$method failed to hide editor. $e")

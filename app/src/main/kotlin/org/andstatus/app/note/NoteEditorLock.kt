@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference
 internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, Identifiable {
     override val instanceId = InstanceId.next()
     var startedAt: Long = 0
+
     override val isEmpty: Boolean
         get() {
             return this == EMPTY
@@ -67,16 +68,14 @@ internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, 
         return !expired() && lock.get() === this
     }
 
-    fun release(): Boolean {
+    fun release() {
         if (nonEmpty) {
             if (lock.compareAndSet(this, EMPTY)) {
                 MyLog.v(this) { "Released lock $this" }
-                return true
             } else {
                 MyLog.v(this) { "Didn't release lock " + this + ". Was " + lock.get() }
             }
         }
-        return false
     }
 
     override fun toString(): String {
@@ -100,6 +99,7 @@ internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, 
     companion object {
         private val TAG: String = NoteEditorLock::class.java.simpleName
         val EMPTY: NoteEditorLock = NoteEditorLock(false, 0)
-        val lock: AtomicReference<NoteEditorLock> = AtomicReference(EMPTY)
+        private val lock: AtomicReference<NoteEditorLock> = AtomicReference(EMPTY)
+        val isLockReleased: Boolean get() = lock.get().isEmpty
     }
 }

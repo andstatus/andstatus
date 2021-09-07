@@ -49,7 +49,7 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
         return false
     }
 
-    fun releaseLock(): Boolean {
+    fun releaseLock() {
         return lock.release()
     }
 

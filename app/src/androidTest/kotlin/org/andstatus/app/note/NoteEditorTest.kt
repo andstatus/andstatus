@@ -148,7 +148,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         val editorView = activity.findViewById<View?>(R.id.note_editor)
         ActivityTestHelper.waitViewVisible("$method; Restored note is visible", editorView)
         assertInitialText("Note restored")
-        ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
+        ActivityTestHelper.hideEditorAndSaveDraft(method, activity)
         ActivityTestHelper.openEditor<ActivityViewItem>(method, activity)
         assertTextCleared(this)
         helper.clickMenuItem("$method click Discard", R.id.discardButton)
@@ -299,7 +299,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             ActivityTestHelper.hideEditorAndSaveDraft(method, test.activity)
             val editorView: View = ActivityTestHelper.openEditor(method, test.activity)
             assertTextCleared(test)
-            EspressoUtils.waitForIdleSync()
+            EspressoUtils.waitForEditorUnlocked()
             val noteName = "A note " + toAdd + " " + test::class.simpleName + " can have a title (name)"
             val content = "Note with " + toExpect + " attachment" +
                 (if (toExpect == 1) "" else "s") + " " +
@@ -340,7 +340,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
 
         private fun attachImage(test: TimelineActivityTest<ActivityViewItem>, editorView: View, imageUri: Uri) {
             val method = "attachImage"
-            EspressoUtils.waitForIdleSync()
+            EspressoUtils.waitForEditorUnlocked()
             val helper = ActivityTestHelper<TimelineActivity<*>>(test.activity)
             test.activity.setSelectorActivityStub(helper)
             helper.clickMenuItem("$method clicker attach_menu_id", R.id.attach_menu_id)
@@ -354,9 +354,9 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             val selectorActivity = test.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 25000)
             assertTrue(selectorActivity != null)
             ActivityTestHelper.waitViewInvisible(method, editorView)
-            EspressoUtils.waitForIdleSync()
+            EspressoUtils.waitForEditorUnlocked()
             selectorActivity.finish()
-            EspressoUtils.waitForIdleSync()
+            EspressoUtils.waitForEditorUnlocked()
             MyLog.i(method, "Callback from a selector")
             val intent2 = Intent()
             intent2.setDataAndType(
@@ -380,11 +380,11 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
                     break
                 }
             }
+            EspressoUtils.waitForEditorUnlocked()
             Assert.assertTrue(
                 "Image attached", editor.getData().getAttachedImageFiles()
                     .forUri(imageUri).isPresent
             )
-            EspressoUtils.waitForIdleSync()
         }
 
         private fun assertTextCleared(test: TimelineActivityTest<ActivityViewItem>) {
