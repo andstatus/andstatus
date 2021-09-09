@@ -83,7 +83,9 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
     private var inCombinedGlobalSearch = false
     private var inCombinedPublicReload = false
     private var mMentionAsWebFingerId: TriState = TriState.UNKNOWN
-    private var isValid = false
+
+    var isValid = false
+        private set
 
     /**
      * Was this Origin stored for future reuse?
@@ -96,10 +98,6 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
         get() {
             return this === EMPTY || originType === OriginType.UNKNOWN // TODO avoid second case
         }
-
-    fun isValid(): Boolean {
-        return isValid
-    }
 
     private fun calcIsValid(): Boolean {
         return (nonEmpty
@@ -309,7 +307,7 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
     override fun toString(): String {
         return if (this === EMPTY) {
             "Origin:EMPTY"
-        } else "Origin:{" + (if (isValid()) "" else "(invalid) ") + "name:" + name +
+        } else "Origin:{" + (if (isValid) "" else "(invalid) ") + "name:" + name +
         ", type:" + originType +
         (if (url != null) ", url:" + url else "") +
         (if (isSsl()) ", " + getSslMode() else "") +
@@ -560,7 +558,7 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
         fun save(): Builder {
             saved = false
             origin.isValid = origin.calcIsValid() // TODO: refactor...
-            if (!origin.isValid()) {
+            if (!origin.isValid) {
                 MyLog.v(this) { "Is not valid: " + origin.toString() }
                 return this
             }

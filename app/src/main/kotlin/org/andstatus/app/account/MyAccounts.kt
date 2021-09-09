@@ -238,7 +238,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         var maSynced: MyAccount = MyAccount.EMPTY
         for (myAccount in myAccounts) {
             for (origin in origins) {
-                if (!origin.isValid() || myAccount.origin == origin) {
+                if (!origin.isValid || myAccount.origin == origin) {
                     if (ma.nonValid) {
                         ma = myAccount
                     }
@@ -345,8 +345,8 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     }
 
     private fun accountFits(ma: MyAccount, origin: Origin, succeededOnly: Boolean): Boolean {
-        return (ma != null && (if (succeededOnly) ma.isValidAndSucceeded() else ma.isValid)
-                && (!origin.isValid() || ma.origin == origin))
+        return (if (succeededOnly) ma.isValidAndSucceeded() else ma.isValid) &&
+            (!origin.isValid || ma.origin == origin)
     }
 
     private fun betterFit(oldMa: MyAccount, newMa: MyAccount, origin: Origin,
@@ -362,7 +362,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     /** Set provided MyAccount as the Current one  */
     fun setCurrentAccount(ma: MyAccount) {
         val prevAccount = currentAccount
-        if (ma == null || ma.nonValid || ma == prevAccount) return
+        if (ma.nonValid || ma == prevAccount) return
         MyLog.v(this) {
             ("Changing current account from '" + prevAccount.getAccountName()
                     + "' to '" + ma.getAccountName() + "'")

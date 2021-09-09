@@ -84,7 +84,7 @@ open class ActorsLoader(val myContext: MyContext,
         val sqlActorIds = getSqlActorIds()
         if (!sqlActorIds.isNullOrEmpty()) {
             where.append(ActorTable.TABLE_NAME + "." + BaseColumns._ID + sqlActorIds)
-        } else if (origin.isValid()) {
+        } else if (origin.isValid) {
             where.append(ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.id)
         }
         return where.getCondition()

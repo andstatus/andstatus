@@ -161,7 +161,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
     }
 
     private fun addMyOriginToSync(origins: MutableList<Origin>, origin: Origin, isSearch: Boolean, hasSynced: Boolean) {
-        if (!origin.isValid()) {
+        if (!origin.isValid) {
             return
         }
         if (hasSynced && !origin.isSyncedForAllOrigins(isSearch)) {
@@ -184,7 +184,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
                     origins.add(account.origin)
                 }
             }
-        } else if (originIn != null && originIn.isValid()) {
+        } else if (originIn != null && originIn.isValid) {
             val account = myContext.accounts.getFirstPreferablySucceededForOrigin(originIn)
             if (account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)) {
                 origins.add(originIn)

@@ -256,8 +256,8 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     private fun fixedTimelineType(timelineType: TimelineType): TimelineType {
-        return if (isCombined || (if (timelineType.isAtOrigin()) origin.isValid()
-                else actor.nonEmpty)) timelineTypeFixEverything(timelineType) else TimelineType.UNKNOWN
+        return if (isCombined || (if (timelineType.isAtOrigin()) origin.isValid
+            else actor.nonEmpty)) timelineTypeFixEverything(timelineType) else TimelineType.UNKNOWN
     }
 
     private fun timelineTypeFixEverything(timelineType: TimelineType): TimelineType {
@@ -315,23 +315,26 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         return if (globalSearch) myContext.timelines.get(TimelineType.SEARCH, actor, origin, searchQuery) else this
     }
 
-    fun fromIsCombined(myContext: MyContext, isCombinedNew: Boolean): Timeline {
-        return if (isCombined == isCombinedNew || !isCombined && timelineType.isForUser() && !timelineType.isAtOrigin()
-                && actor.user.isMyUser() != TriState.TRUE) this else myContext.timelines.get(timelineType,
-                if (isCombinedNew) Actor.EMPTY else myContext.accounts.currentAccount.actor,
-                if (isCombinedNew)  Origin.EMPTY else myContext.accounts.currentAccount.origin,
-                searchQuery)
-    }
-
-    fun fromMyAccount(myContext: MyContext, myAccountNew: MyAccount): Timeline {
-        return if (isCombined || myAccountToSync == myAccountNew || timelineType.isForUser() &&
-                !timelineType.isAtOrigin() && actor.user.isMyUser() != TriState.TRUE)
-            this
+    fun fromIsCombined(myContext: MyContext, isCombinedNew: Boolean): Timeline =
+        if (isCombined == isCombinedNew || !isCombined && timelineType.isForUser() && !timelineType.isAtOrigin()
+            && actor.user.isMyUser != TriState.TRUE
+        ) this
         else myContext.timelines.get(
-                timelineType,
-                myAccountNew.actor,
-                myAccountNew.origin, searchQuery)
-    }
+            timelineType,
+            if (isCombinedNew) Actor.EMPTY else myContext.accounts.currentAccount.actor,
+            if (isCombinedNew) Origin.EMPTY else myContext.accounts.currentAccount.origin,
+            searchQuery
+        )
+
+    fun fromMyAccount(myContext: MyContext, myAccountNew: MyAccount): Timeline =
+        if (isCombined || myAccountToSync == myAccountNew || timelineType.isForUser() &&
+            !timelineType.isAtOrigin() && actor.user.isMyUser != TriState.TRUE
+        ) this
+        else myContext.timelines.get(
+            timelineType,
+            myAccountNew.actor,
+            myAccountNew.origin, searchQuery
+        )
 
     override val isEmpty: Boolean
         get() {
@@ -447,8 +450,8 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
 
     private fun needToLoadActorInTimeline(): Boolean {
         return (actor.nonEmpty
-                && StringUtil.isEmptyOrTemp(actorInTimeline)
-                && actor.user.isMyUser().untrue)
+            && StringUtil.isEmptyOrTemp(actorInTimeline)
+            && actor.user.isMyUser.untrue)
     }
 
     fun delete(myContext: MyContext) {
@@ -474,7 +477,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
                     && (origin.originType.isTimelineTypeSyncable(timelineType)
                     || timelineType == TimelineType.EVERYTHING))
         } else {
-            actor.user.isMyUser().isTrue && actor.getDefaultMyAccountTimelineTypes().contains(timelineType)
+            actor.user.isMyUser.isTrue && actor.getDefaultMyAccountTimelineTypes().contains(timelineType)
         }
     }
 
@@ -486,14 +489,14 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     override fun toString(): String {
         val builder = MyStringBuilder()
         if (timelineType.isAtOrigin()) {
-            builder.withComma(if (origin.isValid()) origin.name else "(all origins)")
+            builder.withComma(if (origin.isValid) origin.name else "(all origins)")
         }
         if (timelineType.isForUser()) {
             if (actor.isEmpty) {
                 builder.withComma("(all accounts)")
-            } else if (myAccountToSync.isValid) {
-                builder.withComma(myAccountToSync.getAccountName())
-                if (myAccountToSync.origin != origin && origin.isValid()) {
+            } else if (actor.user.isMyUser.isTrue && myAccountToSync.isValid) {
+                builder.withComma("account", myAccountToSync.getAccountName())
+                if (myAccountToSync.origin != origin && origin.isValid) {
                     builder.withComma("origin", origin.name)
                 }
             } else {

@@ -208,8 +208,8 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
     }
 
     private fun getOrigin(): Origin {
-        return if (timeline?.getOrigin()?.isValid() == true) timeline?.getOrigin() ?: Origin.EMPTY
-            else parentActivity?.myContext?.accounts?.currentAccount?.origin ?: Origin.EMPTY
+        return if (timeline?.getOrigin()?.isValid == true) timeline?.getOrigin() ?: Origin.EMPTY
+        else parentActivity?.myContext?.accounts?.currentAccount?.origin ?: Origin.EMPTY
     }
 
     private fun isInternetSearch(): Boolean {

@@ -22,7 +22,7 @@ class ConversationViewLoaderTest : ProgressPublisher {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
         origin = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName).origin
-        Assert.assertTrue(origin.isValid())
+        Assert.assertTrue(origin.isValid)
         selectedNoteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.demoData.conversationEntryNoteOid)
         Assert.assertTrue("Selected note exists", selectedNoteId != 0L)
         MyLog.i(this, "setUp ended")

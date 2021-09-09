@@ -100,8 +100,8 @@ class ActorAutoCompleteAdapter(private val myActivity: LoadableListActivity<*>,
      */
     private inner class ArrayFilter : Filter() {
         override fun performFiltering(prefixWithReferenceChar: CharSequence?): FilterResults {
-            if (!origin.isValid() || prefixWithReferenceChar.isNullOrEmpty() ||
-                    prefixWithReferenceChar.length < NoteBodyTokenizer.MIN_LENGHT_TO_SEARCH + 1) {
+            if (!origin.isValid || prefixWithReferenceChar.isNullOrEmpty() ||
+                prefixWithReferenceChar.length < NoteBodyTokenizer.MIN_LENGHT_TO_SEARCH + 1) {
                 val results = FilterResults()
                 results.values = FilteredValues.EMPTY
                 results.count = 0

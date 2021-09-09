@@ -194,7 +194,7 @@ class DemoData {
     fun getMyAccount(accountName: String?): MyAccount {
         val ma: MyAccount =  MyContextHolder.myContextHolder.getBlocking().accounts.fromAccountName(accountName)
         Assert.assertTrue("$accountName exists", ma.isValid)
-        Assert.assertTrue("Origin for $accountName doesn't exist", ma.origin.isValid())
+        Assert.assertTrue("Origin for $accountName doesn't exist", ma.origin.isValid)
         return ma
     }
 

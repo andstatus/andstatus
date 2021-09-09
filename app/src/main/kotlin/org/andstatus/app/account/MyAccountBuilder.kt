@@ -209,7 +209,7 @@ class MyAccountBuilder private constructor(
             setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED)
             actor.lookupActorId()
             actor.lookupUser()
-            actor.user.setIsMyUser(TriState.TRUE)
+            actor.user.isMyUser = TriState.TRUE
             actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
             myAccount.actor = actor
             if (DatabaseConverterController.isUpgrading()) {
@@ -224,7 +224,7 @@ class MyAccountBuilder private constructor(
                 if (!sameName) {
                     MyLog.i(
                         this, "name changed from " + myAccount.data.accountName.getUniqueName() +
-                                " to " + actor.uniqueName
+                            " to " + actor.uniqueName
                     )
                     myAccount.data.updateFrom(myAccount)
                     val newData = myAccount.data.withAccountName(

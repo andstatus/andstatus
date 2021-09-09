@@ -34,19 +34,51 @@ enum class TimelineType(val scope: ListScope,
     UNKNOWN(ListScope.ORIGIN, "unknown", R.string.timeline_title_unknown, 0, ApiRoutineEnum.DUMMY_API),
 
     /** The Home timeline and other information (replies...).  */
-    HOME(ListScope.USER, "home", R.string.timeline_title_home, 0, ApiRoutineEnum.HOME_TIMELINE), UNREAD_NOTIFICATIONS(ListScope.USER, "unread_notifications", R.string.unread_notifications, 0, ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
+    HOME(ListScope.USER, "home", R.string.timeline_title_home, 0, ApiRoutineEnum.HOME_TIMELINE),
+
+    UNREAD_NOTIFICATIONS(ListScope.USER, "unread_notifications", R.string.unread_notifications, 0, ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
 
     /** The Mentions timeline and other information (replies...).  */
-    INTERACTIONS(ListScope.USER, "interactions", R.string.timeline_title_interactions, 0, ApiRoutineEnum.NOTIFICATIONS_TIMELINE), FAVORITES(ListScope.USER, "favorites", R.string.timeline_title_favorites, 0, ApiRoutineEnum.LIKED_TIMELINE),
+    INTERACTIONS(ListScope.USER, "interactions", R.string.timeline_title_interactions, 0, ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
+
+    FAVORITES(ListScope.USER, "favorites", R.string.timeline_title_favorites, 0, ApiRoutineEnum.LIKED_TIMELINE),
 
     /** Notes by the selected Actor (where he is an Author or an Actor only (e.g. for Reblog/Retweet).
      * This Actor is not necessarily one of our Accounts  */
-    SENT(ListScope.USER, "sent", R.string.sent, R.string.menu_item_user_messages, ApiRoutineEnum.ACTOR_TIMELINE), SENT_AT_ORIGIN(ListScope.ACTOR_AT_ORIGIN, "sent_at_origin", R.string.sent, R.string.menu_item_user_messages, ApiRoutineEnum.ACTOR_TIMELINE),
+    SENT(ListScope.USER, "sent", R.string.sent, R.string.menu_item_user_messages, ApiRoutineEnum.ACTOR_TIMELINE),
+
+    SENT_AT_ORIGIN(ListScope.ACTOR_AT_ORIGIN, "sent_at_origin", R.string.sent, R.string.menu_item_user_messages, ApiRoutineEnum.ACTOR_TIMELINE),
 
     /** Latest notes of every Friend of this Actor
      * (i.e of every actor, followed by this Actor).
      * So this is essentially a list of "Friends". See [org.andstatus.app.database.table.GroupMembersTable]  */
-    FRIENDS(ListScope.USER, "friends", R.string.friends, R.string.friends_of, ApiRoutineEnum.GET_FRIENDS), FOLLOWERS(ListScope.USER, "followers", R.string.followers, R.string.followers_of, ApiRoutineEnum.GET_FOLLOWERS), GROUP(ListScope.USER, "group", R.string.group, R.string.group_notes, ApiRoutineEnum.DUMMY_API), PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, ApiRoutineEnum.PUBLIC_TIMELINE), EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, ApiRoutineEnum.DUMMY_API), SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, 0, ApiRoutineEnum.SEARCH_NOTES), PRIVATE(ListScope.USER, "private", R.string.timeline_title_private, 0, ApiRoutineEnum.PRIVATE_NOTES), NOTIFICATIONS(ListScope.USER, "notifications", R.string.notifications_title, 0, ApiRoutineEnum.NOTIFICATIONS_TIMELINE), DRAFTS(ListScope.USER, "drafts", R.string.timeline_title_drafts, 0, ApiRoutineEnum.DUMMY_API), OUTBOX(ListScope.USER, "outbox", R.string.timeline_title_outbox, 0, ApiRoutineEnum.DUMMY_API), ACTORS(ListScope.ORIGIN, "users", R.string.user_list, 0, ApiRoutineEnum.DUMMY_API), CONVERSATION(ListScope.ORIGIN, "conversation", R.string.label_conversation, 0, ApiRoutineEnum.DUMMY_API), COMMANDS_QUEUE(ListScope.ORIGIN, "commands_queue", R.string.commands_in_a_queue, 0, ApiRoutineEnum.DUMMY_API), MANAGE_TIMELINES(ListScope.ORIGIN, "manages_timelines", R.string.manage_timelines, 0, ApiRoutineEnum.DUMMY_API);
+    FRIENDS(ListScope.USER, "friends", R.string.friends, R.string.friends_of, ApiRoutineEnum.GET_FRIENDS),
+
+    FOLLOWERS(ListScope.USER, "followers", R.string.followers, R.string.followers_of, ApiRoutineEnum.GET_FOLLOWERS),
+
+    GROUP(ListScope.USER, "group", R.string.group, R.string.group_notes, ApiRoutineEnum.DUMMY_API),
+
+    PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, ApiRoutineEnum.PUBLIC_TIMELINE),
+
+    EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, ApiRoutineEnum.DUMMY_API),
+
+    SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, 0, ApiRoutineEnum.SEARCH_NOTES),
+
+    PRIVATE(ListScope.USER, "private", R.string.timeline_title_private, 0, ApiRoutineEnum.PRIVATE_NOTES),
+
+    NOTIFICATIONS(ListScope.USER, "notifications", R.string.notifications_title, 0, ApiRoutineEnum.NOTIFICATIONS_TIMELINE),
+
+    DRAFTS(ListScope.USER, "drafts", R.string.timeline_title_drafts, 0, ApiRoutineEnum.DUMMY_API),
+
+    OUTBOX(ListScope.USER, "outbox", R.string.timeline_title_outbox, 0, ApiRoutineEnum.DUMMY_API),
+
+    ACTORS(ListScope.ORIGIN, "users", R.string.user_list, 0, ApiRoutineEnum.DUMMY_API),
+
+    CONVERSATION(ListScope.ORIGIN, "conversation", R.string.label_conversation, 0, ApiRoutineEnum.DUMMY_API),
+
+    COMMANDS_QUEUE(ListScope.ORIGIN, "commands_queue", R.string.commands_in_a_queue, 0, ApiRoutineEnum.DUMMY_API),
+
+    MANAGE_TIMELINES(ListScope.ORIGIN, "manages_timelines", R.string.manage_timelines, 0, ApiRoutineEnum.DUMMY_API);
 
     /** String to be used for persistence  */
     fun save(): String {
@@ -113,7 +145,8 @@ enum class TimelineType(val scope: ListScope,
 
     fun canBeCombinedForMyAccounts(): Boolean {
         return when (this) {
-            PRIVATE, DRAFTS, FAVORITES, FOLLOWERS, FRIENDS, HOME, INTERACTIONS, NOTIFICATIONS, OUTBOX, SENT, UNREAD_NOTIFICATIONS -> true
+            PRIVATE, DRAFTS, FAVORITES, FOLLOWERS, FRIENDS, HOME, INTERACTIONS, NOTIFICATIONS,
+            OUTBOX, SENT, UNREAD_NOTIFICATIONS -> true
             else -> false
         }
     }
@@ -127,7 +160,8 @@ enum class TimelineType(val scope: ListScope,
 
     fun showsActivities(): Boolean {
         return when (this) {
-            DRAFTS, EVERYTHING, FOLLOWERS, FRIENDS, GROUP, HOME, INTERACTIONS, NOTIFICATIONS, OUTBOX, PRIVATE, PUBLIC, SEARCH, SENT, SENT_AT_ORIGIN, UNREAD_NOTIFICATIONS -> true
+            DRAFTS, EVERYTHING, FOLLOWERS, FRIENDS, GROUP, HOME, INTERACTIONS, NOTIFICATIONS, OUTBOX,
+            PRIVATE, PUBLIC, SEARCH, SENT, SENT_AT_ORIGIN, UNREAD_NOTIFICATIONS -> true
             FAVORITES -> false
             else -> false
         }

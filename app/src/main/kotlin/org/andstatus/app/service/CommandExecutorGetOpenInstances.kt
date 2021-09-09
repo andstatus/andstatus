@@ -41,10 +41,10 @@ class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext) : Co
             val origin = Origin.Builder(execContext.myContext, execOrigin.originType).setName(mbOrigin.name)
                     .setHostOrUrl(mbOrigin.urlString)
                     .build()
-            if (origin.isValid()
-                    && ! MyContextHolder.myContextHolder.getNow().origins.fromName(origin.name)
-                            .isValid()
-                    && !haveOriginsWithThisHostName(origin.url)) {
+            if (origin.isValid
+                && !MyContextHolder.myContextHolder.getNow().origins.fromName(origin.name)
+                    .isValid
+                && !haveOriginsWithThisHostName(origin.url)) {
                 newOrigins.add(origin)
             } else {
                 MyLog.d(this, "Origin is not valid: $origin")

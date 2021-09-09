@@ -269,7 +269,7 @@ object MyQuery {
         val method = "noteIdToActors"
         val foundActors: MutableList<Long> = ArrayList()
         val actors: MutableList<Actor> = ArrayList()
-        if (db == null || !origin.isValid() || noteId == 0L) {
+        if (db == null || !origin.isValid || noteId == 0L) {
             return actors
         }
         val sql = ("SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.ACTOR_ID + ", "

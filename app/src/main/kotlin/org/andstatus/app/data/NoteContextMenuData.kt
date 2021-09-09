@@ -38,7 +38,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     var authorFollowed = false
 
     private fun calculateMyAccount(origin: Origin, ma: MyAccount): MyAccount {
-        return if (ma == null || !origin.isValid() || ma.origin != origin || ma.nonValid) {
+        return if (ma == null || !origin.isValid || ma.origin != origin || ma.nonValid) {
             MyAccount.EMPTY
         } else ma
     }

@@ -19,9 +19,11 @@ import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
 
 enum class ListScope(private val timelinePrepositionResId: Int) {
-    ORIGIN(R.string.combined_timeline_off_origin), USER(R.string.combined_timeline_off_account), ACTOR_AT_ORIGIN(0);
+    ORIGIN(R.string.combined_timeline_off_origin),
+    USER(R.string.combined_timeline_off_account),
+    ACTOR_AT_ORIGIN(0);
 
-    fun timelinePreposition(myContext: MyContext?): CharSequence? {
-        return if (myContext == null || myContext.context == null || timelinePrepositionResId == 0) "" else myContext.context.getText(timelinePrepositionResId)
-    }
+    fun timelinePreposition(myContext: MyContext): CharSequence =
+        if (myContext.isEmpty || timelinePrepositionResId == 0) ""
+        else myContext.context.getText(timelinePrepositionResId)
 }

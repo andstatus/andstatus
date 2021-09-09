@@ -187,8 +187,8 @@ class Note : AObject {
     }
 
     override val isEmpty: Boolean
-        get() = !origin.isValid() || UriUtils.nonRealOid(oid) && status != DownloadStatus.DELETED &&
-                (status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT || !hasSomeContent())
+        get() = !origin.isValid || UriUtils.nonRealOid(oid) && status != DownloadStatus.DELETED &&
+            (status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT || !hasSomeContent())
 
     fun hasSomeContent(): Boolean = name.isNotEmpty() || summary.isNotEmpty() || content.isNotEmpty() ||
             attachments.nonEmpty

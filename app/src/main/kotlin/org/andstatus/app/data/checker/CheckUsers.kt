@@ -115,8 +115,9 @@ internal class CheckUsers : DataChecker() {
                     results.problems.add("Fix webfingerId: '$webFingerId' $actor")
                 }
                 if (myContext.accounts.fromWebFingerId(actor.getWebFingerId()).isValid
-                        && actor.user.isMyUser().untrue) {
-                    actor.user.setIsMyUser(TriState.TRUE)
+                    && actor.user.isMyUser.untrue
+                ) {
+                    actor.user.isMyUser = TriState.TRUE
                     results.usersToSave.add(actor.user)
                     results.problems.add("Fix user isMy: $actor")
                 } else if (actor.user.userId == 0L) {
@@ -166,8 +167,8 @@ internal class CheckUsers : DataChecker() {
                     ActorTable.USER_ID + "=" + userWith.userId,
                     BaseColumns._ID + "=" + actor.actorId
             )
-            if (actor.user.userId != 0L && actor.user.userId != userWith.userId && userWith.isMyUser().isTrue) {
-                actor.user.setIsMyUser(TriState.FALSE)
+            if (actor.user.userId != 0L && actor.user.userId != userWith.userId && userWith.isMyUser.isTrue) {
+                actor.user.isMyUser = TriState.FALSE
                 actor.user.save(myContext)
             }
             1

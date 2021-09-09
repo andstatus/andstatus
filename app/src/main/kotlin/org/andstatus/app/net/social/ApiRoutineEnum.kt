@@ -16,25 +16,33 @@
 package org.andstatus.app.net.social
 
 /**
- * API routines (functions, "resources" in terms of Twitter)  enumerated
+ * API routines (functions, "resources" in terms of Twitter) enumerated
  * @author yvolk@yurivolkov.com
  */
 enum class ApiRoutineEnum constructor(private val isNotePrivate: Boolean = false) {
-    ACCOUNT_RATE_LIMIT_STATUS, ACCOUNT_VERIFY_CREDENTIALS,
+    ACCOUNT_RATE_LIMIT_STATUS,
+    ACCOUNT_VERIFY_CREDENTIALS,
 
-    /** Returns most recent notes privately sent to the authenticating user  */
-    PRIVATE_NOTES(true), LIKE, UNDO_LIKE, FOLLOW, GET_CONFIG, GET_CONVERSATION,
+    ANNOUNCE, UNDO_ANNOUNCE,
+    LIKE, UNDO_LIKE,
+    FOLLOW, UNDO_FOLLOW,
+    GET_CONFIG,
+    GET_CONVERSATION,
 
     /** List of actors  */
     GET_FRIENDS,
-
     /** List of Actors' IDs  */
-    GET_FRIENDS_IDS, GET_FOLLOWERS, GET_FOLLOWERS_IDS, GET_OPEN_INSTANCES, GET_ACTOR, UPDATE_NOTE, UPDATE_PRIVATE_NOTE, UPLOAD_MEDIA, ANNOUNCE, UNDO_ANNOUNCE, DELETE_NOTE,
+    GET_FRIENDS_IDS,
 
-    /**
-     * Get the Home timeline (whatever it is...).
-     * This is the equivalent of /home on the Web.
-     */
+    GET_FOLLOWERS, GET_FOLLOWERS_IDS,
+    GET_OPEN_INSTANCES,
+    GET_ACTOR,
+    UPDATE_NOTE, UPDATE_PRIVATE_NOTE, UPLOAD_MEDIA, DELETE_NOTE,
+
+    /** Returns most recent notes privately sent to the authenticating user  */
+    PRIVATE_NOTES(true),
+
+    /** Get the Home timeline (whatever it is...). This is the equivalent of /home on the Web. */
     HOME_TIMELINE,
 
     /** Notifications in a separate API  */
@@ -44,7 +52,11 @@ enum class ApiRoutineEnum constructor(private val isNotePrivate: Boolean = false
      * Get the Actor timeline for an actor with the selectedActorId.
      * We use credentials of our Account, which may be not the same the actor.
      */
-    ACTOR_TIMELINE, PUBLIC_TIMELINE, TAG_TIMELINE, LIKED_TIMELINE, SEARCH_NOTES, SEARCH_ACTORS, GET_NOTE, UNDO_FOLLOW, DOWNLOAD_FILE,
+    ACTOR_TIMELINE, PUBLIC_TIMELINE, TAG_TIMELINE, LIKED_TIMELINE,
+
+    SEARCH_NOTES, SEARCH_ACTORS,
+    GET_NOTE,
+    DOWNLOAD_FILE,
 
     /**
      * OAuth APIs
@@ -66,7 +78,8 @@ enum class ApiRoutineEnum constructor(private val isNotePrivate: Boolean = false
 
     fun isOriginApi(): Boolean {
         return when (this) {
-            ApiRoutineEnum.OAUTH_ACCESS_TOKEN, ApiRoutineEnum.OAUTH_AUTHORIZE, ApiRoutineEnum.OAUTH_REGISTER_CLIENT, ApiRoutineEnum.OAUTH_REQUEST_TOKEN, ApiRoutineEnum.DOWNLOAD_FILE, ApiRoutineEnum.DUMMY_API, ApiRoutineEnum.GET_OPEN_INSTANCES, ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS -> false
+            OAUTH_ACCESS_TOKEN, OAUTH_AUTHORIZE, OAUTH_REGISTER_CLIENT, OAUTH_REQUEST_TOKEN, DOWNLOAD_FILE,
+            DUMMY_API, GET_OPEN_INSTANCES, ACCOUNT_VERIFY_CREDENTIALS -> false
             else -> true
         }
     }

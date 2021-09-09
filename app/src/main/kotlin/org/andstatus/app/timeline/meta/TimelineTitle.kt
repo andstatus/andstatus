@@ -51,7 +51,7 @@ class TimelineTitle private constructor(val title: String, val subTitle: String?
                     calcTitle(myContext, timeline, accountToHide, namesAreHidden, destination),
                     calcSubtitle(myContext, timeline, accountToHide, namesAreHidden, destination),
                     if (timeline.timelineType.isForUser() && timeline.myAccountToSync.isValid) timeline.myAccountToSync.toAccountButtonText() else "",
-                    if (timeline.timelineType.isAtOrigin() && timeline.getOrigin().isValid()) timeline.getOrigin().name else ""
+                if (timeline.timelineType.isAtOrigin() && timeline.getOrigin().isValid) timeline.getOrigin().name else ""
             )
         }
 
@@ -113,7 +113,7 @@ class TimelineTitle private constructor(val title: String, val subTitle: String?
             return (timeline.timelineType.isForUser()
                     && !timeline.isCombined && timeline.actor.nonEmpty
                     && timeline.actor.notSameUser(accountToHide.actor)
-                    && (timeline.actor.user.isMyUser().untrue || namesAreHidden))
+                    && (timeline.actor.user.isMyUser.untrue || namesAreHidden))
         }
 
         private fun showOrigin(timeline: Timeline, namesAreHidden: Boolean): Boolean {

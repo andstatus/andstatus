@@ -70,7 +70,7 @@ class OriginSelector : SelectorDialog() {
         for (item in listData) {
             val map: MutableMap<String, String> = HashMap()
             var visibleName: String = item.name
-            if (!item.isValid()) {
+            if (!item.isValid) {
                 visibleName = "($visibleName)"
             }
             map[KEY_VISIBLE_NAME] = visibleName

@@ -943,7 +943,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     private fun onOriginSelected(data: Intent) {
         val origin = myContext.origins.fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
-        if (origin.isValid() && getParamsLoaded().timeline.hasActorProfile()) {
+        if (origin.isValid && getParamsLoaded().timeline.hasActorProfile()) {
             updateList(LoadableListViewParameters.fromOrigin(origin))
         }
     }

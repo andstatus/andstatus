@@ -71,7 +71,7 @@ class NoteForAnyAccount(val myContext: MyContext, activityId: Long, val noteId: 
         var authorId: Long = 0
         var statusLoc = DownloadStatus.UNKNOWN
         var visibilityLoc = Visibility.UNKNOWN
-        if (noteId != 0L && origin.isValid() && db != null) {
+        if (noteId != 0L && origin.isValid && db != null) {
             val sql = ("SELECT " + NoteTable.NOTE_STATUS + ", "
                     + NoteTable.CONTENT + ", "
                     + NoteTable.AUTHOR_ID + ","

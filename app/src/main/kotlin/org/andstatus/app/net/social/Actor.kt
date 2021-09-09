@@ -64,8 +64,11 @@ import java.util.stream.Collectors
  * @author yvolk@yurivolkov.com
  */
 class Actor private constructor(// In our system
-        val origin: Origin, val groupType: GroupType, actorId: Long, actorOid: String?) : Comparable<Actor>, IsEmpty {
-    val oid: String
+        val origin: Origin,
+        val groupType: GroupType,
+        actorId: Long,
+        actorOid: String?) : Comparable<Actor>, IsEmpty {
+    val oid: String = if (actorOid.isNullOrEmpty()) "" else actorOid
     private var parentActorId: Long = 0
     private var parentActor: LazyVal<Actor> = LazyVal.of(EMPTY)
     private var username: String = ""
@@ -77,7 +80,7 @@ class Actor private constructor(// In our system
     private var profileUri = Uri.EMPTY
     private var homepage: String = ""
     private var avatarUri = Uri.EMPTY
-    val endpoints: ActorEndpoints
+    val endpoints: ActorEndpoints = ActorEndpoints.from(origin.myContext, actorId)
     private val connectionHost: LazyVal<String> = LazyVal.of { evalConnectionHost() }
     private val idHost: LazyVal<String> = LazyVal.of { evalIdHost() }
     var notesCount: Long = 0
@@ -92,7 +95,7 @@ class Actor private constructor(// In our system
     var isMyFriend: TriState = TriState.UNKNOWN
 
     @Volatile
-    var actorId = 0L
+    var actorId = actorId
     var avatarFile: AvatarFile = AvatarFile.EMPTY
 
     @Volatile
@@ -139,8 +142,8 @@ class Actor private constructor(// In our system
 
     override val isEmpty: Boolean get() {
         if (this === EMPTY) return true
-        return if (isConstant()) false else !origin.isValid() ||
-                actorId == 0L && UriUtils.nonRealOid(oid) && !isWebFingerIdValid() && !isUsernameValid()
+        return if (isConstant()) false else !origin.isValid ||
+            actorId == 0L && UriUtils.nonRealOid(oid) && !isWebFingerIdValid() && !isUsernameValid()
     }
 
     fun dontStore(): Boolean {
@@ -331,7 +334,7 @@ class Actor private constructor(// In our system
         if (username.contains("@") == true) {
             setWebFingerId(username)
         } else if (!UriUtils.isEmpty(profileUri)) {
-            if (origin.isValid()) {
+            if (origin.isValid) {
                 setWebFingerId(username + "@" + origin.fixUriForPermalink(profileUri).host)
             } else {
                 setWebFingerId(username + "@" + profileUri.host)
@@ -673,8 +676,8 @@ class Actor private constructor(// In our system
     }
 
     fun saveUser() {
-        if (user.isMyUser().unknown && origin.myContext.users.isMe(this)) {
-            user.setIsMyUser(TriState.TRUE)
+        if (user.isMyUser.unknown && origin.myContext.users.isMe(this)) {
+            user.isMyUser = TriState.TRUE
         }
         if (user.userId == 0L) user.setKnownAs(uniqueName)
         user.save(origin.myContext)
@@ -915,9 +918,4 @@ class Actor private constructor(// In our system
         }
     }
 
-    init {
-        this.actorId = actorId
-        oid = if (actorOid.isNullOrEmpty()) "" else actorOid
-        endpoints = ActorEndpoints.from(origin.myContext, actorId)
-    }
 }

@@ -62,7 +62,7 @@ class AccountSelector : SelectorDialog() {
         val originId = Optional.ofNullable(arguments)
                 .map { bundle: Bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key) }.orElse(0L)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromId(originId)
-        val origins: MutableList<Origin> = if (origin.isValid()) mutableListOf(origin) else getOriginsForActor()
+        val origins: MutableList<Origin> = if (origin.isValid) mutableListOf(origin) else getOriginsForActor()
         val predicate = if (origins.isEmpty()) Predicate { true } else
             Predicate { ma: MyAccount -> origins.contains(ma.origin) }
         return  MyContextHolder.myContextHolder.getNow().accounts.get().stream()

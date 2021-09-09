@@ -164,7 +164,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         assertEquals("Android account name", accountName.name,
                 existingAndroidAccount.map { a: Account -> a.name }.getOrElse("(not found)"))
         assertEquals("User should be known as this actor $actor", actor.uniqueName, actor.user.getKnownAs())
-        assertEquals("User is not mine $actor", TriState.TRUE, actor.user.isMyUser())
+        assertEquals("User is not mine $actor", TriState.TRUE, actor.user.isMyUser)
         assertNotEquals("User is not added $actor", 0, actor.user.userId)
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.actorId)
         return ma

@@ -50,7 +50,7 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initializeWithData(this)
         val myContext = MyContextHolder.myContextHolder.getBlocking()
         val origin: Origin =  myContext.origins.fromName(DemoData.demoData.gnusocialTestOriginName)
-        Assert.assertTrue(origin.toString(), origin.isValid())
+        Assert.assertTrue(origin.toString(), origin.isValid)
         MyLog.i(this, "setUp ended")
         val timeline = myContext.timelines.get(TimelineType.PUBLIC, Actor.EMPTY, origin)
         timeline.save(myContext)

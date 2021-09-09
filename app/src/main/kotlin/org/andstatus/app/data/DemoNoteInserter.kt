@@ -315,6 +315,6 @@ class DemoNoteInserter(val accountActor: Actor) {
     }
 
     init {
-        Assert.assertTrue("Origin exists for $accountActor", origin.isValid())
+        Assert.assertTrue("Origin exists for $accountActor", origin.isValid)
     }
 }

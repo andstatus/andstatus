@@ -109,7 +109,7 @@ class TimelineSaver {
     }
 
     private fun addDefaultOriginTimelinesIfNoneFound(myContext: MyContext, origin: Origin) {
-        if (!origin.isValid()) return
+        if (!origin.isValid) return
         val timelineId = MyQuery.conditionToLongColumnValue(myContext.database,
                 "Any timeline for " + origin.name,
                 TimelineTable.TABLE_NAME, BaseColumns._ID,

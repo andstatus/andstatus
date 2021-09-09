@@ -109,12 +109,14 @@ class OriginEditor : MyActivity(OriginEditor::class) {
             buttonSave?.setOnClickListener(AddOrigin())
             buttonSave?.setText(R.string.button_add)
             val origin = DiscoveredOrigins.fromName(intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key))
-            if (origin.isValid()) {
+            if (origin.isValid) {
                 builder = Origin.Builder(origin)
             } else {
                 val originType: OriginType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key))
-                builder = Origin.Builder( MyContextHolder.myContextHolder.getNow(),
-                        if (OriginType.UNKNOWN == originType) OriginType.GNUSOCIAL else originType)
+                builder = Origin.Builder(
+                    MyContextHolder.myContextHolder.getNow(),
+                    if (OriginType.UNKNOWN == originType) OriginType.GNUSOCIAL else originType
+                )
                 if (OriginType.UNKNOWN != originType) {
                     spinnerOriginType?.setEnabled(false)
                 }

@@ -40,7 +40,7 @@ import java.util.stream.Collectors
 class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long>) : IsEmpty {
     var userId = 0L
     private var knownAs: String = ""
-    private var isMyUser: TriState = TriState.UNKNOWN
+    var isMyUser: TriState = TriState.UNKNOWN
     val actorIds: MutableSet<Long>
 
     override val isEmpty: Boolean
@@ -91,14 +91,6 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
         return values
     }
 
-    fun setIsMyUser(isMyUser: TriState) {
-        this.isMyUser = isMyUser
-    }
-
-    fun isMyUser(): TriState {
-        return isMyUser
-    }
-
     fun setKnownAs(knownAs: String) {
         this.knownAs = knownAs
     }
@@ -106,7 +98,7 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
     fun knownInOrigins(myContext: MyContext): MutableList<Origin> {
         return actorIds.stream().map { id: Long -> Actor.load(myContext, id) }
                 .map { actor: Actor -> actor.origin }
-                .filter { obj: Origin -> obj.isValid() }
+                .filter { obj: Origin -> obj.isValid }
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList())

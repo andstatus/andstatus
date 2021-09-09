@@ -149,8 +149,8 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         if (user2.isEmpty) {
             user2 = User.getNew()
         }
-        if (actor.user.isMyUser().known) {
-            user2.setIsMyUser(actor.user.isMyUser())
+        if (actor.user.isMyUser.known) {
+            user2.isMyUser = actor.user.isMyUser
         }
         actor.user = user2
         if (actor.user.nonEmpty) {
@@ -196,14 +196,14 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
                 user.actorIds.add(actorId)
             }
             updateCachedActor(actors, actor)
-            if (user.isMyUser().isTrue) updateCachedActor(myActors, actor)
+            if (user.isMyUser.isTrue) updateCachedActor(myActors, actor)
         }
         if (userId == 0L) return
         val cached = users.getOrDefault(userId, User.EMPTY)
         if (cached.isEmpty) {
             users.putIfAbsent(userId, user)
-            if (user.isMyUser().isTrue) myUsers.putIfAbsent(userId, user)
-        } else if (user.isMyUser().isTrue && cached.isMyUser().untrue) {
+            if (user.isMyUser.isTrue) myUsers.putIfAbsent(userId, user)
+        } else if (user.isMyUser.isTrue && cached.isMyUser.untrue) {
             user.actorIds.addAll(cached.actorIds)
             users[userId] = user
             myUsers[userId] = user

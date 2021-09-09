@@ -199,7 +199,7 @@ class Audience(val origin: Origin) {
      * @return true if data changed
      */
     fun save(actorOfAudience: Actor, noteId: Long, visibility: Visibility, countOnly: Boolean): Boolean {
-        if (this === EMPTY || !actorOfAudience.origin.isValid() || noteId == 0L || actorOfAudience.actorId == 0L ||
+        if (this === EMPTY || !actorOfAudience.origin.isValid || noteId == 0L || actorOfAudience.actorId == 0L ||
                 !origin.myContext.isReady
         ) {
             return false

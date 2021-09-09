@@ -78,7 +78,7 @@ class CommandTimeline(val myContext: MyContext,
         if (timeline.isEvaluated()) return timeline.get().toString()
         val builder = MyStringBuilder()
         if (timelineType.isAtOrigin()) {
-            builder.withComma(if (origin.isValid()) origin.name else "(all origins)")
+            builder.withComma(if (origin.isValid) origin.name else "(all origins)")
         }
         if (timelineType.isForUser()) {
             if (actorId == 0L) {

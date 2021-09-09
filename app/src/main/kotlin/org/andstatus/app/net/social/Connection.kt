@@ -435,7 +435,7 @@ abstract class Connection protected constructor() : IsEmpty {
         }
 
         fun fromMyAccount(myAccount: MyAccount, isOAuth: TriState): Connection {
-            if (!myAccount.origin.isValid()) return ConnectionEmpty.EMPTY
+            if (!myAccount.origin.isValid) return ConnectionEmpty.EMPTY
             val connectionData: AccountConnectionData = AccountConnectionData.fromMyAccount(myAccount, isOAuth)
             return try {
                 (myAccount.origin.originType.getConnectionClass().newInstance() as Connection)
@@ -450,7 +450,7 @@ abstract class Connection protected constructor() : IsEmpty {
         }
 
         fun fromOrigin(origin: Origin, isOAuth: TriState): Connection {
-            if (!origin.isValid()) return ConnectionEmpty.EMPTY
+            if (!origin.isValid) return ConnectionEmpty.EMPTY
             val connectionData: AccountConnectionData = AccountConnectionData.fromOrigin(origin, isOAuth)
             return try {
                 (origin.originType.getConnectionClass().newInstance() as Connection)

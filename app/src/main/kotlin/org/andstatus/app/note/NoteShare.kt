@@ -43,7 +43,7 @@ class NoteShare(private val origin: Origin, private val noteId: Long, private va
      * @return true if succeeded
      */
     fun share(context: Context): Boolean {
-        if (!origin.isValid()) {
+        if (!origin.isValid) {
             return false
         }
         context.startActivity(
@@ -103,7 +103,7 @@ class NoteShare(private val origin: Origin, private val noteId: Long, private va
      * @return true if succeeded
      */
     fun openPermalink(context: Context): Boolean {
-        return if (!origin.isValid()) false else openLink(context, origin.getNotePermalink(noteId))
+        return if (!origin.isValid) false else openLink(context, origin.getNotePermalink(noteId))
     }
 
     companion object {
@@ -123,7 +123,7 @@ class NoteShare(private val origin: Origin, private val noteId: Long, private va
     }
 
     init {
-        if (!origin.isValid()) {
+        if (!origin.isValid) {
             MyLog.v(this) { "Origin not found for noteId=$noteId" }
         }
     }

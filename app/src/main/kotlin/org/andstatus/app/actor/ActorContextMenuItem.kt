@@ -175,7 +175,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
     fun setActingAccountForActor(params: Params) {
         val actor = params.menu.getViewItem().actor
         val origin = params.menu.getOrigin()
-        if (!origin.isValid()) {
+        if (!origin.isValid) {
             MyLog.w(this, "Unknown origin for " + params.menu.getViewItem().actor)
             return
         }

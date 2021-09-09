@@ -43,7 +43,7 @@ class DemoGnuSocialConversationInserter {
         iteration = iterationCounter.incrementAndGet()
         conversationOid = java.lang.Long.toString(MyLog.uniqueCurrentTimeMS)
         origin = DemoData.demoData.getGnuSocialOrigin()
-        Assert.assertTrue(DemoData.demoData.gnusocialTestOriginName + " exists", origin.isValid())
+        Assert.assertTrue(DemoData.demoData.gnusocialTestOriginName + " exists", origin.isValid)
         Assert.assertNotSame("No host URL: $origin", "", origin.getHost())
         val myAccount: MyAccount = DemoData.demoData.getGnuSocialAccount()
         accountActor = myAccount.actor

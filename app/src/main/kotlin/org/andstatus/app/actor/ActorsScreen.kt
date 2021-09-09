@@ -116,7 +116,7 @@ open class ActorsScreen(clazz: KClass<*> = ActorsScreen::class) : NoteEditorList
         if (actorsScreenType.scope == ListScope.ORIGIN) {
             title.withSpace(actorsScreenType.title(this))
             val origin = parsedUri.getOrigin(myContext)
-            if (origin.isValid()) {
+            if (origin.isValid) {
                 title.withSpace(actorsScreenType.scope.timelinePreposition(myContext))
                 title.withSpace(origin.name)
             }
