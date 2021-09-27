@@ -405,8 +405,10 @@ class NoteEditorData private constructor(
         }
 
         fun newReplyTo(inReplyToNoteId: Long, myAccount: MyAccount): NoteEditorData {
-            return NoteEditorData(myAccount.getValidOrCurrent( MyContextHolder.myContextHolder.getNow()), 0, true,
-                    inReplyToNoteId, inReplyToNoteId != 0L)
+            return NoteEditorData(
+                myAccount.getValidOrCurrent(MyContextHolder.myContextHolder.getNow()), 0, myAccount.nonEmpty,
+                inReplyToNoteId, inReplyToNoteId != 0L
+            )
         }
 
         fun load(myContext: MyContext, noteId: Long): NoteEditorData {
