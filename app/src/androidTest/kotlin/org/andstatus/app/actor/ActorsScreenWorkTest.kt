@@ -52,14 +52,14 @@ class ActorsScreenWorkTest : ActivityTest<ActorsScreen>() {
     fun testFriendsList() {
         val method = "testFriendsList"
         TestSuite.waitForListLoaded(activity, 2)
-        val helper = ListActivityTestHelper(activity, FollowersScreen::class.java)
+        val helper = ListActivityTestHelper(activity, GroupMembersScreen::class.java)
         val listItems = activity.getListLoader().getList()
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
         val actor: Actor = ActorsScreenTest.getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
         Assert.assertTrue("Not found " + DemoData.demoData.conversationAuthorThirdActorOid, actor.nonEmpty)
         Assert.assertTrue("Invoked Context menu for $actor", helper.invokeContextMenuAction4ListItemId(
                 method, actor.actorId, ActorContextMenuItem.FRIENDS, 0))
-        val followersScreen = helper.waitForNextActivity(method, 15000) as FollowersScreen
+        val followersScreen = helper.waitForNextActivity(method, 15000) as GroupMembersScreen
         TestSuite.waitForListLoaded(followersScreen, 1)
         val items = followersScreen.getListLoader().getList()
         val followersHelper = ListActivityTestHelper(followersScreen)

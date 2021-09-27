@@ -190,6 +190,8 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="get_followers">Get followers</string>
   <string name="get_friends">Get friends</string>
   <string name="get_open_instances_title">Get Open Instances</string>
+  <string name="get_list_members">Get list members</string>
+  <string name="get_lists">Get lists</string>
   <string name="get_message">Get Note information</string>
   <string name="get_user">Get Actor information</string>
   <string name="go_to_the_top_title">Go to the Top</string>
@@ -254,6 +256,11 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="last_synced">Last time successfully synced</string>
   <string name="latest_error_label">Latest error</string>
   <string name="liked">favorited</string>
+  <string name="list_by_users">List (by users)</string>
+  <string name="list_members">List members</string>
+  <string name="list_with_name">List: %s</string>
+  <string name="lists">Lists</string>
+  <string name="lists_of_user">Lists of %s</string>
   <string name="loading">Loading</string>
   <string name="log_in_to_social_network">Log in to %s</string>
   <string name="log_out">Log out</string>
@@ -310,6 +317,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="messages">Notes</string>
   <string name="n_message_link">Note link</string>
   <string name="n_message_links">%d note links</string>
+  <string name="named_list_members">%s list members</string>
   <string name="never">Never</string>
   <string name="new_items_count_abbreviated">New</string>
   <string name="no">No</string>

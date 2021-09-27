@@ -22,7 +22,7 @@ import org.andstatus.app.timeline.ListScope
 import org.andstatus.app.util.StringUtil
 
 /**
- * These values define different named filters for lists of Actors / Users / Groups
+ * These values define different named filters for lists of Actors / Users / Groups / Lists
  */
 enum class ActorsScreenType(
         /** code of the enum that is used in notes  */
@@ -36,6 +36,8 @@ enum class ActorsScreenType(
     ACTORS_OF_NOTE("actors_of_note", R.string.users_of_message, 0, ListScope.ORIGIN),
     FOLLOWERS("followers", R.string.followers, R.string.followers_of, ListScope.USER),
     FRIENDS("friends", R.string.friends, R.string.friends_of, ListScope.USER),
+    LISTS("lists", R.string.lists, R.string.lists_of_user, ListScope.USER),
+    LIST_MEMBERS("list_members", R.string.list_members, R.string.named_list_members, ListScope.USER),
     ACTORS_AT_ORIGIN("actors", R.string.user_list, 0, ListScope.ORIGIN),
     GROUPS_AT_ORIGIN("groups", R.string.groups, 0, ListScope.ORIGIN);
 

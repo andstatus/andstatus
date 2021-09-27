@@ -156,10 +156,10 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
         }
         for (actor in actorsNew) {
             actorIdsOld.remove(actor.actorId)
-            GroupMembership.setMember(execContext.myContext, getActor(), groupType, TriState.TRUE, actor)
+            GroupMembership.setSingleGroupMember(execContext.myContext, getActor(), groupType, TriState.TRUE, actor)
         }
         for (actorIdOld in actorIdsOld) {
-            GroupMembership.setMember(execContext.myContext, getActor(), groupType,
+            GroupMembership.setSingleGroupMember(execContext.myContext, getActor(), groupType,
                     TriState.FALSE, Actor.load(execContext.myContext, actorIdOld))
         }
         execContext.myContext.users.reload(getActor())

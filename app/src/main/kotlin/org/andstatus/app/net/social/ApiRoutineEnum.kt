@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2020 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2011-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,12 @@ enum class ApiRoutineEnum constructor(private val isNotePrivate: Boolean = false
 
     /** Get the Home timeline (whatever it is...). This is the equivalent of /home on the Web. */
     HOME_TIMELINE,
+    /** A collection of "List of users" objects, each of which is sort of a Group of Actors */
+    LISTS,
+    /** A collection of Actors - members of the "List of users" */
+    LIST_MEMBERS,
+    /** Timeline containing all notes (activities) by the selected "List of users" users */
+    LIST_BY_USERS,
 
     /** Notifications in a separate API  */
     NOTIFICATIONS_TIMELINE,

@@ -179,7 +179,7 @@
                 <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
         </activity>
-        <activity android:name=".actor.FollowersScreen"
+        <activity android:name=".actor.GroupMembersScreen"
                   android:label="@string/followers"
                   android:screenOrientation="user"
                   android:parentActivityName=".timeline.TimelineActivity"

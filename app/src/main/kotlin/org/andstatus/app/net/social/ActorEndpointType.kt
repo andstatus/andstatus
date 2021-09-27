@@ -24,6 +24,9 @@ enum class ActorEndpointType(val id: Long) {
     API_OUTBOX(3),
     API_FOLLOWING(4),
     API_FOLLOWERS(5),
+    API_LISTS(10),
+    API_LIST_BY_USERS(11),
+    API_LIST_MEMBERS(12),
     API_LIKED(6),
     BANNER(7),
     API_SHARED_INBOX(8),
@@ -45,6 +48,9 @@ enum class ActorEndpointType(val id: Long) {
                 ApiRoutineEnum.GET_FOLLOWERS_IDS -> API_FOLLOWERS
                 ApiRoutineEnum.GET_FRIENDS,
                 ApiRoutineEnum.GET_FRIENDS_IDS -> API_FOLLOWING
+                ApiRoutineEnum.LISTS -> API_LISTS
+                ApiRoutineEnum.LIST_BY_USERS -> API_LIST_BY_USERS
+                ApiRoutineEnum.LIST_MEMBERS -> API_LIST_MEMBERS
                 ApiRoutineEnum.GET_ACTOR -> API_PROFILE
                 ApiRoutineEnum.HOME_TIMELINE -> API_INBOX
                 ApiRoutineEnum.LIKED_TIMELINE -> API_LIKED

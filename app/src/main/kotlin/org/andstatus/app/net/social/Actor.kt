@@ -316,7 +316,8 @@ class Actor private constructor(// In our system
             if (webFingerId == other.webFingerId) return true
             if (other.isWebFingerIdValid) return false
         }
-        return if (!groupType.isSameActor(other.groupType)) false else isUsernameValid() && other.isUsernameValid() && username.equals(other.username, ignoreCase = true)
+        return if (groupType.isNotTheSameActor(other.groupType)) false
+        else isUsernameValid() && other.isUsernameValid() && username.equals(other.username, ignoreCase = true)
     }
 
     fun notSameUser(other: Actor): Boolean {

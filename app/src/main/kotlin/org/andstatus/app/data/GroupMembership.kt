@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2019-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
     companion object {
         private val TAG: String = GroupMembership::class.java.simpleName
 
-        fun setAndReload(myContext: MyContext, follower: Actor, follows: TriState, friend: Actor) {
+        fun setFriendshipAndReload(myContext: MyContext, follower: Actor, follows: TriState, friend: Actor) {
             if (!follower.isOidReal() || !friend.isOidReal() || follows.unknown || follower.isSame(friend)) return
             MyLog.v(TAG
             ) {
@@ -88,7 +88,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
                         + (if (follows.isTrue) "follows " else "stopped following ")
                         + friend.getUniqueNameWithOrigin())
             }
-            setMember(myContext, follower, GroupType.FRIENDS, follows, friend)
+            setSingleGroupMember(myContext, follower, GroupType.FRIENDS, follows, friend)
             myContext.users.reload(follower)
             MyLog.v(TAG
             ) {
@@ -96,19 +96,21 @@ class GroupMembership private constructor(private val parentActor: Actor,
                         + (if (follows.isTrue) "get a follower " else "lost a follower ")
                         + follower.getUniqueNameWithOrigin() + " (indirect info)")
             }
-            setMember(myContext, friend, GroupType.FOLLOWERS, follows, follower)
+            setSingleGroupMember(myContext, friend, GroupType.FOLLOWERS, follows, follower)
             myContext.users.reload(friend)
         }
 
-        fun setMember(myContext: MyContext, parentActor: Actor, groupType: GroupType, isMember: TriState, member: Actor) {
+        fun setSingleGroupMember(myContext: MyContext, parentActor: Actor, groupType: GroupType, isMember: TriState, member: Actor) {
             if (parentActor.actorId == 0L || member.actorId == 0L || isMember.unknown) return
+            if (!groupType.hasParentActor) throw IllegalArgumentException("No parent actor of $groupType group type for $parentActor")
+            if (!groupType.isSingleForParent) throw IllegalArgumentException("Not a single $groupType group type for $parentActor")
             val isMember2 = if (isMember.isTrue && parentActor.isSameUser(member)) TriState.FALSE else isMember
-            val group = Group.getActorsGroup(parentActor, groupType, "")
+            val group = Group.getSingleActorsGroup(parentActor, groupType, "")
             val membership = GroupMembership(parentActor, group, member.actorId, isMember2)
             membership.save(myContext)
         }
 
-        fun selectMemberIds(parentActorSqlIds: SqlIds, groupType: GroupType, includeParentId: Boolean): String {
+        fun selectSingleGroupMemberIds(parentActorSqlIds: SqlIds, groupType: GroupType, includeParentId: Boolean): String {
             return "SELECT members." + GroupMembersTable.MEMBER_ID +
                     (if (includeParentId) ", grp." + ActorTable.PARENT_ACTOR_ID else "") +
                     " FROM " + ActorTable.TABLE_NAME + " AS grp" +
@@ -119,7 +121,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
         }
 
         fun isGroupMember(parentActor: Actor, groupType: GroupType, memberId: Long): Boolean {
-            val group = Group.getActorsGroup(parentActor, groupType, "")
+            val group = Group.getSingleActorsGroup(parentActor, groupType, "")
             return group.nonEmpty && isGroupMember(parentActor.origin.myContext, group.actorId, memberId)
         }
 
@@ -136,11 +138,11 @@ class GroupMembership private constructor(private val parentActor: Actor,
 
         fun getGroupMemberIds(myContext: MyContext, parentActorId: Long, groupType: GroupType): MutableSet<Long> {
             return MyQuery.getLongs(myContext,
-                    selectMemberIds(mutableListOf(parentActorId), groupType, false)).toMutableSet()
+                    selectSingleGroupMemberIds(listOf(parentActorId), groupType, false)).toMutableSet()
         }
 
-        fun selectMemberIds(parentActorIds: MutableCollection<Long>, groupType: GroupType, includeParentId: Boolean): String {
-            return selectMemberIds(SqlIds.fromIds(parentActorIds), groupType, includeParentId)
+        fun selectSingleGroupMemberIds(parentActorIds: Collection<Long>, groupType: GroupType, includeParentId: Boolean): String {
+            return selectSingleGroupMemberIds(SqlIds.fromIds(parentActorIds), groupType, includeParentId)
         }
     }
 }

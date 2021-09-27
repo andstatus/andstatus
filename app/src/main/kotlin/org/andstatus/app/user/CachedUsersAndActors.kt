@@ -71,7 +71,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         val sql = ("SELECT DISTINCT " + ActorSql.selectFullProjection() +
                 ", friends." + ActorTable.PARENT_ACTOR_ID + " AS " + MY_ACTOR_ID +
                 " FROM (" + ActorSql.allTables() + ")" +
-                " INNER JOIN (" + GroupMembership.selectMemberIds(myActors.keys, groupType, true) +
+                " INNER JOIN (" + GroupMembership.selectSingleGroupMemberIds(myActors.keys, groupType, true) +
                 " ) as friends ON friends." + GroupMembersTable.MEMBER_ID +
                 "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID)
         MyQuery.get(myContext, sql) { cursor: Cursor ->

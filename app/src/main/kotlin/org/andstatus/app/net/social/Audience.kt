@@ -96,7 +96,7 @@ class Audience(val origin: Origin) {
         actors.clear()
         toSave.forEach { actor: Actor -> add(actor) }
         if (followers === Actor.FOLLOWERS) {
-            followers = Group.getActorsGroup(actorOfAudience, GroupType.FOLLOWERS, "")
+            followers = Group.getSingleActorsGroup(actorOfAudience, GroupType.FOLLOWERS, "")
         }
         if (!followers.isConstant()) {
             toSave.add(0, followers)
@@ -183,7 +183,7 @@ class Audience(val origin: Origin) {
         if (other.isSame(followers)) return Try.success(followers)
         if (other.isPublic()) return if (visibility.isPublic()) Try.success(Actor.PUBLIC) else TryUtils.notFound()
         val nonSpecialActors = getNonSpecialActors()
-        return if (other.groupType.parentActorRequired) {
+        return if (other.groupType.hasParentActor) {
             TryUtils.fromOptional(nonSpecialActors.stream()
                     .filter { a: Actor -> a.groupType == other.groupType }.findAny())
         } else CollectionsUtil.findAny(nonSpecialActors) { that: Actor -> other.isSame(that) }
@@ -335,10 +335,10 @@ class Audience(val origin: Origin) {
             if (actor.isEmpty) return Actor.EMPTY
             if (actorOfAudience.isSame(actor)) return actorOfAudience
             val optFollowers = actorOfAudience.getEndpoint(ActorEndpointType.API_FOLLOWERS)
-                    .flatMap { uri: Uri? -> if (actor.oid == uri.toString()) Optional.of(Group.getActorsGroup(actorOfAudience, GroupType.FOLLOWERS, actor.oid)) else Optional.empty() }
+                    .flatMap { uri: Uri? -> if (actor.oid == uri.toString()) Optional.of(Group.getSingleActorsGroup(actorOfAudience, GroupType.FOLLOWERS, actor.oid)) else Optional.empty() }
             if (optFollowers.isPresent) return optFollowers.get()
             val optFriends = actorOfAudience.getEndpoint(ActorEndpointType.API_FOLLOWING)
-                    .flatMap { uri: Uri? -> if (actor.oid == uri.toString()) Optional.of(Group.getActorsGroup(actorOfAudience, GroupType.FRIENDS, actor.oid)) else Optional.empty() }
+                    .flatMap { uri: Uri? -> if (actor.oid == uri.toString()) Optional.of(Group.getSingleActorsGroup(actorOfAudience, GroupType.FRIENDS, actor.oid)) else Optional.empty() }
             return if (optFriends.isPresent) optFriends.get() else actor
         }
 

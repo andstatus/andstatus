@@ -54,6 +54,9 @@ enum class TimelineType(val scope: ListScope,
      * So this is essentially a list of "Friends". See [org.andstatus.app.database.table.GroupMembersTable]  */
     FRIENDS(ListScope.USER, "friends", R.string.friends, R.string.friends_of, ApiRoutineEnum.GET_FRIENDS),
 
+    /** Timeline containing all notes (activities) by listed (selected in some list...) users */
+    LIST_BY_USERS(ListScope.USER,"by_users", R.string.list_by_users, R.string.list_with_name, ApiRoutineEnum.LIST_BY_USERS),
+
     FOLLOWERS(ListScope.USER, "followers", R.string.followers, R.string.followers_of, ApiRoutineEnum.GET_FOLLOWERS),
 
     GROUP(ListScope.USER, "group", R.string.group, R.string.group_notes, ApiRoutineEnum.DUMMY_API),

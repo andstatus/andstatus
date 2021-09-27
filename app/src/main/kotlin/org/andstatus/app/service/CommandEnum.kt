@@ -54,6 +54,8 @@ enum class CommandEnum constructor(
     UNDO_FOLLOW("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.SYNC),
     GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
     GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
+    GET_LISTS("get-lists", R.string.get_lists, -5, ConnectionRequired.SYNC),
+    GET_LIST_MEMBERS("get-list-members", R.string.get_list_members, -5, ConnectionRequired.SYNC),
 
     /** This command is for sending both public and private notes  */
     UPDATE_NOTE("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC),

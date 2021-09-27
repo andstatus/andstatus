@@ -22,11 +22,22 @@ import org.andstatus.app.origin.Origin
 /**
  * @author yvolk@yurivolkov.com
  */
-class FriendsAndFollowersLoader(myContext: MyContext, actorsScreenType: ActorsScreenType, origin: Origin,
-                                centralItemId: Long, searchQuery: String) : ActorsLoader(myContext, actorsScreenType, origin, centralItemId, searchQuery) {
+class GroupMembersLoader(
+    myContext: MyContext,
+    actorsScreenType: ActorsScreenType,
+    origin: Origin,
+    parentActorId: Long, searchQuery: String
+) : ActorsLoader(myContext, actorsScreenType, origin, parentActorId, searchQuery) {
+
     override fun getSqlActorIds(): String {
-        val groupType = if (actorsScreenType == ActorsScreenType.FOLLOWERS) GroupType.FOLLOWERS else GroupType.FRIENDS
-        return " IN (" + GroupMembership.selectMemberIds(mutableListOf(centralActorId), groupType, false) + ")"
+        val groupType = when (actorsScreenType) {
+            ActorsScreenType.FOLLOWERS -> GroupType.FOLLOWERS
+            ActorsScreenType.FRIENDS -> GroupType.FRIENDS
+            ActorsScreenType.LISTS -> GroupType.LISTS
+            ActorsScreenType.LIST_MEMBERS -> GroupType.LIST_MEMBERS
+            else -> GroupType.COLLECTION
+        }
+        return " IN (" + GroupMembership.selectSingleGroupMemberIds(listOf(centralActorId), groupType, false) + ")"
     }
 
     override fun getSubtitle(): String {

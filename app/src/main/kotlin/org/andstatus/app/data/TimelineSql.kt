@@ -44,7 +44,7 @@ object TimelineSql {
                 // Select only the latest note from each Friend's timeline
                 val activityIds = ("SELECT " + ActorTable.ACTOR_ACTIVITY_ID
                         + " FROM " + ActorTable.TABLE_NAME + " AS u1"
-                        + " INNER JOIN (" + GroupMembership.selectMemberIds(SqlIds.actorIdsOfTimelineActor(timeline),
+                        + " INNER JOIN (" + GroupMembership.selectSingleGroupMemberIds(SqlIds.actorIdsOfTimelineActor(timeline),
                         if (timeline.timelineType == TimelineType.FOLLOWERS) GroupType.FOLLOWERS else GroupType.FRIENDS,
                         false) + ") AS activity_ids" +
                         " ON activity_ids." + GroupMembersTable.MEMBER_ID + "=u1." + BaseColumns._ID)

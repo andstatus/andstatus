@@ -25,26 +25,25 @@ import org.andstatus.app.service.MyServiceManager
 /**
  * @author yvolk@yurivolkov.com
  */
-class FollowersScreen : ActorsScreen(FollowersScreen::class) {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+class GroupMembersScreen : ActorsScreen(GroupMembersScreen::class) {
 
-    private fun getFollowedActorId(): Long {
-        return centralItemId
-    }
+    private val parentActorId: Long get() = centralItemId
 
     override fun syncWithInternet(manuallyLaunched: Boolean) {
-        val method = "syncWithInternet"
-        showSyncing(method, getText(R.string.options_menu_sync))
-        val command = if (actorsScreenType == ActorsScreenType.FOLLOWERS) CommandEnum.GET_FOLLOWERS else CommandEnum.GET_FRIENDS
-        MyServiceManager.Companion.sendForegroundCommand(
-                CommandData.Companion.newActorCommand(command, Actor.Companion.load(myContext, getFollowedActorId()), "")
-                        .setManuallyLaunched(manuallyLaunched))
+        showSyncing("syncWithInternet", getText(R.string.options_menu_sync))
+        when (actorsScreenType) {
+            ActorsScreenType.FOLLOWERS -> CommandEnum.GET_FOLLOWERS
+            ActorsScreenType.FRIENDS -> CommandEnum.GET_FRIENDS
+            ActorsScreenType.LISTS -> CommandEnum.GET_LISTS
+            else -> CommandEnum.GET_LIST_MEMBERS
+        }.let { commandEnum ->
+            CommandData.newActorCommand(commandEnum, Actor.load(myContext, parentActorId), "")
+                .setManuallyLaunched(manuallyLaunched)
+        }.let(MyServiceManager::sendForegroundCommand)
     }
 
     override fun newSyncLoader(args: Bundle?): ActorsLoader {
-        return FriendsAndFollowersLoader(myContext, actorsScreenType, parsedUri.getOrigin(myContext),
-                getFollowedActorId(), parsedUri.searchQuery)
+        return GroupMembersLoader(myContext, actorsScreenType, parsedUri.getOrigin(myContext),
+            parentActorId, parsedUri.searchQuery)
     }
 }

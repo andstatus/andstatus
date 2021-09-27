@@ -431,8 +431,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
 
     private fun updateFriendships(activity: AActivity, me: MyAccount) {
         val actor = activity.getObjActor()
-        GroupMembership.setAndReload(execContext.myContext, me.actor, actor.isMyFriend, actor)
-        GroupMembership.setAndReload(execContext.myContext, activity.getActor(), activity.followedByActor(), actor)
+        GroupMembership.setFriendshipAndReload(execContext.myContext, me.actor, actor.isMyFriend, actor)
+        GroupMembership.setFriendshipAndReload(execContext.myContext, activity.getActor(), activity.followedByActor(), actor)
     }
 
     private fun fixActorUpdatedDate(activity: AActivity, actor: Actor) {
