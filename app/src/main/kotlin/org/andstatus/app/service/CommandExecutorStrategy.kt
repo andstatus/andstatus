@@ -124,7 +124,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = CommandExecutorStrategy::class.java.simpleName
+        private val TAG: String = CommandExecutorStrategy::class.simpleName!!
         protected const val MIN_PROGRESS_BROADCAST_PERIOD_SECONDS: Long = 1
 
         suspend fun executeCommand(commandData: CommandData, parent: CommandExecutorParent?) {

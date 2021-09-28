@@ -30,7 +30,7 @@ import javax.xml.transform.stream.StreamSource
  * @author yvolk@yurivolkov.com
  */
 object Xslt {
-    private val TAG: String = Xslt::class.java.simpleName
+    private val TAG: String = Xslt::class.simpleName!!
 
     /**
      * Transform XML input files using supplied XSL stylesheet and return as String

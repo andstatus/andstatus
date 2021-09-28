@@ -116,7 +116,7 @@ class ProgressLogger {
 
     companion object {
         const val PROGRESS_REPORT_PERIOD_SECONDS = 20
-        private val TAG: String = ProgressLogger::class.java.simpleName
+        private val TAG: String = ProgressLogger::class.simpleName!!
         val startedAt: AtomicLong = AtomicLong(0)
         fun newStartingTime(): Long {
             val iStartedAt = MyLog.uniqueCurrentTimeMS

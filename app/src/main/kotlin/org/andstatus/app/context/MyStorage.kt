@@ -30,7 +30,7 @@ import java.util.stream.Stream
 object MyStorage {
     val TEMP_FILENAME_PREFIX: String = "temp_"
     const val FILE_CHUNK_SIZE = 250000
-    private val TAG: String = MyStorage::class.java.simpleName
+    private val TAG: String = MyStorage::class.simpleName!!
 
     /** Standard directory in which to place databases  */
     val DIRECTORY_DATABASES: String = "databases"

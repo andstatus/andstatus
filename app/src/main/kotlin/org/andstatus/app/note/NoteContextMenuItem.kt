@@ -375,7 +375,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
 
     companion object {
         val NOTE_LINK_SEPARATOR: String = ": "
-        private val TAG: String = NoteContextMenuItem::class.java.simpleName
+        private val TAG: String = NoteContextMenuItem::class.simpleName!!
         fun fromId(id: Int): NoteContextMenuItem {
             for (item in values()) {
                 if (item.getId() == id) {

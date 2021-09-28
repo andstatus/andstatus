@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2015-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,19 +33,17 @@ import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.Identified
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.Taggable.Companion.anyToTag
 import org.andstatus.app.util.TriState
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.reflect.KClass
 
 /**
  * @author yvolk@yurivolkov.com
  */
 open class MyActivity(
-    tag: String,
-    identifiable: Identifiable = Identified(tag)
+    tag: Any,
+    identifiable: Identifiable = Identified(anyToTag(tag))
 ) : AppCompatActivity(), Identifiable by identifiable {
-
-    constructor(clazz: KClass<*>): this(clazz.simpleName ?: "NoName")
 
     protected enum class OnFinishAction {
         RESTART_APP, RESTART_ME, DONE, NONE

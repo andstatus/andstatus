@@ -451,7 +451,7 @@ class ConnectionActivityPub : Connection() {
         .map { jso: JSONObject -> actorFromJson(jso) }
 
     companion object {
-        private val TAG: String = ConnectionActivityPub::class.java.simpleName
+        private val TAG: String = ConnectionActivityPub::class.simpleName!!
         val PUBLIC_COLLECTION_ID: String = "https://www.w3.org/ns/activitystreams#Public"
         val APPLICATION_ID: String = "http://andstatus.org/andstatus"
         val NAME_PROPERTY: String = "name"

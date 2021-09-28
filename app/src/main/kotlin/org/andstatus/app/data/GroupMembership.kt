@@ -78,7 +78,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
     }
 
     companion object {
-        private val TAG: String = GroupMembership::class.java.simpleName
+        private val TAG: String = GroupMembership::class.simpleName!!
 
         fun setFriendshipAndReload(myContext: MyContext, follower: Actor, follows: TriState, friend: Actor) {
             if (!follower.isOidReal() || !friend.isOidReal() || follows.unknown || follower.isSame(friend)) return

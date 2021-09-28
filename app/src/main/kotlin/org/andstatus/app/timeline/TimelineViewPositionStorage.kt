@@ -104,7 +104,7 @@ internal class TimelineViewPositionStorage<T : ViewItem<T>>(private val activity
     }
 
     companion object {
-        private val TAG: String = TimelineViewPositionStorage::class.java.simpleName
+        private val TAG: String = TimelineViewPositionStorage::class.simpleName!!
         fun loadListPosition(params: TimelineParameters): LoadableListPosition<*> {
             val itemId = params.timeline.getVisibleItemId()
             return if (itemId > 0) LoadableListPosition.saved(

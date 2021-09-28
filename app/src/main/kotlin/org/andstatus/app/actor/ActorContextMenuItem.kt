@@ -206,7 +206,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
     }
 
     companion object {
-        private val TAG: String = ActorContextMenuItem::class.java.simpleName
+        private val TAG: String = ActorContextMenuItem::class.simpleName!!
         fun fromId(id: Int): ActorContextMenuItem {
             for (item in values()) {
                 if (item.getId() == id) {

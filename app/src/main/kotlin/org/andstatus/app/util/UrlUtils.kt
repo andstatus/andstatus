@@ -27,7 +27,7 @@ import java.util.*
 import java.util.regex.Pattern
 
 object UrlUtils {
-    private val TAG: String = UrlUtils::class.java.simpleName
+    private val TAG: String = UrlUtils::class.simpleName!!
 
     // From http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
     private val validHostnameRegex: String = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$"

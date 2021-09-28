@@ -137,7 +137,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
     }
 
     companion object {
-        private val TAG: String = TimelineDownloaderOther::class.java.simpleName
+        private val TAG: String = TimelineDownloaderOther::class.simpleName!!
         private const val YOUNGER_NOTES_TO_DOWNLOAD_MAX = 200
         private const val OLDER_NOTES_TO_DOWNLOAD_MAX = 40
         private const val LATEST_NOTES_TO_DOWNLOAD_MAX = 20

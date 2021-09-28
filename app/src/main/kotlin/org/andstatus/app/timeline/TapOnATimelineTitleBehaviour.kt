@@ -26,7 +26,7 @@ enum class TapOnATimelineTitleBehaviour(private val code: Long) {
 
     companion object {
         val DEFAULT: TapOnATimelineTitleBehaviour? = SELECT_TIMELINE
-        private val TAG: String? = TapOnATimelineTitleBehaviour::class.java.simpleName
+        private val TAG: String? = TapOnATimelineTitleBehaviour::class.simpleName!!
 
         /**
          * Returns the enum or [.DEFAULT]

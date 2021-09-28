@@ -366,7 +366,7 @@ class CommandData private constructor(
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = CommandData::class.java.simpleName
+        private val TAG: String = CommandData::class.simpleName!!
         val EMPTY = newCommand(CommandEnum.EMPTY)
 
         fun newSearch(searchObjects: SearchObjects?,

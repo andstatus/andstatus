@@ -45,6 +45,6 @@ class OAuthClientKeysOpenSource : OAuthClientKeysStrategy {
     }
 
     override fun toString(): String {
-        return OAuthClientKeysOpenSource::class.java.simpleName
+        return OAuthClientKeysOpenSource::class.simpleName!!
     }
 }

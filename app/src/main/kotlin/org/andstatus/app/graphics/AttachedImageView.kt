@@ -96,7 +96,7 @@ class AttachedImageView : IdentifiableImageView {
                         )
             }
         } catch (e: Exception) {
-            Log.i(AttachedImageView::class.java.simpleName, "$method; MyLog class was not found", e)
+            Log.i(AttachedImageView::class.simpleName!!, "$method; MyLog class was not found", e)
         }
     }
 

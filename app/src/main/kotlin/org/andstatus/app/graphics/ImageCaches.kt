@@ -53,7 +53,7 @@ object ImageCaches {
         styledImages.clear()
         initializeAttachedImagesCache(context)
         initializeAvatarsCache(context)
-        MyLog.i(ImageCaches::class.java.simpleName, "imageCachesInitializedMs:" + stopWatch.time + "; " + getCacheInfo())
+        MyLog.i(ImageCaches::class, "imageCachesInitializedMs:" + stopWatch.time + "; " + getCacheInfo())
     }
 
     private fun initializeAttachedImagesCache(context: Context) {

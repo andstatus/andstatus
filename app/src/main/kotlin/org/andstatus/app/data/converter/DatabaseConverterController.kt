@@ -23,7 +23,7 @@ import org.andstatus.app.util.Taggable
 import java.util.concurrent.TimeUnit
 
 object DatabaseConverterController {
-        val TAG: String = DatabaseConverterController::class.java.simpleName
+        val TAG: String = DatabaseConverterController::class.simpleName!!
 
         // TODO: Should be one object for atomic updates. start ---
         internal val upgradeLock: Any = Any()

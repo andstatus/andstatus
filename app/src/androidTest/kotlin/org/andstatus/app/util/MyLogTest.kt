@@ -93,7 +93,7 @@ class MyLogTest {
             MyLog.v(this) { lazyTest = "modified"; "" }
             Assert.assertEquals(modified, lazyTest)
             MyLog.v(this) { "LazyObject: $lazyObject" }
-            Assert.assertEquals(LazyClass::class.java.simpleName, lazyTest)
+            Assert.assertEquals(LazyClass::class.simpleName!!, lazyTest)
         } finally {
             level1.onSuccess { obj: Int -> MyLog.setMinLogLevel(obj) }
         }

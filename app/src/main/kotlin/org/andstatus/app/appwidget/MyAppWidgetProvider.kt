@@ -57,7 +57,7 @@ class MyAppWidgetProvider : AppWidgetProvider() {
     }
 
     companion object {
-        private val TAG: String = MyAppWidgetProvider::class.java.simpleName
+        private val TAG: String = MyAppWidgetProvider::class.simpleName!!
 
         private fun createFilter(appWidgetIds: IntArray): (MyAppWidgetData) -> Boolean = {
             data -> appWidgetIds.contains(data.appWidgetId)

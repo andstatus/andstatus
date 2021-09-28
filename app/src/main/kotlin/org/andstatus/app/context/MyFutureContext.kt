@@ -112,7 +112,7 @@ class MyFutureContext private constructor(
     }
 
     companion object {
-        private val TAG: String = MyFutureContext::class.java.simpleName
+        private val TAG: String = MyFutureContext::class.simpleName!!
 
         fun fromPrevious(previousFuture: MyFutureContext, calledBy: Any?): MyFutureContext {
             val future = previousFuture.getHealthyFuture(calledBy)

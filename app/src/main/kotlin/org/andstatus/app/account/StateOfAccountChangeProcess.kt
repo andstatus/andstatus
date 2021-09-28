@@ -146,7 +146,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
         get() = this == EMPTY
 
     companion object {
-        private val TAG: String = StateOfAccountChangeProcess::class.java.simpleName
+        private val TAG: String = StateOfAccountChangeProcess::class.simpleName!!
         val EMPTY = StateOfAccountChangeProcess(null)
 
         /** Stored state of the single object of this class

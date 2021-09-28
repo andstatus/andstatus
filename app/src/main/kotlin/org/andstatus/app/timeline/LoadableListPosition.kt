@@ -43,7 +43,7 @@ class LoadableListPosition<T : ViewItem<T>> private constructor(
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = LoadableListPosition::class.java.simpleName
+        private val TAG: String = LoadableListPosition::class.simpleName!!
         val EMPTY = saved(0, 0, 0, "(empty position)")
 
         private fun current(itemId: Long, y: Int, position: Int, minSentDate: Long, description: String?): LoadableListPosition<*> {

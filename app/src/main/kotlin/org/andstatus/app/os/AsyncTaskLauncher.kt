@@ -37,7 +37,7 @@ import kotlin.coroutines.CoroutineContext
 class AsyncTaskLauncher {
 
     companion object {
-        private val TAG: String = AsyncTaskLauncher::class.java.simpleName
+        private val TAG: String = AsyncTaskLauncher::class.simpleName!!
         private val launchedCount: AtomicLong = AtomicLong()
         private val skippedCount: AtomicLong = AtomicLong()
         private val launchedTasks: Queue<AsyncTask<*, *, *>> = ConcurrentLinkedQueue()

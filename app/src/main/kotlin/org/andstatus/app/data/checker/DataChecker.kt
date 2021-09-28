@@ -91,7 +91,7 @@ abstract class DataChecker {
     }
 
     companion object {
-        private val TAG: String = DataChecker::class.java.simpleName
+        private val TAG: String = DataChecker::class.simpleName!!
         fun getSomeOfTotal(some: Long, total: Long): String {
             return ((if (some == 0L) "none" else if (some == total) "all" else some.toString())
                     + " of " + total)

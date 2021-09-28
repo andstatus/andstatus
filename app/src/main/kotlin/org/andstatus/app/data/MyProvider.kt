@@ -332,7 +332,7 @@ class MyProvider : ContentProvider() {
     }
 
     companion object {
-        val TAG: String = MyProvider::class.java.simpleName
+        val TAG: String = MyProvider::class.simpleName!!
 
         /** @return Number of deleted activities of this note
          */

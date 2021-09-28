@@ -108,7 +108,7 @@ class MyAppWidgetData private constructor(val events: NotificationEvents, val ap
     }
 
     companion object {
-        private val TAG: String = MyAppWidgetData::class.java.simpleName
+        private val TAG: String = MyAppWidgetData::class.simpleName!!
 
         /** Words shown in a case there is nothing new  */
         private val PREF_NOTHING_KEY: String = "nothing"

@@ -27,7 +27,7 @@ import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
 object DocumentFileUtils {
-    private val TAG: String = DocumentFileUtils::class.java.simpleName
+    private val TAG: String = DocumentFileUtils::class.simpleName!!
     fun getJSONObject(context: Context, fileDescriptor: DocumentFile): JSONObject {
         var jso: JSONObject? = null
         val fileString = uri2String(context, fileDescriptor.uri)

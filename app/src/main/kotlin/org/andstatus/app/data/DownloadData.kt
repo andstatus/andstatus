@@ -435,7 +435,7 @@ open class DownloadData protected constructor(
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = DownloadData::class.java.simpleName
+        private val TAG: String = DownloadData::class.simpleName!!
         val EMPTY: DownloadData = DownloadData(null, 0, 0, 0, MyContentType.UNKNOWN, "",
                 DownloadType.UNKNOWN, Uri.EMPTY)
 

@@ -101,7 +101,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     }
 
     companion object {
-        private val TAG: String = NoteContextMenuData::class.java.simpleName
+        private val TAG: String = NoteContextMenuData::class.simpleName!!
         val EMPTY: NoteContextMenuData = NoteContextMenuData(NoteForAnyAccount.EMPTY, MyAccount.EMPTY)
 
         fun getBestAccountToDownloadNote(myContext: MyContext, noteId: Long): MyAccount {

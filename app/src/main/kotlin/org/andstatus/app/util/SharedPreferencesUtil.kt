@@ -30,7 +30,7 @@ import java.text.MessageFormat
 import java.util.concurrent.ConcurrentHashMap
 
 object SharedPreferencesUtil {
-    private val TAG: String = SharedPreferencesUtil::class.java.simpleName
+    private val TAG: String = SharedPreferencesUtil::class.simpleName!!
     val FILE_EXTENSION: String = ".xml"
     private val cachedValues: MutableMap<String, Any?> = ConcurrentHashMap()
     fun forget() {

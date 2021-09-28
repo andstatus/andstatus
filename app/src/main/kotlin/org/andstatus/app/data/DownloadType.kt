@@ -28,7 +28,7 @@ enum class DownloadType(private val code: Long, val filePrefix: String, val cach
     }
 
     companion object {
-        private val TAG: String = DownloadType::class.java.simpleName
+        private val TAG: String = DownloadType::class.simpleName!!
         fun load(strCode: String?): DownloadType {
             try {
                 return load(strCode?.toLong() ?: 0)

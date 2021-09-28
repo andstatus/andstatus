@@ -80,7 +80,7 @@ class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactor
     }
 
     companion object {
-        private val TAG: String = TlsSniSocketFactory::class.java.simpleName
+        private val TAG: String = TlsSniSocketFactory::class.simpleName!!
         private val instances: ConcurrentHashMap<SslModeEnum?, TlsSniSocketFactory?> = ConcurrentHashMap()
         fun getInstance(sslMode: SslModeEnum?): ConnectionSocketFactory? {
             if (!instances.containsKey(sslMode)) {

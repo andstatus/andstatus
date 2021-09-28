@@ -21,7 +21,7 @@ class MySettingsActivityTest : ActivityTest<MySettingsActivity>() {
     @Test
     fun test() {
         val method = "test"
-        val fragment = activity.getFragmentManager().findFragmentByTag(MySettingsFragment::class.java.simpleName) as PreferenceFragment?
+        val fragment = activity.getFragmentManager().findFragmentByTag(MySettingsFragment::class.simpleName!!) as PreferenceFragment?
         if (fragment != null) {
             val preference = fragment.findPreference(
                     MySettingsFragment.Companion.KEY_MANAGE_ACCOUNTS)

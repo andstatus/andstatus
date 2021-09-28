@@ -263,7 +263,7 @@ class AccountData : Parcelable, AccountDataWriter, Identifiable {
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = AccountData::class.java.simpleName
+        private val TAG: String = AccountData::class.simpleName!!
         val EMPTY: AccountData = AccountData(MyContextEmpty.EMPTY, JSONObject(), false)
 
         fun fromAndroidAccount(myContext: MyContext, androidAccount: Account?): AccountData {

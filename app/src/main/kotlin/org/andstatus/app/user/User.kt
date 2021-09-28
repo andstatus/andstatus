@@ -52,7 +52,7 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
         if (this === EMPTY) {
             return "User:EMPTY"
         }
-        val str = User::class.java.simpleName
+        val str = User::class.simpleName!!
         var members = "id=$userId"
         if (!knownAs.isEmpty()) {
             members += "; knownAs=$knownAs"

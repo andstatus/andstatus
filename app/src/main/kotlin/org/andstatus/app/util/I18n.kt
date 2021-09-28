@@ -23,7 +23,6 @@ import java.util.regex.Pattern
  * i18n - Internationalization utilities
  */
 object I18n {
-    private val TAG: String = I18n::class.java.simpleName
 
     /**
      * The function enables to have different localized message formats

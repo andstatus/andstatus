@@ -62,7 +62,7 @@ class NoteForAnyAccount(val myContext: MyContext, activityId: Long, val noteId: 
     }
 
     companion object {
-        private val TAG: String = NoteForAnyAccount::class.java.simpleName
+        private val TAG: String = NoteForAnyAccount::class.simpleName!!
         val EMPTY: NoteForAnyAccount = NoteForAnyAccount(MyContextEmpty.EMPTY, 0, 0)
     }
 

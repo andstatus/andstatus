@@ -62,7 +62,7 @@ enum class WhichPage(private val code: Long, private val titleResId: Int) {
     }
 
     companion object {
-        private val TAG: String = WhichPage::class.java.simpleName
+        private val TAG: String = WhichPage::class.simpleName!!
         fun load(strCode: String?, defaultPage: WhichPage): WhichPage {
             if (strCode != null) {
                 try {

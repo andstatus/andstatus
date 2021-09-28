@@ -627,6 +627,6 @@ abstract class ConnectionTwitterLike : Connection() {
     }
 
     companion object {
-        private val TAG: String = ConnectionTwitterLike::class.java.simpleName
+        private val TAG: String = ConnectionTwitterLike::class.simpleName!!
     }
 }

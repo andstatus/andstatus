@@ -32,7 +32,7 @@ enum class ActorInTimeline(private val code: Long) {
     }
 
     companion object {
-        private val TAG: String = ActorInTimeline::class.java.simpleName
+        private val TAG: String = ActorInTimeline::class.simpleName!!
 
         /**
          * Returns the enum

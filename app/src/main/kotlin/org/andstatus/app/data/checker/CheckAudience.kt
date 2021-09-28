@@ -131,6 +131,6 @@ ${RelativeTime.getDifference(myContext.context, insDate)}, ${I18n.trimTextAt(MyH
     }
 
     companion object {
-        private val TAG: String = CheckAudience::class.java.simpleName
+        private val TAG: String = CheckAudience::class.simpleName!!
     }
 }

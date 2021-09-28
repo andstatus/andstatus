@@ -141,6 +141,6 @@ abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
     }
 
     companion object {
-        private val TAG: String = HttpConnectionOAuth::class.java.simpleName
+        private val TAG: String = HttpConnectionOAuth::class.simpleName!!
     }
 }

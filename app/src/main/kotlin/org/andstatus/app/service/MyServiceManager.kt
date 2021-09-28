@@ -123,7 +123,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
     }
 
     companion object {
-        private val TAG: String = MyServiceManager::class.java.simpleName
+        private val TAG: String = MyServiceManager::class.simpleName!!
 
         @Volatile
         private var stateInTime = MyServiceStateInTime.getUnknown()

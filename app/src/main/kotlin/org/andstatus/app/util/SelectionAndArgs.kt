@@ -69,7 +69,7 @@ class SelectionAndArgs @JvmOverloads constructor(selection_in: String = "") : Ta
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = SelectionAndArgs::class.java.simpleName
+        private val TAG: String = SelectionAndArgs::class.simpleName!!
     }
 
     init {

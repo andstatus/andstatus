@@ -76,7 +76,7 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = MediaMetadata::class.java.simpleName
+        private val TAG: String = MediaMetadata::class.simpleName!!
         val EMPTY: MediaMetadata = MediaMetadata(0, 0, 0)
 
         fun fromFilePath(path: String?): Try<MediaMetadata> {

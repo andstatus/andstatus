@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference
  * @author yvolk@yurivolkov.com
  */
 object ExceptionsCounter {
-    private val TAG: String = ExceptionsCounter::class.java.simpleName
+    private val TAG: String = ExceptionsCounter::class.simpleName!!
     private val diskIoExceptionsCount: AtomicLong = AtomicLong()
     private val diskIoExceptionsCountShown: AtomicLong = AtomicLong()
 

@@ -477,7 +477,7 @@ class ConnectionPumpio : Connection() {
             .map { jso: JSONObject -> actorFromJson(jso) }
 
     companion object {
-        private val TAG: String = ConnectionPumpio::class.java.simpleName
+        private val TAG: String = ConnectionPumpio::class.simpleName!!
         val PUBLIC_COLLECTION_ID: String = "http://activityschema.org/collection/public"
         val APPLICATION_ID: String = "http://andstatus.org/andstatus"
         val NAME_PROPERTY: String = "displayName"

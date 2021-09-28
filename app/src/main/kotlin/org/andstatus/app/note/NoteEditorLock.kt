@@ -97,7 +97,7 @@ internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, 
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = NoteEditorLock::class.java.simpleName
+        private val TAG: String = NoteEditorLock::class.simpleName!!
         val EMPTY: NoteEditorLock = NoteEditorLock(false, 0)
         private val lock: AtomicReference<NoteEditorLock> = AtomicReference(EMPTY)
         val isLockReleased: Boolean get() = lock.get().isEmpty

@@ -74,7 +74,7 @@ class OAuthClientKeysDynamic : OAuthClientKeysStrategy {
     }
 
     override fun toString(): String {
-        return OAuthClientKeysDynamic::class.java.simpleName + "-" + keySuffix
+        return OAuthClientKeysDynamic::class.simpleName + "-" + keySuffix
     }
 
     companion object {

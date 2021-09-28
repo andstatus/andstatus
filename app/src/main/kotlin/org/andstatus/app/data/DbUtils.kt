@@ -40,7 +40,7 @@ import java.util.function.Supplier
 
 object DbUtils {
     private const val MS_BETWEEN_RETRIES = 500
-    private val TAG: String = DbUtils::class.java.simpleName
+    private val TAG: String = DbUtils::class.simpleName!!
 
     /**
      * @return rowId

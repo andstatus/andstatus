@@ -42,7 +42,7 @@ import java.util.function.Function
 
 
 object MyQuery {
-    private val TAG: String = MyQuery::class.java.simpleName
+    private val TAG: String = MyQuery::class.simpleName!!
     fun usernameField(actorInTimeline: ActorInTimeline?): String {
         return when (actorInTimeline) {
             ActorInTimeline.AT_USERNAME -> "('@' || " + ActorTable.USERNAME + ")"

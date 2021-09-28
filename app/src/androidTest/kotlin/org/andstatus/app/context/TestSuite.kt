@@ -45,7 +45,7 @@ import java.util.function.Consumer
  * @author yvolk@yurivolkov.com
  */
 object TestSuite {
-    private val TAG: String = TestSuite::class.java.simpleName
+    private val TAG: String = TestSuite::class.simpleName!!
 
     @Volatile
     private var initialized = false

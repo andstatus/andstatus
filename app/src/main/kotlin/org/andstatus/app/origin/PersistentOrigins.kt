@@ -204,7 +204,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
     }
 
     companion object {
-        private val TAG: String = PersistentOrigins::class.java.simpleName
+        private val TAG: String = PersistentOrigins::class.simpleName!!
         fun newEmpty(myContext: MyContextImpl): PersistentOrigins {
             return PersistentOrigins(myContext)
         }

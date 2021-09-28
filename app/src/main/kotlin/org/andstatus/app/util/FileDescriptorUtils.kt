@@ -26,7 +26,7 @@ import java.io.InputStream
 import java.nio.charset.Charset
 
 object FileDescriptorUtils {
-    private val TAG: String = FileDescriptorUtils::class.java.simpleName
+    private val TAG: String = FileDescriptorUtils::class.simpleName!!
 
     fun getJSONObject(fileDescriptor: FileDescriptor?): JSONObject {
         var jso: JSONObject? = null

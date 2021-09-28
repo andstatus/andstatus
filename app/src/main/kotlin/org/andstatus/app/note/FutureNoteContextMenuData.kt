@@ -57,7 +57,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
     }
 
     companion object {
-        private val TAG: String = FutureNoteContextMenuData::class.java.simpleName
+        private val TAG: String = FutureNoteContextMenuData::class.simpleName!!
         private const val MAX_SECONDS_TO_LOAD = 10
         val EMPTY: FutureNoteContextMenuData = FutureNoteContextMenuData(NoteViewItem.EMPTY)
 

@@ -66,7 +66,7 @@ class OAuthClientKeys private constructor(private val strategy: OAuthClientKeysS
     }
 
     companion object {
-        private val TAG: String = OAuthClientKeys::class.java.simpleName
+        private val TAG: String = OAuthClientKeys::class.simpleName!!
         private val SECRET_CLASS_NAME: String = OAuthClientKeysOpenSource::class.java.getPackage()?.getName() +
                 "." + "OAuthClientKeysSecret"
         private var noSecretClass = false

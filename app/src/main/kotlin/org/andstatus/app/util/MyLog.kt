@@ -65,7 +65,7 @@ import java.util.function.Supplier
  * @author yvolk@yurivolkov.com
  */
 object MyLog {
-    private val TAG: String = MyLog::class.java.simpleName
+    private val TAG: String = MyLog::class.simpleName!!
 
     /**
      * Use this tag to change logging level of the whole application

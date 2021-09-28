@@ -145,6 +145,6 @@ open class SelectorDialog : DialogFragment() {
     }
 
     companion object {
-        val dialogTag: String = SelectorDialog::class.java.simpleName
+        val dialogTag: String = SelectorDialog::class.simpleName!!
     }
 }

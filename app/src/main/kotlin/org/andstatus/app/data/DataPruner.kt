@@ -285,7 +285,7 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
     }
 
     companion object {
-        val TAG: String = DataPruner::class.java.simpleName
+        val TAG: String = DataPruner::class.simpleName!!
         const val ATTACHMENTS_TO_STORE_MIN: Long = 5
         const val MAX_DAYS_LOGS_TO_KEEP: Long = 10
         const val MAX_DAYS_UNUSED_TIMELINES_TO_KEEP: Long = 31

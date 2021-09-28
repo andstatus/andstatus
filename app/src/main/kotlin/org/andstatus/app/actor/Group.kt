@@ -17,7 +17,7 @@ import org.andstatus.app.util.UriUtils
 import java.util.*
 
 object Group {
-    private val TAG: String = Group::class.java.simpleName
+    private val TAG: String = Group::class.simpleName!!
 
     fun getActorsSingleGroup(actor: Actor, groupType: GroupType, oid: String): Actor {
         if (actor.actorId == 0L || actor.groupType.isGroupLike || !groupType.isGroupLike) {

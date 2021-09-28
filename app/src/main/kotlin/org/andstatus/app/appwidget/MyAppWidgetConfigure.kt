@@ -86,6 +86,6 @@ class MyAppWidgetConfigure : Activity() {
     }
 
     companion object {
-        val TAG: String = MyAppWidgetConfigure::class.java.simpleName
+        val TAG: String = MyAppWidgetConfigure::class.simpleName!!
     }
 }

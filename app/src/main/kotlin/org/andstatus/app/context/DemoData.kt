@@ -218,7 +218,7 @@ class DemoData {
     companion object {
         @Volatile
         var demoData: DemoData = DemoData()
-        private val TAG: String = DemoData::class.java.simpleName
+        private val TAG: String = DemoData::class.simpleName!!
         private const val HTTP: String = "http://"
         fun crashTest(supplier: BooleanSupplier) {
             if (MyLog.isVerboseEnabled() && supplier.asBoolean) {

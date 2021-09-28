@@ -43,7 +43,7 @@ enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTT
     }
 
     companion object {
-        private val TAG: String = MyContentType::class.java.simpleName
+        private val TAG: String = MyContentType::class.simpleName!!
         val APPLICATION_JSON: String = "application/json"
         fun fromPathOfSavedFile(mediaFilePath: String?): MyContentType {
             return if (mediaFilePath.isNullOrEmpty()) UNKNOWN else fromUri(DownloadType.UNKNOWN, null, Uri.parse(mediaFilePath), UNKNOWN.generalMimeType)

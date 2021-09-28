@@ -193,7 +193,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = TimelineParameters::class.java.simpleName
+        private val TAG: String = TimelineParameters::class.simpleName!!
 
         /**
          * Msg are being loaded into the list starting from one page. More Msg

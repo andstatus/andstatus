@@ -291,7 +291,7 @@ class Audience(val origin: Origin) {
     }
 
     companion object {
-        private val TAG: String = Audience::class.java.simpleName
+        private val TAG: String = Audience::class.simpleName!!
         val EMPTY: Audience = Audience( Origin.EMPTY)
         private val LOAD_SQL: String = ("SELECT " + ActorSql.selectFullProjection()
                 + " FROM (" + ActorSql.allTables()

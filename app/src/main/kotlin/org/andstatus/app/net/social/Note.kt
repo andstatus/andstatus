@@ -375,7 +375,7 @@ class Note : AObject {
     override val classTag: String get() = TAG
 
     companion object {
-        private val TAG: String = Note::class.java.simpleName
+        private val TAG: String = Note::class.simpleName!!
         val EMPTY: Note = Note( Origin.EMPTY, getTempOid())
 
         fun fromOriginAndOid(origin: Origin, oid: String?, status: DownloadStatus): Note {

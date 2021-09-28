@@ -281,7 +281,7 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
     }
 
     companion object {
-        val TAG: String = ImageCache::class.java.simpleName
+        val TAG: String = ImageCache::class.simpleName!!
         const val BYTES_PER_PIXEL = 4
     }
 

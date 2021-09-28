@@ -28,7 +28,7 @@ import java.util.*
  * @author yvolk@yurivolkov.com
  */
 object AccountConverter {
-    private val TAG: String = AccountConverter::class.java.simpleName
+    private val TAG: String = AccountConverter::class.simpleName!!
     fun removeOldAccounts(am: AccountManager,
                           accountsToRemove: MutableCollection<Account>) {
         if (!accountsToRemove.isEmpty()) {
