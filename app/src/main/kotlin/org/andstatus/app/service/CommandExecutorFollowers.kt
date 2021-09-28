@@ -140,7 +140,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
     private fun updateGroupMemberships(command: CommandEnum, actorsNew: List<Actor>) {
         val groupType = if (command == CommandEnum.GET_FOLLOWERS) GroupType.FOLLOWERS else GroupType.FRIENDS
         val actionStringRes = if (groupType == GroupType.FOLLOWERS) R.string.followers else R.string.friends
-        val actorIdsOld: MutableSet<Long> = GroupMembership.getGroupMemberIds(execContext.myContext, getActor().actorId, groupType)
+        val actorIdsOld: MutableSet<Long> = GroupMembership.getSingleGroupMemberIds(execContext.myContext, getActor().actorId, groupType)
         execContext.getResult().incrementDownloadedCount()
         broadcastProgress(execContext.getContext().getText(actionStringRes).toString()
                 + ": " + actorIdsOld.size + " -> " + actorsNew.size, false)

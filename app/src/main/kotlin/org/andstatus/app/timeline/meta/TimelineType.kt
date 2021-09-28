@@ -55,7 +55,7 @@ enum class TimelineType(val scope: ListScope,
     FRIENDS(ListScope.USER, "friends", R.string.friends, R.string.friends_of, ApiRoutineEnum.GET_FRIENDS),
 
     /** Timeline containing all notes (activities) by listed (selected in some list...) users */
-    LIST_BY_USERS(ListScope.USER,"by_users", R.string.list_by_users, R.string.list_with_name, ApiRoutineEnum.LIST_BY_USERS),
+    LIST_BY_USERS(ListScope.USER,"by_listed_users", R.string.list_by_users, R.string.list_with_name, ApiRoutineEnum.LIST_BY_USERS),
 
     FOLLOWERS(ListScope.USER, "followers", R.string.followers, R.string.followers_of, ApiRoutineEnum.GET_FOLLOWERS),
 

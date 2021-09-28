@@ -8,6 +8,7 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointType
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
@@ -18,11 +19,11 @@ import java.util.*
 object Group {
     private val TAG: String = Group::class.java.simpleName
 
-    fun getSingleActorsGroup(actor: Actor, groupType: GroupType, oid: String): Actor {
+    fun getActorsSingleGroup(actor: Actor, groupType: GroupType, oid: String): Actor {
         if (actor.actorId == 0L || actor.groupType.isGroupLike || !groupType.isGroupLike) {
             return Actor.EMPTY
         }
-        var groupId = getActorsGroupId(actor, groupType)
+        var groupId = getActorsSingleGroupId(actor, groupType)
         if (groupId == 0L) {
             groupId = addActorsGroup(actor.origin.myContext, actor, groupType, oid)
         }
@@ -69,7 +70,7 @@ object Group {
         return Actor.fromId(origin, groupId)
     }
 
-    private fun getActorsGroupId(parentActor: Actor, groupType: GroupType): Long =
+    private fun getActorsSingleGroupId(parentActor: Actor, groupType: GroupType): Long =
         MyQuery.getLongs(
             parentActor.origin.myContext, "SELECT " + BaseColumns._ID +
                 " FROM " + ActorTable.TABLE_NAME +
@@ -77,9 +78,9 @@ object Group {
                 " AND " + ActorTable.GROUP_TYPE + "=" + groupType.id
         )
             .firstOrNull()
-            ?: getGroupIdFromParentEndpoint(parentActor, groupType)
+            ?: getSingleGroupIdFromParentEndpoint(parentActor, groupType)
 
-    private fun getGroupIdFromParentEndpoint(parentActor: Actor, groupType: GroupType): Long =
+    private fun getSingleGroupIdFromParentEndpoint(parentActor: Actor, groupType: GroupType): Long =
         optOidFromEndpoint(parentActor, groupType)
             .map { oid: String ->
                 MyQuery.getLongs(
@@ -101,7 +102,7 @@ object Group {
         val origin = myContext.origins.fromId(originId)
         val parentUsername = MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, parentActor.actorId)
         val groupUsername = newType.name + ".of." + parentUsername + "." + parentActor.actorId
-        val oid = if (StringUtil.nonEmptyNonTemp(oidIn)) oidIn else parentActor.getEndpoint(ActorEndpointType.from(newType))
+        val oid = if (StringUtil.nonEmptyNonTemp(oidIn)) oidIn else parentActor.getEndpoint(newType.toActorEndpointType())
                 .map { obj: Uri? -> obj.toString() }
                 .orElse(StringUtil.toTempOid(groupUsername))
         val group: Actor = Actor.fromTwoIds(origin, newType, 0, oid)

@@ -105,7 +105,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
             if (!groupType.hasParentActor) throw IllegalArgumentException("No parent actor of $groupType group type for $parentActor")
             if (!groupType.isSingleForParent) throw IllegalArgumentException("Not a single $groupType group type for $parentActor")
             val isMember2 = if (isMember.isTrue && parentActor.isSameUser(member)) TriState.FALSE else isMember
-            val group = Group.getSingleActorsGroup(parentActor, groupType, "")
+            val group = Group.getActorsSingleGroup(parentActor, groupType, "")
             val membership = GroupMembership(parentActor, group, member.actorId, isMember2)
             membership.save(myContext)
         }
@@ -120,8 +120,8 @@ class GroupMembership private constructor(private val parentActor: Actor,
                     " AND grp." + ActorTable.PARENT_ACTOR_ID + parentActorSqlIds.getSql()
         }
 
-        fun isGroupMember(parentActor: Actor, groupType: GroupType, memberId: Long): Boolean {
-            val group = Group.getSingleActorsGroup(parentActor, groupType, "")
+        fun isSingleGroupMember(parentActor: Actor, groupType: GroupType, memberId: Long): Boolean {
+            val group = Group.getActorsSingleGroup(parentActor, groupType, "")
             return group.nonEmpty && isGroupMember(parentActor.origin.myContext, group.actorId, memberId)
         }
 
@@ -136,7 +136,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
                     " AND " + GroupMembersTable.MEMBER_ID + "=" + memberId
         }
 
-        fun getGroupMemberIds(myContext: MyContext, parentActorId: Long, groupType: GroupType): MutableSet<Long> {
+        fun getSingleGroupMemberIds(myContext: MyContext, parentActorId: Long, groupType: GroupType): MutableSet<Long> {
             return MyQuery.getLongs(myContext,
                     selectSingleGroupMemberIds(listOf(parentActorId), groupType, false)).toMutableSet()
         }

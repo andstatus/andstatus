@@ -24,6 +24,7 @@ import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.util.MyLog
@@ -59,7 +60,8 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
 
         fun fromActor(connection: ConnectionActivityPub, apiRoutine: ApiRoutineEnum,
                       position: TimelinePosition, actor: Actor): Try<ConnectionAndUrl> {
-            val endpoint = if (position.optUri().isPresent) position.optUri() else actor.getEndpoint(ActorEndpointType.from(apiRoutine))
+            val endpoint = if (position.optUri().isPresent) position.optUri()
+                else actor.getEndpoint(apiRoutine.toActorEndpointType())
             return if (!endpoint.isPresent) {
                 Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
                         ": endpoint is empty for " + actor))

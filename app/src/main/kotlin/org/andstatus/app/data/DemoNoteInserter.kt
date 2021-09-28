@@ -203,9 +203,9 @@ class DemoNoteInserter(val accountActor: Actor) {
                         rebloggers.stream().anyMatch { a: Actor -> a.actorId == actor.actorId })
             }
             ActivityType.FOLLOW -> Assert.assertTrue("Friend not found: $activity",
-                    GroupMembership.isGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
+                    GroupMembership.isSingleGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
             ActivityType.UNDO_FOLLOW -> Assert.assertFalse("Friend found: $activity",
-                    GroupMembership.isGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
+                    GroupMembership.isSingleGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
             else -> {
             }
         }

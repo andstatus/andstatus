@@ -98,7 +98,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     private fun reloadFriendsOrFollowersOfMy(groupType: GroupType, groupMembers: MutableMap<Long, MutableSet<Long>>, actor: Actor) {
         groupMembers.entries.stream().filter { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.value.contains(actor.actorId) }
                 .forEach { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> groupMembers.compute(entry.key, CollectionsUtil.removeValue(actor.actorId)) }
-        GroupMembership.getGroupMemberIds(myContext, actor.actorId, groupType)
+        GroupMembership.getSingleGroupMemberIds(myContext, actor.actorId, groupType)
                 .forEach(Consumer { friendId: Long -> groupMembers.compute(friendId, CollectionsUtil.addValue(actor.actorId)) }
                 )
     }

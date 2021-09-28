@@ -26,7 +26,7 @@ class GroupMembersLoader(
     myContext: MyContext,
     actorsScreenType: ActorsScreenType,
     origin: Origin,
-    parentActorId: Long, searchQuery: String
+    val parentActorId: Long, searchQuery: String
 ) : ActorsLoader(myContext, actorsScreenType, origin, parentActorId, searchQuery) {
 
     override fun getSqlActorIds(): String {
@@ -37,7 +37,7 @@ class GroupMembersLoader(
             ActorsScreenType.LIST_MEMBERS -> GroupType.LIST_MEMBERS
             else -> GroupType.COLLECTION
         }
-        return " IN (" + GroupMembership.selectSingleGroupMemberIds(listOf(centralActorId), groupType, false) + ")"
+        return " IN (" + GroupMembership.selectSingleGroupMemberIds(listOf(parentActorId), groupType, false) + ")"
     }
 
     override fun getSubtitle(): String {

@@ -22,14 +22,14 @@ import org.andstatus.app.timeline.ListScope
 import org.andstatus.app.util.StringUtil
 
 /**
- * These values define different named filters for lists of Actors / Users / Groups / Lists
+ * These values define different named filters for lists of Actors / Users / Groups
  */
 enum class ActorsScreenType(
-        /** code of the enum that is used in notes  */
+    /** code of the enum that is used in notes  */
         private val code: String,
-        @field:StringRes private val titleResId: Int,
-        @field:StringRes private val titleResWithParamsId: Int,
-        val scope: ListScope) {
+    @field:StringRes private val titleResId: Int,
+    @field:StringRes private val titleWithParamsResId: Int,
+    val scope: ListScope) {
     UNKNOWN("unknown", R.string.unknown_userlist, 0, ListScope.ORIGIN),
 
     /** Actors, related to the selected note, including mentioned actors  */
@@ -62,7 +62,7 @@ enum class ActorsScreenType(
     }
 
     fun title(context: Context?, vararg params: Any?): CharSequence {
-        return StringUtil.format(context, titleResWithParamsId, *params)
+        return StringUtil.format(context, titleWithParamsResId, *params)
     }
 
     companion object {

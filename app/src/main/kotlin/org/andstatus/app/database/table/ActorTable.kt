@@ -46,7 +46,7 @@ object ActorTable : BaseColumns {
     /** [org.andstatus.app.actor.GroupType]  */
     val GROUP_TYPE: String = "group_type"
 
-    /** [org.andstatus.app.actor.GroupType.hasParentActor]
+    /** See [org.andstatus.app.actor.GroupType.hasParentActor]
      * denotes the Actor, whose the Group is  */
     val PARENT_ACTOR_ID: String = "parent_actor_id"
 

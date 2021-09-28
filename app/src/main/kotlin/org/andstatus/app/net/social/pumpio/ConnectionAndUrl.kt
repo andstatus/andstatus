@@ -24,6 +24,7 @@ import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.UriUtils
@@ -44,7 +45,7 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum, val uri: Uri, va
 
     companion object {
         fun fromActor(connection: ConnectionPumpio, apiRoutine: ApiRoutineEnum, actor: Actor): Try<ConnectionAndUrl> {
-            val endpoint = actor.getEndpoint(ActorEndpointType.from(apiRoutine))
+            val endpoint = actor.getEndpoint(apiRoutine.toActorEndpointType())
             val uri: Uri
             val host: String?
             if (endpoint.isPresent) {

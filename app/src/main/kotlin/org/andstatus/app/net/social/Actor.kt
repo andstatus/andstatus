@@ -316,7 +316,7 @@ class Actor private constructor(// In our system
             if (webFingerId == other.webFingerId) return true
             if (other.isWebFingerIdValid) return false
         }
-        return if (groupType.isNotTheSameActor(other.groupType)) false
+        return if (groupType.isDifferentActor(other.groupType)) false
         else isUsernameValid() && other.isUsernameValid() && username.equals(other.username, ignoreCase = true)
     }
 

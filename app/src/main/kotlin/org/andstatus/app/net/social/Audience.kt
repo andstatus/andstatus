@@ -96,7 +96,7 @@ class Audience(val origin: Origin) {
         actors.clear()
         toSave.forEach { actor: Actor -> add(actor) }
         if (followers === Actor.FOLLOWERS) {
-            followers = Group.getSingleActorsGroup(actorOfAudience, GroupType.FOLLOWERS, "")
+            followers = Group.getActorsSingleGroup(actorOfAudience, GroupType.FOLLOWERS, "")
         }
         if (!followers.isConstant()) {
             toSave.add(0, followers)
@@ -335,10 +335,10 @@ class Audience(val origin: Origin) {
             if (actor.isEmpty) return Actor.EMPTY
             if (actorOfAudience.isSame(actor)) return actorOfAudience
             val optFollowers = actorOfAudience.getEndpoint(ActorEndpointType.API_FOLLOWERS)
-                    .flatMap { uri: Uri? -> if (actor.oid == uri.toString()) Optional.of(Group.getSingleActorsGroup(actorOfAudience, GroupType.FOLLOWERS, actor.oid)) else Optional.empty() }
+                    .flatMap { uri: Uri? -> if (actor.oid == uri.toString()) Optional.of(Group.getActorsSingleGroup(actorOfAudience, GroupType.FOLLOWERS, actor.oid)) else Optional.empty() }
             if (optFollowers.isPresent) return optFollowers.get()
             val optFriends = actorOfAudience.getEndpoint(ActorEndpointType.API_FOLLOWING)
-                    .flatMap { uri: Uri? -> if (actor.oid == uri.toString()) Optional.of(Group.getSingleActorsGroup(actorOfAudience, GroupType.FRIENDS, actor.oid)) else Optional.empty() }
+                    .flatMap { uri: Uri? -> if (actor.oid == uri.toString()) Optional.of(Group.getActorsSingleGroup(actorOfAudience, GroupType.FRIENDS, actor.oid)) else Optional.empty() }
             return if (optFriends.isPresent) optFriends.get() else actor
         }
 

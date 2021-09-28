@@ -48,7 +48,7 @@ enum class GroupType(
     /** A groupLike that has a parent actor  */
     val hasParentActor: Boolean = hasParentActor == HasParentActor.YES
 
-    /** A parent Actor has exactly one group of this type (e.g. Friends or Followers) */
+    /** A parent Actor has exactly one group of this type (e.g. Friends, Followers or Lists) */
     val isSingleForParent: Boolean = isSingleForParent == IsSingleForParent.YES
 
     private enum class IsGroupLike {
@@ -67,10 +67,12 @@ enum class GroupType(
         YES, NO
     }
 
-    fun isNotTheSameActor(other: GroupType): Boolean {
+    /** We can tell that these are different Actors looking at their [GroupType]s only */
+    fun isDifferentActor(other: GroupType): Boolean {
         if (this == other) return false
         if (this == UNKNOWN || other == UNKNOWN) return false
-        return this == NOT_A_GROUP || this == PUBLIC || this == FRIENDS || this == FOLLOWERS || this == LIST_MEMBERS
+        return this != COLLECTION && this != GENERIC && this != ACTOR_OWNED &&
+            other != COLLECTION && other != GENERIC && other != ACTOR_OWNED
     }
 
     companion object {

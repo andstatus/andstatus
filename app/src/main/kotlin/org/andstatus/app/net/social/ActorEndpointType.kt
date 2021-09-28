@@ -42,38 +42,34 @@ enum class ActorEndpointType(val id: Long) {
             return EMPTY
         }
 
-        fun from(routine: ApiRoutineEnum?): ActorEndpointType {
-            return when (routine) {
-                ApiRoutineEnum.GET_FOLLOWERS,
-                ApiRoutineEnum.GET_FOLLOWERS_IDS -> API_FOLLOWERS
-                ApiRoutineEnum.GET_FRIENDS,
-                ApiRoutineEnum.GET_FRIENDS_IDS -> API_FOLLOWING
-                ApiRoutineEnum.LISTS -> API_LISTS
-                ApiRoutineEnum.LIST_BY_USERS -> API_LIST_BY_USERS
-                ApiRoutineEnum.LIST_MEMBERS -> API_LIST_MEMBERS
-                ApiRoutineEnum.GET_ACTOR -> API_PROFILE
-                ApiRoutineEnum.HOME_TIMELINE -> API_INBOX
-                ApiRoutineEnum.LIKED_TIMELINE -> API_LIKED
-                ApiRoutineEnum.LIKE,
-                ApiRoutineEnum.UNDO_LIKE,
-                ApiRoutineEnum.FOLLOW,
-                ApiRoutineEnum.UPDATE_PRIVATE_NOTE,
-                ApiRoutineEnum.ANNOUNCE,
-                ApiRoutineEnum.DELETE_NOTE,
-                ApiRoutineEnum.UPDATE_NOTE,
-                ApiRoutineEnum.ACTOR_TIMELINE -> API_OUTBOX
-                ApiRoutineEnum.PUBLIC_TIMELINE -> API_SHARED_INBOX
-                ApiRoutineEnum.UPLOAD_MEDIA -> API_UPLOAD_MEDIA
-                else -> EMPTY
-            }
+        fun ApiRoutineEnum.toActorEndpointType(): ActorEndpointType = when (this) {
+            ApiRoutineEnum.GET_FOLLOWERS,
+            ApiRoutineEnum.GET_FOLLOWERS_IDS -> API_FOLLOWERS
+            ApiRoutineEnum.GET_FRIENDS,
+            ApiRoutineEnum.GET_FRIENDS_IDS -> API_FOLLOWING
+            ApiRoutineEnum.LISTS -> API_LISTS
+            ApiRoutineEnum.LIST_BY_USERS -> API_LIST_BY_USERS
+            ApiRoutineEnum.LIST_MEMBERS -> API_LIST_MEMBERS
+            ApiRoutineEnum.GET_ACTOR -> API_PROFILE
+            ApiRoutineEnum.HOME_TIMELINE -> API_INBOX
+            ApiRoutineEnum.LIKED_TIMELINE -> API_LIKED
+            ApiRoutineEnum.LIKE,
+            ApiRoutineEnum.UNDO_LIKE,
+            ApiRoutineEnum.FOLLOW,
+            ApiRoutineEnum.UPDATE_PRIVATE_NOTE,
+            ApiRoutineEnum.ANNOUNCE,
+            ApiRoutineEnum.DELETE_NOTE,
+            ApiRoutineEnum.UPDATE_NOTE,
+            ApiRoutineEnum.ACTOR_TIMELINE -> API_OUTBOX
+            ApiRoutineEnum.PUBLIC_TIMELINE -> API_SHARED_INBOX
+            ApiRoutineEnum.UPLOAD_MEDIA -> API_UPLOAD_MEDIA
+            else -> EMPTY
         }
 
-        fun from(groupType: GroupType?): ActorEndpointType {
-            return when (groupType) {
-                GroupType.FOLLOWERS -> API_FOLLOWERS
-                GroupType.FRIENDS -> API_FOLLOWING
-                else -> EMPTY
-            }
+        fun GroupType.toActorEndpointType(): ActorEndpointType = when (this) {
+            GroupType.FOLLOWERS -> API_FOLLOWERS
+            GroupType.FRIENDS -> API_FOLLOWING
+            else -> EMPTY
         }
     }
 }

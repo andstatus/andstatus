@@ -244,7 +244,7 @@ class DemoConversationInserter {
 
     companion object {
         fun assertIfActorIsMyFriend(actor: Actor, isFriendOf: Boolean, ma: MyAccount) {
-            val actualIsFriend: Boolean = GroupMembership.isGroupMember(ma.actor, GroupType.FRIENDS, actor.actorId)
+            val actualIsFriend: Boolean = GroupMembership.isSingleGroupMember(ma.actor, GroupType.FRIENDS, actor.actorId)
             assertEquals("Actor $actor is a friend of $ma", isFriendOf, actualIsFriend)
         }
     }
