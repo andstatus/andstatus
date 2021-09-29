@@ -61,8 +61,8 @@ android {
     }
 
     testOptions {
-        jacoco {
-            version = rootProject.extra["jacocoToolVersion"] as String
+        testCoverage {
+            jacocoVersion = rootProject.extra["jacocoToolVersion"] as String
         }
     }
 
@@ -70,24 +70,6 @@ android {
 
 jacoco {
     toolVersion = rootProject.extra["jacocoToolVersion"] as String
-}
-
-tasks.register("testTravis") {
-    group = "verification"
-
-    if (hasTestCoverage) {
-        project.extra["android.testInstrumentationRunnerArguments.executionMode"] = "travisTest"
-        println("Starting testing with Coverage")
-        dependsOn(
-            "createDebugCoverageReport",
-            "jacocoUnitTestReport"
-        )
-        finalizedBy("sonarqube")
-    }
-
-    doFirst {
-        cancelIfNoCoverage()
-    }
 }
 
 tasks.register<JacocoReport>("jacocoUnitTestReport") {
@@ -120,7 +102,7 @@ tasks.register<JacocoReport>("jacocoUnitTestReport") {
         )
     })
     executionData.setFrom(fileTree(buildDir) {
-        include("jacoco/testDebugUnitTest.exec")
+        include("**/testDebugUnitTest.exec")
     })
 
     reports {
@@ -128,6 +110,24 @@ tasks.register<JacocoReport>("jacocoUnitTestReport") {
         xml.destination = file("$buildDir/reports/coverage/debugUnitTest/report.xml")
         html.isEnabled = true
         html.destination = file("$buildDir/reports/coverage/debugUnitTest/html")
+    }
+
+    doFirst {
+        cancelIfNoCoverage()
+    }
+}
+
+tasks.register("testTravis") {
+    group = "verification"
+
+    if (hasTestCoverage) {
+        project.extra["android.testInstrumentationRunnerArguments.executionMode"] = "travisTest"
+        println("Starting testing with Coverage")
+        dependsOn(
+            "createDebugCoverageReport",
+            "jacocoUnitTestReport"
+        )
+        finalizedBy("sonarqube")
     }
 
     doFirst {
