@@ -98,7 +98,7 @@ tasks.register<JacocoReport>("jacocoUnitTestReport") {
     }
 
     sourceDirectories.setFrom(fileTree(projectDir) {
-        include("/src/main/java/**")
+        include("/src/main/kotlin/**")
     })
     classDirectories.setFrom(fileTree(buildDir) {
         include(
@@ -183,7 +183,7 @@ sonarqube {
         property("sonar.import_unknown_files", true)
 
         property("sonar.android.lint.report", "build/reports/lint-results.xml")
-        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/coverage/debug*/report.xml")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/coverage/androidTest/debug/report.xml")
     }
 }
 
