@@ -223,7 +223,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
             stateInTime = MyServiceStateInTime.getUnknown()
             MyContextHolder.myContextHolder.getNow().takeIf { it.nonEmpty }?.context?.sendBroadcast(
                     CommandData.newCommand(CommandEnum.STOP_SERVICE)
-                            .toIntent(MyAction.EXECUTE_COMMAND.getIntent())
+                            .toIntent(MyAction.EXECUTE_COMMAND.newIntent())
             )
         }
 
@@ -248,7 +248,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                 stateInTime = state
                 MyContextHolder.myContextHolder.getNow().context
                         .sendBroadcast(CommandData.newCommand(CommandEnum.BROADCAST_SERVICE_STATE)
-                                .toIntent(MyAction.EXECUTE_COMMAND.getIntent()))
+                                .toIntent(MyAction.EXECUTE_COMMAND.newIntent()))
             }
             return state.stateEnum
         }

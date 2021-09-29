@@ -34,7 +34,7 @@ enum class MyAction(actionOrSuffix: String) {
      */
     SERVICE_STATE("SERVICE_STATE"),
     VIEW_CONVERSATION("VIEW_CONVERSATION"),
-    VIEW_FOLLOWERS("VIEW_FOLLOWERS"),
+    VIEW_GROUP_MEMBERS("VIEW_GROUP_MEMBERS"),
     VIEW_ACTORS("VIEW_ACTORS"),
     BOOT_COMPLETED("android.intent.action.BOOT_COMPLETED"),
     ACTION_SHUTDOWN("android.intent.action.ACTION_SHUTDOWN"),
@@ -47,11 +47,11 @@ enum class MyAction(actionOrSuffix: String) {
     val action: String = if (actionOrSuffix.contains(".")) actionOrSuffix
         else ClassInApplicationPackage.PACKAGE_NAME + ".action." + actionOrSuffix
 
-    fun getIntent(): Intent {
+    fun newIntent(): Intent {
         return Intent(action)
     }
 
-    fun getIntent(uri: Uri?): Intent {
+    fun newIntent(uri: Uri?): Intent {
         return Intent(action, uri)
     }
 

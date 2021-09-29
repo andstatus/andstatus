@@ -147,7 +147,7 @@ class FirstActivity(
          * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
          */
         fun closeAllActivities(context: Context) {
-            context.startActivity(MyAction.CLOSE_ALL_ACTIVITIES.getIntent()
+            context.startActivity(MyAction.CLOSE_ALL_ACTIVITIES.newIntent()
                     .setClass(context, FirstActivity::class.java)
                     .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK)
             )

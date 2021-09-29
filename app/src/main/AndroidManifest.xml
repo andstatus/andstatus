@@ -180,12 +180,12 @@
             </intent-filter>
         </activity>
         <activity android:name=".actor.GroupMembersScreen"
-                  android:label="@string/followers"
+                  android:label="@string/group_members"
                   android:screenOrientation="user"
                   android:parentActivityName=".timeline.TimelineActivity"
                   android:permission="">
             <intent-filter>
-                <action android:name="org.andstatus.app.action.VIEW_FOLLOWERS" />
+                <action android:name="org.andstatus.app.action.VIEW_GROUP_MEMBERS" />
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.actor"/>
             </intent-filter>

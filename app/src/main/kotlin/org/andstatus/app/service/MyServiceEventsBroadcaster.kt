@@ -50,7 +50,7 @@ class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyC
                     ", " + mCommandData.toCommandSummary(MyContextHolder.myContextHolder.getNow()) +
                     if (progress.isEmpty()) "" else ", progress:$progress"
         }
-        MyAction.SERVICE_STATE.getIntent()
+        MyAction.SERVICE_STATE.newIntent()
             .apply(mCommandData::toIntent)
             .putExtra(IntentExtra.SERVICE_STATE.key, mState.save())
             .putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save())

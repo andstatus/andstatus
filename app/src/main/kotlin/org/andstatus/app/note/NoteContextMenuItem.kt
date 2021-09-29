@@ -247,7 +247,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
                 if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                     MyLog.d(this, "onItemClick, startActivity=$uri")
                 }
-                menu.getActivity().startActivity(MyAction.VIEW_CONVERSATION.getIntent(uri))
+                menu.getActivity().startActivity(MyAction.VIEW_CONVERSATION.newIntent(uri))
             }
         }
     },
@@ -259,7 +259,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "onItemClick, startActivity=$uri")
             }
-            menu.getActivity().startActivity(MyAction.VIEW_ACTORS.getIntent(uri))
+            menu.getActivity().startActivity(MyAction.VIEW_ACTORS.newIntent(uri))
         }
     },
     SHOW_DUPLICATES(false, true) {

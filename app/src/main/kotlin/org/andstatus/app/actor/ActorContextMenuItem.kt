@@ -110,7 +110,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         }
 
         override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
-            startActorsScreen(menu, ActorsScreenType.FOLLOWERS)
+            startGroupMembersScreen(menu, ActorsScreenType.FOLLOWERS)
         }
     },
     FRIENDS(true) {
@@ -120,7 +120,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         }
 
         override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
-            startActorsScreen(menu, ActorsScreenType.FRIENDS)
+            startGroupMembersScreen(menu, ActorsScreenType.FRIENDS)
         }
     },
     NONEXISTENT, UNKNOWN;
@@ -188,15 +188,15 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         }
     }
 
-    fun startActorsScreen(menu: ActorContextMenu, actorsScreenType: ActorsScreenType) {
+    fun startGroupMembersScreen(menu: ActorContextMenu, actorsScreenType: ActorsScreenType) {
         val uri: Uri = MatchedUri.getActorsScreenUri(
                 actorsScreenType,
                 menu.getOrigin().id,
                 menu.getViewItem().getActorId(), "")
         if (MyLog.isDebugEnabled()) {
-            MyLog.d(this, "startActorsScreen, $actorsScreenType, uri:$uri")
+            MyLog.d(this, "startGroupMembersScreen; $actorsScreenType, uri:$uri")
         }
-        menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri))
+        menu.getActivity().startActivity(MyAction.VIEW_GROUP_MEMBERS.newIntent(uri))
     }
 
     fun sendActOnActorCommand(command: CommandEnum, menu: ActorContextMenu) {

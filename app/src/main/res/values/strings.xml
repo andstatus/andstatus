@@ -196,6 +196,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="get_user">Get Actor information</string>
   <string name="go_to_the_top_title">Go to the Top</string>
   <string name="group">Group</string>
+  <string name="group_members">Group members</string>
   <string name="group_notes">%s group notes</string>
   <string name="groups">Groups</string>
   <string name="header_accounts">Accounts</string>

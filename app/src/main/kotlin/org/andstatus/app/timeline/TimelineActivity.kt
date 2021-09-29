@@ -455,7 +455,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "onItemClick, startActivity=$uri")
             }
-            startActivity(MyAction.VIEW_CONVERSATION.getIntent(uri))
+            startActivity(MyAction.VIEW_CONVERSATION.newIntent(uri))
         }
     }
 
