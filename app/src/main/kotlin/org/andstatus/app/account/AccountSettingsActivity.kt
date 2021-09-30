@@ -53,9 +53,9 @@ import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.http.HttpConnectionInterface
 import org.andstatus.app.net.http.MyOAuth2AccessTokenJsonExtractor
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
 import org.andstatus.app.origin.Origin

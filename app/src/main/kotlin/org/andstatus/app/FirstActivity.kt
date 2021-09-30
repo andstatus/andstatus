@@ -32,8 +32,8 @@ import org.andstatus.app.context.MySettingsGroup
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.timeline.TimelineActivity
-import org.andstatus.app.util.Identified
 import org.andstatus.app.util.Identifiable
+import org.andstatus.app.util.Identified
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState

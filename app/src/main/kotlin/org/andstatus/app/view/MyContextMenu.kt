@@ -15,8 +15,6 @@
  */
 package org.andstatus.app.view
 
-import android.view.ContextMenu
-import android.view.ContextMenu.ContextMenuInfo
 import android.view.Menu
 import android.view.View
 import android.view.View.OnCreateContextMenuListener

@@ -15,7 +15,8 @@
  */
 package org.andstatus.app.data
 
-import java.util.HashMap
+import java.util.*
+
 /**
  * Collects [ActorActivity] data (e.g. during timeline download) and allows to save it in bulk
  * @author yvolk@yurivolkov.com

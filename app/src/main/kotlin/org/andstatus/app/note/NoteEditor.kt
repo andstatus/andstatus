@@ -46,8 +46,8 @@ import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.graphics.IdentifiableImageView
 import org.andstatus.app.net.social.ApiRoutineEnum
-import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager

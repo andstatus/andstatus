@@ -18,7 +18,6 @@ package org.andstatus.app.activity
 import org.andstatus.app.actor.ActorContextMenu
 import org.andstatus.app.actor.ActorViewItem
 import org.andstatus.app.note.NoteEditorContainer
-import org.andstatus.app.view.MyContextMenu
 
 class ActorOfActivityContextMenu(menuContainer: NoteEditorContainer) : ActorContextMenu(menuContainer, MENU_GROUP_ACTOR) {
     override fun getViewItem(activityViewItem: ActivityViewItem): ActorViewItem {

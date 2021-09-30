@@ -15,9 +15,6 @@
  */
 package org.andstatus.app.util
 
-import android.os.Build
-import org.andstatus.app.context.ExecutionMode
-import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.apache.geode.test.junit.IgnoreCondition
 import org.junit.runner.Description

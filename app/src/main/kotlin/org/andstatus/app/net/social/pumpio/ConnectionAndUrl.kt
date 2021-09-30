@@ -18,12 +18,11 @@ package org.andstatus.app.net.social.pumpio
 import android.net.Uri
 import io.vavr.control.Try
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.Actor
-import org.andstatus.app.net.social.ActorEndpointType
 import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog

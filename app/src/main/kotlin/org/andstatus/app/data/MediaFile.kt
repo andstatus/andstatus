@@ -30,8 +30,8 @@ import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.graphics.MediaMetadata
 import org.andstatus.app.graphics.MediaMetadata.Companion.EMPTY
 import org.andstatus.app.graphics.MediaMetadata.Companion.fromFilePath
-import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.IsEmpty

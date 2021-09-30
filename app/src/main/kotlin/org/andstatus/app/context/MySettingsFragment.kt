@@ -49,8 +49,8 @@ import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.note.KeywordsFilter
 import org.andstatus.app.notification.NotificationMethodType
 import org.andstatus.app.origin.PersistentOriginList
-import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.service.QueueViewer
 import org.andstatus.app.timeline.meta.ManageTimelines

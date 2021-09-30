@@ -4,8 +4,8 @@
 <!-- License: This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/. (As attribution is included in this file, you needn't include additional attribution on your site.) -->
 <!-- How to use: The original blog post about this SVG button and how I use SVG on the Ind.ie website is at https://ind.ie/blog/f-droid-button/ -->
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" id="button_1_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="1490 188 300 104" enable-background="new 1490 188 300 104" xml:space="preserve">
+<svg version="1.1" id="button_1_" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="1490 188 300 104"
+    enable-background="new 1490 188 300 104" xml:space="preserve">
 <g id="get_it_on_f-droid_2_">
 	<path id="button" d="M1780,292h-280c-5.5,0-10-4.5-10-10v-84c0-5.5,4.5-10,10-10h280c5.5,0,10,4.5,10,10v84
 		C1790,287.5,1785.5,292,1780,292z"/>
