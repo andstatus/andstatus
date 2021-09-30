@@ -1,2 +1,5 @@
-v.59.04 Don't send a note with an attachment when download of attachments is not allowed e.g. when
-"Download attachment over Wi-Fi only" is set and we are not on Wi-Fi connection.
+v.59.05 More intelligent choice of an Actor for replies
+* When deciding on a default actor to reply to a message, check if any of my actors is already
+ a participant of this conversation.
+* Sooner retries of throttled downloads.
+* Notifications on Home timeline messages are turned off by default.

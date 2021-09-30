@@ -29,6 +29,21 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="59.05" android:versionCode="349"
+        versionDate="2021-09-30"
+        versionTitle="More intelligent choice of an Actor for replies">
+        <changes>
+            <change>When deciding on a default actor to reply to a message, check if any of my actors is already
+                a participant of this conversation.</change>
+            <change>Sooner retries of throttled downloads:
+                Throttled commands can be retried after the required delay period passed.
+                Before this change the whole retry queue was processed periodically
+                without looking at each command's "timeToRetry".
+            </change>
+            <change>Notifications on Home timeline messages are turned off by default.
+                Go to Settings -> Notifications to set, which events cause notifications.</change>
+        </changes>
+    </release>
     <release android:versionName="59.04" android:versionCode="348"
         versionDate="2021-08-28"
         versionTitle="Send a note with an attachment on Wi-Fi only">
