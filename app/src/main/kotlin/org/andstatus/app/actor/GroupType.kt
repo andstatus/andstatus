@@ -16,6 +16,7 @@
 package org.andstatus.app.actor
 
 /** See https://www.w3.org/TR/activitystreams-vocabulary/#dfn-group
+ * On Groups and Lists support in AndStatus see https://github.com/andstatus/andstatus/issues/248
  * @author yvolk@yurivolkov.com
  */
 enum class GroupType(

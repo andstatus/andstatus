@@ -31,15 +31,9 @@ class GroupMembersScreen : ActorsScreen(GroupMembersScreen::class) {
 
     override fun syncWithInternet(manuallyLaunched: Boolean) {
         showSyncing("syncWithInternet", getText(R.string.options_menu_sync))
-        when (actorsScreenType) {
-            ActorsScreenType.FOLLOWERS -> CommandEnum.GET_FOLLOWERS
-            ActorsScreenType.FRIENDS -> CommandEnum.GET_FRIENDS
-            ActorsScreenType.LISTS -> CommandEnum.GET_LISTS
-            else -> CommandEnum.GET_LIST_MEMBERS
-        }.let { commandEnum ->
-            CommandData.newActorCommand(commandEnum, Actor.load(myContext, parentActorId), "")
-                .setManuallyLaunched(manuallyLaunched)
-        }.let(MyServiceManager::sendForegroundCommand)
+        CommandData.newActorCommand(actorsScreenType.syncCommand, Actor.load(myContext, parentActorId), "")
+            .setManuallyLaunched(manuallyLaunched)
+            .let(MyServiceManager::sendForegroundCommand)
     }
 
     override fun newSyncLoader(args: Bundle?): ActorsLoader {

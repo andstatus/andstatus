@@ -55,6 +55,10 @@ open class ActorContextMenu(val menuContainer: NoteEditorContainer, menuGroup: I
             if (actor.isIdentified()) {
                 ActorContextMenuItem.NOTES_BY_ACTOR.addTo(menu, menuGroup, order++,
                         StringUtil.format(getActivity(), R.string.menu_item_user_messages, shortName))
+                if (actor.origin.originType.hasListsOfUser) {
+                    ActorContextMenuItem.LISTS.addTo(menu, menuGroup, order++,
+                        StringUtil.format(getActivity(), R.string.lists_of_user, shortName))
+                }
                 ActorContextMenuItem.FRIENDS.addTo(menu, menuGroup, order++,
                         StringUtil.format(getActivity(), R.string.friends_of, shortName))
                 ActorContextMenuItem.FOLLOWERS.addTo(menu, menuGroup, order++,

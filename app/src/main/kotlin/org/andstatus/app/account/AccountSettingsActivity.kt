@@ -905,21 +905,23 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
             var connectionErrorMessage = ""
             try {
                 if (!myAccount.areClientKeysPresent()) {
-                    state.builder.registerClient()
+                    state.builder.registerClient().onFailure {
+                        connectionErrorMessage = it.toString()
+                    }
                 }
                 if (myAccount.areClientKeysPresent()) {
                     state.builder.getOriginConfig()
                     succeeded = true
                 }
             } catch (e: ConnectionException) {
-                connectionErrorMessage = e.message ?: ""
+                connectionErrorMessage = e.toString()
                 MyLog.i(this, e)
             }
             var stepErrorMessage = ""
             if (!succeeded) {
                 stepErrorMessage = this@AccountSettingsActivity
                     .getString(R.string.client_registration_failed)
-                if (!connectionErrorMessage.isEmpty()) {
+                if (connectionErrorMessage.isNotEmpty()) {
                     stepErrorMessage += ": $connectionErrorMessage"
                 }
                 MyLog.d(this, stepErrorMessage)

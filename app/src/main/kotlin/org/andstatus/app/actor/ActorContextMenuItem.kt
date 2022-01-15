@@ -54,9 +54,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         }
     },
     SHARE {
-        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
-            // TODO
-        }
+        // TODO
     },
     NOTES_BY_ACTOR(true) {
         override fun executeAsync(params: Params): Try<NoteEditorData> {
@@ -67,6 +65,16 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
                             .forUserAtHomeOrigin(TimelineType.SENT, params.menu.getViewItem().actor)
             )
             return super.executeAsync(params)
+        }
+    },
+    LISTS(true) {
+        override fun executeAsync(params: Params): Try<NoteEditorData> {
+            setActingAccountForActor(params)
+            return super.executeAsync(params)
+        }
+
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
+            startGroupMembersScreen(menu, ActorsScreenType.LISTS)
         }
     },
     GROUP_NOTES(true) {

@@ -158,10 +158,20 @@ class Actor private constructor(// In our system
     }
 
     private fun calcIsFullyDefined(): TriState {
-        if (isEmpty || UriUtils.nonRealOid(oid)) return TriState.FALSE
-        return if (groupType.isGroupLike) TriState.TRUE
-        else TriState.fromBoolean(isWebFingerIdValid() && isUsernameValid())
+        if (cannotAdd || UriUtils.nonRealOid(oid)) return TriState.FALSE
+
+        return TriState.fromBoolean(isWebFingerIdValid() && isUsernameValid())
     }
+
+    val cannotAdd: Boolean
+        get() {
+            val parentIsValid = if (groupType.isGroupLike) {
+                if (groupType.hasParentActor) {
+                    parentActorId != 0L
+                } else parentActorId == 0L
+            } else parentActorId == 0L
+            return isEmpty || !parentIsValid || oid.isBlank()
+        }
 
     fun isNotFullyDefined(): Boolean {
         return !isFullyDefined()

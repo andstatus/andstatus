@@ -57,6 +57,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             CommandEnum.GET_NOTE -> getNote(execContext.commandData.itemId)
             CommandEnum.GET_ACTOR -> getActorCommand(getActor(), execContext.commandData.getUsername())
             CommandEnum.SEARCH_ACTORS -> searchActors(execContext.commandData.getUsername())
+            CommandEnum.GET_LISTS -> getListsOfUser(execContext.commandData.getUsername())
             CommandEnum.ANNOUNCE -> reblog(execContext.commandData.itemId)
             CommandEnum.RATE_LIMIT_STATUS -> rateLimitStatus()
             CommandEnum.GET_ATTACHMENT -> FileDownloader.newForDownloadData(execContext.myContext, DownloadData.fromId(execContext.commandData.itemId))
@@ -83,6 +84,23 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     true
                 }
                 .mapFailure { e: Throwable? -> ConnectionException.of(e, msgLog) }
+    }
+
+    private fun getListsOfUser(userNameIn: String?): Try<Boolean> {
+        val method = "getListsOfUser"
+        val myAccountActor = execContext.getMyAccount().actor
+        val userName = userNameIn ?: myAccountActor.getUsername()
+        val msgLog = "$method; user:$userName, origin:${myAccountActor.origin}"
+        return getConnection()
+            .getListsOfUser(userName)
+            .map { actors: List<Actor> ->
+                val dataUpdater = DataUpdater(execContext)
+                for (actor in actors) {
+                    dataUpdater.onActivity(myAccountActor.update(actor))
+                }
+                true
+            }
+            .mapFailure { ConnectionException.of(it, msgLog) }
     }
 
     private fun getConversation(noteId: Long): Try<Boolean> {

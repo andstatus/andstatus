@@ -62,8 +62,8 @@ class ConnectionException : IOException {
     override fun toString(): String {
         return "Status code: $statusCode; " +
                 (if (isHardError) "hard" else "soft") +
-                (if (url == null) "" else "; URL: $url") +
-                "; \n${super.message}\n" +
+                (if (url == null) "; " else "; URL: $url;\n") +
+                (if (message.isNullOrBlank()) "" else "$message\n") +
                 (if (super.cause != null) "Caused by ${super.cause.toString()}\n" else "")
     }
 

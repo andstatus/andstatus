@@ -18,6 +18,7 @@ package org.andstatus.app.net.social
 import android.net.Uri
 import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
+import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.MyContentType
 import org.andstatus.app.net.http.ConnectionException
@@ -34,6 +35,10 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.TryUtils.failure
+import org.andstatus.app.util.TryUtils.flatMapL
+import org.andstatus.app.util.TryUtils.toFailure
+import org.andstatus.app.util.TryUtils.toSuccess
 import org.andstatus.app.util.UriUtils
 import org.json.JSONArray
 import org.json.JSONException
@@ -150,8 +155,28 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             }
     }
 
-    // TODO: Delete ?
-    protected fun getApiPathWithTag(routineEnum: ApiRoutineEnum, tag: String): Try<Uri> {
+    override fun getListsOfUser(userName: String): Try<List<Actor>> {
+        val apiRoutine = ApiRoutineEnum.LISTS
+        return getApiPath(apiRoutine)
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap(::execute)
+            .flatMap(HttpReadResult::list)
+            .flatMapL { jso: JSONObject ->
+                try {
+                    val oid = jso.get("id").toString()
+                    val name = jso.get("title").toString()
+                    Actor.fromTwoIds(data.getOrigin(), GroupType.LISTS, 0, oid)
+                        .setUsername(name)
+                        .setParentActorId(myContext(), data.getAccountActor().actorId)
+                        .toSuccess()
+                } catch (e: Exception) {
+                    ConnectionException("$apiRoutine, parsing $jso", e)
+                        .toFailure()
+                }
+            }
+    }
+
+    private fun getApiPathWithTag(routineEnum: ApiRoutineEnum, tag: String): Try<Uri> {
         return getApiPath(routineEnum).map { uri: Uri -> UriUtils.map(uri) { s: String? -> s?.replace("%tag%", tag) } }
     }
 
@@ -502,6 +527,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 ApiRoutineEnum.GET_NOTE -> "v1/statuses/%noteId%"
                 ApiRoutineEnum.SEARCH_NOTES -> "v1/search" /* actually, this is a complex search "for content" */
                 ApiRoutineEnum.SEARCH_ACTORS -> "v1/accounts/search"
+                ApiRoutineEnum.LISTS -> "v1/lists"
                 ApiRoutineEnum.GET_CONVERSATION -> "v1/statuses/%noteId%/context"
                 ApiRoutineEnum.LIKE -> "v1/statuses/%noteId%/favourite"
                 ApiRoutineEnum.UNDO_LIKE -> "v1/statuses/%noteId%/unfavourite"

@@ -27,6 +27,7 @@ import org.andstatus.app.util.MagnetUri.Companion.getDownloadableUrl
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.toJsonObjects
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -190,6 +191,11 @@ class HttpReadResult(val request: HttpRequest) {
             return Try.failure(ConnectionException.loggedJsonException(this, method + I18n.trimTextAt(toString(), 500), e, strJson))
         }
         return Try.success(jso)
+    }
+
+    fun list(): Try<List<JSONObject>> {
+        return getJsonArray()
+            .flatMap(JSONArray::toJsonObjects)
     }
 
     fun getJsonArray(): Try<JSONArray> {

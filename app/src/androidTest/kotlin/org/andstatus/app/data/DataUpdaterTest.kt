@@ -469,6 +469,22 @@ $activity""",
     }
 
     @Test
+    fun addMastodonList() {
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
+        val actor: Actor = Actor.Companion.fromTwoIds(ma.origin, GroupType.LISTS, 0, DemoData.demoData.testRunUid)
+            .setUsername("List" + DemoData.demoData.testRunUid)
+
+        val accountActor = ma.actor
+        val id0 = DataUpdater(ma).onActivity(accountActor.update(actor))?.getObjActor()?.actorId ?: 0
+        Assert.assertTrue("List of User without parent should not be added", id0 == 0L)
+
+        actor.setParentActorId(myContext, accountActor.actorId)
+        val id = DataUpdater(ma).onActivity(accountActor.update(actor))?.getObjActor()?.actorId ?: 0
+        Assert.assertTrue("Actor added", id != 0L)
+        DemoNoteInserter.Companion.checkStoredActor(actor)
+    }
+
+    @Test
     fun testReplyInBody() {
         val ma: MyAccount = DemoData.demoData.getPumpioConversationAccount()
         val buddyName = "buddy" + DemoData.demoData.testRunUid + "@example.com"

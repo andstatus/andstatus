@@ -1,6 +1,7 @@
 package org.andstatus.app.util
 
 import android.database.sqlite.SQLiteDiskIOException
+import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.os.ExceptionsCounter
@@ -121,5 +122,29 @@ object TryUtils {
         }
         return this
     }
+
+    inline fun <T, U> Try<List<T>>.flatMapL(mapper: (T) -> Try<U>): Try<List<U>> = iFlatMap {
+        it.map(mapper).toTry()
+    }
+
+    inline fun <T,U> Try<T>.iFlatMap(mapper: (T) -> Try<U>): Try<U> = if (isSuccess) {
+        try {
+            mapper(get())
+        } catch (t: Throwable) {
+            Try.failure(t)
+        }
+    } else {
+        this as Try<U>
+    }
+
+    fun <T> List<Try<T>>.toTry(): Try<List<T>> = map {
+        if (it.isFailure) return it as Try<List<T>>
+        it.get()
+    }
+        .let { Try.success(it) }
+
+    fun <T> T.toSuccess(): Try<T> = Try.success(this)
+
+    fun <T, U : Throwable> U.toFailure(): Try<T> = Try.failure(this)
 
 }

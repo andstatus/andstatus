@@ -16,6 +16,7 @@
 package org.andstatus.app.util
 
 import io.vavr.control.Try
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
@@ -117,4 +118,17 @@ object JsonUtils {
         // http://code.google.com/p/android/issues/detail?id=13830
         return if (json.isNull(key)) fallback else json.optString(key, fallback)
     }
+}
+
+fun JSONArray.toJsonObjects(): Try<List<JSONObject>> {
+    val objects: MutableList<JSONObject> = ArrayList()
+    for (index in 0 until length()) {
+        try {
+            val item = getJSONObject(index)
+            objects.add(item)
+        } catch (e: Exception) {
+            return Try.failure(e)
+        }
+    }
+    return Try.success(objects)
 }

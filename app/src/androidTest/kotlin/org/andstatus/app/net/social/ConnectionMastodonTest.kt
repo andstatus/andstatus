@@ -16,6 +16,7 @@
 package org.andstatus.app.net.social
 
 import org.andstatus.app.account.MyAccount
+import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
@@ -363,4 +364,17 @@ class ConnectionMastodonTest {
         Assert.assertEquals(video.uri, nfa.downloads.getFirstToShare().getUri())
         Assert.assertEquals(MyContentType.VIDEO, nfa.downloads.getFirstToShare().getContentType())
     }
+
+    @Test
+    fun testGetListsOfUser() {
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_lists_of_user)
+        val lists = stub.connection.getListsOfUser("ignored").get()
+        Assert.assertEquals("Should be not empty", 2, lists.size)
+        val actor0 = lists[0]
+        Assert.assertEquals("$actor0", GroupType.LISTS, actor0.groupType)
+        Assert.assertEquals("$actor0", "19919", actor0.oid)
+        Assert.assertEquals("$actor0", "AndStatus in Fediverse", actor0.getUsername())
+        Assert.assertEquals(accountActor, actor0.getParent())
+    }
+
 }

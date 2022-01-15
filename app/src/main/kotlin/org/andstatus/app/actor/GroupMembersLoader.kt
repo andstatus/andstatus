@@ -27,17 +27,19 @@ class GroupMembersLoader(
     actorsScreenType: ActorsScreenType,
     origin: Origin,
     val parentActorId: Long, searchQuery: String
-) : ActorsLoader(myContext, actorsScreenType, origin, parentActorId, searchQuery) {
+) : ActorsLoader(
+    myContext,
+    if (actorsScreenType.groupType == GroupType.NOT_A_GROUP)
+        throw IllegalArgumentException("Not a group: $actorsScreenType") else actorsScreenType,
+    origin, parentActorId, searchQuery
+) {
 
     override fun getSqlActorIds(): String {
-        val groupType = when (actorsScreenType) {
-            ActorsScreenType.FOLLOWERS -> GroupType.FOLLOWERS
-            ActorsScreenType.FRIENDS -> GroupType.FRIENDS
-            ActorsScreenType.LISTS -> GroupType.LISTS
-            ActorsScreenType.LIST_MEMBERS -> GroupType.LIST_MEMBERS
-            else -> GroupType.COLLECTION
-        }
-        return " IN (" + GroupMembership.selectSingleGroupMemberIds(listOf(parentActorId), groupType, false) + ")"
+        return " IN (" + GroupMembership.selectSingleGroupMemberIds(
+            listOf(parentActorId),
+            actorsScreenType.groupType,
+            false
+        ) + ")"
     }
 
     override fun getSubtitle(): String {

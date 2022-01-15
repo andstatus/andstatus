@@ -179,38 +179,39 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
                     CommandExecutionContext(commandData.myContext, commandData)).setParent(parent)
         }
 
-        private fun getStrategy(execContext: CommandExecutionContext): CommandExecutorStrategy {
-            val strategy: CommandExecutorStrategy
-            strategy = when (execContext.commandData.command) {
-                CommandEnum.GET_ATTACHMENT, CommandEnum.GET_AVATAR -> CommandExecutorOther(execContext)
+        private fun getStrategy(execContext: CommandExecutionContext): CommandExecutorStrategy =
+            when (execContext.commandData.command) {
+                CommandEnum.GET_ATTACHMENT,
+                CommandEnum.GET_AVATAR -> CommandExecutorOther(execContext)
                 CommandEnum.GET_OPEN_INSTANCES -> CommandExecutorGetOpenInstances(execContext)
                 else -> if (execContext.getMyAccount().isValidAndSucceeded()) {
                     when (execContext.commandData.command) {
-                        CommandEnum.GET_TIMELINE, CommandEnum.GET_OLDER_TIMELINE ->
+                        CommandEnum.GET_TIMELINE,
+                        CommandEnum.GET_OLDER_TIMELINE ->
                             if (execContext.commandData.getTimeline().isSyncable()) {
-                            when (execContext.commandData.getTimelineType()) {
-                                TimelineType.FOLLOWERS, TimelineType.FRIENDS -> TimelineDownloaderFollowers(execContext)
-                                else -> TimelineDownloaderOther(execContext)
-                            }
-                        } else {
-                            MyLog.v(CommandExecutorStrategy::class.java) {
-                                "Dummy commandExecutor for " +
+                                when (execContext.commandData.getTimelineType()) {
+                                    TimelineType.FOLLOWERS, TimelineType.FRIENDS -> TimelineDownloaderFollowers(
+                                        execContext
+                                    )
+                                    else -> TimelineDownloaderOther(execContext)
+                                }
+                            } else {
+                                MyLog.v(CommandExecutorStrategy::class.java) {
+                                    "Dummy commandExecutor for " +
                                         execContext.commandData.getTimeline()
+                                }
+                                CommandExecutorStrategy(execContext)
                             }
-                            CommandExecutorStrategy(execContext)
-                        }
-                        CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS -> CommandExecutorFollowers(execContext)
+                        CommandEnum.GET_FOLLOWERS,
+                        CommandEnum.GET_FRIENDS -> CommandExecutorFollowers(execContext)
                         else -> CommandExecutorOther(execContext)
                     }
                 } else {
                     MyLog.v(CommandExecutorStrategy::class.java) {
-                        ("Dummy commandExecutor for "
-                                + execContext.getMyAccount())
+                        ("Dummy commandExecutor for " + execContext.getMyAccount())
                     }
                     CommandExecutorStrategy(execContext)
                 }
             }
-            return strategy
-        }
     }
 }

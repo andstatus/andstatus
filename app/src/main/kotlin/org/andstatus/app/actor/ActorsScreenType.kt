@@ -18,6 +18,7 @@ package org.andstatus.app.actor
 import android.content.Context
 import androidx.annotation.StringRes
 import org.andstatus.app.R
+import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.timeline.ListScope
 import org.andstatus.app.util.StringUtil
 
@@ -26,20 +27,40 @@ import org.andstatus.app.util.StringUtil
  */
 enum class ActorsScreenType(
     /** code of the enum that is used in notes  */
-        private val code: String,
+    private val code: String,
     @field:StringRes private val titleResId: Int,
     @field:StringRes private val titleWithParamsResId: Int,
-    val scope: ListScope) {
-    UNKNOWN("unknown", R.string.unknown_userlist, 0, ListScope.ORIGIN),
-
+    val scope: ListScope,
+    val groupType: GroupType,
+    val syncCommand: CommandEnum
+) {
+    UNKNOWN(
+        "unknown", R.string.unknown_userlist, 0, ListScope.ORIGIN, GroupType.NOT_A_GROUP,
+        CommandEnum.UNKNOWN
+    ),
     /** Actors, related to the selected note, including mentioned actors  */
-    ACTORS_OF_NOTE("actors_of_note", R.string.users_of_message, 0, ListScope.ORIGIN),
-    FOLLOWERS("followers", R.string.followers, R.string.followers_of, ListScope.USER),
-    FRIENDS("friends", R.string.friends, R.string.friends_of, ListScope.USER),
-    LISTS("lists", R.string.lists, R.string.lists_of_user, ListScope.USER),
-    LIST_MEMBERS("list_members", R.string.list_members, R.string.named_list_members, ListScope.USER),
-    ACTORS_AT_ORIGIN("actors", R.string.user_list, 0, ListScope.ORIGIN),
-    GROUPS_AT_ORIGIN("groups", R.string.groups, 0, ListScope.ORIGIN);
+    ACTORS_OF_NOTE(
+        "actors_of_note", R.string.users_of_message, 0, ListScope.ORIGIN, GroupType.NOT_A_GROUP,
+        CommandEnum.SEARCH_ACTORS
+    ),
+    FOLLOWERS(
+        "followers", R.string.followers, R.string.followers_of, ListScope.USER, GroupType.FOLLOWERS,
+        CommandEnum.GET_FOLLOWERS
+    ),
+    FRIENDS("friends", R.string.friends, R.string.friends_of, ListScope.USER, GroupType.FRIENDS, CommandEnum.GET_FRIENDS),
+    LISTS("lists", R.string.lists, R.string.lists_of_user, ListScope.USER, GroupType.LISTS, CommandEnum.GET_LISTS),
+    LIST_MEMBERS(
+        "list_members", R.string.list_members, R.string.named_list_members, ListScope.USER, GroupType.LIST_MEMBERS,
+        CommandEnum.GET_LIST_MEMBERS
+    ),
+    ACTORS_AT_ORIGIN(
+        "actors", R.string.user_list, 0, ListScope.ORIGIN, GroupType.NOT_A_GROUP,
+        CommandEnum.SEARCH_ACTORS
+    ),
+    GROUPS_AT_ORIGIN(
+        "groups", R.string.groups, 0, ListScope.ORIGIN, GroupType.NOT_A_GROUP,
+        CommandEnum.UNKNOWN
+    );
 
     /**
      * String to be used for persistence

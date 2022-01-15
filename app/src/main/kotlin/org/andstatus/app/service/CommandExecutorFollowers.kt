@@ -83,8 +83,8 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
 
     private fun getNewActors(apiActors: ApiRoutineEnum): Try<List<Actor>> {
         val actors: MutableList<Actor> = ArrayList()
-        val requested: MutableList<TimelinePosition?> = ArrayList()
-        val positionToRequest = AtomicReference<TimelinePosition?>(TimelinePosition.EMPTY)
+        val requested: MutableList<TimelinePosition> = ArrayList()
+        val positionToRequest = AtomicReference<TimelinePosition>(TimelinePosition.EMPTY)
         for (pageNum in 0..99) {
             if (requested.contains(positionToRequest.get())) break
             val tried = getConnection().getFriendsOrFollowers(apiActors, positionToRequest.get() ?: TimelinePosition.EMPTY, getActor())

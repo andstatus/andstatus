@@ -47,28 +47,47 @@ private const val BASIC_PATH_DEFAULT: String = "api"
 private const val OAUTH_PATH_DEFAULT: String = "oauth"
 const val TEXT_LIMIT_MAXIMUM = 100000
 
-enum class OriginType(private val id: Long, val title: String, api: ApiEnum, noteName: NoteName, noteSummary: NoteSummary,
-                      publicChangeAllowed: PublicChangeAllowed, followersChangeAllowed: FollowersChangeAllowed,
-                      sensitiveChangeAllowed: SensitiveChangeAllowed,
-                      shortUrlLength: ShortUrlLength) : SelectableEnum {
+enum class OriginType(
+    private val id: Long, val title: String, api: ApiEnum,
+    hasNoteName: HasNoteName, hasNoteSummary: HasNoteSummary, hasListsOfUser: HasListsOfUser,
+    publicChangeAllowed: PublicChangeAllowed, followersChangeAllowed: FollowersChangeAllowed,
+    sensitiveChangeAllowed: SensitiveChangeAllowed,
+    shortUrlLength: ShortUrlLength
+) : SelectableEnum {
     /** [Mastodon at GitHub](https://github.com/Gargron/mastodon)  */
-    MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.NO, NoteSummary.YES,
-            PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)),
+    MASTODON(
+        4, "Mastodon", ApiEnum.MASTODON,
+        HasNoteName.NO, HasNoteSummary.YES, HasListsOfUser.YES,
+        PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES,
+        ShortUrlLength.of(0)
+    ),
 
     /**
      * Origin type for Twitter system
      * [Twitter Developers' documentation](https://dev.twitter.com/docs)
      */
-    TWITTER(1, "Twitter", ApiEnum.TWITTER1P1, NoteName.NO, NoteSummary.NO,
-            PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(23)),
-    ACTIVITYPUB(5, "ActivityPub", ApiEnum.ACTIVITYPUB, NoteName.YES, NoteSummary.YES,
-            PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)) {
+    TWITTER(
+        1, "Twitter", ApiEnum.TWITTER1P1,
+        HasNoteName.NO, HasNoteSummary.NO, HasListsOfUser.YES,
+        PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO,
+        ShortUrlLength.of(23)
+    ),
+    ACTIVITYPUB(
+        5, "ActivityPub", ApiEnum.ACTIVITYPUB,
+        HasNoteName.YES, HasNoteSummary.YES, HasListsOfUser.NO,
+        PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES,
+        ShortUrlLength.of(0)
+    ) {
         override fun getContentType(): Optional<String> {
             return Optional.of("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
         }
     },
-    GNUSOCIAL(3, "GnuSocial", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, NoteSummary.NO,
-            PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
+    GNUSOCIAL(
+        3, "GnuSocial", ApiEnum.GNUSOCIAL_TWITTER,
+        HasNoteName.NO, HasNoteSummary.NO, HasListsOfUser.NO,
+        PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO,
+        ShortUrlLength.of(0)
+    ),
 
     /**
      * Origin type for the pump.io system
@@ -76,20 +95,32 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
      * [Twitter-compatible identi.ca API](http://status.net/wiki/Twitter-compatible_API)
      * Since July 2013 the API is [pump.io API](https://github.com/e14n/pump.io/blob/master/API.md)
      */
-    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES, NoteSummary.NO,
-            PublicChangeAllowed.YES, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
-    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, NoteSummary.NO,
-            PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)) {
+    PUMPIO(
+        2, "Pump.io", ApiEnum.PUMPIO,
+        HasNoteName.YES, HasNoteSummary.NO, HasListsOfUser.NO,
+        PublicChangeAllowed.YES, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO,
+        ShortUrlLength.of(0)
+    ),
+    UNKNOWN(
+        0, "?", ApiEnum.UNKNOWN_API,
+        HasNoteName.NO, HasNoteSummary.NO, HasListsOfUser.NO,
+        PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO,
+        ShortUrlLength.of(0)
+    ) {
         override fun isSelectable(): Boolean {
             return false
         }
     };
 
-    private enum class NoteName {
+    private enum class HasNoteName {
         YES, NO
     }
 
-    private enum class NoteSummary {
+    private enum class HasNoteSummary {
+        YES, NO
+    }
+
+    private enum class HasListsOfUser {
         YES, NO
     }
 
@@ -195,7 +226,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
      * 0 means that length doesn't change
      * For Twitter.com see [GET help/configuration](https://dev.twitter.com/docs/api/1.1/get/help/configuration)
      */
-    internal val shortUrlLengthDefault: ShortUrlLength
+    internal val shortUrlLengthDefault: ShortUrlLength = shortUrlLength
     var sslDefault = true
     var canChangeSsl = false
     var allowHtmlDefault = true
@@ -203,7 +234,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
     val textMediaTypeToPost: TextMediaType
 
     /** Maximum number of characters in a note  */
-    var textLimitDefault = 0
+    var textLimitDefault: Int = 0
     val urlDefault: URL?
     private val basicPath: String
     private val oauthPath: String
@@ -212,18 +243,16 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
     private val isPrivateTimelineSyncable: Boolean
     private val isInteractionsTimelineSyncable: Boolean
     val isPrivateNoteAllowsReply: Boolean
-    val hasNoteName: Boolean
-    val hasNoteSummary: Boolean
-    val visibilityChangeAllowed: Boolean
-    val isFollowersChangeAllowed: Boolean
-    val isSensitiveChangeAllowed: Boolean
-    fun uniqueNameHasHost(): Boolean {
-        return this !== TWITTER
-    }
+    val hasNoteName: Boolean = hasNoteName == HasNoteName.YES
+    val hasNoteSummary: Boolean = hasNoteSummary == HasNoteSummary.YES
+    val hasListsOfUser: Boolean = hasListsOfUser == HasListsOfUser.YES
+    val visibilityChangeAllowed: Boolean = publicChangeAllowed == PublicChangeAllowed.YES
+    val isFollowersChangeAllowed: Boolean = followersChangeAllowed == FollowersChangeAllowed.YES
+    val isSensitiveChangeAllowed: Boolean = sensitiveChangeAllowed == SensitiveChangeAllowed.YES
 
-    fun getConnectionClass(): Class<out Connection?> {
-        return connectionClass
-    }
+    fun uniqueNameHasHost(): Boolean = this !== TWITTER
+
+    fun getConnectionClass(): Class<out Connection?> = connectionClass
 
     fun getHttpConnectionClass(isOAuth: Boolean): Class<out HttpConnection?> {
         return if (fixIsOAuth(isOAuth)) {
@@ -237,21 +266,13 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
         return true
     }
 
-    override fun getCode(): String? {
-        return java.lang.Long.toString(getId())
-    }
+    override fun getCode(): String? = getId().toString()
 
-    override fun title(context: Context?): CharSequence? {
-        return title
-    }
+    override fun title(context: Context?): CharSequence? = title
 
-    override fun getDialogTitleResId(): Int {
-        return R.string.label_origin_type
-    }
+    override fun getDialogTitleResId(): Int = R.string.label_origin_type
 
-    fun getId(): Long {
-        return id
-    }
+    fun getId(): Long = id
 
     override fun toString(): String {
         return "OriginType: {id:$id, title:'$title'}"
@@ -330,12 +351,6 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
     }
 
     init {
-        hasNoteName = noteName == NoteName.YES
-        hasNoteSummary = noteSummary == NoteSummary.YES
-        visibilityChangeAllowed = publicChangeAllowed == PublicChangeAllowed.YES
-        isFollowersChangeAllowed = followersChangeAllowed == FollowersChangeAllowed.YES
-        isSensitiveChangeAllowed = sensitiveChangeAllowed == SensitiveChangeAllowed.YES
-        shortUrlLengthDefault = shortUrlLength
         when (api) {
             ApiEnum.TWITTER1P1 -> {
                 isOAuthDefault = true

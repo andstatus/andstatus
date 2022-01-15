@@ -262,6 +262,10 @@ abstract class Connection protected constructor() : IsEmpty {
         return TryUtils.emptyList()
     }
 
+    open fun getListsOfUser(userName: String): Try<List<Actor>> {
+        return TryUtils.emptyList()
+    }
+
     /**
      * Allows this Account to follow (or stop following) an actor specified in the actorOid parameter
      * @param follow true - Follow, false - Stop following

@@ -314,7 +314,12 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
         }
         fixActorUpdatedDate(activity, objActor)
         objActor.lookupActorId()
-        if (objActor.actorId != 0L && objActor.isNotFullyDefined() && objActor.isMyFriend.unknown
+        if (objActor.actorId == 0L) {
+            if (objActor.cannotAdd) {
+                MyLog.v(this) { "$method; Skipping invalid new: $objActor" }
+                return
+            }
+        } else if (objActor.isNotFullyDefined() && objActor.isMyFriend.unknown
                 && activity.followedByActor().unknown && objActor.groupType == GroupType.UNKNOWN) {
             MyLog.v(this) { "$method; Skipping existing partially defined: $objActor" }
             return

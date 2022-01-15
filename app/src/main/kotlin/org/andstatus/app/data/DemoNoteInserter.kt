@@ -42,6 +42,8 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
 import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 
 class DemoNoteInserter(val accountActor: Actor) {
     private val origin: Origin = accountActor.origin
@@ -136,7 +138,7 @@ class DemoNoteInserter(val accountActor: Actor) {
     fun onActivity(activity: AActivity) {
         NoteEditorData.recreateKnownAudience(activity)
         val ma = origin.myContext.accounts.fromActorId(accountActor.actorId)
-        Assert.assertTrue("Persistent account exists for $accountActor $activity", ma.isValid)
+        assertTrue("Persistent account exists for $accountActor $activity", ma.isValid)
         val timelineType = if (activity.getNote().audience().visibility.isPrivate) TimelineType.PRIVATE else TimelineType.HOME
         val execContext = CommandExecutionContext(origin.myContext,
                 CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType))
@@ -165,23 +167,23 @@ class DemoNoteInserter(val accountActor: Actor) {
             Assert.assertNotNull("Note permalink is a valid URL '$permalink', " +
                     "$note origin: $origin author: ${activity.getAuthor()}", urlPermalink)
             origin.url?.takeIf {origin.originType !== OriginType.TWITTER}?.let { url ->
-                Assert.assertEquals("Note permalink has the same host as origin, $note",
+                assertEquals("Note permalink has the same host as origin, $note",
                         url.host, urlPermalink?.host)
             }
             if (note.getName().isNotEmpty()) {
-                Assert.assertEquals("Note name $activity", note.getName(),
+                assertEquals("Note name $activity", note.getName(),
                         MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId))
             }
             if (note.summary.isNotEmpty()) {
-                Assert.assertEquals("Note summary $activity", note.summary,
+                assertEquals("Note summary $activity", note.summary,
                         MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, note.noteId))
             }
             if (note.content.isNotEmpty()) {
-                Assert.assertEquals("Note content $activity", note.content,
+                assertEquals("Note content $activity", note.content,
                         MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId))
             }
             if (note.url.isNotEmpty()) {
-                Assert.assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId))
+                assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId))
             }
             val author = activity.getAuthor()
             if (author.nonEmpty) {
@@ -194,15 +196,15 @@ class DemoNoteInserter(val accountActor: Actor) {
             ActivityType.LIKE -> {
                 val stargazers = MyQuery.getStargazers(origin.myContext.database, accountActor.origin, note.noteId)
                 val found = stargazers.stream().anyMatch { stargazer: Actor -> stargazer.actorId == actor.actorId }
-                Assert.assertTrue("Actor, who favorited, is not found among stargazers: $activity" +
+                assertTrue("Actor, who favorited, is not found among stargazers: $activity" +
                         "\nstargazers: $stargazers", found)
             }
             ActivityType.ANNOUNCE -> {
                 val rebloggers = MyQuery.getRebloggers(origin.myContext.database, accountActor.origin, note.noteId)
-                Assert.assertTrue("Reblogger is not found among rebloggers: $activity rebloggers: $rebloggers",
+                assertTrue("Reblogger is not found among rebloggers: $activity rebloggers: $rebloggers",
                         rebloggers.stream().anyMatch { a: Actor -> a.actorId == actor.actorId })
             }
-            ActivityType.FOLLOW -> Assert.assertTrue("Friend not found: $activity",
+            ActivityType.FOLLOW -> assertTrue("Friend not found: $activity",
                     GroupMembership.isSingleGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
             ActivityType.UNDO_FOLLOW -> Assert.assertFalse("Friend found: $activity",
                     GroupMembership.isSingleGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
@@ -241,26 +243,40 @@ class DemoNoteInserter(val accountActor: Actor) {
 
         fun checkStoredActor(actor: Actor) {
             if (actor.dontStore()) return
-            val id = actor.actorId
             if (actor.oid.isNotEmpty()) {
-                Assert.assertEquals("oid $actor", actor.oid,
-                        MyQuery.actorIdToStringColumnValue(ActorTable.ACTOR_OID, id))
+                assertEquals(
+                    "oid $actor", actor.oid,
+                    MyQuery.actorIdToStringColumnValue(ActorTable.ACTOR_OID, actor.actorId)
+                )
             }
             if (actor.getUsername().isNotEmpty()) {
-                Assert.assertEquals("Username $actor", actor.getUsername(),
-                        MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, id))
+                assertEquals(
+                    "Username $actor", actor.getUsername(),
+                    MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actor.actorId)
+                )
             }
-            val webFingerIdActual = MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id)
+            val webFingerIdActual = MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, actor.actorId)
             if (actor.getWebFingerId().isEmpty()) {
-                Assert.assertTrue("WebFingerID=$webFingerIdActual for $actor", webFingerIdActual.isEmpty()
-                        || Actor.isWebFingerIdValid(webFingerIdActual))
+                assertTrue(
+                    "WebFingerID=$webFingerIdActual for $actor", webFingerIdActual.isEmpty()
+                        || Actor.isWebFingerIdValid(webFingerIdActual)
+                )
             } else {
-                Assert.assertEquals("WebFingerID=$webFingerIdActual for $actor", actor.getWebFingerId(), webFingerIdActual)
-                Assert.assertTrue("Invalid WebFingerID $actor", Actor.isWebFingerIdValid(webFingerIdActual))
+                assertEquals("WebFingerID=$webFingerIdActual for $actor", actor.getWebFingerId(), webFingerIdActual)
+                assertTrue("Invalid WebFingerID $actor", Actor.isWebFingerIdValid(webFingerIdActual))
             }
             if (actor.getRealName().isNotEmpty()) {
-                Assert.assertEquals("Display name $actor", actor.getRealName(),
-                        MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, id))
+                assertEquals(
+                    "Display name $actor", actor.getRealName(),
+                    MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, actor.actorId)
+                )
+            }
+            if (actor.groupType.hasParentActor) {
+                assertTrue("Should have parent $actor", actor.getParentActorId() != 0L)
+                assertEquals(
+                    "Parent of $actor", actor.getParentActorId(),
+                    MyQuery.actorIdToLongColumnValue(ActorTable.PARENT_ACTOR_ID, actor.actorId)
+                )
             }
         }
 
@@ -268,12 +284,12 @@ class DemoNoteInserter(val accountActor: Actor) {
             val noteIdOld = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, noteOid)
             if (noteIdOld != 0L) {
                 val deleted: Int = MyProvider.deleteNoteAndItsActivities(origin.myContext, noteIdOld)
-                Assert.assertTrue("Activities of Old note id=$noteIdOld deleted: $deleted", deleted > 0)
+                assertTrue("Activities of Old note id=$noteIdOld deleted: $deleted", deleted > 0)
             }
         }
 
         fun addNoteForAccount(ma: MyAccount, body: String?, noteOid: String?, noteStatus: DownloadStatus): AActivity {
-            Assert.assertTrue("Is not valid: $ma", ma.isValid)
+            assertTrue("Is not valid: $ma", ma.isValid)
             val accountActor = ma.actor
             val mi = DemoNoteInserter(accountActor)
             val activity = mi.buildActivity(accountActor, "", body, null, noteOid, noteStatus)
@@ -282,39 +298,39 @@ class DemoNoteInserter(val accountActor: Actor) {
         }
 
         fun assertInteraction(activity: AActivity, eventType: NotificationEventType, notified: TriState) {
-            Assert.assertEquals("Notification event type\n$activity\n",
+            assertEquals("Notification event type\n$activity\n",
                     eventType,
                     NotificationEventType.fromId(
                             MyQuery.activityIdToLongColumnValue(ActivityTable.INTERACTION_EVENT, activity.getId())))
-            Assert.assertEquals("Interacted TriState\n$activity\n",
+            assertEquals("Interacted TriState\n$activity\n",
                     TriState.fromBoolean(eventType != NotificationEventType.EMPTY &&
                             eventType != NotificationEventType.HOME),
                     MyQuery.activityIdToTriState(ActivityTable.INTERACTED, activity.getId()))
             val notifiedActorId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED_ACTOR_ID, activity.getId())
             val message = "Notified actor ID\n$activity\n"
             if (eventType == NotificationEventType.EMPTY) {
-                Assert.assertEquals(message, 0, notifiedActorId)
+                assertEquals(message, 0, notifiedActorId)
             } else {
                 Assert.assertNotEquals(message, 0, notifiedActorId)
             }
             if (notified.known) {
-                Assert.assertEquals("Notified TriState $activity",
+                assertEquals("Notified TriState $activity",
                         notified,
                         MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()))
             }
         }
 
         fun assertStoredVisibility(activity: AActivity, expected: Visibility) {
-            Assert.assertEquals("Visibility of\n$activity\n",
+            assertEquals("Visibility of\n$activity\n",
                     expected, Visibility.fromNoteId(activity.getNote().noteId))
         }
 
         fun assertVisibility(audience: Audience, visibility: Visibility) {
-            Assert.assertEquals("Visibility check $audience\n", visibility, audience.visibility)
+            assertEquals("Visibility check $audience\n", visibility, audience.visibility)
         }
     }
 
     init {
-        Assert.assertTrue("Origin exists for $accountActor", origin.isValid)
+        assertTrue("Origin exists for $accountActor", origin.isValid)
     }
 }
