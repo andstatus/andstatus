@@ -399,7 +399,9 @@ class MyAccount internal constructor(
         val KEY_IS_SYNCED_AUTOMATICALLY: String = "sync_automatically"
         val KEY_ORDER: String = "order"
 
-        val EMPTY: MyAccount = MyAccount(AccountName.EMPTY)
+        val EMPTY: MyAccount by lazy {
+            MyAccount(AccountName.EMPTY)
+        }
         fun fromBundle(myContext: MyContext, bundle: Bundle?): MyAccount {
             return if (bundle == null) EMPTY else myContext.accounts.fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key))
         }

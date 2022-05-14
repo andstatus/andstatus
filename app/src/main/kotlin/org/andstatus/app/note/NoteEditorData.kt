@@ -377,7 +377,9 @@ class NoteEditorData private constructor(
     }
 
     companion object {
-        val EMPTY = newEmpty(MyAccount.EMPTY)
+        val EMPTY: NoteEditorData by lazy {
+            newEmpty(MyAccount.EMPTY)
+        }
         private fun toActivity(ma: MyAccount, noteId: Long, andLoad: Boolean): AActivity {
             val activity: AActivity
             if (noteId == 0L || !andLoad) {

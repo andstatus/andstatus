@@ -292,7 +292,9 @@ class Audience(val origin: Origin) {
 
     companion object {
         private val TAG: String = Audience::class.simpleName!!
-        val EMPTY: Audience = Audience( Origin.EMPTY)
+        val EMPTY: Audience by lazy {
+            Audience( Origin.EMPTY)
+        }
         private val LOAD_SQL: String = ("SELECT " + ActorSql.selectFullProjection()
                 + " FROM (" + ActorSql.allTables()
                 + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON "

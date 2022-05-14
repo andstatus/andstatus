@@ -85,6 +85,8 @@ class MyContextEmpty: MyContext {
     override val instanceId: Long = 0L
 
     companion object {
-        val EMPTY: MyContext = MyContextEmpty()
+        val EMPTY: MyContext by lazy {
+            MyContextEmpty()
+        }
     }
 }
