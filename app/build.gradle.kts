@@ -54,10 +54,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-
     packagingOptions {
-        exclude("META-INF/NOTICE")
-        exclude("META-INF/LICENSE")
+        resources {
+            excludes += setOf("META-INF/NOTICE", "META-INF/LICENSE")
+        }
     }
 
     testOptions {
