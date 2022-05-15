@@ -87,7 +87,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
 
     @JvmOverloads
     fun load(actorId: Long, reloadFirst: Boolean = false): Actor {
-        val actor: Actor = Actor.load(myContext, actorId, reloadFirst) { Actor.getEmpty() }
+        val actor: Actor = Actor.load(myContext, actorId, reloadFirst, Actor::EMPTY)
         if (reloadFirst && isMe(actor)) {
             reloadFriendsOrFollowersOfMy(GroupType.FRIENDS, friendsOfMyActors, actor)
             reloadFriendsOrFollowersOfMy(GroupType.FOLLOWERS, followersOfMyActors, actor)

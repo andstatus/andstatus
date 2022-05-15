@@ -48,7 +48,7 @@ class AllowHtmlContentTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
 
     @Test
-    fun testAllowHtlContent() {
+    fun testAllowHtmlContent() {
         val isAllowedInPumpIoStored: Boolean = DemoData.demoData.getPumpioConversationOrigin().isHtmlContentAllowed()
         val isAllowedInGnuSocialStored: Boolean = DemoData.demoData.getGnuSocialOrigin().isHtmlContentAllowed()
         HtmlContentTester().insertPumpIoHtmlContent()

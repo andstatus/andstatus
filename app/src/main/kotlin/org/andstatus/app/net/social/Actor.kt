@@ -64,13 +64,14 @@ import java.util.stream.Collectors
  * @author yvolk@yurivolkov.com
  */
 class Actor private constructor(// In our system
-        val origin: Origin,
-        val groupType: GroupType,
-        actorId: Long,
-        actorOid: String?) : Comparable<Actor>, IsEmpty {
+    val origin: Origin,
+    val groupType: GroupType,
+    @Volatile var actorId: Long,
+    actorOid: String?
+) : Comparable<Actor>, IsEmpty {
     val oid: String = if (actorOid.isNullOrEmpty()) "" else actorOid
     private var parentActorId: Long = 0
-    private var parentActor: LazyVal<Actor> = LazyVal.of(EMPTY)
+    private var parentActor: LazyVal<Actor> = LazyVal.of(::EMPTY)
     private var username: String = ""
     private var webFingerId: String = ""
     private var isWebFingerIdValid = false
@@ -94,8 +95,6 @@ class Actor private constructor(// In our system
     // Hack for Twitter-like origins...
     var isMyFriend: TriState = TriState.UNKNOWN
 
-    @Volatile
-    var actorId = actorId
     var avatarFile: AvatarFile = AvatarFile.EMPTY
 
     @Volatile
@@ -106,9 +105,9 @@ class Actor private constructor(// In our system
 
     fun getDefaultMyAccountTimelineTypes(): List<TimelineType> {
         return if (origin.originType.isPrivatePostsSupported()) TimelineType.getDefaultMyAccountTimelineTypes()
-            else TimelineType.getDefaultMyAccountTimelineTypes().stream()
-                .filter { t: TimelineType? -> t != TimelineType.PRIVATE }
-                .collect(Collectors.toList())
+        else TimelineType.getDefaultMyAccountTimelineTypes().stream()
+            .filter { t: TimelineType? -> t != TimelineType.PRIVATE }
+            .collect(Collectors.toList())
     }
 
     private fun betterToCache(other: Actor): Actor {
@@ -136,15 +135,15 @@ class Actor private constructor(// In our system
         return mbActivity
     }
 
-    fun isConstant(): Boolean {
-        return this === EMPTY || this === PUBLIC || this === FOLLOWERS
-    }
+    fun isConstant(): Boolean = this === EMPTY || this === PUBLIC || this === FOLLOWERS
 
-    override val isEmpty: Boolean get() {
-        if (this === EMPTY) return true
-        return if (isConstant()) false else !origin.isValid ||
-            actorId == 0L && UriUtils.nonRealOid(oid) && !isWebFingerIdValid() && !isUsernameValid()
-    }
+    override val isEmpty: Boolean
+        get() {
+            if (this === EMPTY) return true
+            if (isConstant()) return false
+            if (!origin.isValid) return true
+            return actorId == 0L && UriUtils.nonRealOid(oid) && !isWebFingerIdValid() && !isUsernameValid()
+        }
 
     fun dontStore(): Boolean {
         return isConstant()
@@ -170,7 +169,7 @@ class Actor private constructor(// In our system
                     parentActorId != 0L
                 } else parentActorId == 0L
             } else parentActorId == 0L
-            return isEmpty || !parentIsValid || oid.isBlank()
+            return isEmpty || !parentIsValid
         }
 
     fun isNotFullyDefined(): Boolean {
@@ -179,9 +178,10 @@ class Actor private constructor(// In our system
 
     fun isBetterToCacheThan(other: Actor): Boolean {
         if (this === other) return false
-        if (other == null || other === EMPTY ||
-                isFullyDefined() && other.isNotFullyDefined()) return true
-        if (this === EMPTY || isNotFullyDefined() && other.isFullyDefined()) return false
+        if (other.isConstant()) return true
+        if (isFullyDefined() && other.isNotFullyDefined()) return true
+        if (this === EMPTY) return false
+        if (isNotFullyDefined() && other.isFullyDefined()) return false
         return if (isFullyDefined()) {
             if (getUpdatedDate() != other.getUpdatedDate()) {
                 return getUpdatedDate() > other.getUpdatedDate()
@@ -218,19 +218,21 @@ class Actor private constructor(// In our system
             return "Actor:EMPTY"
         }
         val members: MyStringBuilder = MyStringBuilder.of("origin:" + origin.name)
-                .withComma("id", actorId)
-                .withComma("oid", oid)
-                .withComma(if (isWebFingerIdValid()) "webFingerId" else "", if (webFingerId.isEmpty()) ""
-                    else if (isWebFingerIdValid()) webFingerId else "(invalid webFingerId)")
-                .withComma("username", username)
-                .withComma("realName", realName)
-                .withComma("groupType", if (groupType == GroupType.UNKNOWN) "" else groupType)
-                .withComma("", user) { user.nonEmpty }
-                .withComma<Uri?>("profileUri", profileUri, { obj: Uri? -> UriUtils.nonEmpty(obj) })
-                .withComma<Uri?>("avatar", avatarUri, { obj: Uri? -> UriUtils.nonEmpty(obj) })
-                .withComma<AvatarFile>("avatarFile", avatarFile, { obj: AvatarFile -> obj.nonEmpty })
-                .withComma("banner", endpoints.findFirst(ActorEndpointType.BANNER).orElse(null))
-                .withComma("", "latest note present", { hasLatestNote() })
+            .withComma("id", actorId)
+            .withComma("oid", oid)
+            .withComma(
+                if (isWebFingerIdValid()) "webFingerId" else "", if (webFingerId.isEmpty()) ""
+                else if (isWebFingerIdValid()) webFingerId else "(invalid webFingerId)"
+            )
+            .withComma("username", username)
+            .withComma("realName", realName)
+            .withComma("groupType", if (groupType == GroupType.UNKNOWN) "" else groupType)
+            .withComma("", user) { user.nonEmpty }
+            .withComma<Uri?>("profileUri", profileUri, { obj: Uri? -> UriUtils.nonEmpty(obj) })
+            .withComma<Uri?>("avatar", avatarUri, { obj: Uri? -> UriUtils.nonEmpty(obj) })
+            .withComma<AvatarFile>("avatarFile", avatarFile, { obj: AvatarFile -> obj.nonEmpty })
+            .withComma("banner", endpoints.findFirst(ActorEndpointType.BANNER).orElse(null))
+            .withComma("", "latest note present", { hasLatestNote() })
         if (parentActor.isEvaluated() && parentActor.get().nonEmpty) {
             members.withComma("parent", parentActor.get())
         } else if (parentActorId != 0L) {
@@ -261,12 +263,15 @@ class Actor private constructor(// In our system
 
     fun withUniqueName(uniqueName: String?): Actor {
         uniqueNameToUsername(origin, uniqueName).ifPresent { username: String? -> setUsername(username) }
-        uniqueNameToWebFingerId(origin, uniqueName).ifPresent { webFingerIdIn: String? -> setWebFingerId(webFingerIdIn) }
+        uniqueNameToWebFingerId(
+            origin,
+            uniqueName
+        ).ifPresent { webFingerIdIn: String? -> setWebFingerId(webFingerIdIn) }
         return this
     }
 
     fun setUsername(username: String?): Actor {
-        check(!(this === EMPTY)) { "Cannot set username of EMPTY Actor" }
+        check(this !== EMPTY) { "Cannot set username of EMPTY Actor" }
         this.username = if (username.isNullOrEmpty()) "" else username.trim { it <= ' ' }
         return this
     }
@@ -335,14 +340,19 @@ class Actor private constructor(// In our system
     }
 
     fun isSameUser(other: Actor): Boolean {
-        return if (user.actorIds.isEmpty() || other.actorId == 0L) if (other.user.actorIds.isEmpty() || actorId == 0L) isSame(other) else other.user.actorIds.contains(actorId) else user.actorIds.contains(other.actorId)
+        return if (user.actorIds.isEmpty() || other.actorId == 0L) {
+            if (other.user.actorIds.isEmpty() || actorId == 0L) isSame(other)
+            else other.user.actorIds.contains(actorId)
+        } else user.actorIds.contains(other.actorId)
     }
 
     fun build(): Actor {
-        if (this === EMPTY) return this
+        if (this.isConstant()) return this
+
         connectionHost.reset()
         if (username.isEmpty() || isWebFingerIdValid) return this
-        if (username.contains("@") == true) {
+
+        if (username.contains("@")) {
             setWebFingerId(username)
         } else if (!UriUtils.isEmpty(profileUri)) {
             if (origin.isValid) {
@@ -462,17 +472,24 @@ class Actor private constructor(// In our system
      * Returns the same Actor, if not found  */
     fun toHomeOrigin(): Actor {
         return if (origin.getHost() == getIdHost()) this else user.actorIds.stream()
-                .map { id: Long -> NullUtil.getOrDefault(origin.myContext.users.actors, id, EMPTY) }
-                .filter { a: Actor -> a.nonEmpty && a.origin.getHost() == getIdHost() }
-                .findAny().orElse(this)
+            .map { id: Long -> NullUtil.getOrDefault(origin.myContext.users.actors, id, EMPTY) }
+            .filter { a: Actor -> a.nonEmpty && a.origin.getHost() == getIdHost() }
+            .findAny().orElse(this)
     }
 
     fun extractActorsFromContent(text: String?, inReplyToActorIn: Actor): List<Actor> {
-        return _extractActorsFromContent(MyHtml.htmlToCompactPlainText(text), 0, ArrayList(),
-                inReplyToActorIn.withValidUsernameAndWebfingerId())
+        return extractActorsFromContent(
+            MyHtml.htmlToCompactPlainText(text), 0, ArrayList(),
+            inReplyToActorIn.withValidUsernameAndWebfingerId()
+        )
     }
 
-    private fun _extractActorsFromContent(text: String, textStart: Int, actors: MutableList<Actor>, inReplyToActor: Actor): MutableList<Actor> {
+    private fun extractActorsFromContent(
+        text: String,
+        textStart: Int,
+        actors: MutableList<Actor>,
+        inReplyToActor: Actor
+    ): MutableList<Actor> {
         val actorReference = origin.getActorReference(text, textStart)
         if (actorReference.index < textStart) return actors
         var validUsername: String? = ""
@@ -494,7 +511,7 @@ class Actor private constructor(// In our system
         if (!validWebFingerId.isNullOrEmpty() || !validUsername.isNullOrEmpty()) {
             addExtractedActor(actors, validWebFingerId, validUsername, actorReference.groupType, inReplyToActor)
         }
-        return _extractActorsFromContent(text, ind + 1, actors, inReplyToActor)
+        return extractActorsFromContent(text, ind + 1, actors, inReplyToActor)
     }
 
     private fun withValidUsernameAndWebfingerId(): Actor {
@@ -505,8 +522,10 @@ class Actor private constructor(// In our system
         return StringUtil.nonEmptyNonTemp(username) && origin.isUsernameValid(username)
     }
 
-    private fun addExtractedActor(actors: MutableList<Actor>, webFingerId: String?, validUsername: String?,
-                                  groupType: GroupType, inReplyToActor: Actor) {
+    private fun addExtractedActor(
+        actors: MutableList<Actor>, webFingerId: String?, validUsername: String?,
+        groupType: GroupType, inReplyToActor: Actor
+    ) {
         var actor = newUnknown(origin, groupType)
         if (isWebFingerIdValid(webFingerId)) {
             actor.setWebFingerId(webFingerId)
@@ -597,7 +616,8 @@ class Actor private constructor(// In our system
         return if (MyPreferences.getShowOrigin() && nonEmpty) {
             val name = actorNameInTimeline + " / " + origin.name
             if (origin.originType === OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()
-                    && oid.isNotEmpty()) {
+                && oid.isNotEmpty()
+            ) {
                 "$name oid:$oid"
             } else name
         } else actorNameInTimeline
@@ -683,7 +703,7 @@ class Actor private constructor(// In our system
     }
 
     fun lookupUser(): Actor {
-        return if(isEmpty) this else origin.myContext.users.lookupUser(this)
+        return if (isEmpty) this else origin.myContext.users.lookupUser(this)
     }
 
     fun saveUser() {
@@ -706,8 +726,9 @@ class Actor private constructor(// In our system
         if (canGetActor()) {
             MyLog.v(this) { "Actor $this will be loaded from the Internet" }
             val command: CommandData = CommandData.newActorCommandAtOrigin(
-                    CommandEnum.GET_ACTOR, this, getUsername(), origin)
-                    .setManuallyLaunched(isManuallyLaunched)
+                CommandEnum.GET_ACTOR, this, getUsername(), origin
+            )
+                .setManuallyLaunched(isManuallyLaunched)
             MyServiceManager.sendForegroundCommand(command)
         } else {
             MyLog.v(this) { "Cannot get Actor $this" }
@@ -771,7 +792,7 @@ class Actor private constructor(// In our system
         if (this.parentActorId != parentActorId) {
             this.parentActorId = parentActorId
             parentActor = if (parentActorId == 0L) LazyVal.of(EMPTY)
-                else LazyVal.of { load(myContext, parentActorId) }
+            else LazyVal.of { load(myContext, parentActorId) }
         }
         return this
     }
@@ -789,31 +810,41 @@ class Actor private constructor(// In our system
     }
 
     companion object {
-        val EMPTY: Actor = newUnknown(Origin.EMPTY, GroupType.UNKNOWN).setUsername("Empty")
-        val TRY_EMPTY = Try.success(EMPTY)
-        val PUBLIC = fromTwoIds(Origin.EMPTY, GroupType.PUBLIC, 0,
-                "https://www.w3.org/ns/activitystreams#Public").setUsername("Public")
-        val FOLLOWERS = fromTwoIds(Origin.EMPTY, GroupType.FOLLOWERS, 0,
-                "org.andstatus.app.net.social.Actor#Followers").setUsername("Followers")
-
-        fun getEmpty(): Actor {
-            return EMPTY
+        val EMPTY: Actor by lazy {
+            newUnknown(Origin.EMPTY, GroupType.UNKNOWN).apply { username = "Empty" }
+        }
+        val TRY_EMPTY: Try<Actor> by lazy {
+            Try.success(EMPTY)
+        }
+        val PUBLIC: Actor by lazy {
+            fromTwoIds(
+                Origin.EMPTY, GroupType.PUBLIC, 0,
+                "https://www.w3.org/ns/activitystreams#Public"
+            ).apply { username = "Public" }
+        }
+        val FOLLOWERS: Actor by lazy {
+            fromTwoIds(
+                Origin.EMPTY, GroupType.FOLLOWERS, 0,
+                "org.andstatus.app.net.social.Actor#Followers"
+            ).apply { username = "Followers" }
         }
 
         fun load(myContext: MyContext, actorId: Long): Actor {
-            return load(myContext, actorId, false) { getEmpty() }
+            return load(myContext, actorId, false, ::EMPTY)
         }
 
         fun load(myContext: MyContext, actorId: Long, reloadFirst: Boolean, supplier: Supplier<Actor>): Actor {
             if (actorId == 0L) return supplier.get()
             val cached = myContext.users.actors.getOrDefault(actorId, EMPTY)
             return if (AsyncUtil.nonUiThread && (reloadFirst || cached.isNotFullyDefined()))
-                    loadFromDatabase(myContext, actorId, supplier, true).betterToCache(cached)
-                else cached
+                loadFromDatabase(myContext, actorId, supplier, true).betterToCache(cached)
+            else cached
         }
 
-        fun loadFromDatabase(myContext: MyContext, actorId: Long, supplier: Supplier<Actor>,
-                             useCache: Boolean): Actor {
+        fun loadFromDatabase(
+            myContext: MyContext, actorId: Long, supplier: Supplier<Actor>,
+            useCache: Boolean
+        ): Actor {
             val sql = ("SELECT " + ActorSql.selectFullProjection()
                     + " FROM " + ActorSql.allTables()
                     + " WHERE " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + "=" + actorId)
@@ -825,10 +856,11 @@ class Actor private constructor(// In our system
         fun fromCursor(myContext: MyContext, cursor: Cursor, useCache: Boolean): Actor {
             val updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE)
             val actor = fromTwoIds(
-                    myContext.origins.fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
-                    GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
-                    DbUtils.getLong(cursor, ActorTable.ACTOR_ID),
-                    DbUtils.getString(cursor, ActorTable.ACTOR_OID))
+                myContext.origins.fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
+                GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
+                DbUtils.getLong(cursor, ActorTable.ACTOR_ID),
+                DbUtils.getString(cursor, ActorTable.ACTOR_OID)
+            )
             actor.setParentActorId(myContext, DbUtils.getLong(cursor, ActorTable.PARENT_ACTOR_ID))
             actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME))
             actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME))
@@ -887,7 +919,9 @@ class Actor private constructor(// In our system
                             val potentialWebFingerId = uniqueName.substring(lastButOneIndex + 1)
                             if (isWebFingerIdValid(potentialWebFingerId)) {
                                 val nameBeforeLastButOneAt = uniqueName.substring(0, lastButOneIndex)
-                                if (origin.isUsernameValid(nameBeforeLastButOneAt)) return Optional.of(nameBeforeLastButOneAt)
+                                if (origin.isUsernameValid(nameBeforeLastButOneAt)) return Optional.of(
+                                    nameBeforeLastButOneAt
+                                )
                             }
                         }
                     }
@@ -913,8 +947,10 @@ class Actor private constructor(// In our system
                         }
                     }
                 } else {
-                    return Optional.of(uniqueName.toLowerCase() + "@" +
-                            origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host)
+                    return Optional.of(
+                        uniqueName.toLowerCase() + "@" +
+                                origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
+                    )
                 }
             }
             return Optional.empty()

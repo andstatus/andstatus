@@ -220,7 +220,7 @@ class DemoNoteInserter(val accountActor: Actor) {
             }
         }
         note.audience().evaluateAndGetActorsToSave(activity.getAuthor())
-                .forEach { actor1: Actor -> checkStoredActor(actor1) }
+                .forEach(::checkStoredActor)
         if (activity.getObjActor().nonEmpty) {
             Assert.assertNotEquals("Actor was not added: " + activity.getObjActor(), 0, activity.getObjActor().actorId)
         }

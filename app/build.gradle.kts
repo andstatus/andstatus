@@ -16,6 +16,7 @@ fun cancelIfNoCoverage() {
 }
 
 android {
+    namespace = "org.andstatus.app"
     compileSdk = rootProject.extra["compileSdk"] as Int
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
 
