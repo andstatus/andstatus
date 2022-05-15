@@ -36,16 +36,20 @@ class MyLogTest {
         val method = "testLogFilename"
         val isLogEnabled = MyLog.isLogToFileEnabled()
         MyLog.setLogToFile(true)
-        Assert.assertFalse(MyLog.getLogFilename().isEmpty())
+        Assert.assertFalse("1. Log filename should not be empty", MyLog.getLogFilename().isEmpty())
         MyLog.v(this, method)
-        val file = MyLog.getFileInLogDir(MyLog.getLogFilename(), true)  ?: throw IllegalStateException("No file")
-        Assert.assertTrue(file.exists())
+        val file = MyLog.getFileInLogDir(MyLog.getLogFilename(), true) ?: throw IllegalStateException("No file")
+        Assert.assertTrue("2. Log file should exist ${file.absolutePath}", file.exists())
         MyLog.setLogToFile(false)
-        Assert.assertTrue(MyLog.getLogFilename().isEmpty())
-        Assert.assertTrue(file.delete())
+        Assert.assertTrue("3. Log filename should be empty ${MyLog.getLogFilename()}", MyLog.getLogFilename().isEmpty())
+        Assert.assertTrue("4. Log file should be deleted ${file.absolutePath}", file.delete())
         MyLog.v(this, method)
-        Assert.assertEquals("", MyLog.getLogFilename())
-        Assert.assertFalse(file.exists())
+        Assert.assertEquals(
+            "5. Log filename should be an empty string ${MyLog.getLogFilename()}",
+            "",
+            MyLog.getLogFilename()
+        )
+        Assert.assertFalse("6. Log file should not exist ${file.absolutePath}", file.exists())
         if (isLogEnabled) {
             MyLog.setLogToFile(true)
         }
@@ -104,7 +108,7 @@ class MyLogTest {
         val st: String = MyLog.getStackTrace(Exception("TheTest"))
         assertThat(st, CoreMatchers.containsString("testGetStackTrace"))
         assertThat(st, CoreMatchers.containsString("\n"))
-        val stOneLine = st.replace("\n"," ")
+        val stOneLine = st.replace("\n", " ")
         assertThat(stOneLine, not(CoreMatchers.containsString("\n")))
     }
 
