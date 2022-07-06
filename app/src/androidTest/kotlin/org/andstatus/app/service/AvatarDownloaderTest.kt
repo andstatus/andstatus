@@ -116,7 +116,7 @@ class AvatarDownloaderTest {
         val viewItem = aLoader.getList()[0]
         assertTrue(
             "Should show previous avatar " + viewItem.actor,
-            viewItem.getAvatarFile().getSize().x > 0
+            viewItem.actor.avatarFile.getSize().x > 0
         )
         changeMaAvatarUrl(ma, urlStringInitial)
         val rowIdError = loadAndAssertStatusForMa(

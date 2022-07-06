@@ -90,12 +90,12 @@ class Audience(val origin: Origin) {
 
     fun evaluateAndGetActorsToSave(actorOfAudience: Actor): List<Actor> {
         if (this === EMPTY) return emptyList()
-        val toSave = actors.stream()
-                .map { actor: Actor -> lookupInActorOfAudience(actorOfAudience, actor) }
-                .collect(Collectors.toList())
+        val toSave = actors
+            .map { actor: Actor -> lookupInActorOfAudience(actorOfAudience, actor) }
+            .toMutableList()
         actors.clear()
         toSave.forEach { actor: Actor -> add(actor) }
-        if (followers === Actor.FOLLOWERS) {
+        if (followers.isConstant()) {
             followers = Group.getActorsSingleGroup(actorOfAudience, GroupType.FOLLOWERS, "")
         }
         if (!followers.isConstant()) {
@@ -329,7 +329,7 @@ class Audience(val origin: Origin) {
             audience.visibility = optVisibility.orElseGet { Visibility.fromNoteId(noteId) }
             val sql = LOAD_SQL + noteId
             val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromCursor(origin.myContext, cursor, true) }
-            MyQuery.get(origin.myContext, sql, function).forEach(Consumer { actor: Actor -> audience.add(actor) })
+            MyQuery.get(origin.myContext, sql, function).forEach(Consumer(audience::add))
             return audience
         }
 

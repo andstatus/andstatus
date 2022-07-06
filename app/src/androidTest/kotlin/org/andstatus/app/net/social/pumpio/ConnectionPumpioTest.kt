@@ -234,7 +234,7 @@ class ConnectionPumpioTest {
         Assert.assertEquals("Should be Public for now." +
                 " Followers in cc aren't recognized yet as a Followers collection..." +
                 "\n$activity", Visibility.PUBLIC, audience.visibility)
-        Assert.assertFalse("Is to Followers. We shouldn't know this yet?! $audience", audience.isFollowers())
+        Assert.assertFalse("Shouldn't be to Followers. We shouldn't know this yet?! $audience", audience.isFollowers())
         MatcherAssert.assertThat(audience.getRecipients().toString(),
                 audience.getNonSpecialActors().stream().map { obj: Actor -> obj.getUsername() }.collect(Collectors.toList()),
                 Matchers.containsInAnyOrder("user/jpope/followers"))
@@ -254,7 +254,9 @@ class ConnectionPumpioTest {
         val audienceStored = noteStored.audience()
         Assert.assertEquals("Should be Public with Followers $audienceStored",
                 Visibility.PUBLIC_AND_TO_FOLLOWERS, audienceStored.visibility)
-        Assert.assertTrue("Is not to Followers $audienceStored", audienceStored.isFollowers())
+        Assert.assertTrue(
+            "Should be to Followers $audienceStored,\n" +
+                    "Audience before storage: $audience", audienceStored.isFollowers())
         MatcherAssert.assertThat(audienceStored.getRecipients().toString(), audienceStored.getNonSpecialActors(), Matchers.`is`(Matchers.empty()))
     }
 

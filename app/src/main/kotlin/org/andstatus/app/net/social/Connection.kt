@@ -262,7 +262,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return TryUtils.emptyList()
     }
 
-    open fun getListsOfUser(userName: String): Try<List<Actor>> {
+    open fun getListsOfUser(group: Actor): Try<List<Actor>> {
         return TryUtils.emptyList()
     }
 

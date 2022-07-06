@@ -71,7 +71,8 @@ class GroupMembership private constructor(private val parentActor: Actor,
             try {
                 db.insert(GroupMembersTable.TABLE_NAME, null, cv)
             } catch (e: SQLiteConstraintException) {
-                MyLog.w(TAG, "Error adding a member to group " + group + ", parentActor:" + parentActor +
+                MyLog.w(TAG, "Error adding a member to group " + group +
+                        ", parentActor:" + parentActor +
                         "; " + cv)
             }
         }
@@ -79,6 +80,18 @@ class GroupMembership private constructor(private val parentActor: Actor,
 
     companion object {
         private val TAG: String = GroupMembership::class.simpleName!!
+
+        // TODO: Use it in org.andstatus.app.service.CommandExecutorFollowers.updateGroupMemberships
+        fun updateGroupMemberships(myContext: MyContext, parentActor: Actor, group: Actor, actorsNew: List<Actor>) {
+            val actorIdsOld: MutableSet<Long> = MyQuery.getLongs(myContext, selectGroupMemberIds(group)).toMutableSet()
+            for (actor in actorsNew) {
+                actorIdsOld.remove(actor.actorId)
+                setGroupMember(myContext, parentActor, group, TriState.TRUE, actor)
+            }
+            for (actorIdOld in actorIdsOld) {
+                setGroupMember(myContext, parentActor, group, TriState.FALSE, Actor.load(myContext, actorIdOld))
+            }
+        }
 
         fun setFriendshipAndReload(myContext: MyContext, follower: Actor, follows: TriState, friend: Actor) {
             if (!follower.isOidReal() || !friend.isOidReal() || follows.unknown || follower.isSame(friend)) return
@@ -102,12 +115,25 @@ class GroupMembership private constructor(private val parentActor: Actor,
 
         fun setSingleGroupMember(myContext: MyContext, parentActor: Actor, groupType: GroupType, isMember: TriState, member: Actor) {
             if (parentActor.actorId == 0L || member.actorId == 0L || isMember.unknown) return
-            if (!groupType.hasParentActor) throw IllegalArgumentException("No parent actor of $groupType group type for $parentActor")
+
             if (!groupType.isSingleForParent) throw IllegalArgumentException("Not a single $groupType group type for $parentActor")
-            val isMember2 = if (isMember.isTrue && parentActor.isSameUser(member)) TriState.FALSE else isMember
+            if (!groupType.hasParentActor) throw IllegalArgumentException("No parent actor of $groupType group type for $parentActor")
             val group = Group.getActorsSingleGroup(parentActor, groupType, "")
+            setGroupMember(myContext, parentActor, group, isMember, member)
+        }
+
+        fun setGroupMember(myContext: MyContext, parentActor: Actor, group: Actor, isMember: TriState, member: Actor) {
+            if (member.actorId == 0L || isMember.unknown || group.isEmpty) return
+
+            val isMember2 = if (isMember.isTrue && parentActor.isSameUser(member)) TriState.FALSE else isMember
             val membership = GroupMembership(parentActor, group, member.actorId, isMember2)
             membership.save(myContext)
+        }
+
+        fun selectGroupMemberIds(group: Actor): String {
+            return "SELECT members." + GroupMembersTable.MEMBER_ID +
+                    " FROM " + GroupMembersTable.TABLE_NAME + " AS members" +
+                    " WHERE members." + GroupMembersTable.GROUP_ID + "=" + group.actorId
         }
 
         fun selectSingleGroupMemberIds(parentActorSqlIds: SqlIds, groupType: GroupType, includeParentId: Boolean): String {

@@ -98,7 +98,7 @@ enum class OriginType(
     PUMPIO(
         2, "Pump.io", ApiEnum.PUMPIO,
         HasNoteName.YES, HasNoteSummary.NO, HasListsOfUser.NO,
-        PublicChangeAllowed.YES, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO,
+        PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.NO,
         ShortUrlLength.of(0)
     ),
     UNKNOWN(

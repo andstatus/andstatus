@@ -35,7 +35,6 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
-import org.andstatus.app.util.TryUtils.failure
 import org.andstatus.app.util.TryUtils.flatMapL
 import org.andstatus.app.util.TryUtils.toFailure
 import org.andstatus.app.util.TryUtils.toSuccess
@@ -56,8 +55,8 @@ class ConnectionMastodon : ConnectionTwitterLike() {
 
     override fun getTimelineUriBuilder(apiRoutine: ApiRoutineEnum, limit: Int, actor: Actor): Try<Uri.Builder> {
         return getApiPathWithActorId(apiRoutine, actor.oid)
-                .map { obj: Uri -> obj.buildUpon() }
-                .map { b: Uri.Builder -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
+            .map { obj: Uri -> obj.buildUpon() }
+            .map { b: Uri.Builder -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
     }
 
     override fun activityFromTwitterLikeJson(jso: JSONObject?): AActivity {
@@ -113,8 +112,10 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         return activity != null && activity.has("type")
     }
 
-    override fun searchNotes(syncYounger: Boolean, youngestPosition: TimelinePosition,
-                             oldestPosition: TimelinePosition, limit: Int, searchQuery: String): Try<InputTimelinePage> {
+    override fun searchNotes(
+        syncYounger: Boolean, youngestPosition: TimelinePosition,
+        oldestPosition: TimelinePosition, limit: Int, searchQuery: String
+    ): Try<InputTimelinePage> {
         val tag = KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword()
         if (tag.isEmpty()) {
             return InputTimelinePage.TRY_EMPTY
@@ -155,19 +156,21 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             }
     }
 
-    override fun getListsOfUser(userName: String): Try<List<Actor>> {
+    override fun getListsOfUser(group: Actor): Try<List<Actor>> {
         val apiRoutine = ApiRoutineEnum.LISTS
+        val updatedDate = MyLog.uniqueCurrentTimeMS
         return getApiPath(apiRoutine)
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
             .flatMap(::execute)
             .flatMap(HttpReadResult::list)
             .flatMapL { jso: JSONObject ->
                 try {
-                    val oid = jso.get("id").toString()
-                    val name = jso.get("title").toString()
-                    Actor.fromTwoIds(data.getOrigin(), GroupType.LISTS, 0, oid)
-                        .setUsername(name)
-                        .setParentActorId(myContext(), data.getAccountActor().actorId)
+                    val oid = MASTODON_LIST_OID_PREFIX + jso.get("id").toString()
+                    Actor.fromTwoIds(data.getOrigin(), GroupType.LIST_MEMBERS, 0, oid)
+                        .setWebFingerId(oid + "@" + data.getOriginUrl()?.host)
+                        .setParentActor(myContext(), group.getParent())
+                        .setRealName(jso.get("title").toString())
+                        .setUpdatedDate(updatedDate)
                         .toSuccess()
                 } catch (e: Exception) {
                     ConnectionException("$apiRoutine, parsing $jso", e)
@@ -182,7 +185,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
 
     override fun getConversation(conversationOid: String): Try<List<AActivity>> {
         return noteAction(ApiRoutineEnum.GET_CONVERSATION, conversationOid)
-                .map { jsonObject: JSONObject -> getConversationActivities(jsonObject, conversationOid) }
+            .map { jsonObject: JSONObject -> getConversationActivities(jsonObject, conversationOid) }
     }
 
     private fun getConversationActivities(mastodonContext: JSONObject, conversationOid: String): List<AActivity> {
@@ -192,16 +195,18 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             val ancestors = "ancestors"
             if (mastodonContext.has(ancestors)) {
                 jArrToTimeline(mastodonContext.getJSONArray(ancestors), ApiRoutineEnum.GET_CONVERSATION)
-                        .onSuccess { c: MutableList<AActivity> -> timeline.addAll(c) }
+                    .onSuccess { c: MutableList<AActivity> -> timeline.addAll(c) }
             }
             val descendants = "descendants"
             if (mastodonContext.has(descendants)) {
                 jArrToTimeline(mastodonContext.getJSONArray(descendants), ApiRoutineEnum.GET_CONVERSATION)
-                        .onSuccess { c: MutableList<AActivity> -> timeline.addAll(c) }
+                    .onSuccess { c: MutableList<AActivity> -> timeline.addAll(c) }
             }
         } catch (e: JSONException) {
-            throw ConnectionException.loggedJsonException(this, "Error getting conversation '$conversationOid'",
-                    e, mastodonContext)
+            throw ConnectionException.loggedJsonException(
+                this, "Error getting conversation '$conversationOid'",
+                e, mastodonContext
+            )
         }
         return timeline
     }
@@ -227,12 +232,12 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                     MyLog.i(this, "Skipped downloadable $attachment")
                 } else {
                     val uploaded = uploadMedia(attachment)
-                            .map { mediaObject: JSONObject? ->
-                                if (mediaObject != null && mediaObject.has("id")) {
-                                    ids.add(mediaObject["id"].toString())
-                                }
-                                AActivity.EMPTY
+                        .map { mediaObject: JSONObject? ->
+                            if (mediaObject != null && mediaObject.has("id")) {
+                                ids.add(mediaObject["id"].toString())
                             }
+                            AActivity.EMPTY
+                        }
                     if (uploaded.isFailure) return uploaded
                 }
             }
@@ -243,8 +248,8 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             return Try.failure(ConnectionException.loggedJsonException(this, "Error updating note", e, obj))
         }
         return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj)
-                .flatMap { result: HttpReadResult -> result.getJsonObject() }
-                .map { jso: JSONObject -> activityFromJson(jso) }
+            .flatMap { result: HttpReadResult -> result.getJsonObject() }
+            .map { jso: JSONObject -> activityFromJson(jso) }
     }
 
     private fun getVisibility(note: Note): String {
@@ -303,8 +308,10 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             for (ind in 0 until fields.length()) {
                 val field = fields.optJSONObject(ind)
                 if (field != null) {
-                    builder.append(JsonUtils.optString(field, "name"), JsonUtils.optString(field, "value"),
-                            "\n<br>", false)
+                    builder.append(
+                        JsonUtils.optString(field, "name"), JsonUtils.optString(field, "value"),
+                        "\n<br>", false
+                    )
                 }
             }
         }
@@ -338,15 +345,17 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 note.audience().add(actorFromJson(recipient))
             }
             ObjectOrId.of(jso, "mentions")
-                    .mapAll<Actor>({ jso1: JSONObject? -> actorFromJson(jso1) }, { oid1: String? -> Actor.EMPTY })
-                    .forEach { o: Actor -> note.audience().add(o) }
+                .mapAll<Actor>({ jso1: JSONObject? -> actorFromJson(jso1) }, { oid1: String? -> Actor.EMPTY })
+                .forEach { o: Actor -> note.audience().add(o) }
             if (!jso.isNull("application")) {
                 val application = jso.getJSONObject("application")
                 note.via = JsonUtils.optString(application, "name")
             }
             if (!jso.isNull("favourited")) {
-                note.addFavoriteBy(data.getAccountActor(),
-                        TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favourited"))))
+                note.addFavoriteBy(
+                    data.getAccountActor(),
+                    TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favourited")))
+                )
             }
 
             // If the Msg is a Reply to other note
@@ -364,14 +373,18 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToNoteOid)) {
                     // Construct Related note from available info
-                    val inReplyTo: AActivity = newPartialNote(data.getAccountActor(),
-                            Actor.fromOid(data.getOrigin(), inReplyToActorOid), inReplyToNoteOid)
+                    val inReplyTo: AActivity = newPartialNote(
+                        data.getAccountActor(),
+                        Actor.fromOid(data.getOrigin(), inReplyToActorOid), inReplyToNoteOid
+                    )
                     note.setInReplyTo(inReplyTo)
                 }
             }
             ObjectOrId.of(jso, ATTACHMENTS_FIELD_NAME).mapObjects<List<Attachment>>(jsonToAttachments(method))
-                    .forEach { attachments: List<Attachment> -> attachments
-                            .forEach { attachment: Attachment -> activity.addAttachment(attachment) } }
+                .forEach { attachments: List<Attachment> ->
+                    attachments
+                        .forEach { attachment: Attachment -> activity.addAttachment(attachment) }
+                }
         } catch (e: JSONException) {
             throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso)
         } catch (e: Exception) {
@@ -410,9 +423,10 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 if (attachment.isValid()) {
                     attachments.add(attachment)
                     val preview: Attachment = Attachment.fromUriAndMimeType(
-                            UriUtils.fromJson(jsoAttachment, "preview_url"),
-                            MyContentType.IMAGE.generalMimeType)
-                            .setPreviewOf(attachment)
+                        UriUtils.fromJson(jsoAttachment, "preview_url"),
+                        MyContentType.IMAGE.generalMimeType
+                    )
+                        .setPreviewOf(attachment)
                     attachments.add(preview)
                 } else {
                     MyLog.d(this, "$method; invalid attachment $jsoAttachment")
@@ -431,6 +445,9 @@ class ConnectionMastodon : ConnectionTwitterLike() {
     }
 
     override fun getActor2(actorIn: Actor): Try<Actor> {
+        // TODO: Mastodon does have API for this
+        if (actorIn.isListOfUsers) return Try.success(myContext().users.load(actorIn.actorId))
+
         val apiRoutine = ApiRoutineEnum.GET_ACTOR
         return getApiPathWithActorId(
             apiRoutine,
@@ -441,6 +458,11 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
             .map { jso: JSONObject? -> actorFromJson(jso) }
     }
+
+    private val Actor.isListOfUsers: Boolean
+        get() = groupType == GroupType.LISTS || oid.startsWith(
+            MASTODON_LIST_OID_PREFIX
+        )
 
     override fun follow(actorOid: String, follow: Boolean): Try<AActivity> {
         val apiRoutine = if (follow) ApiRoutineEnum.FOLLOW else ApiRoutineEnum.UNDO_FOLLOW
@@ -454,9 +476,9 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             } else {
                 val following: TriState = TriState.fromBoolean(relationship.optBoolean("following"))
                 data.getAccountActor().act(
-                        data.getAccountActor(),
-                        if (following.toBoolean(!follow) == follow) if (follow) ActivityType.FOLLOW else ActivityType.UNDO_FOLLOW else ActivityType.UPDATE,
-                        Actor.fromOid(data.getOrigin(), actorOid)
+                    data.getAccountActor(),
+                    if (following.toBoolean(!follow) == follow) if (follow) ActivityType.FOLLOW else ActivityType.UNDO_FOLLOW else ActivityType.UPDATE,
+                    Actor.fromOid(data.getOrigin(), actorOid)
                 )
             }
         }
@@ -464,8 +486,8 @@ class ConnectionMastodon : ConnectionTwitterLike() {
 
     override fun undoAnnounce(noteOid: String): Try<Boolean> {
         return postNoteAction(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid)
-                .filter { obj: JSONObject? -> Objects.nonNull(obj) }
-                .map { any: JSONObject? -> true }
+            .filter { obj: JSONObject? -> Objects.nonNull(obj) }
+            .map { any: JSONObject? -> true }
     }
 
     override fun getActors(actor: Actor, apiRoutine: ApiRoutineEnum): Try<List<Actor>> {
@@ -498,6 +520,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
     }
 
     companion object {
+        const val MASTODON_LIST_OID_PREFIX = "listofuser_"
         private val ATTACHMENTS_FIELD_NAME: String = "media_attachments"
         private val VISIBILITY_PROPERTY: String = "visibility"
         private val VISIBILITY_PUBLIC: String = "public"
@@ -527,7 +550,8 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 ApiRoutineEnum.GET_NOTE -> "v1/statuses/%noteId%"
                 ApiRoutineEnum.SEARCH_NOTES -> "v1/search" /* actually, this is a complex search "for content" */
                 ApiRoutineEnum.SEARCH_ACTORS -> "v1/accounts/search"
-                ApiRoutineEnum.LISTS -> "v1/lists"
+                ApiRoutineEnum.LISTS -> "v1/lists" // https://docs.joinmastodon.org/methods/timelines/lists/
+                ApiRoutineEnum.LIST_MEMBERS -> "v1/lists/%actorId%/accounts" // https://docs.joinmastodon.org/methods/timelines/lists/#accounts-in-a-list
                 ApiRoutineEnum.GET_CONVERSATION -> "v1/statuses/%noteId%/context"
                 ApiRoutineEnum.LIKE -> "v1/statuses/%noteId%/favourite"
                 ApiRoutineEnum.UNDO_LIKE -> "v1/statuses/%noteId%/unfavourite"

@@ -70,6 +70,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
         return onActivityInternal(activity, saveLum, 0)
     }
 
+    // TODO: return non nullable value
     private fun onActivityInternal(activity: AActivity?, saveLum: Boolean, recursing: Int): AActivity? {
         if (activity == null || activity.isEmpty || recursing > MAX_RECURSING) {
             return activity

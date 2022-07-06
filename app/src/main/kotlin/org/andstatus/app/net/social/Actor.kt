@@ -96,6 +96,9 @@ class Actor private constructor(// In our system
     var isMyFriend: TriState = TriState.UNKNOWN
 
     var avatarFile: AvatarFile = AvatarFile.EMPTY
+        /** null value really happened for [EMPTY].
+         * Caused by cyclic initialization or by lazy initialization... */
+        get() = field ?: AvatarFile.EMPTY
 
     @Volatile
     var user: User = User.EMPTY
@@ -167,8 +170,12 @@ class Actor private constructor(// In our system
             val parentIsValid = if (groupType.isGroupLike) {
                 if (groupType.hasParentActor) {
                     parentActorId != 0L
-                } else parentActorId == 0L
-            } else parentActorId == 0L
+                } else {
+                    parentActorId == 0L
+                }
+            } else {
+                parentActorId == 0L
+            }
             return isEmpty || !parentIsValid
         }
 
@@ -644,10 +651,11 @@ class Actor private constructor(// In our system
         return realName
     }
 
-    fun setRealName(realName: String?) {
+    fun setRealName(realName: String?): Actor {
         if (!realName.isNullOrEmpty() && !SharedPreferencesUtil.isEmpty(realName)) {
             this.realName = realName
         }
+        return this
     }
 
     fun getCreatedDate(): Long {
@@ -662,9 +670,12 @@ class Actor private constructor(// In our system
         return updatedDate
     }
 
-    fun setUpdatedDate(updatedDate: Long) {
-        if (this.updatedDate >= updatedDate) return
-        this.updatedDate = if (updatedDate < RelativeTime.SOME_TIME_AGO) RelativeTime.SOME_TIME_AGO else updatedDate
+    fun setUpdatedDate(updatedDate: Long): Actor {
+        if (this.updatedDate < updatedDate) {
+            this.updatedDate = if (updatedDate < RelativeTime.SOME_TIME_AGO) RelativeTime.SOME_TIME_AGO
+            else updatedDate
+        }
+        return this
     }
 
     override operator fun compareTo(other: Actor): Int {
@@ -788,6 +799,14 @@ class Actor private constructor(// In our system
         }
     }
 
+    fun setParentActor(myContext: MyContext, parentActor: Actor): Actor {
+        if (this.parentActorId != parentActor.actorId) {
+            this.parentActorId = parentActor.actorId
+            this.parentActor = LazyVal.of(parentActor)
+        }
+        return this
+    }
+
     fun setParentActorId(myContext: MyContext, parentActorId: Long): Actor {
         if (this.parentActorId != parentActorId) {
             this.parentActorId = parentActorId
@@ -810,9 +829,10 @@ class Actor private constructor(// In our system
     }
 
     companion object {
-        val EMPTY: Actor by lazy {
+        val lazyEmpty = lazy {
             newUnknown(Origin.EMPTY, GroupType.UNKNOWN).apply { username = "Empty" }
         }
+        val EMPTY: Actor by lazyEmpty
         val TRY_EMPTY: Try<Actor> by lazy {
             Try.success(EMPTY)
         }

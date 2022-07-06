@@ -19,7 +19,6 @@ import android.database.Cursor
 import org.andstatus.app.MyActivity
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyPreferences
-import org.andstatus.app.data.AvatarFile
 import org.andstatus.app.graphics.IdentifiableImageView
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
@@ -83,12 +82,8 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
         return actor.uniqueName.compareTo(other?.actor?.uniqueName ?: "")
     }
 
-    fun getAvatarFile(): AvatarFile {
-        return actor.avatarFile
-    }
-
     fun showAvatar(myActivity: MyActivity, imageView: IdentifiableImageView) {
-        getAvatarFile().showImage(myActivity, imageView)
+        actor.avatarFile.showImage(myActivity, imageView)
     }
 
     override fun fromCursor(myContext: MyContext, cursor: Cursor): ActorViewItem {

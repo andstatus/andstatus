@@ -186,15 +186,15 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
     }
 
     private fun addToAudience(activity: JSONObject, recipientField: String, recipient: Actor) {
-        val recipientId: String?
-        recipientId = if (recipient === Actor.PUBLIC) {
+        val recipientId: String = if (recipient === Actor.PUBLIC) {
             ConnectionPumpio.PUBLIC_COLLECTION_ID
         } else if (recipient.groupType == GroupType.FOLLOWERS) {
             getActor().getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString()
         } else {
             recipient.getBestUri()
         }
-        if (recipientId.isNullOrEmpty()) return
+        if (recipientId.isEmpty()) return
+
         val jsonRecipient = JSONObject()
         try {
             jsonRecipient.put("id", recipientId)

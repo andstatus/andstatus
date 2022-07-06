@@ -16,10 +16,13 @@
 package org.andstatus.app.service
 
 import io.vavr.control.Try
+import org.andstatus.app.actor.Group
+import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.data.GroupMembership
 import org.andstatus.app.data.MyProvider
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
@@ -57,7 +60,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             CommandEnum.GET_NOTE -> getNote(execContext.commandData.itemId)
             CommandEnum.GET_ACTOR -> getActorCommand(getActor(), execContext.commandData.getUsername())
             CommandEnum.SEARCH_ACTORS -> searchActors(execContext.commandData.getUsername())
-            CommandEnum.GET_LISTS -> getListsOfUser(execContext.commandData.getUsername())
+            CommandEnum.GET_LISTS -> getListsOfUser(getActor())
             CommandEnum.ANNOUNCE -> reblog(execContext.commandData.itemId)
             CommandEnum.RATE_LIMIT_STATUS -> rateLimitStatus()
             CommandEnum.GET_ATTACHMENT -> FileDownloader.newForDownloadData(execContext.myContext, DownloadData.fromId(execContext.commandData.itemId))
@@ -86,18 +89,20 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 .mapFailure { e: Throwable? -> ConnectionException.of(e, msgLog) }
     }
 
-    private fun getListsOfUser(userNameIn: String?): Try<Boolean> {
+    private fun getListsOfUser(parentActor: Actor): Try<Boolean> {
         val method = "getListsOfUser"
-        val myAccountActor = execContext.getMyAccount().actor
-        val userName = userNameIn ?: myAccountActor.getUsername()
-        val msgLog = "$method; user:$userName, origin:${myAccountActor.origin}"
+        val group = Group.getActorsSingleGroup(parentActor, GroupType.LISTS, "")
+        val msgLog = "$method; user:${parentActor.getUsername()}, origin:${parentActor.origin}"
         return getConnection()
-            .getListsOfUser(userName)
-            .map { actors: List<Actor> ->
+            .getListsOfUser(group)
+            .onSuccess { actors: List<Actor> ->
                 val dataUpdater = DataUpdater(execContext)
                 for (actor in actors) {
-                    dataUpdater.onActivity(myAccountActor.update(actor))
+                    dataUpdater.onActivity(parentActor.update(actor))
                 }
+            }
+            .map { actors: List<Actor> ->
+                GroupMembership.updateGroupMemberships(execContext.myContext, parentActor, group, actors)
                 true
             }
             .mapFailure { ConnectionException.of(it, msgLog) }

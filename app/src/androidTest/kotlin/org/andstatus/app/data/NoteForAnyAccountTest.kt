@@ -26,27 +26,27 @@ class NoteForAnyAccountTest {
     fun testAReply() {
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         assertTrue(ma.isValid)
-        val mi = DemoNoteInserter(ma)
+        val ni = DemoNoteInserter(ma)
         val accountActor = ma.actor
-        val activity1 = mi.buildActivity(accountActor, "", "My testing note", null,
+        val activity1 = ni.buildActivity(accountActor, "", "My testing note", null,
                 null, DownloadStatus.LOADED)
-        mi.onActivity(activity1)
+        ni.onActivity(activity1)
         val nfaActivity1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 activity1.getId(), activity1.getNote().noteId)
         val dataActivity1 = NoteContextMenuData(nfaActivity1, ma)
         assertTrue(dataActivity1.isAuthor)
         assertTrue(dataActivity1.isActor)
         assertTrue(dataActivity1.isSubscribed)
-        assertEquals(Visibility.PUBLIC, nfaActivity1.visibility)
+        assertEquals(Visibility.PUBLIC_AND_TO_FOLLOWERS, nfaActivity1.visibility)
         assertTrue(dataActivity1.isConversationParticipant)
         assertTrue(dataActivity1.isTiedToThisAccount())
         assertTrue(dataActivity1.hasPrivateAccess())
 
-        val author2 = mi.buildActorFromOid("acct:a2." + DemoData.demoData.testRunUid + "@pump.example.com")
-        val replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.getUsername()
+        val author2 = ni.buildActorFromOid("acct:a2." + DemoData.demoData.testRunUid + "@pump.example.com")
+        val replyTo1 = ni.buildActivity(author2, "", "@" + accountActor.getUsername()
                 + " Replying to you privately", activity1, null, DownloadStatus.LOADED)
         replyTo1.getNote().audience().visibility = Visibility.PRIVATE
-        mi.onActivity(replyTo1)
+        ni.onActivity(replyTo1)
         val nfaReplyTo1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 replyTo1.getId(), replyTo1.getNote().noteId)
         val dataReplyTo1 = NoteContextMenuData(nfaReplyTo1, ma)
@@ -57,11 +57,11 @@ class NoteForAnyAccountTest {
         assertTrue(dataReplyTo1.isTiedToThisAccount())
         assertTrue(dataReplyTo1.hasPrivateAccess())
 
-        val author3 = mi.buildActorFromOid("acct:b3." + DemoData.demoData.testRunUid + "@pumpity.example.com")
-        val reply2 = mi.buildActivity(author3, "", "@" + author2.getUsername()
+        val author3 = ni.buildActorFromOid("acct:b3." + DemoData.demoData.testRunUid + "@pumpity.example.com")
+        val reply2 = ni.buildActivity(author3, "", "@" + author2.getUsername()
                 + " Replying publicly to the second author", replyTo1, null, DownloadStatus.LOADED)
         reply2.getNote().audience().visibility = Visibility.PUBLIC_AND_TO_FOLLOWERS
-        mi.onActivity(reply2)
+        ni.onActivity(reply2)
         val nfaReply2 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 0, reply2.getNote().noteId)
         assertThat(nfaReply2.conversationParticipants.map { it.author.actor },
@@ -75,16 +75,16 @@ class NoteForAnyAccountTest {
         assertFalse(dataReply2.hasPrivateAccess())
         assertFalse(dataReply2.reblogged)
 
-        val reblogged1 = mi.buildActivity(author3, "", "@" + author2.getUsername()
+        val reblogged1 = ni.buildActivity(author3, "", "@" + author2.getUsername()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED)
-        val anotherMan = mi.buildActorFromOid("acct:c4." + DemoData.demoData.testRunUid + "@pump.example.com")
+        val anotherMan = ni.buildActorFromOid("acct:c4." + DemoData.demoData.testRunUid + "@pump.example.com")
                 .setUsername("anotherMan" + DemoData.demoData.testRunUid).build()
         val reblog1: AActivity = AActivity.Companion.from(accountActor, ActivityType.ANNOUNCE)
         reblog1.setActor(anotherMan)
         reblog1.setActivity(reblogged1)
         reblog1.setOid(MyLog.uniqueDateTimeFormatted())
         reblog1.setUpdatedNow(0)
-        mi.onActivity(reblog1)
+        ni.onActivity(reblog1)
         val nfaReblogged1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 0, reblogged1.getNote().noteId)
         val dataReblogged1 = NoteContextMenuData(nfaReblogged1, ma)
