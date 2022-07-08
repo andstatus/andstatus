@@ -187,6 +187,10 @@ class Actor private constructor(// In our system
         if (this === other) return false
         if (other.isConstant()) return true
         if (isFullyDefined() && other.isNotFullyDefined()) return true
+        if (groupType.isGroupLike && !other.groupType.isGroupLike) {
+            MyLog.v(this) { "isBetterToCacheThan : $this,\n other:$other\n${MyLog.currentStackTrace}" }
+            return true
+        }
         if (this === EMPTY) return false
         if (isNotFullyDefined() && other.isFullyDefined()) return false
         return if (isFullyDefined()) {

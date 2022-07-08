@@ -16,7 +16,6 @@
 package org.andstatus.app.net.social
 
 import org.andstatus.app.account.MyAccount
-import org.andstatus.app.actor.Group
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
@@ -24,6 +23,7 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadData
+import org.andstatus.app.data.GroupMembership
 import org.andstatus.app.data.MyContentType
 import org.andstatus.app.data.NoteForAnyAccount
 import org.andstatus.app.net.social.Audience.Companion.fromNoteId
@@ -31,6 +31,7 @@ import org.andstatus.app.net.social.ConnectionStub.Companion
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.CommandExecutionContext
+import org.andstatus.app.service.CommandExecutorOther
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RawResourceUtils
@@ -54,8 +55,10 @@ class ConnectionMastodonTest {
     @Test
     fun testGetHomeTimeline() {
         stub.addResponse(org.andstatus.app.test.R.raw.mastodon_home_timeline)
-        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
-                TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
+        val timeline = stub.connection.getTimeline(
+            true, ApiRoutineEnum.HOME_TIMELINE,
+            TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor
+        ).get()
         assertNotNull("timeline returned", timeline)
         val size = 1
         assertEquals("Number of items in the Timeline", size.toLong(), timeline.size().toLong())
@@ -64,8 +67,10 @@ class ConnectionMastodonTest {
         val note = activity.getNote()
         assertEquals("Activity oid", "22", activity.getOid())
         assertEquals("Note Oid", "22", note.oid)
-        assertEquals("Account unknown $activity", true,  myContext.accounts
-                .fromActorOfSameOrigin(activity.accountActor).isValid)
+        assertEquals(
+            "Account unknown $activity", true, myContext.accounts
+                .fromActorOfSameOrigin(activity.accountActor).isValid
+        )
         assertEquals("Is not a note $activity", AObjectType.NOTE, activity.getObjectType())
         assertEquals("Favorited $activity", TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor))
         assertEquals("Counters $activity", 678, note.getLikesCount())
@@ -89,38 +94,46 @@ class ConnectionMastodonTest {
         assertEquals("Media attachments", 2, note.attachments.size.toLong())
         val attachment = note.attachments.list[0]
         assertEquals("Content type", MyContentType.IMAGE, attachment.contentType)
-        assertEquals("Media URI", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
-                attachment.uri)
+        assertEquals(
+            "Media URI",
+            UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
+            attachment.uri
+        )
         timeline.items.forEach(Consumer { act: AActivity -> act.setUpdatedNow(0) })
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                 myContext, CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME))
+            myContext, CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME)
+        )
         DataUpdater(executionContext).onActivity(activity)
     }
 
     @Test
     fun testGetPrivateNotes() {
         stub.addResponse(org.andstatus.app.test.R.raw.mastodon_private_notes)
-        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.PRIVATE_NOTES,
-                TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor).get()
+        val timeline = stub.connection.getTimeline(
+            true, ApiRoutineEnum.PRIVATE_NOTES,
+            TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor
+        ).get()
         assertNotNull("timeline returned", timeline)
         val size = 4
         assertEquals("Number of items in the Timeline", size.toLong(), timeline.size().toLong())
         val activity3 = timeline[3] ?: throw IllegalStateException("No activity")
         val note3 = activity3.getNote()
         assertEquals("Activity oid", "104114771989428879", activity3.getOid())
-        assertEquals("Account unknown $activity3", true,  myContext.accounts
-                .fromActorOfSameOrigin(activity3.accountActor).isValid)
+        assertEquals(
+            "Account unknown $activity3", true, myContext.accounts
+                .fromActorOfSameOrigin(activity3.accountActor).isValid
+        )
         assertEquals("Is not a note $activity3", AObjectType.NOTE, activity3.getObjectType())
         assertEquals("Favorited $activity3", TriState.UNKNOWN, note3.getFavoritedBy(activity3.accountActor))
         DemoNoteInserter.Companion.assertVisibility(note3.audience(), Visibility.PRIVATE)
         assertTrue("Audience: " + note3.audience(), note3.audience().containsOid("886798"))
         assertEquals("Audience: " + note3.audience(), "lanodan@queer.hacktivis.me",
-                note3.audience().getRecipients().stream()
-                        .filter { actor: Actor -> actor.getUsername() == "lanodan" }
-                        .findAny()
-                        .map { obj: Actor -> obj.getWebFingerId() }
-                        .orElse("(not found)"))
+            note3.audience().getRecipients().stream()
+                .filter { actor: Actor -> actor.getUsername() == "lanodan" }
+                .findAny()
+                .map { obj: Actor -> obj.getWebFingerId() }
+                .orElse("(not found)"))
         val actor3 = activity3.getActor()
         val stringDate = "2016-10-14T08:05:36.581Z"
         val parsedDate = stub.connection.parseDate(stringDate)
@@ -138,7 +151,8 @@ class ConnectionMastodonTest {
         assertEquals("Media attachments", 0, note3.attachments.size.toLong())
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                 myContext, CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE))
+            myContext, CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE)
+        )
         timeline.items.forEach(Consumer { act: AActivity ->
             act.setUpdatedNow(0)
             DataUpdater(executionContext).onActivity(act)
@@ -157,8 +171,10 @@ class ConnectionMastodonTest {
 
     private fun oneVisibility(stringResponse: String, visibility: Visibility) {
         stub.getHttpStub().addResponse(stringResponse)
-        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
-                TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
+        val timeline = stub.connection.getTimeline(
+            true, ApiRoutineEnum.HOME_TIMELINE,
+            TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor
+        ).get()
         DemoNoteInserter.Companion.assertVisibility(timeline[0]!!.getNote().audience(), visibility)
     }
 
@@ -173,8 +189,10 @@ class ConnectionMastodonTest {
     @Test
     fun testGetNotifications() {
         stub.addResponse(org.andstatus.app.test.R.raw.mastodon_notifications)
-        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
-                TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor).get()
+        val timeline = stub.connection.getTimeline(
+            true, ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
+            TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor
+        ).get()
         assertNotNull("timeline returned", timeline)
         assertEquals("Number of items in the Timeline", 20, timeline.size().toLong())
         var ind = 0
@@ -195,7 +213,10 @@ class ConnectionMastodonTest {
         assertEquals("Note Oid", "4729037", activity.getNote().oid)
         assertEquals("Is not an activity $activity", AObjectType.ACTIVITY, activity.getObjectType())
         assertEquals("Is not LIKE $activity", ActivityType.LIKE, activity.type)
-        MatcherAssert.assertThat(activity.getNote().content, CoreMatchers.`is`("<p>IT infrastructure of modern church</p>"))
+        MatcherAssert.assertThat(
+            activity.getNote().content,
+            CoreMatchers.`is`("<p>IT infrastructure of modern church</p>")
+        )
         assertEquals("Favorited $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
         assertEquals("Author's username", "AndStatus", activity.getAuthor().getUsername())
         actor = activity.getActor()
@@ -259,12 +280,17 @@ class ConnectionMastodonTest {
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                 myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
+            myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123)
+        )
         DataUpdater(executionContext).onActivity(activity)
-        assertOneRecipient(activity, "AndStatus", "https://mastodon.example.com/@AndStatus",
-                "andstatus@" + accountActor.origin.getHost())
-        assertOneRecipient(activity, "qwertystop", "https://wandering.shop/@qwertystop",
-                "qwertystop@wandering.shop")
+        assertOneRecipient(
+            activity, "AndStatus", "https://mastodon.example.com/@AndStatus",
+            "andstatus@" + accountActor.origin.getHost()
+        )
+        assertOneRecipient(
+            activity, "qwertystop", "https://wandering.shop/@qwertystop",
+            "qwertystop@wandering.shop"
+        )
         DemoNoteInserter.Companion.assertVisibility(activity.getNote().audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS)
         val audience: Audience = fromNoteId(accountActor.origin, activity.getNote().noteId)
         DemoNoteInserter.Companion.assertVisibility(audience, Visibility.PUBLIC_AND_TO_FOLLOWERS)
@@ -273,7 +299,7 @@ class ConnectionMastodonTest {
     private fun assertOneRecipient(activity: AActivity, username: String?, profileUrl: String?, webFingerId: String?) {
         val audience = activity.getNote().audience()
         val actor = audience.getNonSpecialActors().stream()
-                .filter { a: Actor -> a.getUsername() == username }.findAny().orElse(Actor.EMPTY)
+            .filter { a: Actor -> a.getUsername() == username }.findAny().orElse(Actor.EMPTY)
         assertTrue("$username should be mentioned: $activity", actor.nonEmpty)
         assertEquals("Mentioned user: $activity", profileUrl, actor.getProfileUrl())
         assertEquals("Mentioned user: $activity", webFingerId, actor.getWebFingerId())
@@ -298,7 +324,8 @@ class ConnectionMastodonTest {
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                 myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
+            myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123)
+        )
         DataUpdater(executionContext).onActivity(activity)
         assertNotEquals("Activity wasn't saved $activity", 0, activity.getId())
         assertNotEquals("Reblogged note wasn't saved $activity", 0, activity.getNote().noteId)
@@ -307,23 +334,29 @@ class ConnectionMastodonTest {
     @Test
     fun tootWithVideoAttachment() {
         stub.addResponse(org.andstatus.app.test.R.raw.mastodon_video)
-        assertOneTootWithVideo("263975",
-                "https://mastodon.social/media_proxy/11640109/original",
-                "https://mastodon.social/media_proxy/11640109/small")
+        assertOneTootWithVideo(
+            "263975",
+            "https://mastodon.social/media_proxy/11640109/original",
+            "https://mastodon.social/media_proxy/11640109/small"
+        )
     }
 
     @Test
     fun originalTootWithVideoAttachment() {
         stub.addResponse(org.andstatus.app.test.R.raw.mastodon_video_original)
-        assertOneTootWithVideo("10496",
-                "https://mastodont.cat/system/media_attachments/files/000/684/914/original/7424effb937d991c.mp4?1550739268",
-                "https://mastodont.cat/system/media_attachments/files/000/684/914/small/7424effb937d991c.png?1550739268")
+        assertOneTootWithVideo(
+            "10496",
+            "https://mastodont.cat/system/media_attachments/files/000/684/914/original/7424effb937d991c.mp4?1550739268",
+            "https://mastodont.cat/system/media_attachments/files/000/684/914/small/7424effb937d991c.png?1550739268"
+        )
     }
 
     private fun assertOneTootWithVideo(actorOid: String?, videoUri: String?, previewUri: String?) {
-        val timeline = stub.connection.getTimeline(true, ApiRoutineEnum.ACTOR_TIMELINE,
-                TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20,
-                Actor.Companion.fromOid(stub.getData().getOrigin(), actorOid)).get()
+        val timeline = stub.connection.getTimeline(
+            true, ApiRoutineEnum.ACTOR_TIMELINE,
+            TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20,
+            Actor.Companion.fromOid(stub.getData().getOrigin(), actorOid)
+        ).get()
         assertNotNull("timeline returned", timeline)
         assertEquals("Number of items in the Timeline", 1, timeline.size().toLong())
         val activity = timeline[0] ?: throw IllegalStateException("No activity")
@@ -331,24 +364,30 @@ class ConnectionMastodonTest {
         assertEquals("Media attachments " + note.attachments, 2, note.attachments.size.toLong())
         val video = note.attachments.list[0]
         assertEquals("Content type", MyContentType.VIDEO, video.contentType)
-        assertEquals("Media URI", UriUtils.fromString(videoUri),
-                video.uri)
+        assertEquals(
+            "Media URI", UriUtils.fromString(videoUri),
+            video.uri
+        )
         val preview = note.attachments.list[1]
         assertEquals("Content type", MyContentType.IMAGE, preview.contentType)
-        assertEquals("Media URI", UriUtils.fromString(previewUri),
-                preview.uri)
+        assertEquals(
+            "Media URI", UriUtils.fromString(previewUri),
+            preview.uri
+        )
         assertEquals("Preview of", preview.previewOf, video)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                 myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123))
+            myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123)
+        )
         DataUpdater(executionContext).onActivity(activity)
-        val downloads: List<DownloadData> = DownloadData.Companion.fromNoteId( myContext, note.noteId)
+        val downloads: List<DownloadData> = DownloadData.Companion.fromNoteId(myContext, note.noteId)
         assertEquals("Saved downloads $downloads", 2, downloads.size.toLong())
-        val dPreview = downloads.stream().filter { d: DownloadData -> d.getContentType().isImage() }.findAny().orElse(DownloadData.Companion.EMPTY)
+        val dPreview = downloads.stream().filter { d: DownloadData -> d.getContentType().isImage() }.findAny()
+            .orElse(DownloadData.Companion.EMPTY)
         assertEquals("Preview URL $downloads", preview.uri, dPreview.getUri())
         assertEquals("Preview $downloads", 0, dPreview.getDownloadNumber())
         val dVideo = downloads.stream().filter { d: DownloadData -> d.getContentType() == MyContentType.VIDEO }
-                .findAny().orElse(DownloadData.Companion.EMPTY)
+            .findAny().orElse(DownloadData.Companion.EMPTY)
         assertNotEquals("Video URL not saved $downloads", 0, dVideo.downloadId)
         assertEquals("Preview $downloads", dVideo.downloadId, dPreview.getPreviewOfDownloadId())
         assertEquals("Video URL $downloads", video.uri, dVideo.getUri())
@@ -365,20 +404,32 @@ class ConnectionMastodonTest {
     fun testGetListsOfUser() {
         stub.addResponse(org.andstatus.app.test.R.raw.mastodon_lists_of_user)
         val expectedOid = ConnectionMastodon.MASTODON_LIST_OID_PREFIX + "19919"
-        val lists = stub.connection.getListsOfUser(
-            Group.getActorsSingleGroup(accountActor,GroupType.LISTS, "")
-        ).get()
-        assertEquals("Should be not empty", 2, lists.size)
-        val list0: Actor = lists[0]
-        assertEquals("$list0", GroupType.LIST_MEMBERS, list0.groupType)
-        assertEquals("oid $list0", expectedOid, list0.oid)
-        assertEquals("username $list0", expectedOid, list0.getUsername())
-        assertEquals("$list0", "AndStatus in Fediverse", list0.getRealName())
-        assertEquals(
-            "$list0", expectedOid + "@" + accountActor.origin.url?.host, list0.getWebFingerId()
+        val executionContext = CommandExecutionContext(
+            myContext, CommandData.Companion.newActorCommand(CommandEnum.GET_LISTS, accountActor, null)
         )
-        assertEquals("Parent should be the account actor", accountActor,  list0.getParent())
-        assertTrue("Should be fully defined: $list0", list0.isFullyDefined())
+
+        CommandExecutorOther(executionContext).getListsOfUser(accountActor) { lists ->
+            assertEquals("Should be not empty", 2, lists.size)
+            val list0: Actor = lists[0]
+            assertEquals("$list0", GroupType.LIST_MEMBERS, list0.groupType)
+            assertEquals("oid $list0", expectedOid, list0.oid)
+            assertEquals("username $list0", expectedOid, list0.getUsername())
+            assertEquals("$list0", "AndStatus in Fediverse", list0.getRealName())
+            assertEquals(
+                "$list0", expectedOid + "@" + accountActor.origin.url?.host, list0.getWebFingerId()
+            )
+            assertEquals("Parent should be the account actor", accountActor, list0.getParent())
+            assertTrue("Should be fully defined: $list0", list0.isFullyDefined())
+        }.also {
+            assertTrue("Should be success: $it", it.isSuccess)
+        }
+
+        val members = GroupMembership.getSingleGroupMemberIds(myContext, accountActor.actorId, GroupType.LISTS)
+            .map { Actor.load(myContext, it, true, Actor::EMPTY) }
+        assertEquals("Should be 2 members $members", 2, members.size)
+        val storedList = members.firstOrNull() { expectedOid == it.oid }
+        assertNotNull("$expectedOid should be a member, $members", storedList)
+        assertEquals("$expectedOid should be a group, $members", GroupType.LIST_MEMBERS, storedList?.groupType)
     }
 
 }

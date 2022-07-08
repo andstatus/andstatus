@@ -89,13 +89,14 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 .mapFailure { e: Throwable? -> ConnectionException.of(e, msgLog) }
     }
 
-    private fun getListsOfUser(parentActor: Actor): Try<Boolean> {
+    fun getListsOfUser(parentActor: Actor, connectionResultConsumer: (result: List<Actor>) -> Unit = {} ): Try<Boolean> {
         val method = "getListsOfUser"
         val group = Group.getActorsSingleGroup(parentActor, GroupType.LISTS, "")
         val msgLog = "$method; user:${parentActor.getUsername()}, origin:${parentActor.origin}"
         return getConnection()
             .getListsOfUser(group)
             .onSuccess { actors: List<Actor> ->
+                connectionResultConsumer(actors)
                 val dataUpdater = DataUpdater(execContext)
                 for (actor in actors) {
                     dataUpdater.onActivity(parentActor.update(actor))
