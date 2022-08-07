@@ -71,12 +71,13 @@ class HelpActivity : MyActivity(HelpActivity::class) {
         if (intent.hasExtra(EXTRA_IS_FIRST_ACTIVITY)) {
             mIsFirstActivity = intent.getBooleanExtra(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity)
         }
-        if (MyContextHolder.myContextHolder.getNow().accounts.currentAccount.nonValid
-            && MyContextHolder.myContextHolder.executionMode == ExecutionMode.ROBO_TEST && !generatingDemoData) {
+        if (MyContextHolder.myContextHolder.getBlocking().accounts.currentAccount.nonValid
+            && MyContextHolder.myContextHolder.executionMode == ExecutionMode.ROBO_TEST && !generatingDemoData
+        ) {
             progressListener.cancel()
             generatingDemoData = true
             progressListener = DefaultProgressListener(this, R.string.app_name, "GenerateDemoData")
-            DemoData.demoData.addAsync( MyContextHolder.myContextHolder.getNow(), progressListener)
+            DemoData.demoData.addAsync(MyContextHolder.myContextHolder.getBlocking(), progressListener)
         }
         showRestoreButton()
         showGetStartedButton()
@@ -102,7 +103,8 @@ class HelpActivity : MyActivity(HelpActivity::class) {
     private fun showRestoreButton() {
         val restoreButton = findViewById<Button?>(R.id.button_restore)
         if (!generatingDemoData
-                &&  MyContextHolder.myContextHolder.getNow().isReady &&  MyContextHolder.myContextHolder.getNow().accounts.isEmpty) {
+            && MyContextHolder.myContextHolder.getNow().isReady && MyContextHolder.myContextHolder.getNow().accounts.isEmpty
+        ) {
             restoreButton.setOnClickListener { v: View? ->
                 startActivity(Intent(this@HelpActivity, RestoreActivity::class.java))
                 finish()
@@ -117,14 +119,14 @@ class HelpActivity : MyActivity(HelpActivity::class) {
         val getStarted = findViewById<Button?>(R.id.button_help_get_started)
         getStarted.visibility = if (generatingDemoData) View.GONE else View.VISIBLE
         getStarted.setOnClickListener { v: View? ->
-            if ( MyContextHolder.myContextHolder.getFuture().isCompletedExceptionally()) {
-                 MyContextHolder.myContextHolder.initialize(this).thenStartApp()
+            if (MyContextHolder.myContextHolder.getFuture().isCompletedExceptionally()) {
+                MyContextHolder.myContextHolder.initialize(this).thenStartApp()
                 return@setOnClickListener
             }
-            when ( MyContextHolder.myContextHolder.getNow().state) {
+            when (MyContextHolder.myContextHolder.getNow().state) {
                 MyContextState.READY -> {
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(this@HelpActivity, true)
-                    if ( MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
+                    if (MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
                         startActivity(Intent(this@HelpActivity, TimelineActivity::class.java))
                     } else {
                         startActivity(Intent(this@HelpActivity, AccountSettingsActivity::class.java))
@@ -132,46 +134,60 @@ class HelpActivity : MyActivity(HelpActivity::class) {
                     finish()
                 }
                 MyContextState.NO_PERMISSIONS ->                     // Actually this is not used for now...
-                    Permissions.checkPermissionAndRequestIt(this@HelpActivity,
-                            PermissionType.GET_ACCOUNTS)
-                MyContextState.UPGRADING -> DialogFactory.showOkAlertDialog(this@HelpActivity, this@HelpActivity,
-                        R.string.app_name, R.string.label_upgrading)
-                MyContextState.DATABASE_UNAVAILABLE -> DialogFactory.showOkAlertDialog(this@HelpActivity, this@HelpActivity,
-                        R.string.app_name, R.string.database_unavailable_description)
-                else -> DialogFactory.showOkAlertDialog(this@HelpActivity, this@HelpActivity,
-                        R.string.app_name, R.string.loading)
+                    Permissions.checkPermissionAndRequestIt(
+                        this@HelpActivity,
+                        PermissionType.GET_ACCOUNTS
+                    )
+                MyContextState.UPGRADING -> DialogFactory.showOkAlertDialog(
+                    this@HelpActivity, this@HelpActivity,
+                    R.string.app_name, R.string.label_upgrading
+                )
+                MyContextState.DATABASE_UNAVAILABLE -> DialogFactory.showOkAlertDialog(
+                    this@HelpActivity, this@HelpActivity,
+                    R.string.app_name, R.string.database_unavailable_description
+                )
+                else -> DialogFactory.showOkAlertDialog(
+                    this@HelpActivity, this@HelpActivity,
+                    R.string.app_name, R.string.loading
+                )
             }
         }
-        if ( MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
+        if (MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
             getStarted.setText(R.string.button_skip)
         }
     }
 
     class LogoFragment : Fragment() {
-        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                                  savedInstanceState: Bundle?): View? {
+        override fun onCreateView(
+            inflater: LayoutInflater, container: ViewGroup?,
+            savedInstanceState: Bundle?
+        ): View? {
             val view = inflater.inflate(R.layout.splash, container, false)
             showVersionText(inflater.context, view)
-            ViewUtils.showView(view, R.id.system_info_section, MyPreferences.isShowDebuggingInfoInUi()
-                    || MyContextHolder.myContextHolder.executionMode != ExecutionMode.DEVICE)
+            ViewUtils.showView(
+                view, R.id.system_info_section, MyPreferences.isShowDebuggingInfoInUi()
+                        || MyContextHolder.myContextHolder.executionMode != ExecutionMode.DEVICE
+            )
             if (MyPreferences.isShowDebuggingInfoInUi()) {
-                MyUrlSpan.showText(view, R.id.system_info,
-                         MyContextHolder.myContextHolder.getSystemInfo(inflater.context, false),
-                        false, false)
+                MyUrlSpan.showText(
+                    view, R.id.system_info,
+                    MyContextHolder.myContextHolder.getSystemInfo(inflater.context, false),
+                    false, false
+                )
             }
             return view
         }
 
         private fun showVersionText(context: Context?, parentView: View) {
             val versionText = parentView.findViewById<TextView?>(R.id.splash_application_version)
-            val text: MyStringBuilder = MyStringBuilder.of( MyContextHolder.myContextHolder.getVersionText(context))
-            if (! MyContextHolder.myContextHolder.getNow().isReady) {
+            val text: MyStringBuilder = MyStringBuilder.of(MyContextHolder.myContextHolder.getVersionText(context))
+            if (!MyContextHolder.myContextHolder.getNow().isReady) {
                 text.withSpace(MyContextHolder.myContextHolder.getNow().state.toString())
                 text.withSpace(MyContextHolder.myContextHolder.getNow().lastDatabaseError)
             }
-             MyContextHolder.myContextHolder.tryNow().onFailure { e: Throwable ->
-                 text.append(" ${e.message} \n${MyLog.getStackTrace(e)}")
-             }
+            MyContextHolder.myContextHolder.tryNow().onFailure { e: Throwable ->
+                text.append(" ${e.message} \n${MyLog.getStackTrace(e)}")
+            }
             versionText.text = text.toString()
             versionText.setOnClickListener { v: View? ->
                 val intent = Intent(Intent.ACTION_VIEW)
@@ -197,14 +213,15 @@ class HelpActivity : MyActivity(HelpActivity::class) {
                 }
             }
         })
-        if (ViewUtils.showView(this, R.id.button_help_learn_more,  MyContextHolder.myContextHolder.getNow().isReady)) {
+        if (ViewUtils.showView(this, R.id.button_help_learn_more, MyContextHolder.myContextHolder.getNow().isReady)) {
             val learnMore = findViewById<Button?>(R.id.button_help_learn_more)
             learnMore.setOnClickListener { v: View? ->
                 val adapter = flipper.getAdapter()
                 if (adapter != null) {
                     flipper.setCurrentItem(
-                            if (flipper.getCurrentItem() >= adapter.count - 1) 0 else flipper.getCurrentItem() + 1,
-                            true)
+                        if (flipper.getCurrentItem() >= adapter.count - 1) 0 else flipper.getCurrentItem() + 1,
+                        true
+                    )
                 }
             }
         }
@@ -239,9 +256,10 @@ class HelpActivity : MyActivity(HelpActivity::class) {
 
     override fun onResume() {
         super.onResume()
-         MyContextHolder.myContextHolder.upgradeIfNeeded(this)
+        MyContextHolder.myContextHolder.upgradeIfNeeded(this)
         if (wasPaused && mIsFirstActivity
-                &&  MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
+            && MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid
+        ) {
             // We assume that user pressed back after adding first account
             val intent = Intent(this, TimelineActivity::class.java)
             startActivity(intent)
@@ -255,7 +273,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
-         MyContextHolder.myContextHolder.getNow().setExpired { "onRequestPermissionsResult" }
+        MyContextHolder.myContextHolder.getNow().setExpired { "onRequestPermissionsResult" }
         recreate()
     }
 
@@ -293,7 +311,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
             intent.putExtra(EXTRA_HELP_PAGE_INDEX, pageIndex)
             if (context is Activity) {
                 context.startActivity(intent)
-                MyLog.v(HelpActivity::class) { "Finishing " + context::class.simpleName + " and starting me"}
+                MyLog.v(HelpActivity::class) { "Finishing " + context::class.simpleName + " and starting me" }
                 context.finish()
             } else {
                 MyLog.v(HelpActivity::class) {

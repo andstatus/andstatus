@@ -64,11 +64,15 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     private var newNotificationEventType: NotificationEventType = NotificationEventType.EMPTY
 
     fun initializePublicAndFollowers() {
-        val visibility = getNote().getInReplyTo().note.audience().visibility
-        getNote().audience().visibility =
+        val note1 = getNote()
+        val visibility = if (note1.isEmpty) {
+            Visibility.UNKNOWN
+        } else {
+            note1.getInReplyTo().note.audience().visibility
+        }
+        note1.audience().visibility =
             if (visibility.isKnown()) visibility else
                 Visibility.fromCheckboxes(true, accountActor.origin.originType.isFollowersChangeAllowed)
-
     }
 
     fun getActor(): Actor {
@@ -160,10 +164,11 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
 
     private fun buildTempOid(): String {
         return StringUtil.toTempOid(
-                getActorPrefix() +
-                        type.name.toLowerCase() + "-" +
-                        (if (!getNote().oid.isNullOrEmpty()) getNote().oid + "-" else "") +
-                        MyLog.uniqueDateTimeFormatted())
+            getActorPrefix() +
+                    type.name.toLowerCase() + "-" +
+                    (if (!getNote().oid.isNullOrEmpty()) getNote().oid + "-" else "") +
+                    MyLog.uniqueDateTimeFormatted()
+        )
     }
 
     private fun getActorPrefix(): String {
@@ -244,20 +249,20 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
         return if (this === EMPTY) {
             "EMPTY"
         } else "AActivity{" +
-            (if (isEmpty) "(empty), " else "") + type +
-            ", id:" + id +
-            ", oid:" + oid +
-            ", updated:" + MyLog.debugFormatOfDate(updatedDate) +
-            ", me:" + (if (accountActor.isEmpty) "EMPTY" else accountActor.oid) +
-            (if (subscribedByMe.known) if (subscribedByMe == TriState.TRUE) ", subscribed" else ", NOT subscribed" else "") +
-            (if (interacted.isTrue) ", interacted" else "") +
-            (if (notified.isTrue) ", notified" + (if (notifiedActor.isEmpty) " ???" else "Actor:$objActor") else "") +
-            (if (newNotificationEventType.isEmpty) "" else ", $newNotificationEventType") +
-            (if (actor.isEmpty) "" else ", \nactor:$actor") +
-            (if (note.isEmpty) "" else ", \nnote:$note") +
-            (if (getActivity().isEmpty) "" else ", activity:${getActivity()} ") +
-            (if (objActor.isEmpty) "" else ", objActor:$objActor") +
-            "}"
+                (if (isEmpty) "(empty), " else "") + type +
+                ", id:" + id +
+                ", oid:" + oid +
+                ", updated:" + MyLog.debugFormatOfDate(updatedDate) +
+                ", me:" + (if (accountActor.isEmpty) "EMPTY" else accountActor.oid) +
+                (if (subscribedByMe.known) if (subscribedByMe == TriState.TRUE) ", subscribed" else ", NOT subscribed" else "") +
+                (if (interacted.isTrue) ", interacted" else "") +
+                (if (notified.isTrue) ", notified" + (if (notifiedActor.isEmpty) " ???" else "Actor:$objActor") else "") +
+                (if (newNotificationEventType.isEmpty) "" else ", $newNotificationEventType") +
+                (if (actor.isEmpty) "" else ", \nactor:$actor") +
+                (if (note.isEmpty) "" else ", \nnote:$note") +
+                (if (getActivity().isEmpty) "" else ", activity:${getActivity()} ") +
+                (if (objActor.isEmpty) "" else ", objActor:$objActor") +
+                "}"
     }
 
     fun getId(): Long {
@@ -285,15 +290,15 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
         if (updatedDate > RelativeTime.SOME_TIME_AGO) calculateInteraction(myContext)
         if (getId() == 0L) {
             DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3)
-                    .onSuccess { idAdded: Long ->
-                        id = idAdded
-                        MyLog.v(this) { "Added $this" }
-                    }
-                    .onFailure { e: Throwable? -> MyLog.w(this, "Failed to add $this", e) }
+                .onSuccess { idAdded: Long ->
+                    id = idAdded
+                    MyLog.v(this) { "Added $this" }
+                }
+                .onFailure { e: Throwable? -> MyLog.w(this, "Failed to add $this", e) }
         } else {
             DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, getId(), toContentValues(), 3)
-                    .onSuccess { _ -> MyLog.v(this) { "Updated $this" } }
-                    .onFailure { e: Throwable? -> MyLog.w(this, "Failed to update $this", e) }
+                .onSuccess { _ -> MyLog.v(this) { "Updated $this" } }
+                .onFailure { e: Throwable? -> MyLog.w(this, "Failed to update $this", e) }
         }
         afterSave(myContext)
         return id
@@ -301,7 +306,8 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
 
     private fun wontSave(myContext: MyContext): Boolean {
         if (isEmpty || type == ActivityType.UPDATE && getObjectType() == AObjectType.ACTOR
-                || oid.isNullOrEmpty() && getId() != 0L) {
+            || oid.isNullOrEmpty() && getId() != 0L
+        ) {
             MyLog.v(this) { "Won't save $this" }
             return true
         }
@@ -311,7 +317,8 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             findExisting(myContext)
         }
         storedUpdatedDate = MyQuery.idToLongColumnValue(
-                myContext.database, ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id)
+            myContext.database, ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id
+        )
         if (getId() != 0L) {
             if (updatedDate <= storedUpdatedDate) {
                 MyLog.v(this) { "Skipped as not younger $this" }
@@ -319,19 +326,25 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             }
             when (type) {
                 ActivityType.LIKE, ActivityType.UNDO_LIKE -> {
-                    val favAndType = MyQuery.noteIdToLastFavoriting(myContext.database,
-                            getNote().noteId, accountActor.actorId)
+                    val favAndType = MyQuery.noteIdToLastFavoriting(
+                        myContext.database,
+                        getNote().noteId, accountActor.actorId
+                    )
                     if (favAndType.second == ActivityType.LIKE && type == ActivityType.LIKE
-                            || favAndType.second == ActivityType.UNDO_LIKE && type == ActivityType.UNDO_LIKE) {
+                        || favAndType.second == ActivityType.UNDO_LIKE && type == ActivityType.UNDO_LIKE
+                    ) {
                         MyLog.v(this) { "Skipped as already " + type.name + " " + this }
                         return true
                     }
                 }
                 ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE -> {
-                    val reblAndType = MyQuery.noteIdToLastReblogging(myContext.database,
-                            getNote().noteId, accountActor.actorId)
+                    val reblAndType = MyQuery.noteIdToLastReblogging(
+                        myContext.database,
+                        getNote().noteId, accountActor.actorId
+                    )
                     if (reblAndType.second == ActivityType.ANNOUNCE && type == ActivityType.ANNOUNCE
-                            || reblAndType.second == ActivityType.UNDO_ANNOUNCE && type == ActivityType.UNDO_ANNOUNCE) {
+                        || reblAndType.second == ActivityType.UNDO_ANNOUNCE && type == ActivityType.UNDO_ANNOUNCE
+                    ) {
                         MyLog.v(this) { "Skipped as already " + type.name + " " + this }
                         return true
                     }
@@ -355,9 +368,11 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             return
         }
         if (getNote().noteId != 0L && (type == ActivityType.UPDATE || type == ActivityType.CREATE)) {
-            id = MyQuery.conditionToLongColumnValue(myContext.database, "", ActivityTable.TABLE_NAME,
-                    BaseColumns._ID, ActivityTable.NOTE_ID + "=" + getNote().noteId + " AND "
-                    + ActivityTable.ACTIVITY_TYPE + "=" + type.id)
+            id = MyQuery.conditionToLongColumnValue(
+                myContext.database, "", ActivityTable.TABLE_NAME,
+                BaseColumns._ID, ActivityTable.NOTE_ID + "=" + getNote().noteId + " AND "
+                        + ActivityTable.ACTIVITY_TYPE + "=" + type.id
+            )
         }
     }
 
@@ -370,13 +385,17 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             notified = TriState.fromBoolean(myContext.notifier.isEnabled(newNotificationEventType))
         }
         if (isNotified().isTrue) {
-            MyLog.i("NewNotification", newNotificationEventType.name +
-                    " " + accountActor.origin.name +
-                    " " + accountActor.uniqueName +
-                    " " + MyLog.formatDateTime(getUpdatedDate()) +
-                    " " + actor.actorNameInTimeline + " " + type +
-                    (if (getNote().nonEmpty) " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().content, 300) else "") +
-                    if (getObjActor().nonEmpty) " " + getObjActor().actorNameInTimeline else ""
+            MyLog.i(
+                "NewNotification", newNotificationEventType.name +
+                        " " + accountActor.origin.name +
+                        " " + accountActor.uniqueName +
+                        " " + MyLog.formatDateTime(getUpdatedDate()) +
+                        " " + actor.actorNameInTimeline + " " + type +
+                        (if (getNote().nonEmpty) " '" + getNote().oid + "' " + I18n.trimTextAt(
+                            getNote().content,
+                            300
+                        ) else "") +
+                        if (getObjActor().nonEmpty) " " + getObjActor().actorNameInTimeline else ""
             )
         }
     }
@@ -389,10 +408,12 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
         return if (type == ActivityType.ANNOUNCE && myContext.users.isMe(getAuthor())) {
             NotificationEventType.ANNOUNCE
         } else if ((type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
-                && myContext.users.isMe(getAuthor())) {
+            && myContext.users.isMe(getAuthor())
+        ) {
             NotificationEventType.LIKE
         } else if ((type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
-                && myContext.users.isMe(getObjActor())) {
+            && myContext.users.isMe(getObjActor())
+        ) {
             NotificationEventType.FOLLOW
         } else if (isSubscribedByMe().isTrue) {
             NotificationEventType.HOME
@@ -404,14 +425,14 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     private fun calculateNotifiedActor(myContext: MyContext, event: NotificationEventType): Actor {
         return when (event) {
             NotificationEventType.MENTION, NotificationEventType.PRIVATE -> myContext.users.myActors.values.stream()
-                    .filter { actor: Actor -> getNote().audience().findSame(actor).isSuccess }
-                    .findFirst()
-                    .orElse(
-                            myContext.users.myActors.values.stream()
-                                    .filter { a: Actor -> a.origin == accountActor.origin }
-                                    .findFirst()
-                                    .orElse(Actor.EMPTY)
-                    )
+                .filter { actor: Actor -> getNote().audience().findSame(actor).isSuccess }
+                .findFirst()
+                .orElse(
+                    myContext.users.myActors.values.stream()
+                        .filter { a: Actor -> a.origin == accountActor.origin }
+                        .findFirst()
+                        .orElse(Actor.EMPTY)
+                )
             NotificationEventType.ANNOUNCE, NotificationEventType.LIKE -> getAuthor()
             NotificationEventType.FOLLOW -> getObjActor()
             NotificationEventType.HOME -> accountActor
@@ -493,8 +514,10 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     companion object {
         val EMPTY: AActivity = from(Actor.EMPTY, ActivityType.EMPTY)
         val TRY_EMPTY = Try.success(EMPTY)
-        fun fromInner(actor: Actor, type: ActivityType,
-                      innerActivity: AActivity): AActivity {
+        fun fromInner(
+            actor: Actor, type: ActivityType,
+            innerActivity: AActivity
+        ): AActivity {
             val activity = AActivity(innerActivity.accountActor, type)
             activity.setActor(actor)
             activity.setActivity(innerActivity)
@@ -507,15 +530,20 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
         }
 
         @JvmOverloads
-        fun newPartialNote(accountActor: Actor, actor: Actor, noteOid: String?,
-                           updatedDate: Long = RelativeTime.DATETIME_MILLIS_NEVER,
-                           status: DownloadStatus = DownloadStatus.UNKNOWN): AActivity {
+        fun newPartialNote(
+            accountActor: Actor, actor: Actor, noteOid: String?,
+            updatedDate: Long = RelativeTime.DATETIME_MILLIS_NEVER,
+            status: DownloadStatus = DownloadStatus.UNKNOWN
+        ): AActivity {
             val note: Note = Note.fromOriginAndOid(accountActor.origin, noteOid, status)
             val activity = from(accountActor, ActivityType.UPDATE)
             activity.setActor(actor)
             activity.setOid(
-                    StringUtil.toTempOidIf(StringUtil.isEmptyOrTemp(note.oid),
-                            activity.getActorPrefix() + StringUtil.stripTempPrefix(note.oid)))
+                StringUtil.toTempOidIf(
+                    StringUtil.isEmptyOrTemp(note.oid),
+                    activity.getActorPrefix() + StringUtil.stripTempPrefix(note.oid)
+                )
+            )
             activity.setNote(note)
             note.updatedDate = updatedDate
             activity.setUpdatedDate(updatedDate)
@@ -524,26 +552,35 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
 
         fun fromCursor(myContext: MyContext, cursor: Cursor): AActivity {
             val activity = from(
-                    myContext.accounts.fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).actor,
-                    ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)))
+                myContext.accounts.fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).actor,
+                ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
+            )
             activity.id = DbUtils.getLong(cursor, BaseColumns._ID)
             activity.setOid(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID))
-            activity.actor = Actor.fromId(activity.accountActor.origin,
-                    DbUtils.getLong(cursor, ActivityTable.ACTOR_ID))
+            activity.actor = Actor.fromId(
+                activity.accountActor.origin,
+                DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)
+            )
             activity.note = Note.fromOriginAndOid(activity.accountActor.origin, "", DownloadStatus.UNKNOWN)
-            activity.objActor = Actor.fromId(activity.accountActor.origin,
-                    DbUtils.getLong(cursor, ActivityTable.OBJ_ACTOR_ID))
+            activity.objActor = Actor.fromId(
+                activity.accountActor.origin,
+                DbUtils.getLong(cursor, ActivityTable.OBJ_ACTOR_ID)
+            )
             activity.aActivity = from(activity.accountActor, ActivityType.EMPTY)
             activity.aActivity.id = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTIVITY_ID)
             activity.subscribedByMe = DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED)
             activity.interacted = DbUtils.getTriState(cursor, ActivityTable.INTERACTED)
             activity.interactionEventType = NotificationEventType.fromId(
-                    DbUtils.getLong(cursor, ActivityTable.INTERACTION_EVENT))
+                DbUtils.getLong(cursor, ActivityTable.INTERACTION_EVENT)
+            )
             activity.notified = DbUtils.getTriState(cursor, ActivityTable.NOTIFIED)
-            activity.notifiedActor = Actor.fromId(activity.accountActor.origin,
-                    DbUtils.getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID))
+            activity.notifiedActor = Actor.fromId(
+                activity.accountActor.origin,
+                DbUtils.getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID)
+            )
             activity.newNotificationEventType = NotificationEventType.fromId(
-                    DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT))
+                DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)
+            )
             activity.updatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE)
             activity.storedUpdatedDate = activity.updatedDate
             activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE)
