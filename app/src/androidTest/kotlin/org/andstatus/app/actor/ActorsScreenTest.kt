@@ -79,7 +79,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
                 .findAny().orElse(Actor.EMPTY)
         Assert.assertTrue("Found " + DemoData.demoData.conversationAuthorThirdActorOid
                 + " cached " +  MyContextHolder.myContextHolder.getNow().users.actors, actorE.nonEmpty)
-        val actorA: Actor = getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
+        val actorA: Actor = listItems.actorByOid(DemoData.demoData.conversationAuthorThirdActorOid)
         Assert.assertTrue("Not found " + DemoData.demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty)
         compareAttributes(actorE, actorA, false)
         val actorsScreenHelper = ListActivityTestHelper(actorsScreen)
@@ -129,13 +129,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     companion object {
-        fun getByActorOid(listItems: MutableList<ActorViewItem>, oid: String?): Actor {
-            for (item in listItems) {
-                if (item.actor.oid == oid) {
-                    return item.actor
-                }
-            }
-            return Actor.EMPTY
-        }
+        fun List<ActorViewItem>.actorByOid(oid: String?): Actor = map(ActorViewItem::actor)
+            .find{ oid.equals(it.oid)} ?: Actor.EMPTY
     }
 }

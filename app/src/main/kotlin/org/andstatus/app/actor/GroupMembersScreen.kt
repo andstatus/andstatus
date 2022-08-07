@@ -17,9 +17,7 @@ package org.andstatus.app.actor
 
 import android.os.Bundle
 import org.andstatus.app.R
-import org.andstatus.app.net.social.Actor
 import org.andstatus.app.service.CommandData
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
 
 /**
@@ -27,17 +25,15 @@ import org.andstatus.app.service.MyServiceManager
  */
 class GroupMembersScreen : ActorsScreen(GroupMembersScreen::class) {
 
-    private val parentActorId: Long get() = centralItemId
-
     override fun syncWithInternet(manuallyLaunched: Boolean) {
         showSyncing("syncWithInternet", getText(R.string.options_menu_sync))
-        CommandData.newActorCommand(actorsScreenType.syncCommand, Actor.load(myContext, parentActorId), "")
+        CommandData.newActorCommand(actorsScreenType.syncCommand, centralActor, "")
             .setManuallyLaunched(manuallyLaunched)
             .let(MyServiceManager::sendForegroundCommand)
     }
 
     override fun newSyncLoader(args: Bundle?): ActorsLoader {
         return GroupMembersLoader(myContext, actorsScreenType, parsedUri.getOrigin(myContext),
-            parentActorId, parsedUri.searchQuery)
+            centralActor, parsedUri.searchQuery)
     }
 }

@@ -17,6 +17,7 @@ package org.andstatus.app.actor
 
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.data.GroupMembership
+import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
 
 /**
@@ -26,20 +27,23 @@ class GroupMembersLoader(
     myContext: MyContext,
     actorsScreenType: ActorsScreenType,
     origin: Origin,
-    val parentActorId: Long, searchQuery: String
+    val actorIn: Actor, searchQuery: String
 ) : ActorsLoader(
     myContext,
     if (actorsScreenType.groupType == GroupType.NOT_A_GROUP)
         throw IllegalArgumentException("Not a group: $actorsScreenType") else actorsScreenType,
-    origin, parentActorId, searchQuery
+    origin, actorIn.actorId, searchQuery
 ) {
 
     override fun getSqlActorIds(): String {
-        return " IN (" + GroupMembership.selectSingleGroupMemberIds(
-            listOf(parentActorId),
-            actorsScreenType.groupType,
-            false
-        ) + ")"
+        return if (actorsScreenType.groupType.isSingleForParent)
+            " IN (" + GroupMembership.selectSingleGroupMemberIds(
+                listOf(actorIn.actorId),
+                actorsScreenType.groupType,
+                false
+            ) + ")"
+        else
+            " IN (" + GroupMembership.selectGroupMemberIds(actorIn) + ")"
     }
 
     override fun getSubtitle(): String {

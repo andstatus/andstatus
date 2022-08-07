@@ -47,6 +47,7 @@ import kotlin.reflect.KClass
 open class ActorsScreen(clazz: KClass<*> = ActorsScreen::class) : NoteEditorListActivity<ActorViewItem>(clazz) {
     protected var actorsScreenType: ActorsScreenType = ActorsScreenType.UNKNOWN
     private var contextMenu: ActorContextMenu? = null
+    protected var centralActor: Actor = Actor.EMPTY
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +56,7 @@ open class ActorsScreen(clazz: KClass<*> = ActorsScreen::class) : NoteEditorList
         }
         actorsScreenType = parsedUri.getActorsScreenType()
         contextMenu = ActorContextMenu(this, MyContextMenu.MENU_GROUP_OBJACTOR)
+        centralActor = Actor.load(myContext, centralItemId)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -121,7 +123,7 @@ open class ActorsScreen(clazz: KClass<*> = ActorsScreen::class) : NoteEditorList
                 title.withSpace(origin.name)
             }
         } else {
-            val actor: Actor = Actor.load(myContext, parsedUri.getActorId())
+            val actor: Actor = centralActor
             if (actor.isEmpty) {
                 title.withSpace(actorsScreenType.title(this))
             } else {

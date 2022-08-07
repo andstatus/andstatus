@@ -17,6 +17,7 @@ package org.andstatus.app.actor
 
 import android.content.Intent
 import org.andstatus.app.MyAction
+import org.andstatus.app.actor.ActorsScreenTest.Companion.actorByOid
 import org.andstatus.app.context.ActivityTest
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.TestSuite
@@ -48,7 +49,7 @@ class SearchActorsTest : ActivityTest<ActorsScreen>() {
         TestSuite.waitForListLoaded(activity, 2)
         val listItems = activity.getListLoader().getList()
         Assert.assertTrue("Found only ${listItems.size}items\n$listItems", listItems.size > 1)
-        val actor: Actor = ActorsScreenTest.getByActorOid(listItems, DemoData.demoData.pumpioTestAccountActorOid)
+        val actor: Actor = listItems.actorByOid(DemoData.demoData.pumpioTestAccountActorOid)
         Assert.assertEquals("Actor was not found\n$listItems", DemoData.demoData.pumpioTestAccountActorOid, actor.oid)
     }
 }

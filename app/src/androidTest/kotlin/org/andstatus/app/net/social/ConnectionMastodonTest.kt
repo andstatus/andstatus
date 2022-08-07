@@ -25,6 +25,7 @@ import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.GroupMembership
 import org.andstatus.app.data.MyContentType
+import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.NoteForAnyAccount
 import org.andstatus.app.net.social.Audience.Companion.fromNoteId
 import org.andstatus.app.net.social.ConnectionStub.Companion
@@ -40,6 +41,7 @@ import org.andstatus.app.util.UriUtils
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -402,6 +404,13 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetListsOfUser() {
+        val listsOfUser = getListsOfUser()
+        val andstatusCombined = listsOfUser.find { it.oid.endsWith("13578") }
+        assertNotNull("Should contain list with id=13578: $listsOfUser", andstatusCombined)
+        getListMembers(andstatusCombined!!)
+    }
+
+    private fun getListsOfUser(): List<Actor> {
         stub.addResponse(org.andstatus.app.test.R.raw.mastodon_lists_of_user)
         val expectedOid = ConnectionMastodon.MASTODON_LIST_OID_PREFIX + "19919"
         val executionContext = CommandExecutionContext(
@@ -430,6 +439,36 @@ class ConnectionMastodonTest {
         val storedList = members.firstOrNull() { expectedOid == it.oid }
         assertNotNull("$expectedOid should be a member, $members", storedList)
         assertEquals("$expectedOid should be a group, $members", GroupType.LIST_MEMBERS, storedList?.groupType)
+        return members
+    }
+
+    private fun getListMembers(group: Actor) {
+        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_list_members)
+        val expectedOid = "179473"
+        val executionContext = CommandExecutionContext(
+            myContext, CommandData.Companion.newActorCommand(CommandEnum.GET_LIST_MEMBERS, group, null)
+        )
+
+        CommandExecutorOther(executionContext).getListMembers(group) { members ->
+            assertEquals("Should be not empty $members", 3, members.size)
+            val member0: Actor = members[0]
+            assertFalse("Member should not be a group: $member0", member0.groupType.isGroupLike)
+            assertEquals("oid $member0", expectedOid, member0.oid)
+            assertEquals("username $member0", "AndStatus", member0.getUsername())
+            assertEquals("$member0", "AndStatus@mstdn.io", member0.getRealName())
+            assertEquals("$member0", "andstatus@mstdn.io", member0.getWebFingerId())
+            assertEquals("Should be no Parent", Actor.EMPTY, member0.getParent())
+            assertTrue("Should be fully defined: $member0", member0.isFullyDefined())
+        }.also {
+            assertTrue("Should be success: $it", it.isSuccess)
+        }
+
+        val members = MyQuery.getLongs(myContext, GroupMembership.selectGroupMemberIds(group))
+            .map { Actor.load(myContext, it, true, Actor::EMPTY) }
+        assertEquals("Should be 3 members $members", 3, members.size)
+        val storedMember = members.firstOrNull() { expectedOid == it.oid }
+        assertNotNull("$expectedOid should be a member, $members", storedMember)
+        assertFalse("Member should not be a group: $storedMember", storedMember!!.groupType.isGroupLike)
     }
 
 }

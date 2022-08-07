@@ -77,6 +77,16 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
             startGroupMembersScreen(menu, ActorsScreenType.LISTS)
         }
     },
+    LIST_MEMBERS(true) {
+        override fun executeAsync(params: Params): Try<NoteEditorData> {
+            setActingAccountForActor(params)
+            return super.executeAsync(params)
+        }
+
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
+            startGroupMembersScreen(menu, ActorsScreenType.LIST_MEMBERS)
+        }
+    },
     GROUP_NOTES(true) {
         override fun executeAsync(params: Params): Try<NoteEditorData> {
             startForTimeline(

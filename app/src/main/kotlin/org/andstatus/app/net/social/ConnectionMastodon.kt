@@ -179,6 +179,21 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             }
     }
 
+    override fun getListMembers(group: Actor): Try<List<Actor>> {
+        if (!group.isListOfUsers) {
+            return TryUtils.failure("Is not List of Users: $group")
+        }
+        val apiRoutine = ApiRoutineEnum.LIST_MEMBERS
+        val updatedDate = MyLog.uniqueCurrentTimeMS
+        return getApiPathWithActorId(apiRoutine, group.oid.substring(MASTODON_LIST_OID_PREFIX.length))
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap(::execute)
+            .flatMap { result: HttpReadResult ->
+                result.getJsonArray()
+                    .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
+            }
+    }
+
     private fun getApiPathWithTag(routineEnum: ApiRoutineEnum, tag: String): Try<Uri> {
         return getApiPath(routineEnum).map { uri: Uri -> UriUtils.map(uri) { s: String? -> s?.replace("%tag%", tag) } }
     }

@@ -48,11 +48,13 @@ open class ActorContextMenu(val menuContainer: NoteEditorContainer, menuGroup: I
                     .setTitle(actor.toActorTitle())
                     .setSubtitle(getActingAccount().getAccountName())
             val shortName = actor.getUsername()
-            if (actor.groupType.isGroupLike) {
+            if (actor.groupType == GroupType.LIST_MEMBERS) {
+                ActorContextMenuItem.LIST_MEMBERS.addTo(menu, menuGroup, order++,
+                    StringUtil.format(getActivity(), R.string.list_members, shortName))
+            } else if (actor.groupType.isGroupLike) {
                 ActorContextMenuItem.GROUP_NOTES.addTo(menu, menuGroup, order++,
-                        StringUtil.format(getActivity(), R.string.group_notes, shortName))
-            }
-            if (actor.isIdentified()) {
+                    StringUtil.format(getActivity(), R.string.group_notes, shortName))
+            } else if (actor.isIdentified()) {
                 ActorContextMenuItem.NOTES_BY_ACTOR.addTo(menu, menuGroup, order++,
                         StringUtil.format(getActivity(), R.string.menu_item_user_messages, shortName))
                 if (actor.origin.originType.hasListsOfUser) {

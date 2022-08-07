@@ -17,6 +17,7 @@ package org.andstatus.app.actor
 
 import android.content.Intent
 import org.andstatus.app.MyAction
+import org.andstatus.app.actor.ActorsScreenTest.Companion.actorByOid
 import org.andstatus.app.context.ActivityTest
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.TestSuite
@@ -50,12 +51,12 @@ class ActorsScreenWorkTest : ActivityTest<ActorsScreen>() {
 
     @Test
     fun testFriendsList() {
-        val method = "testFriendsList"
+        val method = this::testFriendsList.name
         TestSuite.waitForListLoaded(activity, 2)
         val helper = ListActivityTestHelper(activity, GroupMembersScreen::class.java)
         val listItems = activity.getListLoader().getList()
-        Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
-        val actor: Actor = ActorsScreenTest.getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
+        Assert.assertEquals(listItems.toString(), 5, listItems.size)
+        val actor: Actor = listItems.actorByOid(DemoData.demoData.conversationAuthorThirdActorOid)
         Assert.assertTrue("Not found " + DemoData.demoData.conversationAuthorThirdActorOid, actor.nonEmpty)
         Assert.assertTrue("Invoked Context menu for $actor", helper.invokeContextMenuAction4ListItemId(
                 method, actor.actorId, ActorContextMenuItem.FRIENDS, 0))

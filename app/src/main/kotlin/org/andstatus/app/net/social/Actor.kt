@@ -641,15 +641,21 @@ class Actor private constructor(// In our system
         }
 
     private fun getActorNameInTimeline1(): String {
+        if (groupType.isGroupLike) {
+            return prefferrablyRealName()
+        }
         return when (MyPreferences.getActorInTimeline()) {
             ActorInTimeline.AT_USERNAME -> if (username.isEmpty()) "" else "@$username"
             ActorInTimeline.WEBFINGER_ID -> if (isWebFingerIdValid) webFingerId else ""
-            ActorInTimeline.REAL_NAME -> realName
+            ActorInTimeline.REAL_NAME -> prefferrablyRealName()
             ActorInTimeline.REAL_NAME_AT_USERNAME -> if (realName.isNotEmpty() && username.isNotEmpty()) "$realName @$username" else username
             ActorInTimeline.REAL_NAME_AT_WEBFINGER_ID -> if (realName.isNotEmpty() && webFingerId.isNotEmpty()) "$realName @$webFingerId" else webFingerId
             else -> username
         }
     }
+
+    private fun prefferrablyRealName() =
+        if (realName.isNotEmpty()) realName else username
 
     fun getRealName(): String {
         return realName
@@ -833,7 +839,7 @@ class Actor private constructor(// In our system
     }
 
     companion object {
-        val lazyEmpty = lazy {
+        val lazyEmpty: Lazy<Actor> = lazy {
             newUnknown(Origin.EMPTY, GroupType.UNKNOWN).apply { username = "Empty" }
         }
         val EMPTY: Actor by lazyEmpty
