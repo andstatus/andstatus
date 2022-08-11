@@ -72,7 +72,9 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
 
     // TODO: return non nullable value
     private fun onActivityInternal(activity: AActivity?, saveLum: Boolean, recursing: Int): AActivity? {
-        if (activity == null || activity.isEmpty || recursing > MAX_RECURSING) {
+        if (activity == null ||
+            activity.getObjectType() == AObjectType.EMPTY ||
+            recursing > MAX_RECURSING) {
             return activity
         }
         updateObjActor(activity.accountActor.update(activity.getActor()), recursing + 1)
@@ -80,7 +82,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             AObjectType.ACTIVITY -> onActivityInternal(activity.getActivity(), false, recursing + 1)
             AObjectType.NOTE -> updateNote(activity, recursing + 1)
             AObjectType.ACTOR -> updateObjActor(activity, recursing + 1)
-            else -> throw IllegalArgumentException("Unexpected activity: $activity")
+            else -> return activity
         }
         updateActivity(activity)
         if (saveLum && recursing == 0) {
@@ -280,7 +282,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
     }
 
     private fun updateInReplyTo(activity: AActivity, values: ContentValues) {
-        val inReply = activity.getNote().getInReplyTo()
+        val inReply = activity.getNote().inReplyTo
         if (!inReply.getNote().oid.isNullOrEmpty()) {
             if (UriUtils.nonRealOid(inReply.getNote().conversationOid)) {
                 inReply.getNote().setConversationOid(activity.getNote().conversationOid)

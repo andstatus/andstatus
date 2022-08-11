@@ -89,7 +89,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("conversationOid", "2218650", activity.getNote().conversationOid)
         Assert.assertEquals("Should have a recipient $activity", 1, activity.audience().getNonSpecialActors().size.toLong())
         Assert.assertNotEquals("Is a reblog", ActivityType.ANNOUNCE, activity.type)
-        val inReplyTo = activity.getNote().getInReplyTo()
+        val inReplyTo = activity.getNote().inReplyTo
         Assert.assertTrue("Is a reply", inReplyTo.nonEmpty)
         Assert.assertEquals("Reply to the note id", "2663833", inReplyTo.getNote().oid)
         Assert.assertEquals("Reply to the note by actorOid", "114973", inReplyTo.getActor().oid)
@@ -251,7 +251,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("Note Oid", "12940131", activity.getNote().oid)
         Assert.assertTrue("Should not have a recipient " + activity.audience(), !activity.audience().hasNonSpecial())
         Assert.assertTrue("Content $activity", activity.getNote().content.startsWith(contentPrefix))
-        Assert.assertTrue("inReplyTo should be empty $activity", activity.getNote().getInReplyTo().isEmpty)
+        Assert.assertTrue("inReplyTo should be empty $activity", activity.getNote().inReplyTo.isEmpty)
         Assert.assertEquals("Updated date should be 1 for favorited note", RelativeTime.SOME_TIME_AGO,
                 activity.getNote().updatedDate)
         Assert.assertEquals("Activity updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
@@ -283,7 +283,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("Note Oid", noteOid, activity.getNote().oid)
         Assert.assertEquals("Actor Username", actorUsername, activity.getActor().getUsername())
         Assert.assertEquals("Author should be Actor", activity.getActor(), activity.getAuthor())
-        Assert.assertTrue("inReplyTo should not be empty $activity", activity.getNote().getInReplyTo().nonEmpty)
+        Assert.assertTrue("inReplyTo should not be empty $activity", activity.getNote().inReplyTo.nonEmpty)
         activity.getNote().updatedDate = MyLog.uniqueCurrentTimeMS
         activity.setUpdatedNow(0)
         val executionContext = CommandExecutionContext(

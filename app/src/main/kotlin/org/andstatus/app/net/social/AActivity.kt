@@ -34,7 +34,6 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
-import java.util.*
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/  */
 class AActivity private constructor(accountActor: Actor, type: ActivityType?) : AObject() {
@@ -65,10 +64,10 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
 
     fun initializePublicAndFollowers() {
         val note1 = getNote()
-        val visibility = if (note1.isEmpty) {
+        val visibility = if (note1 === Note.EMPTY) {
             Visibility.UNKNOWN
         } else {
-            note1.getInReplyTo().note.audience().visibility
+            note1.inReplyTo.getNote().audience().visibility
         }
         note1.audience().visibility =
             if (visibility.isKnown()) visibility else
@@ -99,7 +98,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     }
 
     fun getAuthor(): Actor {
-        if (isEmpty) {
+        if (this === EMPTY) {
             return Actor.EMPTY
         }
         return if (getObjectType() == AObjectType.NOTE) {
@@ -136,7 +135,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
 
     override val isEmpty: Boolean
         get() {
-            return this === EMPTY || type == ActivityType.EMPTY || getObjectType() == AObjectType.EMPTY || accountActor.isEmpty
+            return this === EMPTY || type == ActivityType.EMPTY || accountActor.isEmpty
         }
 
     fun getOid(): String {
@@ -184,26 +183,24 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     }
 
     fun setUpdatedNow(level: Int) {
-        if (isEmpty || level > 10) return
+        if (this === EMPTY || level > 10) return
         setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         getNote().setUpdatedNow(level + 1)
         getActivity().setUpdatedNow(level + 1)
     }
 
-    fun getNote(): Note {
-        return Optional.ofNullable(note).filter { msg: Note? -> msg !== Note.EMPTY }.orElseGet { getNestedNote() }
-    }
+    fun getNote(): Note = if (this === EMPTY) Note.EMPTY
+    else if (note === Note.EMPTY) getNestedNote()
+    else note
 
-    private fun getNestedNote(): Note {
-        /* Referring to the nested note allows to implement an activity, which has both Actor and Author.
-            Actor of the nested note is an Author.
-            In a database we will have 2 activities: one for each actor! */
-        return when (type) {
-            ActivityType.ANNOUNCE, ActivityType.CREATE, ActivityType.DELETE, ActivityType.LIKE, ActivityType.UPDATE, ActivityType.UNDO_ANNOUNCE, ActivityType.UNDO_LIKE ->                 // Check for null even though it looks like result couldn't be null.
-                // May be needed for AActivity.EMPTY activity...
-                Optional.ofNullable(getActivity().getNote()).orElse(Note.EMPTY)
-            else -> Note.EMPTY
-        }
+    /* Referring to the nested note allows to implement an activity, which has both Actor and Author.
+    Actor of the nested note is an Author.
+    In a database we will have 2 activities: one for each actor! */
+    private fun getNestedNote(): Note = if (this === EMPTY) Note.EMPTY
+    else when (type) {
+        ActivityType.ANNOUNCE, ActivityType.CREATE, ActivityType.DELETE, ActivityType.LIKE, ActivityType.UPDATE,
+        ActivityType.UNDO_ANNOUNCE, ActivityType.UNDO_LIKE -> getActivity().getNote()
+        else -> Note.EMPTY
     }
 
     @JvmOverloads
@@ -234,9 +231,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
         return getNote().audience()
     }
 
-    fun getActivity(): AActivity {
-        return if (aActivity == null) EMPTY else aActivity
-    }
+    fun getActivity(): AActivity = if (this === EMPTY) EMPTY else aActivity
 
     fun setActivity(activity: AActivity?) {
         check(!(this === EMPTY && EMPTY !== activity)) { "Cannot set Activity of EMPTY Activity" }
@@ -249,7 +244,8 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
         return if (this === EMPTY) {
             "EMPTY"
         } else "AActivity{" +
-                (if (isEmpty) "(empty), " else "") + type +
+                (if (this === EMPTY) "(EMPTY), " else (if (isEmpty) "(empty), " else "")) +
+                type +
                 ", id:" + id +
                 ", oid:" + oid +
                 ", updated:" + MyLog.debugFormatOfDate(updatedDate) +

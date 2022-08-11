@@ -212,10 +212,10 @@ class ConnectionPumpioTest {
         activity = timeline[ind] ?: throw IllegalStateException("No activity")
         note = activity.getNote()
         Assert.assertEquals(TriState.UNKNOWN, activity.isSubscribedByMe())
-        Assert.assertTrue("Is a reply", note.getInReplyTo().nonEmpty)
+        Assert.assertTrue("Is a reply", note.inReplyTo.nonEmpty)
         Assert.assertEquals("Is not a reply to this actor $activity", "jankusanagi@identi.ca",
-                note.getInReplyTo().getAuthor().uniqueName)
-        Assert.assertEquals(TriState.UNKNOWN, note.getInReplyTo().isSubscribedByMe())
+                note.inReplyTo.getAuthor().uniqueName)
+        Assert.assertEquals(TriState.UNKNOWN, note.inReplyTo.isSubscribedByMe())
     }
 
     private fun assertActivity0FromTimeline(activity: AActivity?) {
@@ -455,7 +455,7 @@ class ConnectionPumpioTest {
         Assert.assertEquals("Number of replies", 2, note.replies.size.toLong())
         val reply = note.replies[0].getNote()
         Assert.assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid)
-        Assert.assertEquals("Is not a Reply $activity", noteOid, reply.getInReplyTo().getNote().oid)
+        Assert.assertEquals("Is not a Reply $activity", noteOid, reply.inReplyTo.getNote().oid)
     }
 
     @Test

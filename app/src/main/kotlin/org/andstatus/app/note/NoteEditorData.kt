@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2014-2022 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,10 +53,9 @@ import java.util.*
 
 class NoteEditorData private constructor(
     val ma: MyAccount,
-    activity: AActivity,
+    val activity: AActivity,
     private val identifiable: Identifiable = Identified(NoteEditorData::class)
 ) : IsEmpty, Identifiable by identifiable {
-    val activity: AActivity
     private var attachedImageFiles: AttachedImageFiles = AttachedImageFiles.EMPTY
     private var replyToConversationParticipants = false
     private var replyToMentionedActors = false
@@ -148,7 +147,7 @@ class NoteEditorData private constructor(
         if (replyToConversationParticipants) {
             values.put("Reply", "all")
         }
-        val inReplyTo = activity.getNote().getInReplyTo()
+        val inReplyTo = activity.getNote().inReplyTo
         if (inReplyTo.nonEmpty) {
             val name = inReplyTo.getNote().getName()
             val summary = inReplyTo.getNote().summary
@@ -294,7 +293,7 @@ class NoteEditorData private constructor(
     }
 
     fun getInReplyToNoteId(): Long {
-        return activity.getNote().getInReplyTo().getNote().noteId
+        return activity.getNote().inReplyTo.getNote().noteId
     }
 
     fun appendMentionedActorToText(mentionedActor: Actor): NoteEditorData {
@@ -423,13 +422,9 @@ class NoteEditorData private constructor(
             val note = activity.getNote()
             if (note === Note.EMPTY) return
             val audience = Audience(activity.accountActor.origin).withVisibility(note.audience().visibility)
-            audience.add(note.getInReplyTo().getActor())
-            audience.addActorsFromContent(note.content, activity.getAuthor(), note.getInReplyTo().getActor())
+            audience.add(note.inReplyTo.getActor())
+            audience.addActorsFromContent(note.content, activity.getAuthor(), note.inReplyTo.getActor())
             note.setAudience(audience)
         }
-    }
-
-    init {
-        this.activity = activity
     }
 }

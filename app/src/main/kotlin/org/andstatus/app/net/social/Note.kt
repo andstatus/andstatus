@@ -57,7 +57,9 @@ class Note : AObject {
     var content: String = ""
         private set
     private val contentToSearch: LazyVal<String> = LazyVal.of { evalContentToSearch() }
-    private var inReplyTo: AActivity = AActivity.EMPTY
+    var inReplyTo: AActivity = AActivity.EMPTY
+        private set
+        get() = if (this === EMPTY) AActivity.EMPTY else field
     val replies: MutableList<AActivity>
     var conversationOid: String = ""
     var via: String = ""
@@ -162,10 +164,10 @@ class Note : AObject {
         if (conversationId == 0L && noteId != 0L) {
             conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId)
         }
-        if (conversationId == 0L && getInReplyTo().nonEmpty) {
-            if (getInReplyTo().getNote().noteId != 0L) {
+        if (conversationId == 0L && inReplyTo.nonEmpty) {
+            if (inReplyTo.getNote().noteId != 0L) {
                 conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID,
-                        getInReplyTo().getNote().noteId)
+                        inReplyTo.getNote().noteId)
             }
         }
         return setConversationIdFromMsgId()
@@ -229,8 +231,8 @@ class Note : AObject {
         if (attachments.nonEmpty) {
             builder.atNewLine(attachments.toString())
         }
-        if (getInReplyTo().nonEmpty) {
-            builder.atNewLine("inReplyTo", getInReplyTo().toString())
+        if (inReplyTo.nonEmpty) {
+            builder.atNewLine("inReplyTo", inReplyTo.toString())
         }
         if (replies.size > 0) {
             builder.atNewLine("Replies", replies.toString())
@@ -238,12 +240,8 @@ class Note : AObject {
         return MyStringBuilder.formatKeyValue(this, builder.toString())
     }
 
-    fun getInReplyTo(): AActivity {
-        return inReplyTo
-    }
-
     fun setInReplyTo(activity: AActivity?): Note {
-        if (activity != null && activity.nonEmpty) {
+        if (activity != null) {
             inReplyTo = activity
         }
         return this
@@ -343,7 +341,7 @@ class Note : AObject {
     }
 
     fun setUpdatedNow(level: Int) {
-        if (isEmpty || level > 10) return
+        if (this === EMPTY || level > 10) return
         updatedDate = MyLog.uniqueCurrentTimeMS
         inReplyTo.setUpdatedNow(level + 1)
     }

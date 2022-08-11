@@ -237,8 +237,8 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             obj.put(VISIBILITY_PROPERTY, getVisibility(note))
             obj.put(SENSITIVE_PROPERTY, note.isSensitive())
             obj.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost())
-            if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().getOid())) {
-                obj.put("in_reply_to_id", note.getInReplyTo().getOid())
+            if (StringUtil.nonEmptyNonTemp(note.inReplyTo.getOid())) {
+                obj.put("in_reply_to_id", note.inReplyTo.getOid())
             }
             val ids: MutableList<String?> = ArrayList()
             for (attachment in note.attachments.list) {

@@ -119,7 +119,7 @@ class AllowHtmlContentTest {
         Assert.assertEquals("Note Oid", noteOid, activity.getNote().oid)
         Assert.assertEquals("Actor Username", "vaeringjar", activity.getActor().getUsername())
         Assert.assertEquals("Author should be Actor", activity.getActor(), activity.getAuthor())
-        Assert.assertTrue("inReplyTo should not be empty $activity", activity.getNote().getInReplyTo().nonEmpty)
+        Assert.assertTrue("inReplyTo should not be empty $activity", activity.getNote().inReplyTo.nonEmpty)
         val jso = JSONObject(RawResourceUtils.getString(org.andstatus.app.test.R.raw.gnusocial_note_with_html))
         val expectedContent = jso.getString(if (isHtmlAllowed) "statusnet_html" else "text")
         val actualContent = if (isHtmlAllowed) activity.getNote().content else MyHtml.htmlToPlainText(activity.getNote().content)

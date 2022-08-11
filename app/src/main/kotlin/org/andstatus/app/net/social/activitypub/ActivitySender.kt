@@ -115,8 +115,8 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
         if (!note.content.isEmpty()) {
             obj.put(ConnectionActivityPub.CONTENT_PROPERTY, note.getContentToPost())
         }
-        if (!note.getInReplyTo().getOid().isEmpty()) {
-            obj.put("inReplyTo", note.getInReplyTo().getOid())
+        if (!note.inReplyTo.getOid().isEmpty()) {
+            obj.put("inReplyTo", note.inReplyTo.getOid())
         }
         activity.put("object", obj)
         return activity

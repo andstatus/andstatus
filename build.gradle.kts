@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     val androidGradlePluginVersion =
-        "7.2.1"      // https://maven.google.com/web/index.html#com.android.tools.build:gradle
+        "7.2.2"      // https://maven.google.com/web/index.html#com.android.tools.build:gradle
                                                   // https://developer.android.com/studio/releases/gradle-plugin
     val kotlinVersion = "1.5.20"                  // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
     extra["kotlinVersion"] = kotlinVersion

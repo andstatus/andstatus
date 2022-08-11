@@ -406,7 +406,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             editorData.getMyAccount().getAccountName() else "", false, false)
         showNoteDetails()
         MyUrlSpan.showText(editorView, R.id.inReplyToBody,
-                editorData.activity.getNote().getInReplyTo().getNote().content, TextMediaType.HTML,
+                editorData.activity.getNote().inReplyTo.getNote().content, TextMediaType.HTML,
                 false, false)
         mCharsLeftText.setText(editorData.getMyAccount().charactersLeftForNote(editorData.getContent()).toString())
         showAttachedImages()
@@ -427,7 +427,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
 
     private fun showNoteDetails() {
         val builder = MyStringBuilder()
-        val inReplyToAuthor = editorData.activity.getNote().getInReplyTo().getAuthor()
+        val inReplyToAuthor = editorData.activity.getNote().inReplyTo.getAuthor()
         if (inReplyToAuthor.nonEmpty) {
             builder.withSpace(StringUtil.format(getActivity(), R.string.message_source_in_reply_to,
                     inReplyToAuthor.actorNameInTimeline))

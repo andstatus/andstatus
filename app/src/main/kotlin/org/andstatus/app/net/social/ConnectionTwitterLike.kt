@@ -269,7 +269,7 @@ abstract class ConnectionTwitterLike : Connection() {
                 }
             }
             activity.getNote().audience().addActorsFromContent(activity.getNote().content,
-                    activity.getAuthor(), activity.getNote().getInReplyTo().getActor())
+                    activity.getAuthor(), activity.getNote().inReplyTo.getActor())
             if (!jso.isNull("favorited")) {
                 note.addFavoriteBy(data.getAccountActor(),
                         TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favorited"))))
@@ -536,8 +536,8 @@ abstract class ConnectionTwitterLike : Connection() {
         if (note.getContentToPost().isNotEmpty()) {
             formParams.put("status", note.getContentToPost())
         }
-        if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().getOid())) {
-            formParams.put("in_reply_to_status_id", note.getInReplyTo().getOid())
+        if (StringUtil.nonEmptyNonTemp(note.inReplyTo.getOid())) {
+            formParams.put("in_reply_to_status_id", note.inReplyTo.getOid())
         }
     }
 

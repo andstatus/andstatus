@@ -258,7 +258,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 matcher = GNU_SOCIAL_FAVOURITED_A_STATUS_BY_PATTERN.matcher(noteIn.content)
             }
             if (!matcher.matches()) return activityIn
-            val inReplyTo = noteIn.getInReplyTo()
+            val inReplyTo = noteIn.inReplyTo
             val favoritedActivity: AActivity
             if (UriUtils.isRealOid(inReplyTo.getNote().oid)) {
                 favoritedActivity = inReplyTo

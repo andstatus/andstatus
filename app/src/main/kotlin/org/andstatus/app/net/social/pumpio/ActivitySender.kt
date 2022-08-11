@@ -142,10 +142,10 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
         if (!note.content.isEmpty()) {
             obj.put(ConnectionPumpio.CONTENT_PROPERTY, note.getContentToPost())
         }
-        if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().getOid())) {
+        if (StringUtil.nonEmptyNonTemp(note.inReplyTo.getOid())) {
             val inReplyToObject = JSONObject()
-            inReplyToObject.put("id", note.getInReplyTo().getOid())
-            inReplyToObject.put("objectType", connection.oidToObjectType(note.getInReplyTo().getOid()))
+            inReplyToObject.put("id", note.inReplyTo.getOid())
+            inReplyToObject.put("objectType", connection.oidToObjectType(note.inReplyTo.getOid()))
             obj.put("inReplyTo", inReplyToObject)
         }
         activity.put("object", obj)
@@ -179,7 +179,7 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
 
     private fun setAudience(activity: JSONObject, activityType: PActivityType) {
         note.audience().getRecipients().forEach { actor: Actor -> addToAudience(activity, "to", actor) }
-        if (note.audience().noRecipients() && note.getInReplyTo().getOid().isEmpty()
+        if (note.audience().noRecipients() && note.inReplyTo.getOid().isEmpty()
                 && (activityType == PActivityType.POST || activityType == PActivityType.UPDATE)) {
             addToAudience(activity, "to", Actor.PUBLIC)
         }
@@ -243,7 +243,7 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
         } else {
             require(note.hasSomeContent()) { "Nothing to send" }
             obj.put("author", activity.getJSONObject("actor"))
-            val objectType = if (note.getInReplyTo().getOid().isEmpty()) PObjectType.NOTE else PObjectType.COMMENT
+            val objectType = if (note.inReplyTo.getOid().isEmpty()) PObjectType.NOTE else PObjectType.COMMENT
             obj.put("objectType", objectType.id)
         }
         return obj
