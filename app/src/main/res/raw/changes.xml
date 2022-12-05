@@ -29,6 +29,13 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="59.07" android:versionCode="352"
+        versionDate="2022-12-05"
+        versionTitle="Stability fixes...">
+        <changes>
+            <change>Stability fixes.</change>
+        </changes>
+    </release>
     <release android:versionName="59.05" android:versionCode="349"
         versionDate="2021-09-30"
         versionTitle="More intelligent choice of an Actor for replies">

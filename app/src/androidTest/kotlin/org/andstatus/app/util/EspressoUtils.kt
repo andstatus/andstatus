@@ -44,6 +44,7 @@ object EspressoUtils {
                     }
 
                     override fun describeMismatch(item: Any?, mismatchDescription: Description?) {}
+                    @Deprecated("Deprecated in Java")
                     override fun _dont_implement_Matcher___instead_extend_BaseMatcher_() {}
                     override fun describeTo(description: Description?) {}
                 }

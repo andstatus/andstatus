@@ -52,6 +52,7 @@ class BitmapSubsetDrawable(val bitmap: Bitmap, val srcRect: Rect, val imageId: L
         // Empty
     }
 
+    @Deprecated("Deprecated in Java")
     override fun getOpacity(): Int {
         return PixelFormat.OPAQUE
     }

@@ -21,8 +21,8 @@ android {
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
 
     defaultConfig {
-        versionCode = 351
-        versionName = "59.06"
+        versionCode = 352
+        versionName = "59.07"
 
         applicationId = "org.andstatus.app"
         minSdk = rootProject.extra["minSdk"] as Int
@@ -37,13 +37,14 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            lintOptions {
-                warning("MissingTranslation", "InvalidPackage")
+            lint {
+                warning.add("MissingTranslation")
+                warning.add("InvalidPackage")
             }
         }
 
         getByName("debug") {
-            isTestCoverageEnabled = hasTestCoverage
+            enableAndroidTestCoverage = hasTestCoverage
         }
     }
 
@@ -141,6 +142,7 @@ tasks.register("testTravis") {
 class Result(val value: String?, val message: String?) {
     val isFailure: Boolean = message != null
 }
+
 val sonarQubeToken: Result = "org.andstatus.sonar.token".let { propertyName ->
     if (project.hasProperty(propertyName)) {
         project.property(propertyName).toString().let { str ->

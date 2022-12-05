@@ -31,7 +31,7 @@ class RecursiveConversationLoader(emptyItem: ConversationViewItem, myContext: My
         ConversationLoader(emptyItem, myContext, origin, selectedNoteId, syncWithInternet) {
 
     override fun load2(nonLoaded: ConversationViewItem) {
-        findPreviousNotesRecursively(nonLoaded)
+        findPreviousNotesRecursively(nonLoaded, 1)
     }
 
     override fun cacheConversation(item: ConversationViewItem) {
@@ -56,30 +56,33 @@ class RecursiveConversationLoader(emptyItem: ConversationViewItem, myContext: My
         }
     }
 
-    private fun findPreviousNotesRecursively(itemIn: ConversationViewItem) {
-        if (!addNoteIdToFind(itemIn.getNoteId())) {
+    private fun findPreviousNotesRecursively(itemIn: ConversationViewItem, level: Int) {
+        val MAX_RECURSIVE_LEVEL = 50
+        if (level > MAX_RECURSIVE_LEVEL || !addNoteIdToFind(itemIn.getNoteId())) {
             return
         }
         val item = loadItemFromDatabase(itemIn)
-        findRepliesRecursively(item)
-        MyLog.v(this) { "findPreviousNotesRecursively id=" + item.getNoteId() + " replies:" + item.nReplies }
+        findRepliesRecursively(item, level)
+        MyLog.v(this) { "findPreviousNotesRecursively " + level + ", id=" + item.getNoteId() + " replies:" + item.nReplies }
         if (item.isLoaded()) {
             if (addItemToList(item) && item.inReplyToNoteId != 0L) {
                 findPreviousNotesRecursively(
-                        getItem(item.inReplyToNoteId, item.conversationId, item.replyLevel - 1))
+                    getItem(item.inReplyToNoteId, item.conversationId, item.replyLevel - 1),
+                    level + 1
+                )
             }
         } else if (mAllowLoadingFromInternet) {
             loadFromInternet(item.getNoteId())
         }
     }
 
-    private fun findRepliesRecursively(item: ConversationViewItem) {
+    private fun findRepliesRecursively(item: ConversationViewItem, level: Int) {
         MyLog.v(this) { "findReplies for id=" + item.getNoteId() }
         for (reply in cachedConversationItems.values) {
             if (reply.inReplyToNoteId == item.getNoteId()) {
                 item.nReplies++
                 reply.replyLevel = item.replyLevel + 1
-                findPreviousNotesRecursively(reply)
+                findPreviousNotesRecursively(reply, level + 1)
             }
         }
     }

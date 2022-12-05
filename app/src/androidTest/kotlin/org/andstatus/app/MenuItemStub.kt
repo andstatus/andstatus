@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2022 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,92 +48,92 @@ class MenuItemStub(itemId: Int) : MenuItem {
         return 0
     }
 
-    override fun setTitle(title: CharSequence?): MenuItem? {
-        return null
+    override fun setTitle(title: CharSequence?): MenuItem {
+        return this
     }
 
-    override fun setTitle(title: Int): MenuItem? {
-        return null
+    override fun setTitle(title: Int): MenuItem {
+        return this
     }
 
     override fun getTitle(): CharSequence? {
         return null
     }
 
-    override fun setTitleCondensed(title: CharSequence?): MenuItem? {
-        return null
+    override fun setTitleCondensed(title: CharSequence?): MenuItem {
+        return this
     }
 
     override fun getTitleCondensed(): CharSequence? {
         return null
     }
 
-    override fun setIcon(icon: Drawable?): MenuItem? {
-        return null
+    override fun setIcon(icon: Drawable?): MenuItem {
+        return this
     }
 
-    override fun setIcon(iconRes: Int): MenuItem? {
-        return null
+    override fun setIcon(iconRes: Int): MenuItem {
+        return this
     }
 
     override fun getIcon(): Drawable? {
         return null
     }
 
-    override fun setIntent(intent: Intent?): MenuItem? {
-        return null
+    override fun setIntent(intent: Intent?): MenuItem {
+        return this
     }
 
     override fun getIntent(): Intent? {
         return null
     }
 
-    override fun setShortcut(numericChar: Char, alphaChar: Char): MenuItem? {
-        return null
+    override fun setShortcut(numericChar: Char, alphaChar: Char): MenuItem {
+        return this
     }
 
-    override fun setNumericShortcut(numericChar: Char): MenuItem? {
-        return null
+    override fun setNumericShortcut(numericChar: Char): MenuItem {
+        return this
     }
 
     override fun getNumericShortcut(): Char {
         return '0'
     }
 
-    override fun setAlphabeticShortcut(alphaChar: Char): MenuItem? {
-        return null
+    override fun setAlphabeticShortcut(alphaChar: Char): MenuItem {
+        return this
     }
 
     override fun getAlphabeticShortcut(): Char {
         return 'a'
     }
 
-    override fun setCheckable(checkable: Boolean): MenuItem? {
-        return null
+    override fun setCheckable(checkable: Boolean): MenuItem {
+        return this
     }
 
     override fun isCheckable(): Boolean {
         return false
     }
 
-    override fun setChecked(checked: Boolean): MenuItem? {
-        return null
+    override fun setChecked(checked: Boolean): MenuItem {
+        return this
     }
 
     override fun isChecked(): Boolean {
         return false
     }
 
-    override fun setVisible(visible: Boolean): MenuItem? {
-        return null
+    override fun setVisible(visible: Boolean): MenuItem {
+        return this
     }
 
     override fun isVisible(): Boolean {
         return false
     }
 
-    override fun setEnabled(enabled: Boolean): MenuItem? {
-        return null
+    override fun setEnabled(enabled: Boolean): MenuItem {
+        return this
     }
 
     override fun isEnabled(): Boolean {
@@ -148,8 +148,8 @@ class MenuItemStub(itemId: Int) : MenuItem {
         return null
     }
 
-    override fun setOnMenuItemClickListener(menuItemClickListener: MenuItem.OnMenuItemClickListener?): MenuItem? {
-        return null
+    override fun setOnMenuItemClickListener(menuItemClickListener: MenuItem.OnMenuItemClickListener?): MenuItem {
+        return this
     }
 
     override fun getMenuInfo(): ContextMenuInfo? {
@@ -157,24 +157,24 @@ class MenuItemStub(itemId: Int) : MenuItem {
     }
 
     override fun setShowAsAction(actionEnum: Int) {}
-    override fun setShowAsActionFlags(actionEnum: Int): MenuItem? {
-        return null
+    override fun setShowAsActionFlags(actionEnum: Int): MenuItem {
+        return this
     }
 
-    override fun setActionView(view: View?): MenuItem? {
-        return null
+    override fun setActionView(view: View?): MenuItem {
+        return this
     }
 
-    override fun setActionView(resId: Int): MenuItem? {
-        return null
+    override fun setActionView(resId: Int): MenuItem {
+        return this
     }
 
     override fun getActionView(): View? {
         return null
     }
 
-    override fun setActionProvider(actionProvider: ActionProvider?): MenuItem? {
-        return null
+    override fun setActionProvider(actionProvider: ActionProvider?): MenuItem {
+        return this
     }
 
     override fun getActionProvider(): ActionProvider? {
@@ -193,8 +193,8 @@ class MenuItemStub(itemId: Int) : MenuItem {
         return false
     }
 
-    override fun setOnActionExpandListener(listener: MenuItem.OnActionExpandListener?): MenuItem? {
-        return null
+    override fun setOnActionExpandListener(listener: MenuItem.OnActionExpandListener?): MenuItem {
+        return this
     }
 
 }

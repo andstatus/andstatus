@@ -28,6 +28,6 @@ class EmptyBaseTimelineAdapter<T : ViewItem<T>> private constructor() : BaseTime
     }
 
     companion object {
-        val EMPTY: EmptyBaseTimelineAdapter<*> = EmptyBaseTimelineAdapter<ViewItem<*>>()
+        val EMPTY = EmptyBaseTimelineAdapter()
     }
 }
