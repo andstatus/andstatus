@@ -20,7 +20,7 @@ buildscript {
     extra["compileSdk"] = 33
     extra["buildToolsVersion"] = "33.0.1"
     extra["minSdk"] = 24
-    extra["targetSdk"] = 30
+    extra["targetSdk"] = 31
 
     // Lookup the latest here: https://mvnrepository.com/
     extra["acraVersion"] = "5.8.3"                // https://github.com/ACRA/acra/wiki/AdvancedUsage

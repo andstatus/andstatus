@@ -54,7 +54,7 @@ class NotificationData(val event: NotificationEventType, val myActor: Actor, upd
         intent.data = Uri.withAppendedPath(timeline.getUri(),
                 "rnd/" + SystemClock.elapsedRealtime())
         return PendingIntent.getActivity(myContext.context, timeline.hashCode(), intent,
-                PendingIntent.FLAG_UPDATE_CURRENT)
+                PendingIntent.FLAG_UPDATE_CURRENT + PendingIntent.FLAG_IMMUTABLE)
     }
 
     fun channelId(): String {

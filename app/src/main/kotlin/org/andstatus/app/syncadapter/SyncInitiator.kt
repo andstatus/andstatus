@@ -113,7 +113,8 @@ class SyncInitiator : BroadcastReceiver() {
                 alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                         SystemClock.elapsedRealtime() + randomDelay,
                         minSyncIntervalMillis,
-                        PendingIntent.getBroadcast(myContext.context, 0, MyAction.SYNC.newIntent(), 0)
+                        PendingIntent.getBroadcast(myContext.context, 0, MyAction.SYNC.newIntent(),
+                            PendingIntent.FLAG_IMMUTABLE)
                 )
             }
         }

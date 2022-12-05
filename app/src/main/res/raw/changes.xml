@@ -29,7 +29,7 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="59.07" android:versionCode="352"
+    <release android:versionName="59.08" android:versionCode="353"
         versionDate="2022-12-05"
         versionTitle="Stability fixes...">
         <changes>
