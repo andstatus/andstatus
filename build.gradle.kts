@@ -5,7 +5,7 @@ buildscript {
     val androidGradlePluginVersion =
         "7.3.1"      // https://maven.google.com/web/index.html#com.android.tools.build:gradle
                                                   // https://developer.android.com/studio/releases/gradle-plugin
-    val kotlinVersion = "1.7.10"                  // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
+    val kotlinVersion = "1.7.22"                  // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
     extra["kotlinVersion"] = kotlinVersion
     val kotlinGradlePluginVersion = kotlinVersion // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-gradle-plugin
 
