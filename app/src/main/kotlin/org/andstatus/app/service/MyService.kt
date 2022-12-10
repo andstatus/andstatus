@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2011-2015 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (c) 2011-2022 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
@@ -32,8 +31,6 @@ import org.andstatus.app.appwidget.AppWidgets
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.context.MyContextHolder
-import org.andstatus.app.net.social.Actor
-import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncTaskLauncher
@@ -54,9 +51,6 @@ class MyService(
 
     @Volatile
     var myContext: MyContext = MyContextEmpty.EMPTY
-
-    @Volatile
-    private var startedForegrounLastTime: Long = 0
 
     /** No way back  */
     @Volatile
@@ -97,25 +91,12 @@ class MyService(
 
     override fun onCreate() {
         MyLog.v(this) { "Created" }
-        myContext =  MyContextHolder.myContextHolder.initialize(this).getNow()
+        myContext = MyContextHolder.myContextHolder.initialize(this).getNow()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForeground()
-        }
         receiveCommand(intent, startId)
         return START_NOT_STICKY
-    }
-
-    /** See https://stackoverflow.com/questions/44425584/context-startforegroundservice-did-not-then-call-service-startforeground  */
-    private fun startForeground() {
-        val currentTimeMillis = System.currentTimeMillis()
-        if (Math.abs(currentTimeMillis - startedForegrounLastTime) < 1000) return
-        startedForegrounLastTime = currentTimeMillis
-        val data = NotificationData(NotificationEventType.SERVICE_RUNNING, Actor.EMPTY, currentTimeMillis)
-        myContext.notifier.createNotificationChannel(data)
-        startForeground(NotificationEventType.SERVICE_RUNNING.notificationId(), myContext.notifier.getAndroidNotification(data))
     }
 
     private val intentReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -128,8 +109,8 @@ class MyService(
         val commandData: CommandData = CommandData.fromIntent(myContext, intent)
         MyLog.v(this) {
             "receiveCommand; ${commandData.command}" +
-                (intent?.let { ", intent:$intent" } ?: "") +
-                (startId?.let { ", startId:$it" } ?: "")
+                    (intent?.let { ", intent:$intent" } ?: "") +
+                    (startId?.let { ", startId:$it" } ?: "")
         }
         when (commandData.command) {
             CommandEnum.STOP_SERVICE -> {
@@ -154,23 +135,23 @@ class MyService(
     }
 
     private fun isForcedToStop(): Boolean {
-        return mForcedToStop ||  MyContextHolder.myContextHolder.isShuttingDown()
+        return mForcedToStop || MyContextHolder.myContextHolder.isShuttingDown()
     }
 
     fun broadcastBeforeExecutingCommand(commandData: CommandData) {
         MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-                .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast()
+            .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast()
     }
 
     fun broadcastAfterExecutingCommand(commandData: CommandData) {
         MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
+            .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 
     fun ensureInitialized() {
         if (initialized.get() || isStopping.get()) return
         if (!myContext.isReady) {
-            myContext =  MyContextHolder.myContextHolder.initialize(this).getBlocking()
+            myContext = MyContextHolder.myContextHolder.initialize(this).getBlocking()
             if (!myContext.isReady) return
         }
         if (initialized.compareAndSet(false, true)) {
@@ -201,8 +182,8 @@ class MyService(
             val current = MyServiceHeartBeat(this)
             if (heartBeatRef.compareAndSet(previous, current)) {
                 previous?.let {
-                   MyLog.v(this) { "(revive heartbeat) Cancelling task: $it" }
-                   it.cancel()
+                    MyLog.v(this) { "(revive heartbeat) Cancelling task: $it" }
+                    it.cancel()
                 }
                 current.execute(instanceTag, Unit)
                     .onFailure { t: Throwable? ->
@@ -224,7 +205,8 @@ class MyService(
                 "$method; shouldStop:$shouldStop, needToExecute:$needToExecute"
             }
             if (shouldStop || (!needToExecute
-                        && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))) {
+                        && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))
+            ) {
                 stopDelayed(false)
             } else if (needToExecute) startExecution()
         }
@@ -245,14 +227,14 @@ class MyService(
         val previous = wakeLockRef.get()
         if (previous == null) {
             MyLog.v(this) { "Acquiring wakelock" }
-            val pm = getSystemService(POWER_SERVICE) as PowerManager ?
+            val pm = getSystemService(POWER_SERVICE) as PowerManager?
             if (pm == null) {
                 MyLog.w(this, "No Power Manager ???")
                 return
             }
             val current = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, MyService::class.java.name)
             if (current != null && wakeLockRef.compareAndSet(previous, current)) {
-                current.acquire(60*1000L /*1 minute*/)
+                current.acquire(60 * 1000L /*1 minute*/)
             }
         }
     }
@@ -280,7 +262,6 @@ class MyService(
             if (isStopping.compareAndSet(false, true)) {
                 MyLog.v(this) { "Stopping" + if (forceNow) ", forced" else "" }
             }
-            startedForegrounLastTime = 0
             if (!executors.stopAll(forceNow) && !forceNow) {
                 // TODO
             } else {
