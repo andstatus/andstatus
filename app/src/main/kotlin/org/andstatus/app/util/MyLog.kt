@@ -168,12 +168,17 @@ object MyLog {
      */
     fun d(anyTag: Any?, msg: String?): Int {
         val tag = anyToTruncatedTag(anyTag)
-        var i = 0
-        if (isLoggable(tag, DEBUG)) {
-            logToFile(DEBUG, tag, msg, null)
-            i = Log.d(tag, withOptionalPrefix(msg))
-        }
-        return i
+        if (!isLoggable(tag, DEBUG)) return 0
+        logToFile(DEBUG, tag, msg, null)
+        return Log.d(tag, withOptionalPrefix(msg))
+    }
+
+    fun d(anyTag: Any?, supplier: () -> String?): Int {
+        val tag = anyToTruncatedTag(anyTag)
+        if (!isLoggable(tag, DEBUG)) return 0
+        val msg = supplier()
+        logToFile(DEBUG, tag, msg, null)
+        return Log.d(tag, withOptionalPrefix(msg))
     }
 
     /**

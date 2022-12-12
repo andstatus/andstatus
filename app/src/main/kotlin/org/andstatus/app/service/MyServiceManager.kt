@@ -122,7 +122,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
             if (registeredReceiver.compareAndSet(oldReceiver, receiver)) {
                 val context = contextIn.applicationContext
                 oldReceiver?.let {
-                    MyLog.i(TAG, "Receiver is unregistered ${it.instanceId}")
+                    MyLog.v(TAG) { "Receiver is unregistered ${it.instanceId}" }
                     context.unregisterReceiver(it)
                 }
 
@@ -133,7 +133,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                 filter.addAction(MyAction.SYNC.action)
                 filter.addAction(MyAction.ACTION_SHUTDOWN.action)
                 context.registerReceiver(receiver, filter)
-                MyLog.i(TAG, "Receiver is registered ${receiver.instanceId}")
+                MyLog.v(TAG) { "Receiver is registered ${receiver.instanceId}" }
             }
         }
 
@@ -182,7 +182,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                     MyLog.e(TAG, "JobScheduler is unavailable in ${myContext.context}")
                     return
                 }
-                if (getServiceState() == MyServiceState.RUNNING) {
+                if (jobScheduler.getPendingJob(MyServiceJobId) != null || MyService.isWorking) {
                     MyLog.v(TAG, "Skip Scheduling MyService job ${commandData.command}, id:${commandData.commandId}")
                 } else {
                     MyLog.v(TAG, "Scheduling MyService job ${commandData.command}, id:${commandData.commandId}")

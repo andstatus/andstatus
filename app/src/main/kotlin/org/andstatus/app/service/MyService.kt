@@ -82,8 +82,14 @@ class MyService(
     }
 
     override fun onStartJob(params: JobParameters?): Boolean {
+        if (isWorking) {
+            MyLog.e(this, "onStartJob while working")
+        } else {
+            MyLog.v(this) { "onStartJob" }
+        }
+        if (!isStarting.compareAndSet(false, true)) return true
+
         if (jobParameters == null) jobParameters = params
-        MyLog.v(this) { "onStartJob" }
         if (myContext.isEmpty) {
             myContext = MyContextHolder.myContextHolder.initialize(this).getBlocking()
         }
@@ -95,6 +101,7 @@ class MyService(
             ensureInitialized()
             startStopExecution()
         }
+        isStarting.set(false)
         return getServiceState() != MyServiceState.STOPPED
     }
 
@@ -205,6 +212,7 @@ class MyService(
         }
         MyLog.v(this) { "Destroyed" }
         MyLog.setNextLogFileName()
+        isStarting.set(false)
     }
 
     /**
@@ -248,6 +256,7 @@ class MyService(
     }
 
     companion object {
+        private val isStarting: AtomicBoolean = AtomicBoolean(false)
         private val myServiceRef: AtomicReference<MyService> = AtomicReference()
         private const val STOP_ON_INACTIVITY_AFTER_SECONDS: Long = 10
         private val widgetsInitialized: AtomicBoolean = AtomicBoolean(false)
@@ -256,6 +265,8 @@ class MyService(
             get() = myServiceRef.get()
                 ?.getServiceState()
                 ?: MyServiceState.STOPPED
+
+        val isWorking: Boolean get() = isStarting.get() || myServiceRef.get() != null
 
         fun stopService() {
             myServiceRef.get()?.stopDelayed(false)

@@ -31,7 +31,6 @@ import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.TryUtils.onFailureAsConnectionException
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : CommandExecutorParent, Identifiable {
     override val instanceId = InstanceId.next()
@@ -166,12 +165,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
         }
 
         private fun logEnd(strategy: CommandExecutorStrategy) {
-            val time = strategy.stopWatch.getTime()
-            if (time < TimeUnit.SECONDS.toMillis(MIN_PROGRESS_BROADCAST_PERIOD_SECONDS)) {
-                MyLog.d(strategy, "commandExecutedMs:" + time + "; " + strategy.execContext)
-            } else {
-                MyLog.i(strategy, "commandExecutedMs:" + time + "; " + strategy.execContext)
-            }
+            MyLog.d(strategy) { "commandExecutedMs:" + strategy.stopWatch.getTime() + "; " + strategy.execContext }
         }
 
         fun getStrategy(commandData: CommandData, parent: CommandExecutorParent?): CommandExecutorStrategy {
