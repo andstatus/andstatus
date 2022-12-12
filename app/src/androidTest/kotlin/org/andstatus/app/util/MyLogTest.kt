@@ -16,6 +16,7 @@
 package org.andstatus.app.util
 
 import android.util.Log
+import junit.framework.Assert.assertEquals
 import org.andstatus.app.context.TestSuite
 import org.hamcrest.CoreMatchers
 import org.hamcrest.CoreMatchers.not
@@ -112,8 +113,16 @@ class MyLogTest {
         assertThat(stOneLine, not(CoreMatchers.containsString("\n")))
     }
 
+    @Test
+    fun testTags() {
+        assertEquals("MyLogTest", Taggable.anyToTruncatedTag(this))
+        assertEquals("MyLogTest.Companion", Companion.tag)
+    }
+
     companion object {
         @Volatile
         private var lazyTest: String = ""
+
+        val tag: String get() = Taggable.anyToTruncatedTag(this)
     }
 }

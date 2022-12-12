@@ -15,18 +15,11 @@
  */
 package org.andstatus.app.service
 
-import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.os.IBinder
-import android.os.PowerManager
-import android.os.PowerManager.WakeLock
+import android.app.job.JobParameters
+import android.app.job.JobService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.andstatus.app.MyAction
 import org.andstatus.app.appwidget.AppWidgets
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
@@ -47,7 +40,11 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class MyService(
     private val identifiable: Identifiable = Identified(MyService::class)
-) : Service(), Identifiable by identifiable {
+) : JobService(), Identifiable by identifiable {
+
+    @Volatile
+    private var jobParameters: JobParameters? = null
+    private val needToRescheduleJob: AtomicBoolean = AtomicBoolean(false)
 
     @Volatile
     var myContext: MyContext = MyContextEmpty.EMPTY
@@ -70,11 +67,6 @@ class MyService(
     val executors: QueueExecutors = QueueExecutors(this)
     val heartBeatRef: AtomicReference<MyServiceHeartBeat> = AtomicReference()
 
-    /**
-     * The reference to the wake lock used to keep the CPU from stopping during
-     * background operations.
-     */
-    private val wakeLockRef: AtomicReference<WakeLock> = AtomicReference()
     private fun getServiceState(): MyServiceState {
         return if (initialized.get()) {
             if (isStopping.get()) {
@@ -89,49 +81,30 @@ class MyService(
         return isStopping.get()
     }
 
-    override fun onCreate() {
-        MyLog.v(this) { "Created" }
-        myContext = MyContextHolder.myContextHolder.initialize(this).getNow()
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        receiveCommand(intent, startId)
-        return START_NOT_STICKY
-    }
-
-    private val intentReceiver: BroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(arg0: Context?, intent: Intent?) {
-            receiveCommand(intent, null)
+    override fun onStartJob(params: JobParameters?): Boolean {
+        if (jobParameters == null) jobParameters = params
+        MyLog.v(this) { "onStartJob" }
+        if (myContext.isEmpty) {
+            myContext = MyContextHolder.myContextHolder.initialize(this).getBlocking()
         }
+        needToRescheduleJob.set(false)
+        latestActivityTime = System.currentTimeMillis()
+        if (isForcedToStop()) {
+            stopDelayed(true)
+        } else {
+            ensureInitialized()
+            startStopExecution()
+        }
+        return getServiceState() != MyServiceState.STOPPED
     }
 
-    private fun receiveCommand(intent: Intent?, startId: Int?) {
-        val commandData: CommandData = CommandData.fromIntent(myContext, intent)
-        MyLog.v(this) {
-            "receiveCommand; ${commandData.command}" +
-                    (intent?.let { ", intent:$intent" } ?: "") +
-                    (startId?.let { ", startId:$it" } ?: "")
-        }
-        when (commandData.command) {
-            CommandEnum.STOP_SERVICE -> {
+    override fun onStopJob(params: JobParameters?): Boolean {
+        MyLog.v(this) { "onStopJob" }
+        return executors.isReallyWorking()
+            .also {
+                needToRescheduleJob.set(it)
                 stopDelayed(false)
             }
-            CommandEnum.BROADCAST_SERVICE_STATE -> {
-                if (isStopping.get()) {
-                    stopDelayed(false)
-                }
-                broadcastAfterExecutingCommand(commandData)
-            }
-            else -> {
-                latestActivityTime = System.currentTimeMillis()
-                if (isForcedToStop()) {
-                    stopDelayed(true)
-                } else {
-                    ensureInitialized()
-                    startStopExecution()
-                }
-            }
-        }
     }
 
     private fun isForcedToStop(): Boolean {
@@ -148,7 +121,7 @@ class MyService(
             .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 
-    fun ensureInitialized() {
+    private fun ensureInitialized() {
         if (initialized.get() || isStopping.get()) return
         if (!myContext.isReady) {
             myContext = MyContextHolder.myContextHolder.initialize(this).getBlocking()
@@ -156,12 +129,12 @@ class MyService(
         }
         if (initialized.compareAndSet(false, true)) {
             initializedTime = System.currentTimeMillis()
-            registerReceiver(intentReceiver, IntentFilter(MyAction.EXECUTE_COMMAND.action))
             if (widgetsInitialized.compareAndSet(false, true)) {
                 AppWidgets.of(myContext).updateViews()
             }
             reviveHeartBeat()
             MyLog.d(this, "Initialized")
+            myServiceRef.set(this)
             MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast()
         }
     }
@@ -172,7 +145,7 @@ class MyService(
         startStopExecution()
     }
 
-    fun reviveHeartBeat() {
+    private fun reviveHeartBeat() {
         val previous = heartBeatRef.get()
         var replace = previous == null
         if (!replace && !previous.isReallyWorking) {
@@ -213,29 +186,11 @@ class MyService(
     }
 
     private suspend fun startExecution() {
-        acquireWakeLock()
         try {
             executors.ensureExecutorsStarted()
         } catch (e: Exception) {
             MyLog.i(this, "Couldn't start executor", e)
             executors.stopAll(true)
-            releaseWakeLock()
-        }
-    }
-
-    private fun acquireWakeLock() {
-        val previous = wakeLockRef.get()
-        if (previous == null) {
-            MyLog.v(this) { "Acquiring wakelock" }
-            val pm = getSystemService(POWER_SERVICE) as PowerManager?
-            if (pm == null) {
-                MyLog.w(this, "No Power Manager ???")
-                return
-            }
-            val current = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, MyService::class.java.name)
-            if (current != null && wakeLockRef.compareAndSet(previous, current)) {
-                current.acquire(60 * 1000L /*1 minute*/)
-            }
         }
     }
 
@@ -275,42 +230,35 @@ class MyService(
     private fun unInitialize() {
         if (!initialized.compareAndSet(true, false)) return
         try {
-            unregisterReceiver(intentReceiver)
-        } catch (e: Exception) {
-            MyLog.d(this, "on unregisterReceiver", e)
-        }
-        mForcedToStop = false
-        val heartBeat = heartBeatRef.get()
-        if (heartBeat != null && heartBeatRef.compareAndSet(heartBeat, null)) {
-            MyLog.v(this) { "(unInit) Cancelling task: $heartBeat" }
-            heartBeat.cancel()
-        }
-        AsyncTaskLauncher.cancelPoolTasks(AsyncEnum.SYNC)
-        releaseWakeLock()
-        stopSelf()
-        myContext.notifier.clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
-        MyLog.i(this, "Stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime))
-        isStopping.set(false)
-    }
-
-    private fun releaseWakeLock() {
-        val wakeLock = wakeLockRef.get()
-        if (wakeLock != null && wakeLockRef.compareAndSet(wakeLock, null)) {
-            if (wakeLock.isHeld) {
-                MyLog.v(this) { "Releasing wakelock: $wakeLock" }
-                wakeLock.release()
-            } else {
-                MyLog.v(this) { "Wakelock is not held: $wakeLock" }
+            mForcedToStop = false
+            val heartBeat = heartBeatRef.get()
+            if (heartBeat != null && heartBeatRef.compareAndSet(heartBeat, null)) {
+                MyLog.v(this) { "(unInit) Cancelling task: $heartBeat" }
+                heartBeat.cancel()
             }
+            AsyncTaskLauncher.cancelPoolTasks(AsyncEnum.SYNC)
+            stopSelf()
+            myContext.notifier.clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
+            MyLog.i(this, "Stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime))
+        } finally {
+            isStopping.set(false)
+            myServiceRef.set(null)
+            jobFinished(jobParameters, needToRescheduleJob.get())
         }
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
     }
 
     companion object {
+        private val myServiceRef: AtomicReference<MyService> = AtomicReference()
         private const val STOP_ON_INACTIVITY_AFTER_SECONDS: Long = 10
         private val widgetsInitialized: AtomicBoolean = AtomicBoolean(false)
+
+        val serviceState: MyServiceState
+            get() = myServiceRef.get()
+                ?.getServiceState()
+                ?: MyServiceState.STOPPED
+
+        fun stopService() {
+            myServiceRef.get()?.stopDelayed(false)
+        }
     }
 }

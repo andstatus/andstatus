@@ -57,9 +57,10 @@ class MyServiceTests: IgnoredInTravis2() {
             var ok = false
             MyLog.i(this, "setUpClass started")
             try {
-                TestSuite.initializeWithData(this)
+                TestSuite.initializeWithAccounts(this)
                 myServiceTestHelper = MyServiceTestHelper().also {
                     it.setUp(null)
+                    it.stopService(true)
                 }
                 ok = true
             } finally {

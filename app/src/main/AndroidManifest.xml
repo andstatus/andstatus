@@ -58,7 +58,9 @@
             android:permission="android.permission.READ_EXTERNAL_STORAGE"/>
 				
 		<service android:name="org.andstatus.app.service.MyService"
-		    android:exported="false" />
+            android:enabled="true"
+		    android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
             android:name="org.andstatus.app.account.AuthenticatorService"
             android:exported="false"

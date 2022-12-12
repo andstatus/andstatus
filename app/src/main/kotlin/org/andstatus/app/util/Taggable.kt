@@ -3,7 +3,19 @@ package org.andstatus.app.util
 import org.andstatus.app.util.Taggable.Companion.noNameTag
 import kotlin.reflect.KClass
 
-private fun klassToStringTag(clazz: KClass<*>) = clazz.simpleName ?: noNameTag
+private fun klassToStringTag(clazz: KClass<*>) = clazz.simpleName
+    ?.let { simpleName ->
+        if (simpleName == "Companion") {
+            clazz.qualifiedName?.split(".")
+                ?.takeIf { it.size > 1 }
+                ?.let {
+                    it[it.size - 2] + ".$simpleName"
+                }
+                ?: simpleName
+
+        } else simpleName
+    }
+    ?: noNameTag
 
 /**
  * We may override classTag method, providing e.g. "static final String TAG"

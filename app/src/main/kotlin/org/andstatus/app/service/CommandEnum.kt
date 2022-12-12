@@ -28,13 +28,14 @@ import org.andstatus.app.util.MyLog
  * @author yvolk@yurivolkov.com
  */
 enum class CommandEnum constructor(
-        /** code of the enum that is used in notes  */
-        private val code: String?,
-        /** The id of the string resource with the localized name of this enum to use in UI  */
-        private val titleResId: Int = 0,
-        /** less value of the  priority means higher priority  */
-        private val priority: Int = 0,
-        private val connectionRequired: ConnectionRequired = ConnectionRequired.ANY) {
+    /** code of the enum that is used in notes  */
+    private val code: String?,
+    /** The id of the string resource with the localized name of this enum to use in UI  */
+    private val titleResId: Int = 0,
+    /** less value of the  priority means higher priority  */
+    private val priority: Int = 0,
+    private val connectionRequired: ConnectionRequired = ConnectionRequired.ANY
+) {
     /** The action is unknown  */
     UNKNOWN("unknown"),
 
@@ -70,12 +71,7 @@ enum class CommandEnum constructor(
     ANNOUNCE("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.SYNC),
     UNDO_ANNOUNCE("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.SYNC),
     RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.SYNC),
-
-    /** Stop the service after finishing all asynchronous treads (i.e. not immediately!)  */
-    STOP_SERVICE("stop-service"),
-
-    /** Broadcast back state of [MyService]  */
-    BROADCAST_SERVICE_STATE("broadcast-service-state");
+    ;
 
     /**
      * String code for the Command to be used in notes

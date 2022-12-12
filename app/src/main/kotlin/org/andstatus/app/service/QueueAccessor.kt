@@ -109,7 +109,10 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
 
     private fun CommandData.hasDuplicateIn(queueType: QueueType): Boolean =
         this.nonEmpty && cq[queueType].contains(this).also {
-            if (it) MyLog.v("") { "Duplicate found in $queueType: $this" }
+            if (it) MyLog.v(this) {
+                val existing = cq[queueType].find { it.equals(this) }
+                "Duplicate found in $queueType for $this; existing: $existing"
+            }
         }
 
     private fun moveCommandsFromSkippedToMainQueue() {

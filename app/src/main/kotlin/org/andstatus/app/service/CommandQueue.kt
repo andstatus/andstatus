@@ -344,7 +344,9 @@ class CommandQueue(val myContext: MyContext) {
         val preQueue: OneQueue = OneQueue(null, QueueType.PRE)
 
         fun addToPreQueue(commandData: CommandData) {
-            preQueue.addToQueue(commandData)
+            if (commandData.command != CommandEnum.UNKNOWN) {
+                preQueue.addToQueue(commandData)
+            }
         }
     }
 
