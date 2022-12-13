@@ -142,18 +142,21 @@ object UriUtils {
      */
     fun getConnectionState(context: Context): ConnectionState {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
-                ?: return ConnectionState.UNKNOWN
-        var state = ConnectionState.OFFLINE
-        val networkInfoOnline = connectivityManager.activeNetworkInfo ?: return state
-        state = if (networkInfoOnline.isAvailable && networkInfoOnline.isConnected) {
-            ConnectionState.ONLINE
-        } else {
-            return state
-        }
-        val networkInfoWiFi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI) ?: return state
-        if (networkInfoWiFi.isAvailable && networkInfoWiFi.isConnected) {
-            state = ConnectionState.WIFI
-        }
-        return state
+            ?: return ConnectionState.UNKNOWN
+        return connectivityManager.allNetworks
+            .mapNotNull { connectivityManager.getNetworkInfo(it) }
+            .filter { it.isConnected && it.isAvailable }
+            .map { networkInfo ->
+                if (networkInfo.type == ConnectivityManager.TYPE_WIFI) {
+                    ConnectionState.WIFI
+                } else ConnectionState.ONLINE
+            }
+            .fold(ConnectionState.OFFLINE) { state, type ->
+                if (type == ConnectionState.WIFI) {
+                    ConnectionState.WIFI
+                } else if (state == ConnectionState.OFFLINE) {
+                    ConnectionState.ONLINE
+                } else state
+            }
     }
 }

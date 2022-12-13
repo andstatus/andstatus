@@ -32,6 +32,7 @@ import org.andstatus.app.util.Identified
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -61,6 +62,8 @@ class MyService(
 
     @Volatile
     private var initializedTime: Long = 0
+    private val succeededCommands: AtomicInteger = AtomicInteger()
+    private val failedCommands: AtomicInteger = AtomicInteger()
 
     /** We are stopping this service  */
     private val isStopping: AtomicBoolean = AtomicBoolean(false)
@@ -119,6 +122,8 @@ class MyService(
     }
 
     fun broadcastBeforeExecutingCommand(commandData: CommandData) {
+        if (commandData.getResult().hasError()) failedCommands.incrementAndGet()
+        else succeededCommands.incrementAndGet()
         MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
             .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast()
     }
@@ -247,8 +252,14 @@ class MyService(
             AsyncTaskLauncher.cancelPoolTasks(AsyncEnum.SYNC)
             stopSelf()
             myContext.notifier.clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
-            MyLog.i(this, "Stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime))
+            MyLog.i(
+                this, "Stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime) +
+                        ", succeeded:" + succeededCommands.get() +
+                        ", failed:" + failedCommands.get()
+            )
         } finally {
+            succeededCommands.set(0)
+            failedCommands.set(0)
             isStopping.set(false)
             myServiceRef.set(null)
             jobFinished(jobParameters, needToRescheduleJob.get())

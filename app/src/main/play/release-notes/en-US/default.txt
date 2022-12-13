@@ -1,1 +1,1 @@
-v.59.09 Stability fixes
+v.59.10 Stability fixes. Fix background syncing.
