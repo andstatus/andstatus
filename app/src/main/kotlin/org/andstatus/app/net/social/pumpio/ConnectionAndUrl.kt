@@ -67,11 +67,11 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum, val uri: Uri, va
             } else if ( connection.http.data.originUrl == null ||
                     host.compareTo( connection.http.data.originUrl?.host ?: "", ignoreCase = true) != 0) {
                 MyLog.v(connection) { "Requesting data from the host: $host" }
-                val connectionData1 =  connection.http.data.copy()
-                connectionData1.oauthClientKeys = null
-                connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl())
+                val connectionData =  connection.http.data.copy()
+                connectionData.oauthClientKeys = null
+                connectionData.originUrl = UrlUtils.buildUrl(host, connectionData.isSsl())
                 httpConnection =  connection.http.getNewInstance()
-                httpConnection.setHttpConnectionData(connectionData1)
+                httpConnection.data = connectionData
             }
             if (!httpConnection.data.areOAuthClientKeysPresent()) {
                 httpConnection.registerClient()

@@ -31,10 +31,12 @@ class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
 
     override var password: String = ""
 
-    override fun setHttpConnectionData(connectionData: HttpConnectionData) {
-        super.setHttpConnectionData(connectionData)
-        password = connectionData.dataReader?.getDataString(Connection.KEY_PASSWORD) ?: ""
-    }
+    override var data: HttpConnectionData
+        get() = super.data
+        set(connectionData) {
+            super.data = connectionData
+            password = connectionData.dataReader?.getDataString(Connection.KEY_PASSWORD) ?: ""
+        }
 
     override fun postRequest(result: HttpReadResult): HttpReadResult {
         return HttpConnectionApacheCommon(this, data).postRequest(result)

@@ -38,19 +38,21 @@ abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
     // TODO: Do we need this?
     override var password: String = ""
 
-    override fun setHttpConnectionData(connectionData: HttpConnectionData) {
-        super.setHttpConnectionData(connectionData)
-        connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
-        // We look for saved user keys
-        connectionData.dataReader?.let { dataReader ->
-            if (dataReader.dataContains(userTokenKey()) == true &&
+    override var data: HttpConnectionData
+        get() = super.data
+        set(connectionData) {
+            super.data = connectionData
+            connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
+            // We look for saved user keys
+            connectionData.dataReader?.let { dataReader ->
+                if (dataReader.dataContains(userTokenKey()) == true &&
                     dataReader.dataContains(userSecretKey()) == true) {
-                userToken = dataReader.getDataString(userTokenKey())
-                userSecret = dataReader.getDataString(userSecretKey())
-                setUserTokenWithSecret(userToken, userSecret)
+                    userToken = dataReader.getDataString(userTokenKey())
+                    userSecret = dataReader.getDataString(userSecretKey())
+                    setUserTokenWithSecret(userToken, userSecret)
+                }
             }
         }
-    }
 
     override val credentialsPresent: Boolean get() {
         val yes = (data.oauthClientKeys?.areKeysPresent() == true

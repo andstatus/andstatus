@@ -21,10 +21,6 @@ open class HttpConnection : HttpConnectionInterface {
 
     override var data: HttpConnectionData = HttpConnectionData.EMPTY
 
-    override fun setHttpConnectionData(data: HttpConnectionData) {
-        this.data = data
-    }
-
     override var password: String = ""
 
     override fun getNewInstance(): HttpConnection {

@@ -33,14 +33,12 @@ import java.net.URL
 
 interface HttpConnectionInterface {
 
-    val data: HttpConnectionData
+    var data: HttpConnectionData
 
     fun registerClient(): Try<Unit> {
         // Do nothing in the default implementation
         return TryUtils.SUCCESS
     }
-
-    fun setHttpConnectionData(data: HttpConnectionData)
 
     fun pathToUrlString(path: String): String {
         // TODO: return Try

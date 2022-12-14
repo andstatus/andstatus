@@ -31,10 +31,6 @@ import java.io.IOException
 
 class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpecific {
 
-    override fun setHttpConnectionData(connectionData: HttpConnectionData) {
-        super.setHttpConnectionData(connectionData)
-    }
-
     override fun getProvider(): OAuthProvider {
         val provider = CommonsHttpOAuthProvider(
                 getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),

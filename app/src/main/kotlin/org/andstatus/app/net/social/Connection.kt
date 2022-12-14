@@ -330,7 +330,7 @@ abstract class Connection protected constructor() : IsEmpty {
     open fun setAccountConnectionData(connectionData: AccountConnectionData): Connection {
         data = connectionData
         http = connectionData.newHttpConnection()
-        http.setHttpConnectionData(HttpConnectionData.fromAccountConnectionData(connectionData))
+        http.data = HttpConnectionData.fromAccountConnectionData(connectionData)
         return this
     }
 
