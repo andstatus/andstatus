@@ -18,12 +18,14 @@ package org.andstatus.app.net.http
 import android.net.Uri
 import android.text.TextUtils
 import com.github.scribejava.core.oauth.OAuth20Service
+import oauth.signpost.OAuthConsumer
+import oauth.signpost.OAuthProvider
 import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.UriUtils
 
-abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
+abstract class HttpConnectionOAuth : HttpConnection() {
     var logMe = false
     private fun userTokenKey(): String {
         return "user_token"
@@ -35,6 +37,7 @@ abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
 
     override var userToken: String = ""
     override var userSecret: String = ""
+
     // TODO: Do we need this?
     override var password: String = ""
 
@@ -46,7 +49,8 @@ abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
             // We look for saved user keys
             connectionData.dataReader?.let { dataReader ->
                 if (dataReader.dataContains(userTokenKey()) == true &&
-                    dataReader.dataContains(userSecretKey()) == true) {
+                    dataReader.dataContains(userSecretKey()) == true
+                ) {
                     userToken = dataReader.getDataString(userTokenKey())
                     userSecret = dataReader.getDataString(userSecretKey())
                     setUserTokenWithSecret(userToken, userSecret)
@@ -54,18 +58,19 @@ abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
             }
         }
 
-    override val credentialsPresent: Boolean get() {
-        val yes = (data.oauthClientKeys?.areKeysPresent() == true
-                && !userToken.isEmpty()
-                && !userSecret.isEmpty())
-        if (!yes && logMe) {
-            MyLog.v(this) {
-                ("Credentials presence: clientKeys:" + data.oauthClientKeys?.areKeysPresent()
-                        + "; userKeys:" + !userToken.isEmpty() + "," + !userSecret.isEmpty())
+    override val credentialsPresent: Boolean
+        get() {
+            val yes = (data.oauthClientKeys?.areKeysPresent() == true
+                    && !userToken.isEmpty()
+                    && !userSecret.isEmpty())
+            if (!yes && logMe) {
+                MyLog.v(this) {
+                    ("Credentials presence: clientKeys:" + data.oauthClientKeys?.areKeysPresent()
+                            + "; userKeys:" + !userToken.isEmpty() + "," + !userSecret.isEmpty())
+                }
             }
+            return yes
         }
-        return yes
-    }
 
     open fun getApiUri(routine: ApiRoutineEnum?): Uri {
         var url: String
@@ -76,17 +81,23 @@ abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
             ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/client/register"
             else -> ""
         }
-        if (!url.isNullOrEmpty()) {
+        if (!url.isEmpty()) {
             url = pathToUrlString(url)
         }
         return UriUtils.fromString(url)
     }
 
-    override fun getService(redirect: Boolean): OAuth20Service? {
+    abstract fun getConsumer(): OAuthConsumer?
+
+    abstract fun getProvider(): OAuthProvider?
+
+    open fun getAdditionalAuthorizationParams(): MutableMap<String, String>? = mutableMapOf()
+
+    open fun getService(redirect: Boolean): OAuth20Service? {
         return null
     }
 
-    override fun isOAuth2(): Boolean {
+    open fun isOAuth2(): Boolean {
         return false
     }
 
@@ -110,7 +121,8 @@ abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
     override fun saveTo(dw: AccountDataWriter): Boolean {
         var changed = super.saveTo(dw)
         if (!TextUtils.equals(userToken, dw.getDataString(userTokenKey())) ||
-                !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))) {
+            !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))
+        ) {
             changed = true
             if (userToken.isEmpty()) {
                 dw.setDataString(userTokenKey(), "")

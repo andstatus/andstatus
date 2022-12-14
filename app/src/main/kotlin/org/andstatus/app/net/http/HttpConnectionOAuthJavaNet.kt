@@ -36,7 +36,6 @@ import java.io.Writer
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     /**
@@ -44,8 +43,9 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
      */
     override fun registerClient(): Try<Unit> {
         val uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT)
-        val logmsg: MyStringBuilder = MyStringBuilder.of("registerClient; for " + data.originUrl
-                + "; URL='" + uri + "'")
+        val logmsg: MyStringBuilder = MyStringBuilder.of(
+            "registerClient; for " + data.originUrl + "; URL='" + uri + "'"
+        )
         MyLog.v(this) { logmsg.toString() }
         data.oauthClientKeys?.clear()
         var writer: Writer? = null
@@ -92,8 +92,12 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
         if (data.oauthClientKeys?.areKeysPresent() == true) {
             MyLog.v(this) { "Completed $logmsg" }
         } else {
-            return Try.failure(ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
-                    "Failed to obtain client keys for host; $logmsg", data.originUrl))
+            return Try.failure(
+                ConnectionException.fromStatusCodeAndHost(
+                    StatusCode.NO_CREDENTIALS_FOR_HOST,
+                    "Failed to obtain client keys for host; $logmsg", data.originUrl
+                )
+            )
         }
         return Try.success(null)
     }
@@ -101,9 +105,10 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     override fun getProvider(): OAuthProvider? {
         val provider: OAuthProvider
         provider = DefaultOAuthProvider(
-                getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),
-                getApiUri(ApiRoutineEnum.OAUTH_ACCESS_TOKEN).toString(),
-                getApiUri(ApiRoutineEnum.OAUTH_AUTHORIZE).toString())
+            getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),
+            getApiUri(ApiRoutineEnum.OAUTH_ACCESS_TOKEN).toString(),
+            getApiUri(ApiRoutineEnum.OAUTH_AUTHORIZE).toString()
+        )
         provider.setOAuth10a(true)
         return provider
     }
@@ -147,7 +152,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
 
     /** This method is not legacy HTTP  */
     private fun writeMedia(conn: HttpURLConnection, request: HttpRequest) {
-        val contentResolver: ContentResolver =  MyContextHolder.myContextHolder.getNow().context.contentResolver
+        val contentResolver: ContentResolver = MyContextHolder.myContextHolder.getNow().context.contentResolver
         val mediaUri = request.mediaUri.get()
         conn.setChunkedStreamingMode(0)
         conn.setRequestProperty("Content-Type", uri2MimeType(contentResolver, mediaUri))
@@ -166,13 +171,17 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     private fun writeJson(conn: HttpURLConnection, request: HttpRequest, formParams: JSONObject) {
         conn.setRequestProperty("Content-Type", data.jsonContentType(request.apiRoutine))
         signConnection(conn, getConsumer(), false)
-        conn.outputStream.use { os -> OutputStreamWriter(os, UTF_8).use { writer -> writer.write(formParams.toString()) } }
+        conn.outputStream.use { os ->
+            OutputStreamWriter(os, UTF_8)
+                .use { writer -> writer.write(formParams.toString()) }
+        }
     }
 
     override fun getConsumer(): OAuthConsumer {
         val consumer: OAuthConsumer = DefaultOAuthConsumer(
-                data.oauthClientKeys?.getConsumerKey(),
-                data.oauthClientKeys?.getConsumerSecret())
+            data.oauthClientKeys?.getConsumerKey(),
+            data.oauthClientKeys?.getConsumerSecret()
+        )
         if (credentialsPresent) {
             consumer.setTokenWithSecret(userToken, userSecret)
         }
@@ -261,7 +270,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                     conn.headerFields.entries.stream().flatMap { entry ->
                         entry.value.stream()
                             .map { value: String -> ImmutablePair(entry.key, value) }
-                    }, {it.key}, {it.value})
+                    }, { it.key }, { it.value })
             } catch (ignored: Exception) {
                 // ignore
             }

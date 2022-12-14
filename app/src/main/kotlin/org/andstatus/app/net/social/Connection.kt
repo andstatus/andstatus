@@ -25,9 +25,9 @@ import org.andstatus.app.context.MyLocale.MY_DEFAULT_LOCALE
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionData
+import org.andstatus.app.net.http.HttpConnectionOAuth
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
-import org.andstatus.app.net.http.OAuthService
 import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointType
 import org.andstatus.app.origin.Origin
@@ -59,6 +59,8 @@ import kotlin.properties.Delegates
 abstract class Connection protected constructor() : IsEmpty {
     var http: HttpConnection by Delegates.notNull()
     var data: AccountConnectionData by Delegates.notNull()
+
+    val oauthHttp: HttpConnectionOAuth? get() = http.let { if (it is HttpConnectionOAuth) it else null}
 
     /**
      * @return an empty string in case the API routine is not supported
@@ -309,10 +311,6 @@ abstract class Connection protected constructor() : IsEmpty {
 
     fun setUserTokenWithSecret(token: String?, secret: String?) {
         http.setUserTokenWithSecret(token, secret)
-    }
-
-    fun getOAuthService(): OAuthService? {
-        return if (http is OAuthService) http as OAuthService? else null
     }
 
     fun registerClientForAccount(): Try<Unit> {

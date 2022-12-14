@@ -33,17 +33,20 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
 
     override fun getProvider(): OAuthProvider {
         val provider = CommonsHttpOAuthProvider(
-                getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),
-                getApiUri(ApiRoutineEnum.OAUTH_ACCESS_TOKEN).toString(),
-                getApiUri(ApiRoutineEnum.OAUTH_AUTHORIZE).toString())
+            getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),
+            getApiUri(ApiRoutineEnum.OAUTH_ACCESS_TOKEN).toString(),
+            getApiUri(ApiRoutineEnum.OAUTH_AUTHORIZE).toString()
+        )
         provider.setHttpClient(ApacheHttpClientUtils.getHttpClient(data.sslMode))
         provider.isOAuth10a = true
         return provider
     }
 
     override fun getConsumer(): OAuthConsumer {
-        val consumer: OAuthConsumer = CommonsHttpOAuthConsumer(data.oauthClientKeys?.getConsumerKey(),
-                data.oauthClientKeys?.getConsumerSecret())
+        val consumer: OAuthConsumer = CommonsHttpOAuthConsumer(
+            data.oauthClientKeys?.getConsumerKey(),
+            data.oauthClientKeys?.getConsumerSecret()
+        )
         if (credentialsPresent) {
             consumer.setTokenWithSecret(userToken, userSecret)
         }
@@ -61,7 +64,8 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
                 signRequest(httpPost)
             }
             result.strResponse = ApacheHttpClientUtils.getHttpClient(data.sslMode).execute(
-                    httpPost, BasicResponseHandler())
+                httpPost, BasicResponseHandler()
+            )
         } catch (e: Exception) {
             // We don't catch other exceptions because in fact it's vary difficult to tell
             // what was a real cause of it. So let's make code clearer.

@@ -89,7 +89,7 @@ import java.util.*
  *
  * @author yvolk@yurivolkov.com
  */
-class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
+class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
     private enum class ResultStatus {
         NONE, SUCCESS, ACCOUNT_INVALID, CONNECTION_EXCEPTION, CREDENTIALS_OF_OTHER_ACCOUNT
     }
@@ -1002,19 +1002,19 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
             try {
                 val connection = activity.state.builder.getConnection()
                 MyLog.v(this, "Retrieving request token for $connection")
-                val oAuthService = connection.getOAuthService()
-                if (oAuthService == null) {
+                val oauthHttp = connection.oauthHttp
+                if (oauthHttp == null) {
                     connectionErrorMessage = "No OAuth service for $connection"
                 } else if (!connection.areOAuthClientKeysPresent()) {
                     connectionErrorMessage = "No Client keys for $connection"
                 } else {
-                    if (oAuthService.isOAuth2()) {
-                        oAuthService.getService(true)?.let { service ->
+                    if (oauthHttp.isOAuth2()) {
+                        oauthHttp.getService(true)?.let { service ->
                             authUri =
                                 UriUtils.fromString(service.getAuthorizationUrl(activity.state.oauthStateParameter))
                         }
                     } else {
-                        val consumer = oAuthService.getConsumer()
+                        val consumer = oauthHttp.getConsumer()
 
                         // This is really important. If you were able to register your
                         // real callback Uri with Twitter, and not some fake Uri
@@ -1022,7 +1022,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
                         // null as the callback Uri in this function call. Then
                         // Twitter will correctly process your callback redirection
                         authUri = UriUtils.fromString(
-                            oAuthService.getProvider()
+                            oauthHttp.getProvider()
                                 ?.retrieveRequestToken(consumer, HttpConnectionInterface.CALLBACK_URI.toString())
                         )
                         activity.state.setRequestTokenWithSecret(consumer?.token, consumer?.tokenSecret)
@@ -1125,70 +1125,69 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
         }
 
         override suspend fun doInBackground(params: Uri?): Try<TaskResult> {
+            val oauthHttp = myAccount.connection.let {
+                it.oauthHttp ?: return TryUtils.failure("Connection is not OAuth: ${it.http}")
+            }
+
             var message = ""
             var accessToken = ""
             var accessSecret = ""
             var whoAmI: Optional<Uri> = Optional.empty()
-            if (myAccount.getOAuthService() == null) {
-                message = "Connection is not OAuth"
-                MyLog.e(this, message)
-            } else {
-                // We don't need to worry about any saved states: we can reconstruct the state
-                if (params != null && HttpConnectionInterface.CALLBACK_URI.getHost() != null &&
-                    HttpConnectionInterface.CALLBACK_URI.getHost() == params.host
-                ) {
-                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
-                    try {
-                        if (myAccount.getOAuthService()?.isOAuth2() == true) {
-                            val authorizationCode = params.getQueryParameter("code")
-                            val stateParameter = params.getQueryParameter("state")
-                            MyLog.d(this, "Auth response, code:$authorizationCode, state:$stateParameter")
-                            if (state.oauthStateParameter == stateParameter) {
-                                val service = myAccount.getOAuthService()?.getService(true)
-                                val token = service?.getAccessToken(authorizationCode)
-                                accessToken = token?.accessToken ?: ""
-                                accessSecret = token?.rawResponse ?: ""
-                                whoAmI = MyOAuth2AccessTokenJsonExtractor.extractWhoAmI(accessSecret)
-                            } else {
-                                message = "Incorrect state parameter in Authorization Response." +
-                                        " Expected: '${state.oauthStateParameter}'" +
-                                        ", Actual: '$stateParameter'"
-                            }
-                        } else {
-                            val requestToken = state.getRequestToken()
-                            val requestSecret = state.getRequestSecret()
-                            // Clear the request stuff, we've used it already
-                            state.setRequestTokenWithSecret(null, null)
-                            val consumer = myAccount.getOAuthService()?.getConsumer()
-                            if (!(requestToken == null || requestSecret == null)) {
-                                consumer?.setTokenWithSecret(requestToken, requestSecret)
-                            }
-                            val oauthToken = params.getQueryParameter(OAuth.OAUTH_TOKEN)
-                            val verifier = params.getQueryParameter(OAuth.OAUTH_VERIFIER)
 
-                            /*
-                             * yvolk 2010-07-08: It appeared that this may be not true:
-                             * Assert.assertEquals(otoken, mConsumer.getToken()); (e.g.
-                             * if User denied access during OAuth...) hence this is not
-                             * Assert :-)
-                             */if (oauthToken != null || consumer?.token != null) {
-                                myAccount.getOAuthService()?.getProvider()
-                                    ?.retrieveAccessToken(consumer, verifier)
-                                // Now we can retrieve the goodies
-                                accessToken = consumer?.token ?: ""
-                                accessSecret = consumer?.tokenSecret ?: ""
-                            }
+            // We don't need to worry about any saved states: we can reconstruct the state
+            if (params != null && HttpConnectionInterface.CALLBACK_URI.getHost() != null &&
+                HttpConnectionInterface.CALLBACK_URI.getHost() == params.host
+            ) {
+                state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
+                try {
+                    if (oauthHttp.isOAuth2()) {
+                        val authorizationCode = params.getQueryParameter("code")
+                        val stateParameter = params.getQueryParameter("state")
+                        MyLog.d(this, "Auth response, code:$authorizationCode, state:$stateParameter")
+                        if (state.oauthStateParameter == stateParameter) {
+                            val service = oauthHttp.getService(true)
+                            val token = service?.getAccessToken(authorizationCode)
+                            accessToken = token?.accessToken ?: ""
+                            accessSecret = token?.rawResponse ?: ""
+                            whoAmI = MyOAuth2AccessTokenJsonExtractor.extractWhoAmI(accessSecret)
+                        } else {
+                            message = "Incorrect state parameter in Authorization Response." +
+                                    " Expected: '${state.oauthStateParameter}'" +
+                                    ", Actual: '$stateParameter'"
                         }
-                    } catch (e: Exception) {
-                        message = e.message ?: ""
-                        MyLog.i(this, e)
-                    } finally {
-                        state.builder.setUserTokenWithSecret(accessToken, accessSecret)
-                        MyLog.d(
-                            this, "Access token for " + myAccount.getAccountName() +
-                                    ": " + accessToken + ", " + accessSecret
-                        )
+                    } else {
+                        val requestToken = state.getRequestToken()
+                        val requestSecret = state.getRequestSecret()
+                        // Clear the request stuff, we've used it already
+                        state.setRequestTokenWithSecret(null, null)
+                        val consumer = oauthHttp.getConsumer()
+                        if (!(requestToken == null || requestSecret == null)) {
+                            consumer?.setTokenWithSecret(requestToken, requestSecret)
+                        }
+                        val oauthToken = params.getQueryParameter(OAuth.OAUTH_TOKEN)
+                        val verifier = params.getQueryParameter(OAuth.OAUTH_VERIFIER)
+
+                        /*
+                         * yvolk 2010-07-08: It appeared that this may be not true:
+                         * Assert.assertEquals(otoken, mConsumer.getToken()); (e.g.
+                         * if User denied access during OAuth...) hence this is not
+                         * Assert :-)
+                         */if (oauthToken != null || consumer?.token != null) {
+                            oauthHttp.getProvider()?.retrieveAccessToken(consumer, verifier)
+                            // Now we can retrieve the goodies
+                            accessToken = consumer?.token ?: ""
+                            accessSecret = consumer?.tokenSecret ?: ""
+                        }
                     }
+                } catch (e: Exception) {
+                    message = e.message ?: ""
+                    MyLog.i(this, e)
+                } finally {
+                    state.builder.setUserTokenWithSecret(accessToken, accessSecret)
+                    MyLog.d(
+                        this, "Access token for " + myAccount.getAccountName() +
+                                ": " + accessToken + ", " + accessSecret
+                    )
                 }
             }
             return if (!accessToken.isEmpty() && !accessSecret.isEmpty()) Try.success(
@@ -1296,7 +1295,8 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
                         this@AccountSettingsActivity, R.string.authentication_successful,
                         Toast.LENGTH_SHORT
                     ).show()
-                    ResultStatus.ACCOUNT_INVALID -> errorMessage = getText(R.string.dialog_summary_authentication_failed)
+                    ResultStatus.ACCOUNT_INVALID -> errorMessage =
+                        getText(R.string.dialog_summary_authentication_failed)
                     ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT -> errorMessage =
                         getText(R.string.error_credentials_of_other_user)
                     ResultStatus.CONNECTION_EXCEPTION -> {
@@ -1339,7 +1339,7 @@ class AccountSettingsActivity: MyActivity(AccountSettingsActivity::class) {
             if (!originName.isNullOrEmpty()) {
                 intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName)
             }
-            MyLog.i( clazz, ::startAddingNewAccount.name + " with $intent")
+            MyLog.i(clazz, ::startAddingNewAccount.name + " with $intent")
             context.startActivity(intent)
         }
     }

@@ -26,7 +26,6 @@ import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.MatchedUri
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.database.table.OriginTable
-import org.andstatus.app.net.http.OAuthService
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Connection
@@ -124,8 +123,8 @@ class MyAccount internal constructor(
 
     fun isFollowing(thatActor: Actor): Boolean {
         return myContext.users.friendsOfMyActors.entries.stream()
-                .filter { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.key == thatActor.actorId }
-                .anyMatch { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.value.contains(actor.actorId) }
+            .filter { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.key == thatActor.actorId }
+            .anyMatch { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.value.contains(actor.actorId) }
     }
 
     fun getShortestUniqueAccountName(): String {
@@ -134,7 +133,8 @@ class MyAccount internal constructor(
         var possiblyUnique = actor.uniqueName
         for (persistentAccount in myContext.accounts.get()) {
             if (!persistentAccount.toString().equals(toString(), ignoreCase = true)
-                    && persistentAccount.actor.uniqueName.equals(possiblyUnique, ignoreCase = true)) {
+                && persistentAccount.actor.uniqueName.equals(possiblyUnique, ignoreCase = true)
+            ) {
                 found = true
                 break
             }
@@ -146,7 +146,8 @@ class MyAccount internal constructor(
             possiblyUnique = username
             for (persistentAccount in myContext.accounts.get()) {
                 if (!persistentAccount.toString().equals(toString(), ignoreCase = true)
-                        && persistentAccount.username.equals(possiblyUnique, ignoreCase = true)) {
+                    && persistentAccount.username.equals(possiblyUnique, ignoreCase = true)
+                ) {
                     found = true
                     break
                 }
@@ -224,10 +225,6 @@ class MyAccount internal constructor(
         return connection.areOAuthClientKeysPresent()
     }
 
-    fun getOAuthService(): OAuthService? {
-        return connection.getOAuthService()
-    }
-
     fun charactersLeftForNote(html: String?): Int {
         return origin.charactersLeftForNote(html)
     }
@@ -255,7 +252,7 @@ class MyAccount internal constructor(
     fun requestSync() {
         if (!isPersistent()) return
         AccountUtils.getExistingAndroidAccount(data.accountName)
-                .onSuccess { a: Account? -> ContentResolver.requestSync(a, MatchedUri.AUTHORITY, Bundle()) }
+            .onSuccess { a: Account? -> ContentResolver.requestSync(a, MatchedUri.AUTHORITY, Bundle()) }
     }
 
     fun getEffectiveSyncFrequencyMillis(): Long {
@@ -352,10 +349,10 @@ class MyAccount internal constructor(
 
     fun getLastSyncSucceededDate(): Long {
         return if (isValid && isPersistent()) myContext.timelines
-                .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor,  Origin.EMPTY)
-                .map { obj: Timeline -> obj.getSyncSucceededDate() }
-                .max { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }
-                .orElse(0L) else 0L
+            .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor, Origin.EMPTY)
+            .map { obj: Timeline -> obj.getSyncSucceededDate() }
+            .max { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }
+            .orElse(0L) else 0L
     }
 
     fun hasAnyTimelines(): Boolean {
@@ -402,17 +399,17 @@ class MyAccount internal constructor(
         val EMPTY: MyAccount by lazy {
             MyAccount(AccountName.EMPTY)
         }
+
         fun fromBundle(myContext: MyContext, bundle: Bundle?): MyAccount {
             return if (bundle == null) EMPTY else myContext.accounts.fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key))
         }
     }
 
     init {
-        actor = Actor.load(myContext, data.getDataLong(KEY_ACTOR_ID, 0L), false
-        ) {
+        actor = Actor.load(myContext, data.getDataLong(KEY_ACTOR_ID, 0L), false) {
             Actor.fromOid(data.accountName.origin, data.getDataString(KEY_ACTOR_OID))
-                    .withUniqueName(data.accountName.getUniqueName())
-                    .lookupUser()
+                .withUniqueName(data.accountName.getUniqueName())
+                .lookupUser()
         }
         deleted = data.getDataBoolean(KEY_DELETED, false)
         syncFrequencySeconds = data.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L)

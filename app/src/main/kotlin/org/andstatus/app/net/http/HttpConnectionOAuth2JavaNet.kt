@@ -45,8 +45,9 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
 
     override fun registerClient(): Try<Unit> {
         val uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT)
-        val logmsg: MyStringBuilder = MyStringBuilder.of("registerClient; for " + data.originUrl
-                + "; URL='" + uri + "'")
+        val logmsg: MyStringBuilder = MyStringBuilder.of(
+            "registerClient; for " + data.originUrl + "; URL='" + uri + "'"
+        )
         MyLog.v(this) { logmsg.toString() }
         data.oauthClientKeys?.clear()
         return try {
@@ -102,10 +103,10 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
             } else if (result.request.postParams.isPresent) {
                 val params = result.request.postParams.get()
                 if (data.optOriginContentType().map { value: String? ->
-                            request.addHeader("Content-Type", value)
-                            request.setPayload(params.toString().toByteArray(StandardCharsets.UTF_8))
-                            false
-                        }.orElse(true)) {
+                        request.addHeader("Content-Type", value)
+                        request.setPayload(params.toString().toByteArray(StandardCharsets.UTF_8))
+                        false
+                    }.orElse(true)) {
                     val iterator = params.keys()
                     while (iterator.hasNext()) {
                         val key = iterator.next()
@@ -191,8 +192,8 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         clientConfig.readTimeout = 2 * MyPreferences.getConnectionTimeoutMs()
         clientConfig.isFollowRedirects = false
         val serviceBuilder = ServiceBuilder(data.oauthClientKeys?.getConsumerKey())
-                .apiSecret(data.oauthClientKeys?.getConsumerSecret())
-                .httpClientConfig(clientConfig)
+            .apiSecret(data.oauthClientKeys?.getConsumerSecret())
+            .httpClientConfig(clientConfig)
         if (redirect) {
             serviceBuilder.callback(HttpConnectionInterface.CALLBACK_URI.toString())
         }

@@ -20,7 +20,6 @@ import com.github.scribejava.core.model.OAuthConstants
 import com.github.scribejava.core.oauth.OAuth20Service
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.UriUtils
-import java.util.*
 
 class HttpConnectionOAuthMastodon : HttpConnectionOAuth2JavaNet() {
     override fun getApiUri(routine: ApiRoutineEnum?): Uri {
