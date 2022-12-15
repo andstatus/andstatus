@@ -44,8 +44,8 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
 
     override fun getConsumer(): OAuthConsumer {
         val consumer: OAuthConsumer = CommonsHttpOAuthConsumer(
-            data.oauthClientKeys?.getConsumerKey(),
-            data.oauthClientKeys?.getConsumerSecret()
+            oauthClientKeys?.getConsumerKey(),
+            oauthClientKeys?.getConsumerSecret()
         )
         if (credentialsPresent) {
             consumer.setTokenWithSecret(userToken, userSecret)
@@ -79,7 +79,7 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
     }
 
     private fun signRequest(httpGetOrPost: Any?) {
-        if (data.oauthClientKeys?.areKeysPresent() == true) {
+        if (oauthClientKeys?.areKeysPresent() == true) {
             try {
                 getConsumer().sign(httpGetOrPost)
             } catch (e: OAuthMessageSignerException) {

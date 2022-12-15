@@ -47,10 +47,11 @@ class ConnectionTwitterTest {
     fun setUp() {
         stub = ConnectionStub.newFor(DemoData.demoData.twitterTestAccountName)
         connection = stub.connection
-        val data = stub.getHttp().data
-        data.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(data).also {
-            if (data.oauthClientKeys?.areKeysPresent() == false) {
-                data.oauthClientKeys?.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232")
+        val oauthHttp = stub.getHttp()
+        oauthHttp.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(oauthHttp.data).also {
+            if (oauthHttp.oauthClientKeys?.areKeysPresent() == false) {
+                oauthHttp.oauthClientKeys?.setConsumerKeyAndSecret("keyForGetTimelineForTw",
+                    "thisIsASecret341232")
             }
         }
     }

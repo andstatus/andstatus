@@ -18,6 +18,8 @@ package org.andstatus.app.net.http
 import android.text.TextUtils
 import androidx.annotation.RawRes
 import io.vavr.control.CheckedFunction
+import oauth.signpost.OAuthConsumer
+import oauth.signpost.OAuthProvider
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.http.StatusCode.Companion.STATUS_CODE_INT_NOT_FOUND
 import org.andstatus.app.util.InstanceId
@@ -31,7 +33,12 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.Consumer
 import java.util.stream.Collectors
 
-class HttpConnectionStub : HttpConnection() {
+class HttpConnectionStub : HttpConnectionOAuth() {
+    init {
+        userToken = "token"
+        userSecret = "secret"
+    }
+
     private val results: MutableList<HttpReadResult> = CopyOnWriteArrayList()
     private val responses: MutableList<String> = CopyOnWriteArrayList()
 
@@ -50,12 +57,6 @@ class HttpConnectionStub : HttpConnection() {
 
     @Volatile
     override var password: String = "password"
-
-    @Volatile
-    override var userToken: String = "token"
-
-    @Volatile
-    override var userSecret: String = "secret"
 
     private val networkDelayMs: Long = 1000
     private val mInstanceId = InstanceId.next()
@@ -152,8 +153,12 @@ class HttpConnectionStub : HttpConnection() {
         userSecret = ""
     }
 
-    override val credentialsPresent: Boolean get() =
-        password.isNotEmpty() || !TextUtils.isDigitsOnly(userToken) && userSecret.isNotEmpty()
+    override val credentialsPresent: Boolean
+        get() =
+            password.isNotEmpty() || !TextUtils.isDigitsOnly(userToken) && userSecret.isNotEmpty()
+
+    override fun getConsumer(): OAuthConsumer? = null
+    override fun getProvider(): OAuthProvider? = null
 
     fun getLatestPostedJSONObject(): JSONObject? {
         return results.get(results.size - 1).request.postParams.orElse(JSONObject())
@@ -181,14 +186,14 @@ class HttpConnectionStub : HttpConnection() {
 
     fun getPostedObjects(): MutableList<JSONObject> {
         return getResults().stream()
-                .map { r: HttpReadResult -> r.request.postParams.orElse(null) }
-                .collect(Collectors.toList())
+            .map { r: HttpReadResult -> r.request.postParams.orElse(null) }
+            .collect(Collectors.toList())
     }
 
     fun getPostedCounter(): Int {
         return getResults().stream().reduce(0,
-                { a: Int, r: HttpReadResult -> r.request.postParams.map { p: JSONObject? -> a + 1 }.orElse(a) },
-                { a1: Int, a2: Int -> a1 + a2 })
+            { a: Int, r: HttpReadResult -> r.request.postParams.map { p: JSONObject? -> a + 1 }.orElse(a) },
+            { a1: Int, a2: Int -> a1 + a2 })
     }
 
     fun clearData() {
@@ -203,8 +208,8 @@ class HttpConnectionStub : HttpConnection() {
         return mInstanceId
     }
 
-    override fun getNewInstance(): HttpConnection {
-        return this
+    override fun <T : HttpConnectionInterface> getNewInstance(): T {
+        return this as T
     }
 
     override fun getRequest(result: HttpReadResult): HttpReadResult {
@@ -214,8 +219,8 @@ class HttpConnectionStub : HttpConnection() {
     fun waitForPostContaining(substring: String): HttpReadResult {
         for (attempt in 0..9) {
             val result = getResults().stream()
-                    .filter { r: HttpReadResult -> r.request.postParams.toString().contains(substring) }
-                    .findFirst()
+                .filter { r: HttpReadResult -> r.request.postParams.toString().contains(substring) }
+                .findFirst()
             if (result.isPresent) return result.get()
             if (DbUtils.waitMs("waitForPostContaining", 2000)) break
         }

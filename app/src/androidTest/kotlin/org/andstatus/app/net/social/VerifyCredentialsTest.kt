@@ -46,20 +46,23 @@ class VerifyCredentialsTest {
     fun setUp() {
         stub = ConnectionStub.newFor(DemoData.demoData.twitterTestAccountName)
         connection = stub.connection
-        val data = stub.getHttp().data
-        data.originUrl = UrlUtils.fromString("https://twitter.com")
-        data.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(data)
-        keyStored = data.oauthClientKeys?.getConsumerKey()
-        secretStored = data.oauthClientKeys?.getConsumerSecret()
-        if (data.oauthClientKeys?.areKeysPresent() == false) {
-            data.oauthClientKeys?.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232")
+        val oauthHttp = stub.getHttp()
+        oauthHttp.data.originUrl = UrlUtils.fromString("https://twitter.com")
+        oauthHttp.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(oauthHttp.data)
+        keyStored = oauthHttp.oauthClientKeys?.getConsumerKey()
+        secretStored = oauthHttp.oauthClientKeys?.getConsumerSecret()
+        if (oauthHttp.oauthClientKeys?.areKeysPresent() == false) {
+            oauthHttp.oauthClientKeys?.setConsumerKeyAndSecret(
+                "keyForGetTimelineForTw",
+                "thisIsASecret341232"
+            )
         }
     }
 
     @After
     fun tearDown() {
         if (!keyStored.isNullOrEmpty()) {
-            stub.getHttp().data.oauthClientKeys?.setConsumerKeyAndSecret(keyStored, secretStored)
+            stub.getHttp().oauthClientKeys?.setConsumerKeyAndSecret(keyStored, secretStored)
         }
     }
 
@@ -68,25 +71,29 @@ class VerifyCredentialsTest {
         stub.addResponse(org.andstatus.app.test.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()
         assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
-        val origin: Origin =  myContext.origins.firstOfType(OriginType.TWITTER)
+        val origin: Origin = myContext.origins.firstOfType(OriginType.TWITTER)
         val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(stub.getData().getAccountName())
-        builder.onCredentialsVerified(actor).onFailure { e -> AssertionError("Failed: $e" ) }
+        builder.onCredentialsVerified(actor).onFailure { e -> AssertionError("Failed: $e") }
         assertTrue("Account is persistent", builder.isPersistent())
         val actorId = builder.myAccount.actorId
         assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
         assertEquals("Account actorOid", builder.myAccount.getActorOid(), actor.oid)
-        assertEquals("Actor in the database for id=$actorId",
-                actor.oid,
-                MyQuery.idToOid( myContext, OidEnum.ACTOR_OID, actorId, 0))
+        assertEquals(
+            "Actor in the database for id=$actorId",
+            actor.oid,
+            MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId, 0)
+        )
         val noteOid = "383296535213002752"
         val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, noteOid)
         assertTrue("Note not found", noteId != 0L)
         val actorIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId)
         assertEquals("Note not by " + actor.getUsername() + " found", actorId, actorIdM)
-        assertEquals("Note permalink at twitter",
-                "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
-                        + "/"
-                        + builder.myAccount.username + "/status/" + noteOid,
-                origin.getNotePermalink(noteId))
+        assertEquals(
+            "Note permalink at twitter",
+            "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
+                    + "/"
+                    + builder.myAccount.username + "/status/" + noteOid,
+            origin.getNotePermalink(noteId)
+        )
     }
 }

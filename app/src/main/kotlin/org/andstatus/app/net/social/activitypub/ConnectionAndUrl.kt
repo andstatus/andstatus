@@ -27,6 +27,7 @@ import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointT
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UrlUtils
 
 internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEnum, val uri: Uri, val httpConnection: HttpConnection) {
@@ -70,7 +71,7 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
 
         private fun getConnection(connection: ConnectionActivityPub, apiRoutine: ApiRoutineEnum,
                                   actor: Actor): Try<HttpConnection> {
-            var httpConnection = connection.http
+            var oauthHttp = connection.oauthHttpOrThrow
             val host = actor.getConnectionHost()
             if (host.isEmpty()) {
                 return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
@@ -79,19 +80,19 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
                             connection.http.data.originUrl?.host ?: "", ignoreCase = true) != 0) {
                 MyLog.v(connection) { "Requesting data from the host: $host" }
                 val connectionData = connection.http.data.copy()
-                connectionData.oauthClientKeys = null
+                oauthHttp.oauthClientKeys = null
                 connectionData.originUrl = UrlUtils.buildUrl(host, connectionData.isSsl())
-                httpConnection = connection.http.getNewInstance()
-                httpConnection.data = connectionData
+                oauthHttp = oauthHttp.getNewInstance()
+                oauthHttp.data = connectionData
             }
-            if (!httpConnection.data.areOAuthClientKeysPresent()) {
-                httpConnection.registerClient()
-                if (!httpConnection.credentialsPresent) {
+            if (!oauthHttp.areOAuthClientKeysPresent()) {
+                oauthHttp.registerClient()
+                if (!oauthHttp.credentialsPresent) {
                     return Try.failure(ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
-                            "No credentials", httpConnection.data.originUrl))
+                            "No credentials", oauthHttp.data.originUrl))
                 }
             }
-            return Try.success(httpConnection)
+            return Try.success(oauthHttp)
         }
     }
 }

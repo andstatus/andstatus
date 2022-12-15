@@ -34,23 +34,26 @@ class OAuthClientKeysTest {
 
     @Test
     fun testKeysSave() {
-        val connectionData: HttpConnectionData = HttpConnectionData.Companion.fromAccountConnectionData(
-                AccountConnectionData.Companion.fromMyAccount( MyContextHolder.myContextHolder.getNow().accounts.getFirstPreferablySucceededForOrigin(
-                         MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.PUMPIO)), TriState.UNKNOWN)
-        )
+        val myAccount = MyContextHolder.myContextHolder.getNow()
+            .accounts
+            .getFirstPreferablySucceededForOrigin(
+                MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.PUMPIO)
+            )
+        val acData = AccountConnectionData.fromMyAccount(myAccount, TriState.UNKNOWN)
+        val connectionData: HttpConnectionData = HttpConnectionData.fromAccountConnectionData(acData)
         val consumerKey = "testConsumerKey" + System.nanoTime().toString()
         val consumerSecret = "testConsumerSecret" + System.nanoTime().toString()
         connectionData.originUrl = UrlUtils.fromString("https://example.com")
-        val keys1: OAuthClientKeys = OAuthClientKeys.Companion.fromConnectionData(connectionData)
+        val keys1: OAuthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
         keys1.clear()
         Assert.assertEquals("Keys are cleared", false, keys1.areKeysPresent())
         keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret)
-        val keys2: OAuthClientKeys = OAuthClientKeys.Companion.fromConnectionData(connectionData)
+        val keys2: OAuthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
         Assert.assertEquals("Keys are loaded", true, keys2.areKeysPresent())
         Assert.assertEquals(consumerKey, keys2.getConsumerKey())
         Assert.assertEquals(consumerSecret, keys2.getConsumerSecret())
         keys2.clear()
-        val keys3: OAuthClientKeys = OAuthClientKeys.Companion.fromConnectionData(connectionData)
+        val keys3: OAuthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
         Assert.assertEquals("Keys are cleared", false, keys3.areKeysPresent())
     }
 }

@@ -26,6 +26,7 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UrlUtils
 
@@ -60,28 +61,28 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum, val uri: Uri, va
                         .getOrElse(Uri.EMPTY)
                 host = actor.getConnectionHost()
             }
-            var httpConnection =  connection.http
+            var oauthHttp = connection.oauthHttpOrThrow
             if (host.isNullOrEmpty()) {
                 return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
                         ": host is empty for " + actor))
             } else if ( connection.http.data.originUrl == null ||
                     host.compareTo( connection.http.data.originUrl?.host ?: "", ignoreCase = true) != 0) {
                 MyLog.v(connection) { "Requesting data from the host: $host" }
-                val connectionData =  connection.http.data.copy()
-                connectionData.oauthClientKeys = null
+                val connectionData =  oauthHttp.data.copy()
+                oauthHttp.oauthClientKeys = null
                 connectionData.originUrl = UrlUtils.buildUrl(host, connectionData.isSsl())
-                httpConnection =  connection.http.getNewInstance()
-                httpConnection.data = connectionData
+                oauthHttp =  oauthHttp.getNewInstance()
+                oauthHttp.data = connectionData
             }
-            if (!httpConnection.data.areOAuthClientKeysPresent()) {
-                httpConnection.registerClient()
-                if (!httpConnection.credentialsPresent) {
+            if (!oauthHttp.areOAuthClientKeysPresent()) {
+                oauthHttp.registerClient()
+                if (!oauthHttp.credentialsPresent) {
                     return Try.failure(ConnectionException.fromStatusCodeAndHost(
                             StatusCode.NO_CREDENTIALS_FOR_HOST,
-                            "No credentials", httpConnection.data.originUrl))
+                            "No credentials", oauthHttp.data.originUrl))
                 }
             }
-            return Try.success(ConnectionAndUrl(apiRoutine, uri, httpConnection))
+            return Try.success(ConnectionAndUrl(apiRoutine, uri, oauthHttp))
         }
     }
 }

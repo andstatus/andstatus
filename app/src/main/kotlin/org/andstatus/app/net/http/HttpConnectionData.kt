@@ -28,25 +28,21 @@ import java.util.*
 
 class HttpConnectionData private constructor(private val accountName: AccountName) {
     var originUrl: URL? = null
-    var urlForUserToken: URL? = null
     var dataReader: AccountDataReader? = null
-    var oauthClientKeys: OAuthClientKeys? = null
+
+    val basicPath: String get() = getOriginType().getBasicPath()
+    val oauthPath: String get() = getOriginType().getOauthPath()
+    val sslMode: SslModeEnum get() = accountName.origin.getSslMode()
 
     fun copy(): HttpConnectionData {
         val data = HttpConnectionData(accountName)
         data.originUrl = originUrl
-        data.urlForUserToken = urlForUserToken
         data.dataReader = dataReader
-        data.oauthClientKeys = oauthClientKeys
         return data
     }
 
     fun getAccountName(): AccountName {
         return accountName
-    }
-
-    fun areOAuthClientKeysPresent(): Boolean {
-        return oauthClientKeys?.areKeysPresent() == true
     }
 
     override fun toString(): String {
@@ -55,16 +51,13 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
                 + (if (getUseLegacyHttpProtocol() != TriState.UNKNOWN) ", HTTP:" + (if (getUseLegacyHttpProtocol() == TriState.TRUE) "legacy" else "latest") else "")
                 + ", basicPath:" + basicPath
                 + ", oauthPath:" + oauthPath
-                + ", originUrl:" + originUrl + ", hostForUserToken:" + urlForUserToken + ", dataReader:"
-                + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}")
+                + ", originUrl:" + originUrl + ", dataReader:"
+                + dataReader + "}")
     }
 
     fun getOriginType(): OriginType {
         return accountName.origin.originType
     }
-
-    val basicPath: String get() = getOriginType().getBasicPath()
-    val oauthPath: String get() = getOriginType().getOauthPath()
 
     fun isSsl(): Boolean {
         return accountName.origin.isSsl()
@@ -73,8 +66,6 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
     fun getUseLegacyHttpProtocol(): TriState {
         return accountName.origin.useLegacyHttpProtocol()
     }
-
-    val sslMode: SslModeEnum get() = accountName.origin.getSslMode()
 
     fun jsonContentType(apiRoutine: ApiRoutineEnum): String {
         return if (apiRoutine.isOriginApi()) getOriginType().getContentType()
@@ -95,7 +86,6 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
         fun fromAccountConnectionData(acData: AccountConnectionData): HttpConnectionData {
             val data = HttpConnectionData(acData.getAccountName())
             data.originUrl = acData.getOriginUrl()
-            data.urlForUserToken = acData.getOriginUrl()
             data.dataReader = acData.getDataReader()
             return data
         }

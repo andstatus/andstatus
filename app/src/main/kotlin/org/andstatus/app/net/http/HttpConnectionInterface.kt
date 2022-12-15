@@ -112,10 +112,6 @@ interface HttpConnectionInterface {
         // Empty
     }
 
-    fun clearClientKeys() {
-        data.oauthClientKeys?.clear()
-    }
-
     fun isPasswordNeeded(): Boolean {
         return false
     }
@@ -142,11 +138,8 @@ interface HttpConnectionInterface {
         throw IllegalArgumentException("setUserTokenWithSecret is for OAuth only!")
     }
 
-    val userToken: String get() = ""
-
-    val userSecret: String get() = ""
-
-    fun getNewInstance(): HttpConnectionInterface
+    // TODO: Find a better way to instantiate proper class
+    fun <T : HttpConnectionInterface> getNewInstance(): T = javaClass.newInstance() as T
 
     fun onMoved(result: HttpReadResult): Boolean {
         result.appendToLog("statusLine:'" + result.statusLine + "'")

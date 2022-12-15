@@ -68,17 +68,14 @@ class AccountConnectionData private constructor(private val myAccount: MyAccount
         return myAccount.data
     }
 
-    fun newHttpConnection(): HttpConnection {
-        val http = origin.myContext.httpConnectionStub
-        return http
-                ?: try {
-                    httpConnectionClass.newInstance()
-                } catch (e: InstantiationException) {
-                    HttpConnection.EMPTY
-                } catch (e: IllegalAccessException) {
-                    HttpConnection.EMPTY
-                }
-    }
+    fun newHttpConnection(): HttpConnection = origin.myContext.httpConnectionStub
+        ?: try {
+            httpConnectionClass.newInstance()
+        } catch (e: InstantiationException) {
+            HttpConnection.EMPTY
+        } catch (e: IllegalAccessException) {
+            HttpConnection.EMPTY
+        }
 
     override fun toString(): String {
         return if (myAccount.isEmpty) if (origin.hasHost()) origin.getHost() else originUrl.toString() else myAccount.getAccountName()

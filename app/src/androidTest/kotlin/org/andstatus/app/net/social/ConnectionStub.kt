@@ -23,6 +23,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
+import org.andstatus.app.net.http.HttpConnectionOAuth
 import org.andstatus.app.net.http.HttpConnectionStub
 
 class ConnectionStub private constructor(val connection: Connection) {
@@ -39,8 +40,8 @@ class ConnectionStub private constructor(val connection: Connection) {
         return connection.data
     }
 
-    fun getHttp(): HttpConnection {
-        return connection.http
+    fun getHttp(): HttpConnectionOAuth {
+        return connection.oauthHttpOrThrow
     }
 
     fun getHttpStub(): HttpConnectionStub {
@@ -59,13 +60,11 @@ class ConnectionStub private constructor(val connection: Connection) {
             return stub
         }
 
-        fun getHttpStub(http: HttpConnection?): HttpConnectionStub {
-            if (http != null && HttpConnectionStub::class.java.isAssignableFrom(http.javaClass)) {
-                return http as HttpConnectionStub
-            }
-            checkNotNull(http) { "http is null" }
-            MyContextHolder.myContextHolder.getNow().httpConnectionStub
-            throw IllegalStateException("http is " + http.javaClass.name + ", " +  MyContextHolder.myContextHolder.getNow())
+        fun getHttpStub(http: HttpConnection): HttpConnectionStub {
+            if (http is HttpConnectionStub) return http
+            val myContext = MyContextHolder.myContextHolder.getNow()
+            myContext.httpConnectionStub
+            throw IllegalStateException("getHttpStub: http is " + http::class.qualifiedName + ", " + myContext)
         }
     }
 }

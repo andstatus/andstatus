@@ -62,6 +62,9 @@ abstract class Connection protected constructor() : IsEmpty {
 
     val oauthHttp: HttpConnectionOAuth? get() = http.let { if (it is HttpConnectionOAuth) it else null}
 
+    val oauthHttpOrThrow: HttpConnectionOAuth get() = oauthHttp
+        ?: throw IllegalStateException("Connection is not OAuth")
+
     /**
      * @return an empty string in case the API routine is not supported
      */
@@ -318,16 +321,19 @@ abstract class Connection protected constructor() : IsEmpty {
     }
 
     fun clearClientKeys() {
-        http.clearClientKeys()
+        oauthHttp?.clearClientKeys()
     }
 
     fun areOAuthClientKeysPresent(): Boolean {
-        return http.data.areOAuthClientKeysPresent()
+        return oauthHttp?.areOAuthClientKeysPresent() ?: false
     }
 
     open fun setAccountConnectionData(connectionData: AccountConnectionData): Connection {
         data = connectionData
         http = connectionData.newHttpConnection()
+        http.let {
+            if (it is HttpConnectionOAuth) it.urlForUserToken = connectionData.getOriginUrl()
+        }
         http.data = HttpConnectionData.fromAccountConnectionData(connectionData)
         return this
     }

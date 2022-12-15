@@ -602,7 +602,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
             R.string.log_out,
             myAccount.getCredentialsPresent() ||
                     myAccount.connection.areOAuthClientKeysPresent() &&
-                    myAccount.connection.http.data.oauthClientKeys?.areDynamic == true
+                    myAccount.connection.oauthHttp?.oauthClientKeys?.areDynamic == true
         )
             ?.setOnClickListener {
                 with(state.builder) {
@@ -1125,9 +1125,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         }
 
         override suspend fun doInBackground(params: Uri?): Try<TaskResult> {
-            val oauthHttp = myAccount.connection.let {
-                it.oauthHttp ?: return TryUtils.failure("Connection is not OAuth: ${it.http}")
-            }
+            val oauthHttp = myAccount.connection.oauthHttpOrThrow
 
             var message = ""
             var accessToken = ""

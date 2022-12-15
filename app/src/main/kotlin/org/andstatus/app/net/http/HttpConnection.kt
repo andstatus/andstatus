@@ -15,24 +15,11 @@
  */
 package org.andstatus.app.net.http
 
-import org.andstatus.app.util.MyLog
-
 open class HttpConnection : HttpConnectionInterface {
 
     override var data: HttpConnectionData = HttpConnectionData.EMPTY
 
     override var password: String = ""
-
-    override fun getNewInstance(): HttpConnection {
-        try {
-            return javaClass.newInstance()
-        } catch (e: InstantiationException) {
-            MyLog.e(this, e)
-        } catch (e: IllegalAccessException) {
-            MyLog.e(this, e)
-        }
-        return EMPTY
-    }
 
     companion object {
         val EMPTY: HttpConnection = HttpConnection()

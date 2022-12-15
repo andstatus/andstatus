@@ -70,24 +70,27 @@ class ConnectionPumpioTest {
     @Before
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        originUrl = UrlUtils.fromString("https://" + DemoData.demoData.pumpioMainHost) ?: throw IllegalStateException("No Url")
+        originUrl = UrlUtils.fromString("https://" + DemoData.demoData.pumpioMainHost)
+            ?: throw IllegalStateException("No Url")
         stub = ConnectionStub.newFor(DemoData.demoData.conversationAccountName)
         connection = stub.connection as ConnectionPumpio
-        val data = stub.getHttp().data
+        val oauthHttp = connection.oauthHttpOrThrow
+        val data = oauthHttp.data
         data.originUrl = originUrl
-        data.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(data).also { keys ->
+        oauthHttp.oauthClientKeys = OAuthClientKeys.fromConnectionData(data).also { keys ->
             keyStored = keys.getConsumerKey()
             secretStored = keys.getConsumerSecret()
             if (!keys.areKeysPresent()) {
-                data.oauthClientKeys?.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341")
+                oauthHttp.oauthClientKeys?.setConsumerKeyAndSecret("keyForThetestGetTimeline",
+                    "thisIsASecret02341")
             }
         }
     }
 
     @After
     fun tearDown() {
-        if (!keyStored.isNullOrEmpty()) {
-            stub.getHttp().data.oauthClientKeys?.setConsumerKeyAndSecret(keyStored, secretStored)
+        if (keyStored.isNotEmpty()) {
+            stub.getHttp().oauthClientKeys?.setConsumerKeyAndSecret(keyStored, secretStored)
         }
     }
 
@@ -144,12 +147,15 @@ class ConnectionPumpioTest {
                 Actor.Companion.fromOid(origin, "somebody@" + DemoData.demoData.pumpioMainHost)
                         .setWebFingerId("somebody@" + DemoData.demoData.pumpioMainHost)
         )
-        val urls = arrayOf<String?>(originUrl.toString() + "/api/user/t131t/profile", originUrl.toString() + "/api/user/somebody/profile")
+        val urls = arrayOf<String?>(originUrl.toString() + "/api/user/t131t/profile",
+            originUrl.toString() + "/api/user/somebody/profile")
         val hosts = arrayOf<String?>(DemoData.demoData.pumpioMainHost, DemoData.demoData.pumpioMainHost)
         for (ind in actors.indices) {
-            val conu: ConnectionAndUrl = ConnectionAndUrl.Companion.fromActor(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]).get()
+            val conu: ConnectionAndUrl = ConnectionAndUrl
+                .fromActor(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]).get()
             Assert.assertEquals("Expecting '" + urls[ind] + "'", Uri.parse(urls[ind]), conu.uri)
-            Assert.assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl?.host)
+            Assert.assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind],
+                conu.httpConnection.data.originUrl?.host)
         }
     }
 
@@ -345,7 +351,7 @@ class ConnectionPumpioTest {
         val toArray = jsoActivity.optJSONArray("to") ?: JSONArray()
         Assert.assertEquals("Only public recipient expected $jsoActivity", 1, toArray.length().toLong())
         val recipient = toArray[0] as JSONObject
-        Assert.assertEquals("Only public recipient expected $jsoActivity", ConnectionPumpio.Companion.PUBLIC_COLLECTION_ID,
+        Assert.assertEquals("Only public recipient expected $jsoActivity", ConnectionPumpio.PUBLIC_COLLECTION_ID,
                 recipient.getString("id"))
         Assert.assertFalse("InReplyTo is not present $jsoActivity", jso.has("inReplyTo"))
     }

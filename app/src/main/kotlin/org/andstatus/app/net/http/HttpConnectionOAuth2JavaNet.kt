@@ -49,7 +49,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
             "registerClient; for " + data.originUrl + "; URL='" + uri + "'"
         )
         MyLog.v(this) { logmsg.toString() }
-        data.oauthClientKeys?.clear()
+        oauthClientKeys?.clear()
         return try {
             val params = JSONObject()
             params.put("client_name", HttpConnectionInterface.USER_AGENT)
@@ -63,8 +63,8 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
                 .map { jso: JSONObject ->
                     val consumerKey = jso.getString("client_id")
                     val consumerSecret = jso.getString("client_secret")
-                    data.oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
-                    data.oauthClientKeys?.areKeysPresent() ?: false
+                    oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
+                    oauthClientKeys?.areKeysPresent() ?: false
                 }
                 .flatMap { keysArePresent: Boolean ->
                     if (keysArePresent) {
@@ -85,7 +85,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
     }
 
     override fun postRequest(result: HttpReadResult): HttpReadResult {
-        return if (data.areOAuthClientKeysPresent()) {
+        return if (areOAuthClientKeysPresent()) {
             postRequestOauth(result)
         } else {
             super.postRequest(result)
@@ -191,8 +191,8 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         clientConfig.connectTimeout = MyPreferences.getConnectionTimeoutMs()
         clientConfig.readTimeout = 2 * MyPreferences.getConnectionTimeoutMs()
         clientConfig.isFollowRedirects = false
-        val serviceBuilder = ServiceBuilder(data.oauthClientKeys?.getConsumerKey())
-            .apiSecret(data.oauthClientKeys?.getConsumerSecret())
+        val serviceBuilder = ServiceBuilder(oauthClientKeys?.getConsumerKey())
+            .apiSecret(oauthClientKeys?.getConsumerSecret())
             .httpClientConfig(clientConfig)
         if (redirect) {
             serviceBuilder.callback(HttpConnectionInterface.CALLBACK_URI.toString())
@@ -205,7 +205,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
 
     private fun signRequest(request: OAuthRequest, service: OAuth20Service, redirected: Boolean) {
         val originUrl = data.originUrl
-        val urlForUserToken = data.urlForUserToken
+        val urlForUserToken = urlForUserToken
         if (!credentialsPresent || originUrl == null || urlForUserToken == null) {
             return
         }
@@ -237,23 +237,23 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
 
     override fun signConnection(conn: HttpURLConnection, consumer: OAuthConsumer, redirected: Boolean) {
         val originUrl = data.originUrl
-        val urlForUserToken = data.urlForUserToken
-        if (!credentialsPresent || originUrl == null || urlForUserToken == null) {
+        val tokenUrl = urlForUserToken
+        if (!credentialsPresent || originUrl == null || tokenUrl == null) {
             return
         }
         try {
-            val token: OAuth2AccessToken = if (originUrl.host == urlForUserToken.host) {
+            val token: OAuth2AccessToken = if (originUrl.host == tokenUrl.host) {
                 OAuth2AccessToken(userToken, userSecret)
             } else {
                 if (redirected) {
                     OAuth2AccessToken("", null)
                 } else {
                     conn.setRequestProperty("Authorization", "Dialback")
-                    conn.setRequestProperty("host", urlForUserToken.host)
+                    conn.setRequestProperty("host", tokenUrl.host)
                     conn.setRequestProperty("token", userToken)
                     MyLog.v(this) {
                         ("Dialback authorization at " + originUrl + "; urlForUserToken="
-                                + urlForUserToken + "; token=" + userToken)
+                                + tokenUrl + "; token=" + userToken)
                     }
                     OAuth2AccessToken(userToken, null)
                 }
@@ -273,6 +273,6 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
     }
 
     companion object {
-        val OAUTH_SCOPES: String = "read write follow"
+        const val OAUTH_SCOPES: String = "read write follow"
     }
 }

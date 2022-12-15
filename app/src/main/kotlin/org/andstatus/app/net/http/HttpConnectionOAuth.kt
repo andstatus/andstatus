@@ -24,9 +24,10 @@ import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.UriUtils
+import java.net.URL
 
 abstract class HttpConnectionOAuth : HttpConnection() {
-    var logMe = false
+    private var logMe = false
     private fun userTokenKey(): String {
         return "user_token"
     }
@@ -35,22 +36,22 @@ abstract class HttpConnectionOAuth : HttpConnection() {
         return "user_secret"
     }
 
-    override var userToken: String = ""
-    override var userSecret: String = ""
+    var oauthClientKeys: OAuthClientKeys? = null
+    var urlForUserToken: URL? = null
 
-    // TODO: Do we need this?
-    override var password: String = ""
+    @Volatile
+    var userToken: String = ""
+    @Volatile
+    var userSecret: String = ""
 
     override var data: HttpConnectionData
         get() = super.data
         set(connectionData) {
             super.data = connectionData
-            connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
+            oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
             // We look for saved user keys
             connectionData.dataReader?.let { dataReader ->
-                if (dataReader.dataContains(userTokenKey()) == true &&
-                    dataReader.dataContains(userSecretKey()) == true
-                ) {
+                if (dataReader.dataContains(userTokenKey()) && dataReader.dataContains(userSecretKey())) {
                     userToken = dataReader.getDataString(userTokenKey())
                     userSecret = dataReader.getDataString(userSecretKey())
                     setUserTokenWithSecret(userToken, userSecret)
@@ -60,17 +61,25 @@ abstract class HttpConnectionOAuth : HttpConnection() {
 
     override val credentialsPresent: Boolean
         get() {
-            val yes = (data.oauthClientKeys?.areKeysPresent() == true
-                    && !userToken.isEmpty()
-                    && !userSecret.isEmpty())
+            val yes = areOAuthClientKeysPresent()
+                    && userToken.isNotEmpty()
+                    && userSecret.isNotEmpty()
             if (!yes && logMe) {
                 MyLog.v(this) {
-                    ("Credentials presence: clientKeys:" + data.oauthClientKeys?.areKeysPresent()
-                            + "; userKeys:" + !userToken.isEmpty() + "," + !userSecret.isEmpty())
+                    ("Credentials presence: clientKeys:" + oauthClientKeys?.areKeysPresent()
+                            + "; userKeys:" + userToken.isNotEmpty() + "," + userSecret.isNotEmpty())
                 }
             }
             return yes
         }
+
+    fun areOAuthClientKeysPresent(): Boolean {
+        return oauthClientKeys?.areKeysPresent() == true
+    }
+
+    fun clearClientKeys() {
+        oauthClientKeys?.clear()
+    }
 
     open fun getApiUri(routine: ApiRoutineEnum?): Uri {
         var url: String
@@ -81,7 +90,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
             ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/client/register"
             else -> ""
         }
-        if (!url.isEmpty()) {
+        if (url.isNotEmpty()) {
             url = pathToUrlString(url)
         }
         return UriUtils.fromString(url)
