@@ -26,7 +26,6 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UrlUtils
 
@@ -74,7 +73,7 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum, val uri: Uri, va
                 oauthHttp =  oauthHttp.getNewInstance()
                 oauthHttp.data = connectionData
             }
-            if (!oauthHttp.areOAuthClientKeysPresent()) {
+            if (!oauthHttp.areClientKeysPresent()) {
                 oauthHttp.registerClient()
                 if (!oauthHttp.credentialsPresent) {
                     return Try.failure(ConnectionException.fromStatusCodeAndHost(

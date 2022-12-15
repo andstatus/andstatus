@@ -18,11 +18,13 @@ package org.andstatus.app.net.http
 import android.net.Uri
 import android.text.TextUtils
 import com.github.scribejava.core.oauth.OAuth20Service
+import io.vavr.control.Try
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.OAuthProvider
 import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import java.net.URL
 
@@ -41,6 +43,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
 
     @Volatile
     var userToken: String = ""
+
     @Volatile
     var userSecret: String = ""
 
@@ -59,9 +62,14 @@ abstract class HttpConnectionOAuth : HttpConnection() {
             }
         }
 
+    open fun registerClient(): Try<Unit> {
+        // Do nothing in the default implementation
+        return TryUtils.SUCCESS
+    }
+
     override val credentialsPresent: Boolean
         get() {
-            val yes = areOAuthClientKeysPresent()
+            val yes = areClientKeysPresent()
                     && userToken.isNotEmpty()
                     && userSecret.isNotEmpty()
             if (!yes && logMe) {
@@ -73,7 +81,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
             return yes
         }
 
-    fun areOAuthClientKeysPresent(): Boolean {
+    fun areClientKeysPresent(): Boolean {
         return oauthClientKeys?.areKeysPresent() == true
     }
 
@@ -114,7 +122,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
      * @param token empty value means to clear the old values
      * @param secret
      */
-    override fun setUserTokenWithSecret(token: String?, secret: String?) {
+    fun setUserTokenWithSecret(token: String?, secret: String?) {
         synchronized(this) {
             userToken = token ?: ""
             userSecret = secret ?: ""

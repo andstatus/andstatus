@@ -55,9 +55,9 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
             val params: MutableMap<String, String> = HashMap()
             params["type"] = "client_associate"
             params["application_type"] = "native"
-            params["redirect_uris"] = HttpConnectionInterface.CALLBACK_URI.toString()
-            params["client_name"] = HttpConnectionInterface.USER_AGENT
-            params["application_name"] = HttpConnectionInterface.USER_AGENT
+            params["redirect_uris"] = CALLBACK_URI.toString()
+            params["client_name"] = USER_AGENT
+            params["application_name"] = USER_AGENT
             val requestBody = HttpConnectionUtils.encode(params)
             conn.doOutput = true
             conn.doInput = true

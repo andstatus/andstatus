@@ -24,7 +24,7 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.HttpConnectionStub
+import org.andstatus.app.net.http.HttpConnectionOAuthStub
 import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.ConnectionStub
@@ -40,7 +40,7 @@ import kotlin.properties.Delegates
 class CommandExecutorStrategyTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private var stub: ConnectionStub by Delegates.notNull()
-    private var httpConnectionStub: HttpConnectionStub by Delegates.notNull()
+    private var httpConnectionStub: HttpConnectionOAuthStub by Delegates.notNull()
     private var ma: MyAccount = MyAccount.EMPTY
 
     @Before
@@ -149,7 +149,7 @@ class CommandExecutorStrategyTest {
 
     @Test
     fun testDiscoverOrigins() = runBlocking {
-        val http = HttpConnectionStub()
+        val http = HttpConnectionOAuthStub()
         http.addResponse(org.andstatus.app.test.R.raw.get_open_instances)
         TestSuite.setHttpConnectionStubInstance(http)
         val commandData: CommandData = CommandData.Companion.newOriginCommand(

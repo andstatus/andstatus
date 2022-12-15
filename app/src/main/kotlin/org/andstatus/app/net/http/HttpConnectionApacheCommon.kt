@@ -29,7 +29,10 @@ import org.json.JSONObject
 import java.net.URL
 import java.util.*
 
-class HttpConnectionApacheCommon internal constructor(private val specific: HttpConnectionApacheSpecific, private val data: HttpConnectionData) {
+class HttpConnectionApacheCommon internal constructor(
+    private val specific: HttpConnectionApacheSpecific,
+    private val connection: HttpConnection
+) {
 
     fun postRequest(result: HttpReadResult): HttpReadResult {
         val httpPost = HttpPost(result.requiredUrl("POST")?.toExternalForm() ?: return result)
@@ -46,7 +49,8 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
         } else {
             result.request.postParams.ifPresent { params: JSONObject ->
                 try {
-                    data.optOriginContentType().ifPresent { value: String -> httpPost.addHeader("Content-Type", value) }
+                    connection.data.optOriginContentType()
+                        .ifPresent { value: String -> httpPost.addHeader("Content-Type", value) }
                     fillSinglePartPost(httpPost, params)
                 } catch (e: Exception) {
                     result.setException(e)
@@ -69,7 +73,8 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
             var stop: Boolean
             do {
                 val httpGet = newHttpGet(result.requiredUrl("GET") ?: return result)
-                data.optOriginContentType().ifPresent { value: String? -> httpGet.addHeader("Accept", value) }
+                connection.data.optOriginContentType()
+                    .ifPresent { value: String? -> httpGet.addHeader("Accept", value) }
                 if (result.authenticate()) {
                     specific.httpApacheSetAuthorization(httpGet)
                 }
@@ -84,7 +89,7 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
                         }
                         stop = true
                     }
-                    StatusCode.MOVED -> stop = specific.onMoved(result)
+                    StatusCode.MOVED -> stop = connection.onMoved(result)
                     else -> {
                         val entity = response.entity
                         if (entity != null) {
@@ -105,7 +110,7 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
 
     private fun newHttpGet(url: URL): HttpGet {
         val httpGet = HttpGet(url.toExternalForm())
-        httpGet.setHeader("User-Agent", HttpConnectionInterface.USER_AGENT)
+        httpGet.setHeader("User-Agent", HttpConnection.USER_AGENT)
         return httpGet
     }
 
@@ -114,7 +119,10 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
             val statusLine = httpResponse.getStatusLine()
             result.statusLine = statusLine.toString()
             result.setStatusCodeInt(statusLine.statusCode)
-            result.setHeaders(Arrays.stream(httpResponse.getAllHeaders()), { obj: Header -> obj.getName() }, { obj: Header -> obj.getValue() })
+            result.setHeaders(
+                Arrays.stream(httpResponse.getAllHeaders()),
+                { obj: Header -> obj.getName() },
+                { obj: Header -> obj.getValue() })
         }
     }
 }

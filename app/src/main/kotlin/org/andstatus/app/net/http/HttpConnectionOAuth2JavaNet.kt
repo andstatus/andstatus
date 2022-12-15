@@ -52,8 +52,8 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         oauthClientKeys?.clear()
         return try {
             val params = JSONObject()
-            params.put("client_name", HttpConnectionInterface.USER_AGENT)
-            params.put("redirect_uris", HttpConnectionInterface.CALLBACK_URI.toString())
+            params.put("client_name", USER_AGENT)
+            params.put("redirect_uris", CALLBACK_URI.toString())
             params.put("scopes", OAUTH_SCOPES)
             params.put("website", "http://andstatus.org")
             HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
@@ -85,7 +85,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
     }
 
     override fun postRequest(result: HttpReadResult): HttpReadResult {
-        return if (areOAuthClientKeysPresent()) {
+        return if (areClientKeysPresent()) {
             postRequestOauth(result)
         } else {
             super.postRequest(result)
@@ -195,7 +195,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
             .apiSecret(oauthClientKeys?.getConsumerSecret())
             .httpClientConfig(clientConfig)
         if (redirect) {
-            serviceBuilder.callback(HttpConnectionInterface.CALLBACK_URI.toString())
+            serviceBuilder.callback(CALLBACK_URI.toString())
         }
         if (MyPreferences.isLogNetworkLevelMessages() && MyLog.isVerboseEnabled()) {
             serviceBuilder.debugStream(MyLogVerboseStream("ScribeJava"))

@@ -23,7 +23,7 @@ import cz.msebera.android.httpclient.client.methods.HttpPost
  * Implementation, specific to Basic or OAuth
  * @author yvolk@yurivolkov.com
  */
-interface HttpConnectionApacheSpecific : HttpConnectionInterface {
+interface HttpConnectionApacheSpecific {
     open fun httpApachePostRequest(httpPost: HttpPost, result: HttpReadResult): HttpReadResult
     open fun httpApacheGetResponse(httpGet: HttpGet): HttpResponse
     open fun httpApacheSetAuthorization(httpGet: HttpGet)

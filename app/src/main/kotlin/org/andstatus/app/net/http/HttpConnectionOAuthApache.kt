@@ -54,7 +54,7 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
     }
 
     override fun postRequest(result: HttpReadResult): HttpReadResult {
-        return HttpConnectionApacheCommon(this, data).postRequest(result)
+        return HttpConnectionApacheCommon(this, this).postRequest(result)
     }
 
     override fun httpApachePostRequest(httpPost: HttpPost, result: HttpReadResult): HttpReadResult {
@@ -97,6 +97,6 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
     }
 
     override fun getRequest(result: HttpReadResult): HttpReadResult {
-        return HttpConnectionApacheCommon(this, data).getRequest(result)
+        return HttpConnectionApacheCommon(this, this).getRequest(result)
     }
 }

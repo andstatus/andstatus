@@ -27,7 +27,7 @@ import android.webkit.WebViewClient
 import org.andstatus.app.ClassInApplicationPackage
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.net.http.HttpConnectionInterface
+import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.util.MyLog
 
 class AccountSettingsWebActivity : MyActivity(AccountSettingsWebActivity::class) {
@@ -59,7 +59,7 @@ class AccountSettingsWebActivity : MyActivity(AccountSettingsWebActivity::class)
         private fun isThisCallback(url: String?): Boolean {
             var isCallback = false
             val uri = Uri.parse(url)
-            if (uri != null && HttpConnectionInterface.Companion.CALLBACK_URI.getHost() == uri.host) {
+            if (uri != null && HttpConnection.Companion.CALLBACK_URI.getHost() == uri.host) {
                 isCallback = true
                 MyLog.d(this, "Callback to: $url")
                 if (!isFinishing) {

@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.net.http
 
-import android.text.TextUtils
 import androidx.annotation.RawRes
 import io.vavr.control.CheckedFunction
 import oauth.signpost.OAuthConsumer
@@ -33,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.Consumer
 import java.util.stream.Collectors
 
-class HttpConnectionStub : HttpConnectionOAuth() {
+class HttpConnectionOAuthStub : HttpConnectionOAuth() {
     init {
         userToken = "token"
         userSecret = "secret"
@@ -54,9 +53,6 @@ class HttpConnectionStub : HttpConnectionOAuth() {
 
     @Volatile
     private var exception: ConnectionException? = null
-
-    @Volatile
-    override var password: String = "password"
 
     private val networkDelayMs: Long = 1000
     private val mInstanceId = InstanceId.next()
@@ -96,6 +92,18 @@ class HttpConnectionStub : HttpConnectionOAuth() {
         return super.pathToUrlString(path)
     }
 
+    override var data: HttpConnectionData
+        get() = super.data
+        set(value) {
+            super.data = value
+            if (!areClientKeysPresent()) {
+                if (oauthClientKeys == null) {
+                    oauthClientKeys = OAuthClientKeys.fromConnectionData(data)
+                }
+                oauthClientKeys?.setConsumerKeyAndSecret("fakeConsumerKey", "fakeConsumerSecret")
+            }
+        }
+
     override fun postRequest(result: HttpReadResult): HttpReadResult {
         onRequest("postRequestWithObject", result)
         setExceptions(result)
@@ -108,11 +116,6 @@ class HttpConnectionStub : HttpConnectionOAuth() {
         } else if (exception != null) {
             result.setException(exception)
         }
-    }
-
-    override fun setUserTokenWithSecret(token: String?, secret: String?) {
-        userToken = token ?: ""
-        userSecret = secret ?: ""
     }
 
     private fun onRequest(method: String, result: HttpReadResult) {
@@ -146,16 +149,6 @@ class HttpConnectionStub : HttpConnectionOAuth() {
         setExceptions(result)
         return result
     }
-
-    override fun clearAuthInformation() {
-        password = ""
-        userToken = ""
-        userSecret = ""
-    }
-
-    override val credentialsPresent: Boolean
-        get() =
-            password.isNotEmpty() || !TextUtils.isDigitsOnly(userToken) && userSecret.isNotEmpty()
 
     override fun getConsumer(): OAuthConsumer? = null
     override fun getProvider(): OAuthProvider? = null
@@ -208,7 +201,7 @@ class HttpConnectionStub : HttpConnectionOAuth() {
         return mInstanceId
     }
 
-    override fun <T : HttpConnectionInterface> getNewInstance(): T {
+    override fun <T : HttpConnection> getNewInstance(): T {
         return this as T
     }
 
@@ -252,8 +245,6 @@ class HttpConnectionStub : HttpConnectionOAuth() {
             builder.append("\nexception=")
             builder.append(exception)
         }
-        builder.append("\npassword=")
-        builder.append(password)
         builder.append(", userToken=")
         builder.append(userToken)
         builder.append(", userSecret=")

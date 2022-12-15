@@ -15,13 +15,155 @@
  */
 package org.andstatus.app.net.http
 
-open class HttpConnection : HttpConnectionInterface {
+import android.net.Uri
+import com.github.scribejava.core.model.Verb
+import io.vavr.control.Try
+import org.andstatus.app.account.AccountDataWriter
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UrlUtils
+import org.json.JSONObject
+import java.net.URL
 
-    override var data: HttpConnectionData = HttpConnectionData.EMPTY
+open class HttpConnection {
+    open var data: HttpConnectionData = HttpConnectionData.EMPTY
 
-    override var password: String = ""
+    open fun pathToUrlString(path: String): String {
+        // TODO: return Try
+        return UrlUtils.pathToUrlString(data.originUrl, path, errorOnInvalidUrls())
+            .getOrElse("")
+    }
+
+    open fun errorOnInvalidUrls(): Boolean {
+        return true
+    }
+
+    fun execute(requestIn: HttpRequest): Try<HttpReadResult> {
+        val request = requestIn.withConnectionData(data)
+        return if (request.verb == Verb.POST) {
+            /* See https://github.com/andstatus/andstatus/issues/249 */
+            if (data.getUseLegacyHttpProtocol() == TriState.UNKNOWN) executeOneProtocol(request, false)
+                .orElse { executeOneProtocol(request, true) }
+            else executeOneProtocol(request, data.getUseLegacyHttpProtocol().toBoolean(true))
+        } else {
+            executeInner(request)
+        }
+    }
+
+    fun executeOneProtocol(request: HttpRequest, isLegacyHttpProtocol: Boolean): Try<HttpReadResult> {
+        return executeInner(request.withLegacyHttpProtocol(isLegacyHttpProtocol))
+    }
+
+    private fun executeInner(request: HttpRequest): Try<HttpReadResult> {
+        if (request.verb == Verb.POST && MyPreferences.isLogNetworkLevelMessages()) {
+            var jso = JsonUtils.put(request.postParams.orElseGet { JSONObject() }, "loggedURL", request.uri)
+            if (request.mediaUri.isPresent) {
+                jso = JsonUtils.put(jso, "loggedMediaUri", request.mediaUri.get().toString())
+            }
+            MyLog.logNetworkLevelMessage("post", request.getLogName(), jso, "")
+        }
+        return request.validate()
+            .flatMap(Throttler::beforeExecution)
+            .map { obj: HttpRequest -> obj.newResult() }
+            .flatMap { result: HttpReadResult ->
+                if (result.request.verb == Verb.POST) postRequest(result).toTryResult()
+                else getRequestInner(result).toTryResult()
+            }
+            .also(Throttler::afterExecution)
+            .onSuccess { result: HttpReadResult -> result.logResponse() }
+    }
+
+    open fun postRequest(result: HttpReadResult): HttpReadResult {
+        return result
+    }
+
+    fun getRequestInner(result: HttpReadResult): HttpReadResult {
+        return if (result.request.apiRoutine == ApiRoutineEnum.DOWNLOAD_FILE && !UriUtils.isDownloadable(result.request.uri)) {
+            downloadLocalFile(result)
+        } else {
+            getRequest(result)
+        }
+    }
+
+    fun downloadLocalFile(result: HttpReadResult): HttpReadResult {
+        return result.readStream(
+            "mediaUri='" + result.request.uri + "'"
+        ) { result.request.myContext().context.contentResolver.openInputStream(result.request.uri) }
+            .recover(Exception::class.java) { e: Exception? -> result.setException(e) }
+            .getOrElse(result)
+    }
+
+    open fun getRequest(result: HttpReadResult): HttpReadResult {
+        return result
+    }
+
+    open fun clearAuthInformation() {
+        // Nothing to do
+    }
+
+    open fun isPasswordNeeded(): Boolean {
+        return false
+    }
+
+    /**
+     * Persist the connection data
+     * @return true if something changed (so it needs to be rewritten to persistence...)
+     */
+    open fun saveTo(dw: AccountDataWriter): Boolean {
+        return false
+    }
+
+    /**
+     * Do we have enough credentials to verify them?
+     * @return true == yes
+     */
+    open val credentialsPresent: Boolean get() = false
+
+    val sslMode: SslModeEnum get() = data.sslMode
+
+    // TODO: Find a better way to instantiate proper class
+    open fun <T : HttpConnection> getNewInstance(): T = javaClass.newInstance() as T
+
+    fun onMoved(result: HttpReadResult): Boolean {
+        result.appendToLog("statusLine:'" + result.statusLine + "'")
+        result.redirected = true
+        return TryUtils.fromOptional(result.getLocation())
+            .mapFailure { ConnectionException(StatusCode.MOVED, "No 'Location' header on MOVED response") }
+            .flatMap { location: String -> UrlUtils.redirectTo(result.url, location) }
+            .mapFailure {
+                ConnectionException(
+                    StatusCode.MOVED, "Invalid redirect from '${result.url}'" +
+                            " to '${result.getLocation()}'"
+                )
+            }
+            .map { redirected: URL -> result.setUrl(redirected) }
+            .onFailure { e: Throwable -> result.setException(e) }
+            .onSuccess { result1: HttpReadResult -> logFollowingRedirects(result1) }
+            .isFailure
+    }
+
+    fun logFollowingRedirects(result: HttpReadResult) {
+        if (MyLog.isVerboseEnabled()) {
+            val builder: MyStringBuilder = MyStringBuilder.of("Following redirect to '${result.url}'")
+            result.appendHeaders(builder)
+            MyLog.v(this, builder.toString())
+        }
+    }
 
     companion object {
         val EMPTY: HttpConnection = HttpConnection()
+        val USER_AGENT: String = "AndStatus"
+
+        /**
+         * The URI is consistent with "scheme" and "host" in AndroidManifest
+         * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
+         */
+        val CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org")
     }
 }

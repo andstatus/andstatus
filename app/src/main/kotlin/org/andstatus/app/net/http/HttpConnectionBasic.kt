@@ -29,7 +29,7 @@ import java.nio.charset.Charset
 
 class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
 
-    override var password: String = ""
+    var password: String = ""
 
     override var data: HttpConnectionData
         get() = super.data
@@ -39,13 +39,13 @@ class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
         }
 
     override fun postRequest(result: HttpReadResult): HttpReadResult {
-        return HttpConnectionApacheCommon(this, data).postRequest(result)
+        return HttpConnectionApacheCommon(this, this).postRequest(result)
     }
 
     override fun httpApachePostRequest(postMethod: HttpPost, result: HttpReadResult): HttpReadResult {
         try {
             val client = ApacheHttpClientUtils.getHttpClient(data.sslMode)
-            postMethod.setHeader("User-Agent", HttpConnectionInterface.USER_AGENT)
+            postMethod.setHeader("User-Agent", USER_AGENT)
             if (credentialsPresent) {
                 postMethod.addHeader("Authorization", "Basic " + getCredentials())
             }

@@ -20,7 +20,7 @@ import io.vavr.control.Try
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.HttpConnectionInterface
+import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.origin.OriginConfig
@@ -99,7 +99,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
             super.updateNoteSetFields(note, formParams)
 
             // This parameter was removed from Twitter API, but it still is in GNUsocial
-            formParams.put("source", HttpConnectionInterface.USER_AGENT)
+            formParams.put("source", HttpConnection.USER_AGENT)
         } catch (e: JSONException) {
             return Try.failure(e)
         }

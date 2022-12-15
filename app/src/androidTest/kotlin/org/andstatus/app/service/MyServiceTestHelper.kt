@@ -21,7 +21,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
-import org.andstatus.app.net.http.HttpConnectionStub
+import org.andstatus.app.net.http.HttpConnectionOAuthStub
 import org.andstatus.app.net.social.ConnectionStub
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
@@ -34,7 +34,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
     private var serviceConnector: MyServiceEventsReceiver? = null
 
     @Volatile
-    private var httpConnectionStub: HttpConnectionStub? = null
+    private var httpConnectionStub: HttpConnectionOAuthStub? = null
 
     @Volatile
     var connectionInstanceId: Long = 0
@@ -53,7 +53,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
             MyAccountTest.fixPersistentAccounts(myContext)
             val isSingleStubbedInstance = accountName.isNullOrEmpty()
             if (isSingleStubbedInstance) {
-                httpConnectionStub = HttpConnectionStub()
+                httpConnectionStub = HttpConnectionOAuthStub()
                 TestSuite.setHttpConnectionStubInstance(httpConnectionStub)
                 MyContextHolder.myContextHolder.getBlocking().setExpired { this::class.simpleName + " setUp" }
             }
@@ -241,7 +241,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
         MyLog.v(this, "tearDown ended")
     }
 
-    fun getHttp(): HttpConnectionStub {
+    fun getHttp(): HttpConnectionOAuthStub {
         return httpConnectionStub ?: throw IllegalStateException("No httpConnectionStub")
     }
 }

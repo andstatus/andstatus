@@ -27,7 +27,6 @@ import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointT
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UrlUtils
 
 internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEnum, val uri: Uri, val httpConnection: HttpConnection) {
@@ -85,7 +84,7 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
                 oauthHttp = oauthHttp.getNewInstance()
                 oauthHttp.data = connectionData
             }
-            if (!oauthHttp.areOAuthClientKeysPresent()) {
+            if (!oauthHttp.areClientKeysPresent()) {
                 oauthHttp.registerClient()
                 if (!oauthHttp.credentialsPresent) {
                     return Try.failure(ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,

@@ -24,7 +24,7 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionOAuth
-import org.andstatus.app.net.http.HttpConnectionStub
+import org.andstatus.app.net.http.HttpConnectionOAuthStub
 
 class ConnectionStub private constructor(val connection: Connection) {
     fun withException(e: ConnectionException?): ConnectionStub {
@@ -44,7 +44,7 @@ class ConnectionStub private constructor(val connection: Connection) {
         return connection.oauthHttpOrThrow
     }
 
-    fun getHttpStub(): HttpConnectionStub {
+    fun getHttpStub(): HttpConnectionOAuthStub {
         return getHttpStub(getHttp())
     }
 
@@ -54,14 +54,14 @@ class ConnectionStub private constructor(val connection: Connection) {
         }
 
         fun newFor(myAccount: MyAccount): ConnectionStub {
-            TestSuite.setHttpConnectionStubClass(HttpConnectionStub::class.java)
+            TestSuite.setHttpConnectionStubClass(HttpConnectionOAuthStub::class.java)
             val stub = ConnectionStub(myAccount.setConnection())
             TestSuite.setHttpConnectionStubClass(null)
             return stub
         }
 
-        fun getHttpStub(http: HttpConnection): HttpConnectionStub {
-            if (http is HttpConnectionStub) return http
+        fun getHttpStub(http: HttpConnection): HttpConnectionOAuthStub {
+            if (http is HttpConnectionOAuthStub) return http
             val myContext = MyContextHolder.myContextHolder.getNow()
             myContext.httpConnectionStub
             throw IllegalStateException("getHttpStub: http is " + http::class.qualifiedName + ", " + myContext)
