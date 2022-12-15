@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.account
 
-import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
@@ -28,7 +27,6 @@ class AccountConnectionData private constructor(
 ) {
     private val isOAuth: Boolean
     private var originUrl: URL?
-    val httpConnectionClass: Class<out HttpConnection>
 
     fun getAccountActor(): Actor {
         return myAccount.actor
@@ -87,6 +85,5 @@ class AccountConnectionData private constructor(
     init {
         originUrl = origin.url
         isOAuth = origin.originType.fixIsOAuth(triStateOAuth)
-        httpConnectionClass = origin.originType.getHttpConnectionClass(isOAuth())
     }
 }

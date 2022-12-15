@@ -33,8 +33,8 @@ import java.net.URL
 
 open class HttpConnection {
     open var data: HttpConnectionData = HttpConnectionData.EMPTY
-
     var isStub : Boolean = false
+
     val oauthHttp: HttpConnectionOAuth? get() = if (this is HttpConnectionOAuth) this else null
     val oauthHttpOrThrow: HttpConnectionOAuth
         get() = oauthHttp ?: throw IllegalStateException("Connection is not OAuth")

@@ -82,10 +82,11 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
                 val httpData = connection.http.data.copy()
                 oauthHttp.oauthClientKeys = null
                 httpData.originUrl = UrlUtils.buildUrl(host, httpData.isSsl())
-                oauthHttp = ConnectionFactory.httpFromConnection(connection, true).oauthHttpOrThrow
+                oauthHttp = ConnectionFactory.newHttp(connection.data, oauthHttp).oauthHttpOrThrow
                 oauthHttp.data = httpData
             }
             if (!oauthHttp.areClientKeysPresent()) {
+                oauthHttp.obtainAuthorizationServerMetadata()
                 oauthHttp.registerClient()
                 if (!oauthHttp.credentialsPresent) {
                     return Try.failure(ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,

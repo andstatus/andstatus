@@ -76,10 +76,11 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum, val uri: Uri, va
                 val httpData = oauthHttp.data.copy()
                 oauthHttp.oauthClientKeys = null
                 httpData.originUrl = UrlUtils.buildUrl(host, httpData.isSsl())
-                oauthHttp = ConnectionFactory.httpFromConnection(connection, true).oauthHttpOrThrow
+                oauthHttp = ConnectionFactory.newHttp(connection.data, oauthHttp).oauthHttpOrThrow
                 oauthHttp.data = httpData
             }
             if (!oauthHttp.areClientKeysPresent()) {
+                oauthHttp.obtainAuthorizationServerMetadata()
                 oauthHttp.registerClient()
                 if (!oauthHttp.credentialsPresent) {
                     return Try.failure(

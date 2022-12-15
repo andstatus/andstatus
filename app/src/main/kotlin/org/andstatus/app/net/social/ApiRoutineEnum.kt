@@ -67,6 +67,7 @@ enum class ApiRoutineEnum constructor(private val isNotePrivate: Boolean = false
     /**
      * OAuth APIs
      */
+    AUTHORIZATION_SERVER_METADATA,
     OAUTH_ACCESS_TOKEN, OAUTH_AUTHORIZE, OAUTH_REQUEST_TOKEN,
 
     /** For the "OAuth Dynamic Client Registration",
@@ -85,7 +86,7 @@ enum class ApiRoutineEnum constructor(private val isNotePrivate: Boolean = false
     fun isOriginApi(): Boolean {
         return when (this) {
             OAUTH_ACCESS_TOKEN, OAUTH_AUTHORIZE, OAUTH_REGISTER_CLIENT, OAUTH_REQUEST_TOKEN, DOWNLOAD_FILE,
-            DUMMY_API, GET_OPEN_INSTANCES, ACCOUNT_VERIFY_CREDENTIALS -> false
+            DUMMY_API, GET_OPEN_INSTANCES, ACCOUNT_VERIFY_CREDENTIALS, AUTHORIZATION_SERVER_METADATA -> false
             else -> true
         }
     }

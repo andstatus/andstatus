@@ -22,11 +22,11 @@ import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.UriUtils
 
 class HttpConnectionOAuthMastodon : HttpConnectionOAuth2JavaNet() {
-    override fun getApiUri(routine: ApiRoutineEnum?): Uri {
+    override fun getApiUri2(routine: ApiRoutineEnum?): Uri {
         var url: String = when (routine) {
             ApiRoutineEnum.OAUTH_ACCESS_TOKEN, ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> data.oauthPath + "/token"
             ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/v1/apps"
-            else -> super.getApiUri(routine).toString()
+            else -> super.getApiUri2(routine).toString()
         }
         if (url.isNotEmpty()) {
             url = pathToUrlString(url)

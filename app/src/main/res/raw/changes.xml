@@ -29,6 +29,18 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="59.11" android:versionCode="356"
+        versionDate="2022-12-15"
+        versionTitle="Support OAuth 2.0 Authorization Server Metadata (RFC 8414)">
+        <changes>
+            <change>According to "OAuth 2.0 Authorization Server Metadata" (RFC 8414)
+                before starting OAuth authorization AndStatus client tries to obtain OAuth endpoints from
+                "/.well-known/oauth-authorization-server" path. This change allows using ActivityPub
+                with servers that have OAuth endpoints different from Mastodon's.
+                <a href="https://github.com/andstatus/andstatus/issues/561">#561</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="59.10" android:versionCode="355"
         versionDate="2022-12-12"
         versionTitle="Fix background syncing">

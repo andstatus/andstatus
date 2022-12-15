@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2022 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
+import org.json.JSONException
+import org.json.JSONObject
 import java.net.URL
 
 abstract class HttpConnectionOAuth : HttpConnection() {
@@ -42,6 +44,9 @@ abstract class HttpConnectionOAuth : HttpConnection() {
     var urlForUserToken: URL? = null
 
     @Volatile
+    var authorizationServerMetadata: AuthorizationServerMetadata? = null
+
+    @Volatile
     var userToken: String = ""
 
     @Volatile
@@ -52,6 +57,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
         set(connectionData) {
             super.data = connectionData
             oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
+            authorizationServerMetadata = AuthorizationServerMetadata.load(connectionData)
             // We look for saved user keys
             connectionData.dataReader?.let { dataReader ->
                 if (dataReader.dataContains(userTokenKey()) && dataReader.dataContains(userSecretKey())) {
@@ -61,6 +67,40 @@ abstract class HttpConnectionOAuth : HttpConnection() {
                 }
             }
         }
+
+    fun obtainAuthorizationServerMetadata(): Try<Unit> {
+        val uri = data.originUrl?.host?.let { host ->
+            val port = data.originUrl?.port ?: -1
+            val hostPort = host + if (port > 0) ":$port" else ""
+            UriUtils.fromString("https://$hostPort$AUTHORIZATION_SERVER_METADATA_PATH")
+        }
+            ?: return TryUtils.failure("No host in ${data.originUrl}")
+
+        val msgSupplier: () -> String = {
+            "obtainAuthorizationServerMetadata; for " + data.originUrl + "; URL='" + uri + "'"
+        }
+        return HttpRequest.of(ApiRoutineEnum.AUTHORIZATION_SERVER_METADATA, uri)
+            .let(::execute)
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jso: JSONObject ->
+                authorizationServerMetadata = AuthorizationServerMetadata.fromJson(jso)
+                authorizationServerMetadata?.save(data)
+                MyLog.v(this, "Completed: $msgSupplier(): $authorizationServerMetadata")
+                Unit
+            }
+            .mapFailure { throwable: Throwable? ->
+                if (throwable is JSONException) {
+                    ConnectionException.loggedJsonException(this, msgSupplier(), throwable, null)
+                } else {
+                    if (throwable is ConnectionException && throwable.statusCode == StatusCode.NOT_FOUND) {
+                        MyLog.d(this, "Not found: $msgSupplier()")
+                    } else {
+                        MyLog.w(this, "Failed: ${msgSupplier()}", throwable)
+                    }
+                    throwable
+                }
+            }
+    }
 
     open fun registerClient(): Try<Unit> {
         // Do nothing in the default implementation
@@ -81,6 +121,10 @@ abstract class HttpConnectionOAuth : HttpConnection() {
             return yes
         }
 
+    fun doOauthRequest(): Boolean {
+        return areClientKeysPresent()
+    }
+
     fun areClientKeysPresent(): Boolean {
         return oauthClientKeys?.areKeysPresent() == true
     }
@@ -89,9 +133,23 @@ abstract class HttpConnectionOAuth : HttpConnection() {
         oauthClientKeys?.clear()
     }
 
-    open fun getApiUri(routine: ApiRoutineEnum?): Uri {
-        var url: String
-        url = when (routine) {
+    fun getApiUri(routine: ApiRoutineEnum?): Uri = authorizationServerMetadata?.let { metadata ->
+        var url: String? = when (routine) {
+            ApiRoutineEnum.OAUTH_ACCESS_TOKEN -> metadata.tokenEndpoint
+            ApiRoutineEnum.OAUTH_AUTHORIZE -> metadata.authorizationEndpoint
+            ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> metadata.tokenEndpoint
+            ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> metadata.registrationEndpoint
+            else -> ""
+        }
+        if (!url.isNullOrEmpty()) {
+            url = pathToUrlString(url)
+        }
+        UriUtils.fromString(url).takeIf { !UriUtils.isEmpty(it) }
+    }
+        ?: getApiUri2(routine)
+
+    open fun getApiUri2(routine: ApiRoutineEnum?): Uri {
+        var url: String = when (routine) {
             ApiRoutineEnum.OAUTH_ACCESS_TOKEN -> data.oauthPath + "/access_token"
             ApiRoutineEnum.OAUTH_AUTHORIZE -> data.oauthPath + "/authorize"
             ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> data.oauthPath + "/request_token"
@@ -172,6 +230,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
     }
 
     companion object {
+        const val AUTHORIZATION_SERVER_METADATA_PATH = "/.well-known/oauth-authorization-server"
         private val TAG: String = HttpConnectionOAuth::class.simpleName!!
     }
 }

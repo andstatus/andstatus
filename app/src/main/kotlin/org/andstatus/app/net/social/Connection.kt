@@ -348,6 +348,7 @@ abstract class Connection protected constructor() : IsEmpty {
     }
 
     fun registerClientForAccount(): Try<Unit> {
+        oauthHttp?.obtainAuthorizationServerMetadata()
         return oauthHttp?.registerClient()
             ?: TryUtils.failure("registerClientForAccount is not supported for ${http::class.qualifiedName}")
     }

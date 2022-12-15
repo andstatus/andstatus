@@ -22,14 +22,13 @@ import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.UriUtils
 
 class HttpConnectionOAuthActivityPub : HttpConnectionOAuth2JavaNet() {
-    public override fun getApiUri(routine: ApiRoutineEnum?): Uri {
-        var url: String?
-        url = when (routine) {
+    override fun getApiUri2(routine: ApiRoutineEnum?): Uri {
+        var url: String = when (routine) {
             ApiRoutineEnum.OAUTH_ACCESS_TOKEN, ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> data.oauthPath + "/token"
             ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/v1/apps"
-            else -> super.getApiUri(routine).toString()
+            else -> super.getApiUri2(routine).toString()
         }
-        if (!url.isNullOrEmpty()) {
+        if (url.isNotEmpty()) {
             url = pathToUrlString(url)
         }
         return UriUtils.fromString(url)

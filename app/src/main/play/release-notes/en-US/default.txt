@@ -1,1 +1,1 @@
-v.59.10 Stability fixes. Fix background syncing.
+v.59.11 Support OAuth 2.0 Authorization Server Metadata (RFC 8414)

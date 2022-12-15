@@ -734,6 +734,10 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
             } else if (state.builder.isOAuth() && reVerify) {
                 // Credentials are not present,
                 // so start asynchronous OAuth Authentication process
+
+                // For now let's do everything from the very beginning
+                myAccount.connection.clearClientKeys()
+
                 if (!myAccount.areClientKeysPresent()) {
                     OAuthRegisterClientTask()
                         .execute(this, Unit)

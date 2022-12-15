@@ -126,7 +126,8 @@ class HttpRequest private constructor(val apiRoutine: ApiRoutineEnum, val uri: U
     fun getLogName(): String {
         return if (connectionData.getOriginType() === OriginType.ACTIVITYPUB ||
                 connectionData.getOriginType() === OriginType.PUMPIO ||
-                apiRoutine == ApiRoutineEnum.OAUTH_REGISTER_CLIENT) {
+                apiRoutine == ApiRoutineEnum.OAUTH_REGISTER_CLIENT ||
+            apiRoutine == ApiRoutineEnum.AUTHORIZATION_SERVER_METADATA) {
             uri.getHost() + "-" + apiRoutine.name.toLowerCase()
         } else {
             connectionData.getAccountName().logName + "-" + apiRoutine.name.toLowerCase()

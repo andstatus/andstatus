@@ -204,8 +204,8 @@ enum class OriginType(
     val originHasUrl: Boolean
     var originFactory: Function<MyContext, Origin>
     private val connectionClass: Class<out Connection>
-    private val httpConnectionClassOauth: Class<out HttpConnection?>
-    private val httpConnectionClassBasic: Class<out HttpConnection?>
+    private val httpConnectionClassOauth: Class<out HttpConnection>
+    private val httpConnectionClassBasic: Class<out HttpConnection>
     private val allowEditing: Boolean
 
     /** Default OAuth setting  */
@@ -252,9 +252,9 @@ enum class OriginType(
 
     fun uniqueNameHasHost(): Boolean = this !== TWITTER
 
-    fun getConnectionClass(): Class<out Connection?> = connectionClass
+    fun getConnectionClass(): Class<out Connection> = connectionClass
 
-    fun getHttpConnectionClass(isOAuth: Boolean): Class<out HttpConnection?> {
+    fun getHttpConnectionClass(isOAuth: Boolean): Class<out HttpConnection> {
         return if (fixIsOAuth(isOAuth)) {
             httpConnectionClassOauth
         } else {

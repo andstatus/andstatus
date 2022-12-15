@@ -249,7 +249,7 @@ object SharedPreferencesUtil {
         }
     }
 
-    fun getString(key: String, defaultValue: String): String {
+    fun getString(key: String, defaultValue: String = ""): String {
         val cachedValue = cachedValues.get(key)
         if (cachedValue != null) {
             try {

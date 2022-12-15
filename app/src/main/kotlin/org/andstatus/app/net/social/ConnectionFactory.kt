@@ -27,35 +27,34 @@ object ConnectionFactory {
         return newConnection(origin.originType, connectionData)
     }
 
-    private fun newConnection(originType: OriginType, connectionData: AccountConnectionData): Connection {
+    private fun newConnection(originType: OriginType, acData: AccountConnectionData): Connection {
         return try {
-            val connection = originType.getConnectionClass().newInstance() as Connection
-            connection.data = connection.updateConnectionData(connectionData)
-            connection.http = httpFromConnection(connection, false)
+            val connection = originType.getConnectionClass().newInstance()
+            val acData2 = connection.updateConnectionData(acData)
+            connection.data = acData2
+            connection.http = newHttp(acData2, null)
             return connection
-        } catch (e: InstantiationException) {
-            MyLog.e("Failed to instantiate connection for $originType", e)
-            ConnectionEmpty.EMPTY
-        } catch (e: IllegalAccessException) {
+        } catch (e: Exception) {
             MyLog.e("Failed to instantiate connection for $originType", e)
             ConnectionEmpty.EMPTY
         }
     }
 
-    fun httpFromConnection(connection: Connection, checkHttp: Boolean): HttpConnection {
-        val http = if (checkHttp && connection.http.isStub)
-            connection.http
-        else connection.data.getOrigin().myContext.httpConnectionStub
-            ?: try {
-                connection.data.httpConnectionClass.newInstance()
-            } catch (e: InstantiationException) {
-                HttpConnection.EMPTY
-            } catch (e: IllegalAccessException) {
-                HttpConnection.EMPTY
+    fun newHttp(acData: AccountConnectionData, prevHttp: HttpConnection?): HttpConnection {
+        val http = if (prevHttp?.isStub == true)
+            prevHttp
+        else acData.getOrigin().myContext.httpConnectionStub
+            ?: acData.getOrigin().originType.getHttpConnectionClass(acData.isOAuth()).let { clazz ->
+                try {
+                    clazz.newInstance()
+                } catch (e: Exception) {
+                    MyLog.e("Failed to instantiate HttpConnection of $clazz", e)
+                    HttpConnection.EMPTY
+                }
             }
 
-        if (http is HttpConnectionOAuth) http.urlForUserToken = connection.data.getOriginUrl()
-        http.data = HttpConnectionData.fromAccountConnectionData(connection.data)
+        if (http is HttpConnectionOAuth) http.urlForUserToken = acData.getOriginUrl()
+        http.data = HttpConnectionData.fromAccountConnectionData(acData)
         return http
     }
 

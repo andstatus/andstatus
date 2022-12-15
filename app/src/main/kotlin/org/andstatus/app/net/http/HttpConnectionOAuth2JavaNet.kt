@@ -66,6 +66,14 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
                     oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
                     oauthClientKeys?.areKeysPresent() ?: false
                 }
+                .recoverWith(java.lang.Exception::class.java) { e: java.lang.Exception ->
+                    if (data.originUrl?.host == "test-blog.joaocosta.eu") {
+                        // Hack for testing https://github.com/andstatus/andstatus/issues/561
+                        oauthClientKeys?.setConsumerKeyAndSecret("http://andstatus.org", "fake_consumer_secret")
+                        MyLog.i(this, "Fake Client registration")
+                        TryUtils.TRUE
+                    } else TryUtils.failure(e)
+                }
                 .flatMap { keysArePresent: Boolean ->
                     if (keysArePresent) {
                         MyLog.v(this) { "Completed $logmsg" }
@@ -85,7 +93,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
     }
 
     override fun postRequest(result: HttpReadResult): HttpReadResult {
-        return if (areClientKeysPresent()) {
+        return if (doOauthRequest()) {
             postRequestOauth(result)
         } else {
             super.postRequest(result)
@@ -141,6 +149,14 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
     }
 
     override fun getRequest(result: HttpReadResult): HttpReadResult {
+        return if (doOauthRequest()) {
+            getRequestOAuth(result)
+        } else {
+            super.getRequest(result)
+        }
+    }
+
+    fun getRequestOAuth(result: HttpReadResult): HttpReadResult {
         var responseCopy: Response? = null
         try {
             val service = getService(false)
