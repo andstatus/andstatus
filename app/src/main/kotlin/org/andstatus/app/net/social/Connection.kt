@@ -19,26 +19,22 @@ import android.net.Uri
 import io.vavr.control.Try
 import org.andstatus.app.account.AccountConnectionData
 import org.andstatus.app.account.AccountDataWriter
-import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyLocale.MY_DEFAULT_LOCALE
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionBasic
-import org.andstatus.app.net.http.HttpConnectionData
 import org.andstatus.app.net.http.HttpConnectionOAuth
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointType
-import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginConfig
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.Taggable
-import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UrlUtils
@@ -61,11 +57,8 @@ abstract class Connection protected constructor() : IsEmpty {
     var http: HttpConnection by Delegates.notNull()
     var data: AccountConnectionData by Delegates.notNull()
 
-    val oauthHttp: HttpConnectionOAuth? get() = http.let { if (it is HttpConnectionOAuth) it else null }
-
-    val oauthHttpOrThrow: HttpConnectionOAuth
-        get() = oauthHttp
-            ?: throw IllegalStateException("Connection is not OAuth")
+    val oauthHttp: HttpConnectionOAuth? get() = http.oauthHttp
+    val oauthHttpOrThrow: HttpConnectionOAuth get() = http.oauthHttpOrThrow
 
     /**
      * @return an empty string in case the API routine is not supported
@@ -367,15 +360,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return oauthHttp?.areClientKeysPresent() ?: false
     }
 
-    open fun setAccountConnectionData(connectionData: AccountConnectionData): Connection {
-        data = connectionData
-        http = connectionData.newHttpConnection()
-        http.let {
-            if (it is HttpConnectionOAuth) it.urlForUserToken = connectionData.getOriginUrl()
-        }
-        http.data = HttpConnectionData.fromAccountConnectionData(connectionData)
-        return this
-    }
+    open fun updateConnectionData(connectionData: AccountConnectionData): AccountConnectionData = connectionData
 
     open fun getConfig(): Try<OriginConfig> {
         return Try.success(OriginConfig.getEmpty())
@@ -488,36 +473,6 @@ abstract class Connection protected constructor() : IsEmpty {
                 }
             }
             return unixDate
-        }
-
-        fun fromMyAccount(myAccount: MyAccount, isOAuth: TriState): Connection {
-            if (!myAccount.origin.isValid) return ConnectionEmpty.EMPTY
-            val connectionData: AccountConnectionData = AccountConnectionData.fromMyAccount(myAccount, isOAuth)
-            return try {
-                (myAccount.origin.originType.getConnectionClass().newInstance() as Connection)
-                    .setAccountConnectionData(connectionData)
-            } catch (e: InstantiationException) {
-                MyLog.e("Failed to instantiate connection for $myAccount", e)
-                ConnectionEmpty.EMPTY
-            } catch (e: IllegalAccessException) {
-                MyLog.e("Failed to instantiate connection for $myAccount", e)
-                ConnectionEmpty.EMPTY
-            }
-        }
-
-        fun fromOrigin(origin: Origin, isOAuth: TriState): Connection {
-            if (!origin.isValid) return ConnectionEmpty.EMPTY
-            val connectionData: AccountConnectionData = AccountConnectionData.fromOrigin(origin, isOAuth)
-            return try {
-                (origin.originType.getConnectionClass().newInstance() as Connection)
-                    .setAccountConnectionData(connectionData)
-            } catch (e: InstantiationException) {
-                MyLog.e("Failed to instantiate connection for $origin", e)
-                ConnectionEmpty.EMPTY
-            } catch (e: IllegalAccessException) {
-                MyLog.e("Failed to instantiate connection for $origin", e)
-                ConnectionEmpty.EMPTY
-            }
         }
     }
 }

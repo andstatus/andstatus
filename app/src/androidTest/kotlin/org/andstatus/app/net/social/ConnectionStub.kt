@@ -55,9 +55,9 @@ class ConnectionStub private constructor(val connection: Connection) {
 
         fun newFor(myAccount: MyAccount): ConnectionStub {
             TestSuite.setHttpConnectionStubClass(HttpConnectionOAuthStub::class.java)
-            val stub = ConnectionStub(myAccount.setConnection())
+            myAccount.setConnection()
             TestSuite.setHttpConnectionStubClass(null)
-            return stub
+            return ConnectionStub(myAccount.connection)
         }
 
         fun getHttpStub(http: HttpConnection): HttpConnectionOAuthStub {

@@ -30,6 +30,7 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Connection
 import org.andstatus.app.net.social.ConnectionEmpty
+import org.andstatus.app.net.social.ConnectionFactory
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
@@ -95,10 +96,8 @@ class MyAccount internal constructor(
             return this === EMPTY
         }
 
-    fun setConnection(): Connection {
-        return Connection.fromMyAccount(this, TriState.fromBoolean(isOAuth)).also {
-            connection = it
-        }
+    fun setConnection() {
+        connection = ConnectionFactory.fromMyAccount(this, TriState.fromBoolean(isOAuth))
     }
 
     fun getNewOrExistingAndroidAccount(): Try<Account> {
@@ -417,7 +416,6 @@ class MyAccount internal constructor(
         isSyncedAutomatically = data.getDataBoolean(KEY_IS_SYNCED_AUTOMATICALLY, true)
         setOAuth(TriState.fromBoolean(data.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault())))
         setConnection()
-        connection.setPassword(data.getDataString(Connection.KEY_PASSWORD))
         credentialsVerified = CredentialsVerificationStatus.load(data)
         order = data.getDataInt(KEY_ORDER, 1)
     }

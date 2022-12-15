@@ -56,13 +56,12 @@ import java.util.function.Consumer
  * @author yvolk@yurivolkov.com
  */
 class ConnectionPumpio : Connection() {
-
-    override fun setAccountConnectionData(connectionData: AccountConnectionData): Connection {
+    override fun updateConnectionData(connectionData: AccountConnectionData): AccountConnectionData {
         val host = connectionData.getAccountActor().getConnectionHost()
         if (host.isNotEmpty()) {
             connectionData.setOriginUrl(UrlUtils.buildUrl(host, connectionData.isSsl()))
         }
-        return super.setAccountConnectionData(connectionData)
+        return connectionData
     }
 
     override fun getApiPathFromOrigin(routine: ApiRoutineEnum): String {
@@ -115,12 +114,12 @@ class ConnectionPumpio : Connection() {
         val links = jso.optJSONObject("links")
         if (links != null) {
             actor.endpoints.add(ActorEndpointType.API_PROFILE, JsonUtils.optStringInside(links, "self", "href"))
-                    .add(ActorEndpointType.API_INBOX, JsonUtils.optStringInside(links, "activity-inbox", "href"))
-                    .add(ActorEndpointType.API_OUTBOX, JsonUtils.optStringInside(links, "activity-outbox", "href"))
+                .add(ActorEndpointType.API_INBOX, JsonUtils.optStringInside(links, "activity-inbox", "href"))
+                .add(ActorEndpointType.API_OUTBOX, JsonUtils.optStringInside(links, "activity-outbox", "href"))
         }
         actor.endpoints.add(ActorEndpointType.API_FOLLOWING, JsonUtils.optStringInside(jso, "following", "url"))
-                .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optStringInside(jso, "followers", "url"))
-                .add(ActorEndpointType.API_LIKED, JsonUtils.optStringInside(jso, "favorites", "url"))
+            .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optStringInside(jso, "followers", "url"))
+            .add(ActorEndpointType.API_LIKED, JsonUtils.optStringInside(jso, "favorites", "url"))
         return actor.build()
     }
 
@@ -235,8 +234,10 @@ class ConnectionPumpio : Connection() {
         return actOnNote(PActivityType.SHARE, rebloggedNoteOid)
     }
 
-    override fun getTimeline(syncYounger: Boolean, apiRoutine: ApiRoutineEnum,
-                             youngestPosition: TimelinePosition, oldestPosition: TimelinePosition, limit: Int, actor: Actor): Try<InputTimelinePage> {
+    override fun getTimeline(
+        syncYounger: Boolean, apiRoutine: ApiRoutineEnum,
+        youngestPosition: TimelinePosition, oldestPosition: TimelinePosition, limit: Int, actor: Actor
+    ): Try<InputTimelinePage> {
         val tryConu: Try<ConnectionAndUrl> = ConnectionAndUrl.fromActor(this, apiRoutine, actor)
         if (tryConu.isFailure) return tryConu.map { any: ConnectionAndUrl? -> InputTimelinePage.EMPTY }
         val conu = tryConu.get()
@@ -282,8 +283,10 @@ class ConnectionPumpio : Connection() {
     fun activityFromJson(jsoActivity: JSONObject?): AActivity {
         if (jsoActivity == null) return AActivity.EMPTY
         val verb: PActivityType = PActivityType.load(JsonUtils.optString(jsoActivity, "verb"))
-        val activity: AActivity = AActivity.from(data.getAccountActor(),
-                if (verb == PActivityType.UNKNOWN) ActivityType.UPDATE else verb.activityType)
+        val activity: AActivity = AActivity.from(
+            data.getAccountActor(),
+            if (verb == PActivityType.UNKNOWN) ActivityType.UPDATE else verb.activityType
+        )
         return try {
             if (PObjectType.ACTIVITY.isTypeOf(jsoActivity)) {
                 parseActivity(activity, jsoActivity)
@@ -328,11 +331,11 @@ class ConnectionPumpio : Connection() {
     private fun setAudience(activity: AActivity, jso: JSONObject) {
         val audience = Audience(data.getOrigin())
         ObjectOrId.of(jso, "to")
-                .mapAll({ jso1: JSONObject -> actorFromJson(jso1) }, { id: String? -> actorFromOid(id) })
-                .forEach(Consumer { o: Actor -> addRecipient(o, audience) })
+            .mapAll({ jso1: JSONObject -> actorFromJson(jso1) }, { id: String? -> actorFromOid(id) })
+            .forEach(Consumer { o: Actor -> addRecipient(o, audience) })
         ObjectOrId.of(jso, "cc")
-                .mapAll({ jso1: JSONObject -> actorFromJson(jso1) }, { id: String? -> actorFromOid(id) })
-                .forEach(Consumer { o: Actor -> addRecipient(o, audience) })
+            .mapAll({ jso1: JSONObject -> actorFromJson(jso1) }, { id: String? -> actorFromOid(id) })
+            .forEach(Consumer { o: Actor -> addRecipient(o, audience) })
         if (audience.hasNonSpecial()) {
             audience.addVisibility(Visibility.PRIVATE)
         }
@@ -341,7 +344,8 @@ class ConnectionPumpio : Connection() {
 
     private fun addRecipient(recipient: Actor, audience: Audience) {
         audience.add(
-                if (PUBLIC_COLLECTION_ID == recipient.oid) Actor.PUBLIC else recipient)
+            if (PUBLIC_COLLECTION_ID == recipient.oid) Actor.PUBLIC else recipient
+        )
     }
 
     private fun parseObjectOfActivity(activity: AActivity, objectOfActivity: JSONObject): AActivity {
@@ -373,10 +377,12 @@ class ConnectionPumpio : Connection() {
             if (updatedDate == 0L) {
                 updatedDate = dateFromJson(jso, "published")
             }
-            val noteActivity: AActivity = AActivity.newPartialNote(data.getAccountActor(),
-                    if (jso.has("author")) actorFromJson(jso.getJSONObject("author")) else Actor.EMPTY,
-                    oid,
-                    updatedDate, DownloadStatus.LOADED)
+            val noteActivity: AActivity = AActivity.newPartialNote(
+                data.getAccountActor(),
+                if (jso.has("author")) actorFromJson(jso.getJSONObject("author")) else Actor.EMPTY,
+                oid,
+                updatedDate, DownloadStatus.LOADED
+            )
             val activity: AActivity?
             when (parentActivity.type) {
                 ActivityType.UPDATE, ActivityType.CREATE, ActivityType.DELETE -> {
@@ -411,8 +417,10 @@ class ConnectionPumpio : Connection() {
                             val item = activityFromJson(jArr.getJSONObject(index))
                             note.replies.add(item)
                         } catch (e: JSONException) {
-                            throw ConnectionException.loggedJsonException(this,
-                                    "Parsing list of replies", e, null)
+                            throw ConnectionException.loggedJsonException(
+                                this,
+                                "Parsing list of replies", e, null
+                            )
                         }
                     }
                 }
@@ -446,14 +454,15 @@ class ConnectionPumpio : Connection() {
     fun actorOidToUsername(actorId: String?): String {
         return if (actorId.isNullOrEmpty()) ""
         else UriUtils.toOptional(actorId)
-                .map(Uri::getPath)
-                .map(stripBefore("/api"))
-                .map(stripBefore("/"))
-                .orElse(Optional.of(actorId)
-                        .map(stripBefore(":"))
-                        .map(stripAfter("@"))
-                        .orElse("")
-                )
+            .map(Uri::getPath)
+            .map(stripBefore("/api"))
+            .map(stripBefore("/"))
+            .orElse(
+                Optional.of(actorId)
+                    .map(stripBefore(":"))
+                    .map(stripAfter("@"))
+                    .orElse("")
+            )
     }
 
     fun actorOidToHost(actorId: String?): String {
@@ -495,7 +504,7 @@ class ConnectionPumpio : Connection() {
         }
 
         fun stripAfter(suffixStart: String): (String?) -> String = { value: String? ->
-            if (value.isNullOrEmpty())  ""
+            if (value.isNullOrEmpty()) ""
             else {
                 val index = value.indexOf(suffixStart)
                 if (index >= 0) value.substring(0, index) else value

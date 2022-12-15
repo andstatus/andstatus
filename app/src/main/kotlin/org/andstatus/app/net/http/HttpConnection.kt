@@ -34,6 +34,11 @@ import java.net.URL
 open class HttpConnection {
     open var data: HttpConnectionData = HttpConnectionData.EMPTY
 
+    var isStub : Boolean = false
+    val oauthHttp: HttpConnectionOAuth? get() = if (this is HttpConnectionOAuth) this else null
+    val oauthHttpOrThrow: HttpConnectionOAuth
+        get() = oauthHttp ?: throw IllegalStateException("Connection is not OAuth")
+
     open fun pathToUrlString(path: String): String {
         // TODO: return Try
         return UrlUtils.pathToUrlString(data.originUrl, path, errorOnInvalidUrls())
@@ -126,9 +131,6 @@ open class HttpConnection {
     open val credentialsPresent: Boolean get() = false
 
     val sslMode: SslModeEnum get() = data.sslMode
-
-    // TODO: Find a better way to instantiate proper class
-    open fun <T : HttpConnection> getNewInstance(): T = javaClass.newInstance() as T
 
     fun onMoved(result: HttpReadResult): Boolean {
         result.appendToLog("statusLine:'" + result.statusLine + "'")

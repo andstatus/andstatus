@@ -27,6 +27,7 @@ import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Connection
+import org.andstatus.app.net.social.ConnectionFactory
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginConfig
 import org.andstatus.app.timeline.meta.TimelineSaver
@@ -56,7 +57,7 @@ class MyAccountBuilder private constructor(
             )
         }
         if (!myAccount.getCredentialsPresent()
-                && myAccount.credentialsVerified == CredentialsVerificationStatus.SUCCEEDED
+            && myAccount.credentialsVerified == CredentialsVerificationStatus.SUCCEEDED
         ) {
             MyLog.i(this, "Account's credentials were lost?! Fixing...")
             setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
@@ -85,7 +86,7 @@ class MyAccountBuilder private constructor(
 
     fun setOAuth(isOauthBoolean: Boolean): MyAccountBuilder {
         val isOauth = if (isOauthBoolean == myAccount.origin.isOAuthDefault()) TriState.UNKNOWN
-            else TriState.fromBoolean(isOauthBoolean)
+        else TriState.fromBoolean(isOauthBoolean)
         myAccount.setOAuth(isOauth)
         return this
     }
@@ -157,25 +158,25 @@ class MyAccountBuilder private constructor(
     fun saveSilently(): Try<Boolean> {
         return if (myAccount.isValid) {
             myAccount.getNewOrExistingAndroidAccount()
-                    .onSuccess { account: Account -> myAccount.data.updateFrom(myAccount) }
-                    .flatMap { account: Account -> myAccount.data.saveIfChanged(account) }
-                    .onFailure { e: Throwable -> myAccount.data.setPersistent(false) }
-                    .onSuccess { result1: Boolean ->
-                        MyLog.v(this) {
-                            (if (result1) " Saved " else " Didn't change ") +
-                                    this.toString()
-                        }
-                        myAccount.myContext.accounts.addIfAbsent(myAccount)
-                        if (myAccount.myContext.isReady && !myAccount.hasAnyTimelines()) {
-                            TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myAccount.myContext)
-                        }
+                .onSuccess { account: Account -> myAccount.data.updateFrom(myAccount) }
+                .flatMap { account: Account -> myAccount.data.saveIfChanged(account) }
+                .onFailure { e: Throwable -> myAccount.data.setPersistent(false) }
+                .onSuccess { result1: Boolean ->
+                    MyLog.v(this) {
+                        (if (result1) " Saved " else " Didn't change ") +
+                                this.toString()
                     }
-                    .onFailure { e: Throwable ->
-                        MyLog.v(this) {
-                            "Failed to save " + this.toString() +
-                                    "; Error: " + e.message
-                        }
+                    myAccount.myContext.accounts.addIfAbsent(myAccount)
+                    if (myAccount.myContext.isReady && !myAccount.hasAnyTimelines()) {
+                        TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myAccount.myContext)
                     }
+                }
+                .onFailure { e: Throwable ->
+                    MyLog.v(this) {
+                        "Failed to save " + this.toString() +
+                                "; Error: " + e.message
+                    }
+                }
         } else {
             MyLog.v(this) { "Didn't save invalid account: $myAccount" }
             Try.failure(Exception())
@@ -200,7 +201,8 @@ class MyAccountBuilder private constructor(
         // We are comparing usernames ignoring case, but we fix correct case
         // as the Originating system tells us.
         if (ok && myAccount.username.isNotEmpty()
-                && myAccount.data.accountName.username.compareTo(actor.getUsername(), ignoreCase = true) != 0) {
+            && myAccount.data.accountName.username.compareTo(actor.getUsername(), ignoreCase = true) != 0
+        ) {
             // Credentials belong to other Account ??
             ok = false
             credentialsOfOtherAccount = true
@@ -224,7 +226,7 @@ class MyAccountBuilder private constructor(
                 if (!sameName) {
                     MyLog.i(
                         this, "name changed from " + myAccount.data.accountName.getUniqueName() +
-                            " to " + actor.uniqueName
+                                " to " + actor.uniqueName
                     )
                     myAccount.data.updateFrom(myAccount)
                     val newData = myAccount.data.withAccountName(
@@ -254,7 +256,8 @@ class MyAccountBuilder private constructor(
             )
         }
         if (errorSettingUsername) {
-            val msg = myAccount.myContext.context.getText(R.string.error_set_username).toString() + " " + actor.getUsername()
+            val msg =
+                myAccount.myContext.context.getText(R.string.error_set_username).toString() + " " + actor.getUsername()
             MyLog.w(this, msg)
             return Try.failure(ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg))
         }
@@ -280,7 +283,7 @@ class MyAccountBuilder private constructor(
 
     fun getConnection(): Connection {
         return if (myAccount.connection.isEmpty)
-            Connection.fromOrigin(myAccount.origin, TriState.fromBoolean(isOAuth()))
+            ConnectionFactory.fromOrigin(myAccount.origin, TriState.fromBoolean(isOAuth()))
         else myAccount.connection
     }
 
@@ -341,18 +344,18 @@ class MyAccountBuilder private constructor(
         }
 
         fun fromJsonString(myContext: MyContext, jsonString: String?): MyAccountBuilder =
-                JsonUtils.toJsonObject(jsonString)
-                        .map { jso ->
-                            if (myContext.isEmpty) EMPTY
-                            else AccountData.fromJson(myContext, jso, false)
-                                .let { loadFromAccountData(it, "") }
-                        }.getOrElse(EMPTY)
+            JsonUtils.toJsonObject(jsonString)
+                .map { jso ->
+                    if (myContext.isEmpty) EMPTY
+                    else AccountData.fromJson(myContext, jso, false)
+                        .let { loadFromAccountData(it, "") }
+                }.getOrElse(EMPTY)
 
 
         fun loadFromAccountData(accountData: AccountData, method: String?): MyAccountBuilder {
             val myAccount = MyAccount(accountData)
             val builder = fromMyAccount(myAccount)
-            if (! MyContextHolder.myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently()
+            if (!MyContextHolder.myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently()
             builder.logLoadResult(method)
             return builder
         }

@@ -295,7 +295,8 @@ object TestSuite {
     fun clearHttpStubs() {
         setHttpConnectionStubClass(null)
         setHttpConnectionStubInstance(null)
-        MyContextHolder.myContextHolder.getBlocking().accounts.get()
-            .forEach(Consumer { obj: MyAccount -> obj.setConnection() })
+        MyContextHolder.myContextHolder.getBlocking()
+            .accounts.get()
+            .forEach(MyAccount::setConnection)
     }
 }

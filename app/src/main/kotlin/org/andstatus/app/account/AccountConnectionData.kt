@@ -22,11 +22,13 @@ import org.andstatus.app.origin.OriginType
 import org.andstatus.app.util.TriState
 import java.net.URL
 
-class AccountConnectionData private constructor(private val myAccount: MyAccount,
-                                                private val origin: Origin, triStateOAuth: TriState) {
+class AccountConnectionData private constructor(
+    private val myAccount: MyAccount,
+    private val origin: Origin, triStateOAuth: TriState
+) {
     private val isOAuth: Boolean
     private var originUrl: URL?
-    private val httpConnectionClass: Class<out HttpConnection>
+    val httpConnectionClass: Class<out HttpConnection>
 
     fun getAccountActor(): Actor {
         return myAccount.actor
@@ -67,15 +69,6 @@ class AccountConnectionData private constructor(private val myAccount: MyAccount
     fun getDataReader(): AccountDataReader {
         return myAccount.data
     }
-
-    fun newHttpConnection(): HttpConnection = origin.myContext.httpConnectionStub
-        ?: try {
-            httpConnectionClass.newInstance()
-        } catch (e: InstantiationException) {
-            HttpConnection.EMPTY
-        } catch (e: IllegalAccessException) {
-            HttpConnection.EMPTY
-        }
 
     override fun toString(): String {
         return if (myAccount.isEmpty) if (origin.hasHost()) origin.getHost() else originUrl.toString() else myAccount.getAccountName()

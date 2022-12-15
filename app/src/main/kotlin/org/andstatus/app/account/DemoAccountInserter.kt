@@ -21,10 +21,10 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
-import org.andstatus.app.net.http.HttpConnectionData
 import org.andstatus.app.net.http.OAuthClientKeys
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.net.social.ConnectionFactory
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
 import org.andstatus.app.timeline.meta.Timeline
@@ -171,18 +171,17 @@ class DemoAccountInserter(private val myContext: MyContext) {
     }
 
     private fun insertTestClientKeys(myAccount: MyAccount) {
-        val connectionData: HttpConnectionData = HttpConnectionData.fromAccountConnectionData(
-                AccountConnectionData.fromMyAccount(myAccount, TriState.UNKNOWN)
-        )
-        if (!UrlUtils.hasHost(connectionData.originUrl)) {
-            connectionData.originUrl = UrlUtils.fromString("https://" + myAccount.actor.getConnectionHost())
+        val connection = ConnectionFactory.fromMyAccount(myAccount, TriState.UNKNOWN)
+        val httpData = connection.http.data
+        if (!UrlUtils.hasHost(httpData.originUrl)) {
+            httpData.originUrl = UrlUtils.fromString("https://" + myAccount.actor.getConnectionHost())
         }
-        val keys1: OAuthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
+        val keys1: OAuthClientKeys = OAuthClientKeys.fromConnectionData(httpData)
         if (!keys1.areKeysPresent()) {
             val consumerKey = "testConsumerKey" + java.lang.Long.toString(System.nanoTime())
             val consumerSecret = "testConsumerSecret" + java.lang.Long.toString(System.nanoTime())
             keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret)
-            val keys2: OAuthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
+            val keys2: OAuthClientKeys = OAuthClientKeys.fromConnectionData(httpData)
             assertEquals("Keys are loaded for $myAccount", true, keys2.areKeysPresent())
             assertEquals(consumerKey, keys2.getConsumerKey())
             assertEquals(consumerSecret, keys2.getConsumerSecret())

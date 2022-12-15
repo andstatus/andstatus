@@ -25,6 +25,7 @@ import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.net.social.ConnectionFactory
 import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.UrlUtils
@@ -78,11 +79,11 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
             } else if (connection.http.data.originUrl == null || host.compareTo(
                             connection.http.data.originUrl?.host ?: "", ignoreCase = true) != 0) {
                 MyLog.v(connection) { "Requesting data from the host: $host" }
-                val connectionData = connection.http.data.copy()
+                val httpData = connection.http.data.copy()
                 oauthHttp.oauthClientKeys = null
-                connectionData.originUrl = UrlUtils.buildUrl(host, connectionData.isSsl())
-                oauthHttp = oauthHttp.getNewInstance()
-                oauthHttp.data = connectionData
+                httpData.originUrl = UrlUtils.buildUrl(host, httpData.isSsl())
+                oauthHttp = ConnectionFactory.httpFromConnection(connection, true).oauthHttpOrThrow
+                oauthHttp.data = httpData
             }
             if (!oauthHttp.areClientKeysPresent()) {
                 oauthHttp.registerClient()

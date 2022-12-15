@@ -34,6 +34,7 @@ import java.util.stream.Collectors
 
 class HttpConnectionOAuthStub : HttpConnectionOAuth() {
     init {
+        isStub = true
         userToken = "token"
         userSecret = "secret"
     }
@@ -199,10 +200,6 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
 
     fun getInstanceId(): Long {
         return mInstanceId
-    }
-
-    override fun <T : HttpConnection> getNewInstance(): T {
-        return this as T
     }
 
     override fun getRequest(result: HttpReadResult): HttpReadResult {
