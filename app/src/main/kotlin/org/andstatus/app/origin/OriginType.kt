@@ -22,9 +22,9 @@ import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.lang.SelectableEnum
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionBasic
+import org.andstatus.app.net.http.HttpConnectionOAuth2
 import org.andstatus.app.net.http.HttpConnectionOAuthApache
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet
-import org.andstatus.app.net.http.HttpConnectionOAuthMastodon
 import org.andstatus.app.net.social.Connection
 import org.andstatus.app.net.social.ConnectionEmpty
 import org.andstatus.app.net.social.ConnectionMastodon
@@ -192,12 +192,12 @@ enum class OriginType(
 
         fun fromTitle(titleIn: String?): OriginType {
             return StringUtil.optNotEmpty(titleIn)
-                    .flatMap { title: String? ->
-                        Arrays.stream(values())
-                                .filter { value: OriginType -> value.title.equals(title, ignoreCase = true) }
-                                .findAny()
-                    }
-                    .orElse(UNKNOWN)
+                .flatMap { title: String? ->
+                    Arrays.stream(values())
+                        .filter { value: OriginType -> value.title.equals(title, ignoreCase = true) }
+                        .findAny()
+                }
+                .orElse(UNKNOWN)
         }
     }
 
@@ -419,7 +419,7 @@ enum class OriginType(
                 oauthPath = OAUTH_PATH_DEFAULT
                 originFactory = Function { myContext: MyContext -> OriginActivityPub(myContext, this) }
                 connectionClass = ConnectionActivityPub::class.java
-                httpConnectionClassOauth = HttpConnectionOAuthMastodon::class.java
+                httpConnectionClassOauth = HttpConnectionOAuth2::class.java
                 httpConnectionClassBasic = HttpConnection::class.java
                 isPublicTimeLineSyncable = true
                 isSearchTimelineSyncable = false
@@ -469,7 +469,7 @@ enum class OriginType(
                 oauthPath = OAUTH_PATH_DEFAULT
                 originFactory = Function { myContext: MyContext -> OriginMastodon(myContext, this) }
                 connectionClass = ConnectionMastodon::class.java
-                httpConnectionClassOauth = HttpConnectionOAuthMastodon::class.java
+                httpConnectionClassOauth = HttpConnectionOAuth2::class.java
                 httpConnectionClassBasic = HttpConnection::class.java
                 isPublicTimeLineSyncable = true
                 isSearchTimelineSyncable = true

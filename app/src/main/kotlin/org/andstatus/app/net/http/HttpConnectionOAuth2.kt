@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.net.http
 
+import android.net.Uri
 import com.github.scribejava.core.builder.ServiceBuilder
 import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig
 import com.github.scribejava.core.model.OAuth2AccessToken
@@ -32,6 +33,7 @@ import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyLogVerboseStream
 import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.UriUtils
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -41,13 +43,19 @@ import java.nio.charset.StandardCharsets
 /**
  * @author yvolk@yurivolkov.com
  */
-open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
+open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
 
     // See https://www.rfc-editor.org/rfc/rfc7591#section-3.1
     override fun registerClient(): Try<Unit> = registerClient(false)
         .recover(java.lang.Exception::class.java) { e: Exception ->
             MyLog.w(this, "Registration failed with $e, fallback to Mastodon...")
             registerClient(true)
+        }
+        .recover(java.lang.Exception::class.java) { e: java.lang.Exception ->
+            MyLog.w(this, "Registration failed with $e, fallback to Fake Client Registration...")
+            oauthClientKeys?.setConsumerKeyAndSecret(CLIENT_URI, "fake_client_secret")
+            MyLog.i(this, "Completed Fake Client Registration")
+            TryUtils.SUCCESS
         }
 
     private fun registerClient(forMastodon: Boolean): Try<Unit> {
@@ -66,15 +74,6 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
                     val consumerSecret = jso.getString("client_secret")
                     oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
                     oauthClientKeys?.areKeysPresent() ?: false
-                }
-                .recoverWith(java.lang.Exception::class.java) { e: java.lang.Exception ->
-                    if (data.originUrl?.host == "test-blog.joaocosta.eu") {
-                        MyLog.w(this, "Failed $logMsg, Error: $e")
-                        // Hack for testing https://github.com/andstatus/andstatus/issues/561
-                        oauthClientKeys?.setConsumerKeyAndSecret(CLIENT_URI, "fake_consumer_secret")
-                        MyLog.i(this, "Fake Client registration")
-                        TryUtils.TRUE
-                    } else TryUtils.failure(e)
                 }
                 .flatMap { keysArePresent: Boolean ->
                     if (keysArePresent) {
@@ -236,6 +235,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         clientConfig.isFollowRedirects = false
         val serviceBuilder = ServiceBuilder(oauthClientKeys?.getConsumerKey())
             .apiSecret(oauthClientKeys?.getConsumerSecret())
+            .defaultScope(OAUTH_SCOPE)
             .httpClientConfig(clientConfig)
         if (redirect) {
             serviceBuilder.callback(CALLBACK_URI)
@@ -243,7 +243,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         if (MyPreferences.isLogNetworkLevelMessages() && MyLog.isVerboseEnabled()) {
             serviceBuilder.debugStream(MyLogVerboseStream("ScribeJava"))
         }
-        return serviceBuilder.build(OAuthApi20(this))
+        return serviceBuilder.build(OAuth2Api(this))
     }
 
     private fun signRequest(request: OAuthRequest, service: OAuth20Service, redirected: Boolean) {
@@ -305,6 +305,20 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         } catch (e: Exception) {
             throw ConnectionException.of(e)
         }
+    }
+
+    override fun getApiUri2(routine: ApiRoutineEnum?): Uri {
+        var url: String = when (routine) {
+            /** These are Mastodon specific endpoints. So they are default.
+            Custom endpoints are obtained via [AuthorizationServerMetadata] */
+            ApiRoutineEnum.OAUTH_ACCESS_TOKEN, ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> data.oauthPath + "/token"
+            ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/v1/apps"
+            else -> super.getApiUri2(routine).toString()
+        }
+        if (url.isNotEmpty()) {
+            url = pathToUrlString(url)
+        }
+        return UriUtils.fromString(url)
     }
 
     override fun getProvider(): OAuthProvider? {

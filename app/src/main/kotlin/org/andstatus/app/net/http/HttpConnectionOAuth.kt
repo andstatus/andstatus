@@ -150,6 +150,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
 
     open fun getApiUri2(routine: ApiRoutineEnum?): Uri {
         var url: String = when (routine) {
+            /** These are Pump.io specific endpoints */
             ApiRoutineEnum.OAUTH_ACCESS_TOKEN -> data.oauthPath + "/access_token"
             ApiRoutineEnum.OAUTH_AUTHORIZE -> data.oauthPath + "/authorize"
             ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> data.oauthPath + "/request_token"
@@ -165,8 +166,6 @@ abstract class HttpConnectionOAuth : HttpConnection() {
     abstract fun getConsumer(): OAuthConsumer?
 
     abstract fun getProvider(): OAuthProvider?
-
-    open fun getAdditionalAuthorizationParams(): MutableMap<String, String>? = mutableMapOf()
 
     open fun getService(redirect: Boolean): OAuth20Service? {
         return null

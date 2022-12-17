@@ -9,7 +9,7 @@ import com.github.scribejava.core.oauth.AccessTokenRequestParams
 import com.github.scribejava.core.oauth.OAuth20Service
 import java.io.OutputStream
 
-class MyOAuth20Service(
+class MyOAuth2Service(
     api: DefaultApi20?, apiKey: String?, apiSecret: String?, callback: String?, defaultScope: String?,
     responseType: String?, debugStream: OutputStream?, userAgent: String?,
     httpClientConfig: HttpClientConfig?, httpClient: HttpClient?
