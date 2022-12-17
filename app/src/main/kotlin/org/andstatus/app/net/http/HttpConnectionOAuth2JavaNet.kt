@@ -31,8 +31,8 @@ import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyLogVerboseStream
-import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.TryUtils
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -43,21 +43,22 @@ import java.nio.charset.StandardCharsets
  */
 open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
 
-    override fun registerClient(): Try<Unit> {
+    // See https://www.rfc-editor.org/rfc/rfc7591#section-3.1
+    override fun registerClient(): Try<Unit> = registerClient(false)
+        .recover(java.lang.Exception::class.java) { e: Exception ->
+            MyLog.w(this, "Registration failed with $e, fallback to Mastodon...")
+            registerClient(true)
+        }
+
+    private fun registerClient(forMastodon: Boolean): Try<Unit> {
         val uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT)
-        val logmsg: MyStringBuilder = MyStringBuilder.of(
-            "registerClient; for " + data.originUrl + "; URL='" + uri + "'"
-        )
-        MyLog.v(this) { logmsg.toString() }
+        val logMsg: String = "registerClient;" + (if (forMastodon) " Mastodon specific," else "") +
+                " origin: " + data.originUrl + ", url: " + uri
+        MyLog.v(this) { logMsg }
         oauthClientKeys?.clear()
         return try {
-            val params = JSONObject()
-            params.put("client_name", USER_AGENT)
-            params.put("redirect_uris", CALLBACK_URI.toString())
-            params.put("scopes", OAUTH_SCOPES)
-            params.put("website", "http://andstatus.org")
             HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
-                .withPostParams(params)
+                .withPostParams(clientMetadata(forMastodon))
                 .let(::execute)
                 .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .map { jso: JSONObject ->
@@ -68,28 +69,54 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
                 }
                 .recoverWith(java.lang.Exception::class.java) { e: java.lang.Exception ->
                     if (data.originUrl?.host == "test-blog.joaocosta.eu") {
+                        MyLog.w(this, "Failed $logMsg, Error: $e")
                         // Hack for testing https://github.com/andstatus/andstatus/issues/561
-                        oauthClientKeys?.setConsumerKeyAndSecret("http://andstatus.org", "fake_consumer_secret")
+                        oauthClientKeys?.setConsumerKeyAndSecret(CLIENT_URI, "fake_consumer_secret")
                         MyLog.i(this, "Fake Client registration")
                         TryUtils.TRUE
                     } else TryUtils.failure(e)
                 }
                 .flatMap { keysArePresent: Boolean ->
                     if (keysArePresent) {
-                        MyLog.v(this) { "Completed $logmsg" }
+                        MyLog.v(this) { "Completed $logMsg" }
                         TryUtils.SUCCESS
                     } else {
                         Try.failure(
                             ConnectionException.fromStatusCodeAndHost(
                                 StatusCode.NO_CREDENTIALS_FOR_HOST,
-                                "Failed to obtain client keys for host; $logmsg", data.originUrl
+                                "Failed to obtain client keys for host; $logMsg", data.originUrl
                             )
                         )
                     }
                 }
         } catch (e: JSONException) {
-            Try.failure(ConnectionException.loggedJsonException(this, logmsg.toString(), e, null))
+            Try.failure(ConnectionException.loggedJsonException(this, logMsg, e, null))
         }
+    }
+
+    // Client Metadata https://www.rfc-editor.org/rfc/rfc7591#section-2
+    private fun clientMetadata(forMastodon: Boolean): JSONObject {
+        val params = JSONObject()
+        if (forMastodon) {
+            // redirect_uris should be an array according to spec, but this doesn't work for Mastodon hosts.
+            // So we assign it with string value and not an array
+            params.put("redirect_uris", CALLBACK_URI)
+
+            // Legacy, this is not in OAuth 2.0 spec
+            params.put("scopes", OAUTH_SCOPE)
+            params.put("website", CLIENT_URI)
+        } else {
+            // According to RFC 7591
+            val redirectUris = JSONArray()
+            redirectUris.put(CALLBACK_URI)
+            params.put("redirect_uris", redirectUris)
+        }
+        params.put("client_name", USER_AGENT)
+        params.put("client_uri", CLIENT_URI)
+        params.put("logo_uri", LOGO_URI)
+        params.put("scope", OAUTH_SCOPE)
+        params.put("policy_uri", POLICY_URI)
+        return params
     }
 
     override fun postRequest(result: HttpReadResult): HttpReadResult {
@@ -211,7 +238,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
             .apiSecret(oauthClientKeys?.getConsumerSecret())
             .httpClientConfig(clientConfig)
         if (redirect) {
-            serviceBuilder.callback(CALLBACK_URI.toString())
+            serviceBuilder.callback(CALLBACK_URI)
         }
         if (MyPreferences.isLogNetworkLevelMessages() && MyLog.isVerboseEnabled()) {
             serviceBuilder.debugStream(MyLogVerboseStream("ScribeJava"))
@@ -288,7 +315,4 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
         return true
     }
 
-    companion object {
-        const val OAUTH_SCOPES: String = "read write follow"
-    }
 }

@@ -52,6 +52,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.data.TextMediaType
+import org.andstatus.app.net.http.CALLBACK_URI
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.MyOAuth2AccessTokenJsonExtractor
@@ -697,7 +698,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "uri=$uri")
             }
-            if (HttpConnection.CALLBACK_URI.getScheme() == uri.scheme) {
+            if (HttpConnection.CALLBACK_URI_PARSED.getScheme() == uri.scheme) {
                 // To prevent repeating of this task
                 intent.data = null
                 // This activity was started by Twitter ("Service Provider")
@@ -1027,7 +1028,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                         // Twitter will correctly process your callback redirection
                         authUri = UriUtils.fromString(
                             oauthHttp.getProvider()
-                                ?.retrieveRequestToken(consumer, HttpConnection.CALLBACK_URI.toString())
+                                ?.retrieveRequestToken(consumer, CALLBACK_URI)
                         )
                         activity.state.setRequestTokenWithSecret(consumer?.token, consumer?.tokenSecret)
                     }
@@ -1137,8 +1138,8 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
             var whoAmI: Optional<Uri> = Optional.empty()
 
             // We don't need to worry about any saved states: we can reconstruct the state
-            if (params != null && HttpConnection.CALLBACK_URI.getHost() != null &&
-                HttpConnection.CALLBACK_URI.getHost() == params.host
+            if (params != null && HttpConnection.CALLBACK_URI_PARSED.getHost() != null &&
+                HttpConnection.CALLBACK_URI_PARSED.getHost() == params.host
             ) {
                 state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
                 try {

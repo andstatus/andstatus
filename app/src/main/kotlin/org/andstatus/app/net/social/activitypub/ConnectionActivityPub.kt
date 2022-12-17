@@ -20,6 +20,7 @@ import io.vavr.control.Try
 import org.andstatus.app.account.AccountConnectionData
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.net.http.CLIENT_URI
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
@@ -470,15 +471,14 @@ class ConnectionActivityPub : Connection() {
 
     companion object {
         private val TAG: String = ConnectionActivityPub::class.simpleName!!
-        val PUBLIC_COLLECTION_ID: String = "https://www.w3.org/ns/activitystreams#Public"
-        val APPLICATION_ID: String = "http://andstatus.org/andstatus"
-        val NAME_PROPERTY: String = "name"
-        val SUMMARY_PROPERTY: String = "summary"
-        val SENSITIVE_PROPERTY: String = "sensitive"
-        val CONTENT_PROPERTY: String = "content"
-        val VIDEO_OBJECT: String = "stream"
-        val IMAGE_OBJECT: String = "image"
-        val FULL_IMAGE_OBJECT: String = "fullImage"
+        const val PUBLIC_COLLECTION_ID: String = "https://www.w3.org/ns/activitystreams#Public"
+        const val NAME_PROPERTY: String = "name"
+        const val SUMMARY_PROPERTY: String = "summary"
+        const val SENSITIVE_PROPERTY: String = "sensitive"
+        const val CONTENT_PROPERTY: String = "content"
+        const val VIDEO_OBJECT: String = "stream"
+        const val IMAGE_OBJECT: String = "image"
+        const val FULL_IMAGE_OBJECT: String = "fullImage"
 
         private fun attachmentFromJson(jso: JSONObject): Attachment {
             return ObjectOrId.of(jso, "url")

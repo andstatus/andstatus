@@ -59,7 +59,7 @@ class AccountSettingsWebActivity : MyActivity(AccountSettingsWebActivity::class)
         private fun isThisCallback(url: String?): Boolean {
             var isCallback = false
             val uri = Uri.parse(url)
-            if (uri != null && HttpConnection.Companion.CALLBACK_URI.getHost() == uri.host) {
+            if (uri != null && HttpConnection.Companion.CALLBACK_URI_PARSED.getHost() == uri.host) {
                 isCallback = true
                 MyLog.d(this, "Callback to: $url")
                 if (!isFinishing) {

@@ -22,6 +22,7 @@ import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.DemoConversationInserter
 import org.andstatus.app.data.checker.CheckConversations
+import org.andstatus.app.net.http.LOGO_URI
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginPumpio
@@ -81,7 +82,7 @@ class DemoData {
     private val conversationAccountUniqueName: String = "testerofandstatus@$pumpioMainHost"
     val conversationAccountName: String = "$conversationAccountUniqueName/$conversationOriginName"
     val conversationAccountActorOid: String = OriginPumpio.ACCOUNT_PREFIX + conversationAccountUniqueName
-    val conversationAccountAvatarUrl: String = "http://andstatus.org/images/andstatus-logo.png"
+    val conversationAccountAvatarUrl: String = LOGO_URI
     val conversationEntryNoteOid: String = (HTTP + pumpioMainHost
             + "/testerofandstatus/comment/thisisfakeuri" + testRunUid)
     val conversationEntryAuthorOid: String = "acct:first@pumpentry.example.com"

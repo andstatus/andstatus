@@ -40,6 +40,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsActivity
+import org.andstatus.app.net.http.CLIENT_URI
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.util.DialogFactory
 import org.andstatus.app.util.MyLog
@@ -191,7 +192,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
             versionText.text = text.toString()
             versionText.setOnClickListener { v: View? ->
                 val intent = Intent(Intent.ACTION_VIEW)
-                intent.data = Uri.parse("http://andstatus.org")
+                intent.data = Uri.parse(CLIENT_URI)
                 startActivity(intent)
             }
         }

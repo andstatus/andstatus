@@ -85,7 +85,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
             .map { jso: JSONObject ->
                 authorizationServerMetadata = AuthorizationServerMetadata.fromJson(jso)
                 authorizationServerMetadata?.save(data)
-                MyLog.v(this, "Completed: $msgSupplier(): $authorizationServerMetadata")
+                MyLog.v(this, "Completed: ${msgSupplier()}: $authorizationServerMetadata")
                 Unit
             }
             .mapFailure { throwable: Throwable? ->
@@ -93,7 +93,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
                     ConnectionException.loggedJsonException(this, msgSupplier(), throwable, null)
                 } else {
                     if (throwable is ConnectionException && throwable.statusCode == StatusCode.NOT_FOUND) {
-                        MyLog.d(this, "Not found: $msgSupplier()")
+                        MyLog.d(this, "Not found: ${msgSupplier()}")
                     } else {
                         MyLog.w(this, "Failed: ${msgSupplier()}", throwable)
                     }

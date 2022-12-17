@@ -21,6 +21,7 @@ import org.andstatus.app.account.AccountConnectionData
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyContentType
+import org.andstatus.app.net.http.CLIENT_URI
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
@@ -487,13 +488,12 @@ class ConnectionPumpio : Connection() {
 
     companion object {
         private val TAG: String = ConnectionPumpio::class.simpleName!!
-        val PUBLIC_COLLECTION_ID: String = "http://activityschema.org/collection/public"
-        val APPLICATION_ID: String = "http://andstatus.org/andstatus"
-        val NAME_PROPERTY: String = "displayName"
-        val CONTENT_PROPERTY: String = "content"
-        val VIDEO_OBJECT: String = "stream"
-        val IMAGE_OBJECT: String = "image"
-        val FULL_IMAGE_OBJECT: String = "fullImage"
+        const val PUBLIC_COLLECTION_ID: String = "http://activityschema.org/collection/public"
+        const val NAME_PROPERTY: String = "displayName"
+        const val CONTENT_PROPERTY: String = "content"
+        const val VIDEO_OBJECT: String = "stream"
+        const val IMAGE_OBJECT: String = "image"
+        const val FULL_IMAGE_OBJECT: String = "fullImage"
 
         fun stripBefore(prefixEnd: String): (String?) -> String = { value: String? ->
             if (value.isNullOrEmpty()) ""

@@ -19,9 +19,10 @@ import android.net.Uri
 import io.vavr.control.Try
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.net.http.CLIENT_URI
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpReadResult
+import org.andstatus.app.net.http.USER_AGENT
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
@@ -165,8 +166,8 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
         activity.put("objectType", "activity")
         activity.put("verb", activityType.code)
         val generator = JSONObject()
-        generator.put("id", ConnectionPumpio.APPLICATION_ID)
-        generator.put("displayName", HttpConnection.USER_AGENT)
+        generator.put("id", CLIENT_URI)
+        generator.put("displayName", USER_AGENT)
         generator.put("objectType", PObjectType.APPLICATION.id)
         activity.put("generator", generator)
         setAudience(activity, activityType)

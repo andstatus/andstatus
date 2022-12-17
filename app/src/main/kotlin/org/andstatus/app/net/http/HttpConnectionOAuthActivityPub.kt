@@ -39,7 +39,7 @@ class HttpConnectionOAuthActivityPub : HttpConnectionOAuth2JavaNet() {
      */
     override fun getAdditionalAuthorizationParams(): MutableMap<String, String> {
         val additionalParams: MutableMap<String, String> = HashMap()
-        additionalParams[OAuthConstants.SCOPE] = OAUTH_SCOPES
+        additionalParams[OAuthConstants.SCOPE] = OAUTH_SCOPE
         return additionalParams
     }
 }

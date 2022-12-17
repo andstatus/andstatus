@@ -51,7 +51,7 @@ object MyHttpClientFactory {
                 .setRedirectStrategy(DavRedirectStrategy.INSTANCE)  
                 */
                 .disableRedirectHandling()
-                .setUserAgent(HttpConnection.USER_AGENT)
+                .setUserAgent(USER_AGENT)
                 .disableCookieManagement()
         return builder.build()
     }

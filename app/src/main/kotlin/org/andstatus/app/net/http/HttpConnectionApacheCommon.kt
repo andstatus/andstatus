@@ -110,7 +110,7 @@ class HttpConnectionApacheCommon internal constructor(
 
     private fun newHttpGet(url: URL): HttpGet {
         val httpGet = HttpGet(url.toExternalForm())
-        httpGet.setHeader("User-Agent", HttpConnection.USER_AGENT)
+        httpGet.setHeader("User-Agent", USER_AGENT)
         return httpGet
     }
 

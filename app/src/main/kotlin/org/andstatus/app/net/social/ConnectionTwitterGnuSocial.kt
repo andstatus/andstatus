@@ -20,9 +20,9 @@ import io.vavr.control.Try
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.net.http.ConnectionException
-import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
+import org.andstatus.app.net.http.USER_AGENT
 import org.andstatus.app.origin.OriginConfig
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
@@ -99,55 +99,55 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
             super.updateNoteSetFields(note, formParams)
 
             // This parameter was removed from Twitter API, but it still is in GNUsocial
-            formParams.put("source", HttpConnection.USER_AGENT)
+            formParams.put("source", USER_AGENT)
         } catch (e: JSONException) {
             return Try.failure(e)
         }
         return tryApiPath(data.getAccountActor(), ApiRoutineEnum.UPDATE_NOTE)
-                .map { uri: Uri ->
-                    HttpRequest.of(ApiRoutineEnum.UPDATE_NOTE, uri)
-                            .withPostParams(formParams)
-                            .withMediaPartName("media")
-                            .withAttachmentToPost(note.attachments.firstToUpload)
-                }
-                .flatMap(::execute)
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject? -> activityFromJson(jso) }
+            .map { uri: Uri ->
+                HttpRequest.of(ApiRoutineEnum.UPDATE_NOTE, uri)
+                    .withPostParams(formParams)
+                    .withMediaPartName("media")
+                    .withAttachmentToPost(note.attachments.firstToUpload)
+            }
+            .flatMap(::execute)
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jso: JSONObject? -> activityFromJson(jso) }
     }
 
     override fun getConfig(): Try<OriginConfig> {
         val apiRoutine = ApiRoutineEnum.GET_CONFIG
         return getApiPath(apiRoutine)
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap(::execute)
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { result: JSONObject? ->
-                    var config: OriginConfig = OriginConfig.getEmpty()
-                    if (result != null) {
-                        val site = result.optJSONObject("site")
-                        if (site != null) {
-                            val textLimit = site.optInt("textlimit")
-                            var uploadLimit = 0
-                            val attachments = site.optJSONObject("attachments")
-                            if (attachments != null && site.optBoolean("uploads")) {
-                                uploadLimit = site.optInt("file_quota")
-                            }
-                            config = OriginConfig.fromTextLimit(textLimit, uploadLimit.toLong())
-                            // "shorturllength" is not used
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap(::execute)
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { result: JSONObject? ->
+                var config: OriginConfig = OriginConfig.getEmpty()
+                if (result != null) {
+                    val site = result.optJSONObject("site")
+                    if (site != null) {
+                        val textLimit = site.optInt("textlimit")
+                        var uploadLimit = 0
+                        val attachments = site.optJSONObject("attachments")
+                        if (attachments != null && site.optBoolean("uploads")) {
+                            uploadLimit = site.optInt("file_quota")
                         }
+                        config = OriginConfig.fromTextLimit(textLimit, uploadLimit.toLong())
+                        // "shorturllength" is not used
                     }
-                    config
                 }
+                config
+            }
     }
 
     override fun getConversation(conversationOid: String): Try<List<AActivity>> {
         if (UriUtils.nonRealOid(conversationOid)) return TryUtils.emptyList()
         val apiRoutine = ApiRoutineEnum.GET_CONVERSATION
         return getApiPathWithNoteId(apiRoutine, conversationOid)
-                .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
-                .flatMap(::execute)
-                .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
-                .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
+            .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
+            .flatMap(::execute)
+            .flatMap { obj: HttpReadResult -> obj.getJsonArray() }
+            .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
     }
 
     override fun setNoteBodyFromJson(note: Note, jso: JSONObject) {
@@ -171,7 +171,8 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 for (ind in 0 until jArr.length()) {
                     val jsonAttachment = jArr[ind] as JSONObject
                     val uri = UriUtils.fromAlternativeTags(jsonAttachment, "url", "thumb_url")
-                    val attachment: Attachment = Attachment.fromUriAndMimeType(uri, JsonUtils.optString(jsonAttachment, "mimetype"))
+                    val attachment: Attachment =
+                        Attachment.fromUriAndMimeType(uri, JsonUtils.optString(jsonAttachment, "mimetype"))
                     if (attachment.isValid()) {
                         activity.addAttachment(attachment)
                     } else {
@@ -187,7 +188,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
 
     override fun actorBuilderFromJson(jso: JSONObject?): Actor {
         return if (jso == null) Actor.EMPTY else super.actorBuilderFromJson(jso)
-                .setProfileUrl(JsonUtils.optString(jso, "statusnet_profile_url"))
+            .setProfileUrl(JsonUtils.optString(jso, "statusnet_profile_url"))
     }
 
     override fun getOpenInstances(): Try<List<Server>> {
@@ -209,7 +210,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 } else if (!error && JsonUtils.optString(result, "status") != "OK") {
                     MyStringBuilder.appendWithSpace(
                         logMessage, "gtools service returned the error: '" +
-                            JsonUtils.optString(result, "error") + "'"
+                                JsonUtils.optString(result, "error") + "'"
                     )
                     error = true
                 }
@@ -247,9 +248,11 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
         private val CONVERSATION_ID_FIELD_NAME: String = "statusnet_conversation_id"
         private val HTML_BODY_FIELD_NAME: String = "statusnet_html"
         private val GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN = Pattern.compile(
-                "(?s)([^ ]+) favorited something by [^ ]+ (.+)")
+            "(?s)([^ ]+) favorited something by [^ ]+ (.+)"
+        )
         private val GNU_SOCIAL_FAVOURITED_A_STATUS_BY_PATTERN = Pattern.compile(
-                "(?s)([^ ]+) favourited (a status by [^ ]+)")
+            "(?s)([^ ]+) favourited (a status by [^ ]+)"
+        )
 
         fun createLikeActivity(activityIn: AActivity): AActivity {
             val noteIn = activityIn.getNote()

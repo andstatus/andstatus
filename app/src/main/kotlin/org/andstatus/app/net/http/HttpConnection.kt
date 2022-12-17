@@ -31,9 +31,16 @@ import org.andstatus.app.util.UrlUtils
 import org.json.JSONObject
 import java.net.URL
 
+const val CLIENT_URI = "http://andstatus.org/andstatus"
+const val CALLBACK_URI: String = "http://oauth-redirect.andstatus.org"
+const val LOGO_URI = "http://andstatus.org/images/andstatus-logo.png"
+const val OAUTH_SCOPE: String = "read write follow"
+const val POLICY_URI = "https://github.com/andstatus/andstatus/blob/master/doc/Privacy-Policy.md"
+const val USER_AGENT: String = "AndStatus"
+
 open class HttpConnection {
     open var data: HttpConnectionData = HttpConnectionData.EMPTY
-    var isStub : Boolean = false
+    var isStub: Boolean = false
 
     val oauthHttp: HttpConnectionOAuth? get() = if (this is HttpConnectionOAuth) this else null
     val oauthHttpOrThrow: HttpConnectionOAuth
@@ -160,12 +167,11 @@ open class HttpConnection {
 
     companion object {
         val EMPTY: HttpConnection = HttpConnection()
-        val USER_AGENT: String = "AndStatus"
 
         /**
          * The URI is consistent with "scheme" and "host" in AndroidManifest
          * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
          */
-        val CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org")
+        val CALLBACK_URI_PARSED: Uri = Uri.parse(CALLBACK_URI)
     }
 }

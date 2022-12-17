@@ -276,7 +276,8 @@ class MyAccountBuilder private constructor(
     }
 
     fun registerClient(): Try<Unit> {
-        MyLog.v(this) { "Registering client application for " + myAccount.username }
+        MyLog.v(this) { "Registering client application for user: '${myAccount.username}'," +
+                " url: '${myAccount.origin.url}'" }
         myAccount.setConnection()
         return getConnection().registerClientForAccount()
     }
