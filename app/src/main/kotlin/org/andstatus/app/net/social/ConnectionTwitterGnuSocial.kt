@@ -30,6 +30,7 @@ import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -263,7 +264,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
             if (!matcher.matches()) return activityIn
             val inReplyTo = noteIn.inReplyTo
             val favoritedActivity: AActivity
-            if (UriUtils.isRealOid(inReplyTo.getNote().oid)) {
+            if (inReplyTo.getNote().oid.isRealOid) {
                 favoritedActivity = inReplyTo
             } else {
                 favoritedActivity = AActivity.from(activityIn.accountActor, ActivityType.UPDATE)

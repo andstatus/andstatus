@@ -39,6 +39,7 @@ import org.andstatus.app.util.TryUtils.flatMapL
 import org.andstatus.app.util.TryUtils.toFailure
 import org.andstatus.app.util.TryUtils.toSuccess
 import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -466,7 +467,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         val apiRoutine = ApiRoutineEnum.GET_ACTOR
         return getApiPathWithActorId(
             apiRoutine,
-            if (UriUtils.isRealOid(actorIn.oid)) actorIn.oid else actorIn.getUsername()
+            if (actorIn.oid.isRealOid) actorIn.oid else actorIn.getUsername()
         )
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
             .flatMap(::execute)

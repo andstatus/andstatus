@@ -37,6 +37,7 @@ import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import java.util.*
 
 /**
@@ -222,8 +223,8 @@ class Note : AObject {
         builder.withCommaNonEmpty("summary", summary)
         builder.withCommaNonEmpty("content", content)
         builder.atNewLine("audience", audience.toAudienceString(Actor.EMPTY))
-        builder.withComma("oid", oid) { UriUtils.isRealOid(oid) }
-        builder.withComma("conversation_oid", conversationOid) { UriUtils.isRealOid(conversationOid) }
+        builder.withComma("oid", oid) { oid.isRealOid }
+        builder.withComma("conversation_oid", conversationOid) { conversationOid.isRealOid }
         builder.withCommaNonEmpty("url", url)
         builder.withCommaNonEmpty("via", via)
         builder.withComma("updated", MyLog.debugFormatOfDate(updatedDate))
@@ -329,7 +330,7 @@ class Note : AObject {
     }
 
     fun setDiscarded() {
-        status = if (UriUtils.isRealOid(oid)) DownloadStatus.LOADED else DownloadStatus.DELETED
+        status = if (oid.isRealOid) DownloadStatus.LOADED else DownloadStatus.DELETED
     }
 
     fun setStatus(status: DownloadStatus) {

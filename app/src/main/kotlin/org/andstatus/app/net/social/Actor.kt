@@ -53,6 +53,7 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import org.andstatus.app.util.UrlUtils
 import org.junit.Assert
 import java.net.URL
@@ -217,7 +218,7 @@ class Actor private constructor(// In our system
     }
 
     fun isOidReal(): Boolean {
-        return UriUtils.isRealOid(oid)
+        return oid.isRealOid
     }
 
     fun canGetActor(): Boolean {
@@ -310,7 +311,7 @@ class Actor private constructor(// In our system
         if (actorId != 0L) {
             return 31 * result + java.lang.Long.hashCode(actorId)
         }
-        if (UriUtils.isRealOid(oid)) {
+        if (oid.isRealOid) {
             return 31 * result + oid.hashCode()
         } else if (isWebFingerIdValid) {
             return 31 * result + getWebFingerId().hashCode()
@@ -332,7 +333,7 @@ class Actor private constructor(// In our system
             if (actorId == other.actorId) return true
         }
         if (origin == other.origin) {
-            if (UriUtils.isRealOid(oid) && oid == other.oid) {
+            if (oid.isRealOid && oid == other.oid) {
                 return true
             }
         } else if (sameOriginOnly) {
@@ -443,7 +444,7 @@ class Actor private constructor(// In our system
                 }
                 if (actorId == 0L && !skip2 && isOidReal()) {
                     val oid2 = MyQuery.idToOid(origin.myContext, OidEnum.ACTOR_OID, actorId2, 0)
-                    if (UriUtils.isRealOid(oid2)) skip2 = !oid.equals(oid2, ignoreCase = true)
+                    if (oid2.isRealOid) skip2 = !oid.equals(oid2, ignoreCase = true)
                 }
                 if (actorId == 0L && !skip2 && groupType != GroupType.UNKNOWN) {
                     val groupTypeStored = origin.myContext.users.idToGroupType(actorId2)

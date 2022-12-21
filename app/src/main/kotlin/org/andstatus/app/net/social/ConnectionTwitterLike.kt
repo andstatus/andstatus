@@ -29,6 +29,7 @@ import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -466,7 +467,7 @@ abstract class ConnectionTwitterLike : Connection() {
         return getApiPath(apiRoutine)
             .map { obj: Uri -> obj.buildUpon() }
             .map { builder: Uri.Builder ->
-                if (UriUtils.isRealOid(actorIn.oid))
+                if (actorIn.oid.isRealOid)
                     builder.appendQueryParameter("user_id", actorIn.oid)
                 else builder.appendQueryParameter("screen_name", actorIn.getUsername())
             }

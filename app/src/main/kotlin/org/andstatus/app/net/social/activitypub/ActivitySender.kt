@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2022 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.andstatus.app.net.social.activitypub
 import android.net.Uri
 import io.vavr.control.Try
 import org.andstatus.app.actor.GroupType
-import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.social.AActivity
@@ -27,11 +26,15 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Attachment
+import org.andstatus.app.net.social.Audience
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.TryUtils.getOrRecover
 import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -40,86 +43,111 @@ import org.json.JSONObject
  * ActivityPub specific
  * @author yvolk@yurivolkov.com
  */
-internal class ActivitySender(val connection: ConnectionActivityPub, val note: Note) {
+internal class ActivitySender(val connection: ConnectionActivityPub, activityTypeIn: ActivityType,
+                              val audience: Audience,  val note: Note, val objActor: Actor) {
+    val activityType: ActivityType = calcActivityType(activityTypeIn)
+    private val isNote: Boolean get() = note != Note.EMPTY
+    private val actor: Actor get() = connection.data.getAccountActor()
+    private val objExists: Boolean get() = (if (isNote) note.oid else objActor.oid).isRealOid
+    private val strContext = "Activity " + activityType + " " +
+            (if (isNote) "Note" else "Actor") +
+            (if (objExists) " objectId:'" + note.oid + "'" else " (new)")
 
-    fun send(activityType: ActivityType): Try<AActivity> {
-        return sendInternal(activityType)
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jsoActivity: JSONObject -> connection.activityFromJson(jsoActivity) }
+    private fun calcActivityType(activityTypeIn: ActivityType): ActivityType {
+        val activityType = if (objExists) {
+            if (activityTypeIn == ActivityType.CREATE) ActivityType.UPDATE else activityTypeIn
+        } else ActivityType.CREATE
+        return activityType
     }
 
-    private fun sendInternal(activityTypeIn: ActivityType): Try<HttpReadResult> {
-        val activityType = if (isExisting()) if (activityTypeIn == ActivityType.CREATE) ActivityType.UPDATE else activityTypeIn else ActivityType.CREATE
-        val msgLog = "Activity '" + activityType + "'" + if (isExisting()) " objectId:'" + note.oid + "'" else ""
-        var activity = JSONObject()
-        return try {
-            activity = buildActivityToSend(activityType)
-            val activityImm = activity
-            val activityResponse: Try<HttpReadResult> = ConnectionAndUrl.fromActor(connection,
-                    ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor())
+    fun send(): Try<AActivity> {
+        return sendInternal()
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jsoActivity: JSONObject -> connection.activityFromJson(jsoActivity) }
+    }
+
+    private fun sendInternal(): Try<HttpReadResult> {
+        val activity = Try.of { buildActivityToSend(activityType) }
+            .getOrRecover { return TryUtils.failure(strContext, it) }
+
+        val activityResponse: HttpReadResult = ConnectionAndUrl.fromActor(
+            connection, ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, actor
+        )
+            .flatMap { conu: ConnectionAndUrl ->
+                conu.newRequest()
+                    .withPostParams(activity)
+                    .let(conu::execute)
+            }
+            .getOrRecover { return TryUtils.failure(strContext, it) }
+
+        val jsonObject: JSONObject = activityResponse
+            .getJsonObject()
+            .getOrRecover { return TryUtils.failure(strContext, it) }
+
+        if (MyLog.isVerboseEnabled()) {
+            Try.of { strContext + " " + jsonObject.toString(2) }
+                .onSuccess { message: String? -> MyLog.v(this, message) }
+        }
+
+        if (isNote && contentNotPosted(activityType, jsonObject)) {
+            if (MyLog.isVerboseEnabled()) {
+                MyLog.v(
+                    this,
+                    "$strContext Server bug: " +
+                            "content is not sent, when an image object is posted. Sending an update"
+                )
+            }
+            activity.put("type", ActivityType.UPDATE.activityPubValue)
+            return ConnectionAndUrl.fromActor(
+                connection, ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, actor
+            )
                 .flatMap { conu: ConnectionAndUrl ->
                     conu.newRequest()
-                        .withPostParams(activityImm)
+                        .withPostParams(activity)
                         .let(conu::execute)
                 }
-            val jsonObject = activityResponse
-                    .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                    .flatMap { jso: JSONObject? ->
-                        if (jso == null) Try.failure(ConnectionException.hardConnectionException("$msgLog returned no data", null))
-                        else Try.success(jso) }
-            if (jsonObject.isFailure) return jsonObject.flatMap { j: JSONObject? -> activityResponse }
-            activityResponse.filter { r: HttpReadResult? -> MyLog.isVerboseEnabled() }
-                    .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                    .map { jso: JSONObject -> msgLog + " " + jso.toString(2) }
-                    .onSuccess { message: String? -> MyLog.v(this, message) }
-            if (jsonObject.map { jso: JSONObject -> contentNotPosted(activityType, jso) }.getOrElse(true)) {
-                if (MyLog.isVerboseEnabled()) {
-                    MyLog.v(this, msgLog + " Pump.io bug: content is not sent, " +
-                            "when an image object is posted. Sending an update")
-                }
-                activity.put("type", ActivityType.UPDATE.activityPubValue)
-                return ConnectionAndUrl.fromActor(
-                    connection, ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor()
-                )
-                    .flatMap { conu: ConnectionAndUrl ->
-                        conu.newRequest()
-                            .withPostParams(activityImm)
-                            .let(conu::execute)
-                    }
-            }
-            activityResponse
-        } catch (e: JSONException) {
-            Try.failure(ConnectionException.loggedJsonException(this, msgLog, e, activity))
-        } catch (e: Exception) {
-            Try.failure(e)
+                .mapFailure { ConnectionException.of(it, strContext) }
         }
+        return Try.success(activityResponse)
     }
 
-    private fun getActor(): Actor {
-        return connection.data.getAccountActor()
-    }
+    private fun buildActivityToSend(activityType: ActivityType): JSONObject =
+        newActivityOfThisActor(activityType).apply {
+            if (isNote) {
+                put("object", buildNoteObject(this))
+            } else {
+                put("object", objActor.oid)
+            }
+        }
 
-    private fun buildActivityToSend(activityType: ActivityType): JSONObject {
-        val activity = newActivityOfThisAccount(activityType)
-        val obj = buildObject(activity)
+    private fun buildNoteObject(activity: JSONObject): JSONObject {
+        val obj = JSONObject()
+        if (objExists) {
+            obj.put("id", note.oid)
+            obj.put("type", ApObjectType.NOTE.id())
+        } else {
+            require(note.hasSomeContent()) { "Nothing to send" }
+            obj.put("attributedTo", actor.oid)
+            obj.put("type", ApObjectType.NOTE.id())
+        }
+        obj.put("to", activity.getJSONArray("to"))
         addAttachments(obj)
-        if (!note.getName().isEmpty()) {
+        if (note.getName().isNotEmpty()) {
             obj.put(ConnectionActivityPub.NAME_PROPERTY, note.getName())
         }
-        if (!note.summary.isEmpty()) {
+        if (note.summary.isNotEmpty()) {
             obj.put(ConnectionActivityPub.SUMMARY_PROPERTY, note.summary)
         }
         if (note.isSensitive()) {
             obj.put(ConnectionActivityPub.SENSITIVE_PROPERTY, note.isSensitive())
         }
-        if (!note.content.isEmpty()) {
+        if (note.content.isNotEmpty()) {
             obj.put(ConnectionActivityPub.CONTENT_PROPERTY, note.getContentToPost())
         }
-        if (!note.inReplyTo.getOid().isEmpty()) {
+        if (note.inReplyTo.getOid().isNotEmpty()) {
             obj.put("inReplyTo", note.inReplyTo.getOid())
         }
-        activity.put("object", obj)
-        return activity
+        return obj
     }
 
     private fun addAttachments(obj: JSONObject) {
@@ -148,18 +176,18 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
                         JsonUtils.optString(objPosted, ConnectionActivityPub.SUMMARY_PROPERTY).isEmpty())
     }
 
-    private fun newActivityOfThisAccount(activityType: ActivityType): JSONObject {
+    private fun newActivityOfThisActor(activityType: ActivityType): JSONObject {
         val activity = JSONObject()
         activity.put("@context", "https://www.w3.org/ns/activitystreams")
         activity.put("type", activityType.activityPubValue)
         setAudience(activity)
-        activity.put("actor", getActor().oid)
+        activity.put("actor", actor.oid)
         return activity
     }
 
     private fun setAudience(activity: JSONObject) {
-        note.audience().getRecipients().forEach { recipient: Actor -> addToAudience(activity, "to", recipient) }
-        if (note.audience().noRecipients()) {
+        audience.getRecipients().forEach { recipient: Actor -> addToAudience(activity, "to", recipient) }
+        if (audience.noRecipients()) {
             // "clients must be aware that the server will only forward new Activities
             //   to addressees in the to, bto, cc, bcc, and audience fields"
             addToAudience(activity, "to", Actor.PUBLIC)
@@ -167,15 +195,15 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
     }
 
     private fun addToAudience(activity: JSONObject, recipientField: String, recipient: Actor) {
-        val recipientId: String?
-        recipientId = if (recipient === Actor.PUBLIC) {
+        val recipientId: String = if (recipient === Actor.PUBLIC) {
             ConnectionActivityPub.PUBLIC_COLLECTION_ID
         } else if (recipient.groupType == GroupType.FOLLOWERS) {
-            getActor().getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString()
+            actor.getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString()
         } else {
             recipient.getBestUri()
         }
-        if (recipientId.isNullOrEmpty()) return
+        if (recipientId.isEmpty()) return
+
         try {
             val field = if (activity.has(recipientField)) activity.getJSONArray(recipientField) else JSONArray()
             field.put(recipientId)
@@ -188,7 +216,7 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
     private fun uploadMedia(attachment: Attachment): JSONObject {
         var result: Try<HttpReadResult> = ConnectionAndUrl.fromActor(
             connection, ApiRoutineEnum.UPLOAD_MEDIA,
-            TimelinePosition.EMPTY, getActor()
+            TimelinePosition.EMPTY, actor
         )
             .flatMap { conu: ConnectionAndUrl ->
                 conu.newRequest()
@@ -198,43 +226,27 @@ internal class ActivitySender(val connection: ConnectionActivityPub, val note: N
             }
         if (result.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                 .getOrElseThrow(ConnectionException::of) == null) {
-            result = Try.failure(ConnectionException(
-                    "Error uploading '$attachment': null response returned"))
+            result = Try.failure(
+                ConnectionException(
+                    "Error uploading '$attachment': null response returned"
+                )
+            )
         }
         result.filter { r: HttpReadResult? -> MyLog.isVerboseEnabled() }
-                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .map { jso: JSONObject -> jso.toString(2) }
-                .onSuccess { message: String? -> MyLog.v(this, "uploaded '$attachment' $message") }
+            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .map { jso: JSONObject -> jso.toString(2) }
+            .onSuccess { message: String? -> MyLog.v(this, "uploaded '$attachment' $message") }
         return result.flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-                .getOrElseThrow(ConnectionException::of)
-    }
-
-    private fun buildObject(activity: JSONObject): JSONObject {
-        val obj = JSONObject()
-        if (isExisting()) {
-            obj.put("id", note.oid)
-            obj.put("type", ApObjectType.NOTE.id())
-        } else {
-            require(note.hasSomeContent()) { "Nothing to send" }
-            obj.put("attributedTo", getActor().oid)
-            obj.put("type", ApObjectType.NOTE.id())
-        }
-        obj.put("to", activity.getJSONArray("to"))
-        return obj
-    }
-
-    private fun isExisting(): Boolean {
-        return UriUtils.isRealOid(note.oid)
+            .getOrElseThrow(ConnectionException::of)
     }
 
     companion object {
-        fun fromId(connection: ConnectionActivityPub, objectId: String): ActivitySender {
-            return ActivitySender(connection,
-                    Note.fromOriginAndOid(connection.data.getOrigin(), objectId, DownloadStatus.UNKNOWN))
+        fun sendNote(connection: ConnectionActivityPub, activityType: ActivityType, note: Note): Try<AActivity> {
+            return ActivitySender(connection, activityType, note.audience(), note, Actor.EMPTY).send()
         }
 
-        fun fromContent(connection: ConnectionActivityPub, note: Note): ActivitySender {
-            return ActivitySender(connection, note)
+        fun sendActor(connection: ConnectionActivityPub, activityType: ActivityType, objActor: Actor): Try<AActivity> {
+            return ActivitySender(connection, activityType, Audience.EMPTY, Note.EMPTY, objActor).send()
         }
     }
 }

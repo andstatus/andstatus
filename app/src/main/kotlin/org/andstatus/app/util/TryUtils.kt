@@ -1,7 +1,6 @@
 package org.andstatus.app.util
 
 import android.database.sqlite.SQLiteDiskIOException
-import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.os.ExceptionsCounter
@@ -114,6 +113,10 @@ object TryUtils {
             action(cause)
         }
         return this
+    }
+
+    inline fun <T> Try<T>.getOrRecover(recoveryFunction: (Throwable) -> T): T {
+        return if (isSuccess) get() else recoveryFunction(cause)
     }
 
     fun <T> Try<T>.onFailureAsConnectionException(action: (ConnectionException) -> Unit): Try<T> {

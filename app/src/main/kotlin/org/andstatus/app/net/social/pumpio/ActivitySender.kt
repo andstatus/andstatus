@@ -32,7 +32,7 @@ import org.andstatus.app.net.social.Note
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StringUtil
-import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -251,7 +251,7 @@ internal class ActivitySender(val connection: ConnectionPumpio, val note: Note) 
     }
 
     private fun isExisting(): Boolean {
-        return UriUtils.isRealOid(note.oid)
+        return note.oid.isRealOid
     }
 
     companion object {

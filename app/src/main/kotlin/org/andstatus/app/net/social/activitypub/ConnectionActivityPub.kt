@@ -20,7 +20,6 @@ import io.vavr.control.Try
 import org.andstatus.app.account.AccountConnectionData
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.data.DownloadStatus
-import org.andstatus.app.net.http.CLIENT_URI
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
@@ -166,7 +165,10 @@ class ConnectionActivityPub : Connection() {
     }
 
     private fun actOnNote(activityType: ActivityType, noteId: String): Try<AActivity> {
-        return ActivitySender.fromId(this, noteId).send(activityType)
+        return ActivitySender.sendNote(
+            this, ActivityType.CREATE,
+            Note.fromOriginAndOid(data.getOrigin(), noteId, DownloadStatus.UNKNOWN)
+        )
     }
 
     override fun getFriendsOrFollowers(
@@ -200,7 +202,7 @@ class ConnectionActivityPub : Connection() {
         .map { jsoActivity: JSONObject? -> this.activityFromJson(jsoActivity) }
 
     override fun updateNote(note: Note): Try<AActivity> {
-        return ActivitySender.fromContent(this, note).send(ActivityType.CREATE)
+        return ActivitySender.sendNote(this, ActivityType.CREATE, note)
     }
 
     override fun announce(rebloggedNoteOid: String): Try<AActivity> {
@@ -460,7 +462,7 @@ class ConnectionActivityPub : Connection() {
     }
 
     private fun actOnActor(activityType: ActivityType, actorId: String): Try<AActivity> {
-        return ActivitySender.fromId(this, actorId).send(activityType)
+        return ActivitySender.sendActor(this, activityType, Actor.fromOid(data.getOrigin(), actorId))
     }
 
     public override fun getActor2(actorIn: Actor): Try<Actor> = ConnectionAndUrl

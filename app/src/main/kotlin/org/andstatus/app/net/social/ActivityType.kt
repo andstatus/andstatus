@@ -26,9 +26,18 @@ import org.andstatus.app.net.social.ActivityType
  */
 enum class ActivityType(val id: Long, val actedResourceId: Int, val activityPubValue: String?) {
     ANNOUNCE(1, R.string.reblogged, "Announce"),  // known also as Reblog, Repost, Retweet, Boost...
-    CREATE(2, R.string.created, "Create"), DELETE(3, R.string.deleted, "Delete"), FOLLOW(4, R.string.followed, "Follow"), LIKE(5, R.string.liked, "Like"), UPDATE(6, R.string.updated, "Update"), UNDO_ANNOUNCE(7, R.string.undid_reblog, "Undo"), UNDO_FOLLOW(8, R.string.undid_follow, "Undo"), UNDO_LIKE(9, R.string.undid_like, "Undo"), JOIN(10, R.string.joined, "Join"), EMPTY(0, R.string.empty_in_parenthesis, "(empty)");
+    CREATE(2, R.string.created, "Create"),
+    DELETE(3, R.string.deleted, "Delete"),
+    FOLLOW(4, R.string.followed, "Follow"),
+    LIKE(5, R.string.liked, "Like"),
+    UPDATE(6, R.string.updated, "Update"),
+    UNDO_ANNOUNCE(7, R.string.undid_reblog, "Undo"),
+    UNDO_FOLLOW(8, R.string.undid_follow, "Undo"),
+    UNDO_LIKE(9, R.string.undid_like, "Undo"),
+    JOIN(10, R.string.joined, "Join"),
+    EMPTY(0, R.string.empty_in_parenthesis, "(empty)");
 
-    fun getActedTitle(context: Context?): CharSequence? {
+    fun getActedTitle(context: Context?): CharSequence {
         return if (actedResourceId == 0 || context == null) {
             name
         } else {

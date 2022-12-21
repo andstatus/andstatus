@@ -121,9 +121,7 @@ object UriUtils {
         return false
     }
 
-    fun isRealOid(oid: String?): Boolean {
-        return !nonRealOid(oid)
-    }
+    val String?.isRealOid: Boolean get() = this?.let { !nonRealOid(this) } ?: false
 
     fun nonRealOid(oid: String?): Boolean {
         return StringUtil.isEmptyOrTemp(oid)

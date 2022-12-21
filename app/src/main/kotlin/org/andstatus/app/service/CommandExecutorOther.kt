@@ -317,7 +317,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 // assume that it's Ok!
                 if (e.statusCode == StatusCode.NOT_FOUND) TryUtils.TRUE
                 else logConnectionException(
-                    e, method + "; noteOid:" + tryOid + ", " +
+                    e, method + "; noteOid:" + tryOid.getOrElse("?") + ", " +
                             MyQuery.noteInfoForLog(execContext.myContext, noteId)
                 )
             }

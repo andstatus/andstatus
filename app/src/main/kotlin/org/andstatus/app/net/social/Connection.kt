@@ -37,6 +37,7 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import org.andstatus.app.util.UrlUtils
 import org.json.JSONObject
 import java.net.URL
@@ -249,7 +250,7 @@ abstract class Connection protected constructor() : IsEmpty {
     /** See [.getNote]  */
     protected abstract fun getNote1(noteOid: String): Try<AActivity>
     open fun canGetConversation(conversationOid: String?): Boolean {
-        return UriUtils.isRealOid(conversationOid) && hasApiEndpoint(ApiRoutineEnum.GET_CONVERSATION)
+        return conversationOid.isRealOid && hasApiEndpoint(ApiRoutineEnum.GET_CONVERSATION)
     }
 
     open fun getConversation(conversationOid: String): Try<List<AActivity>> {

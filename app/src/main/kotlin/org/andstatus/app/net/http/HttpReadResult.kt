@@ -19,6 +19,7 @@ import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.net.http.ConnectionException.Companion.loggedJsonException
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Connection.Companion.parseIso8601Date
 import org.andstatus.app.util.I18n
@@ -175,22 +176,24 @@ class HttpReadResult(val request: HttpRequest) {
 
     private fun innerGetJsonObject(strJson: String?): Try<JSONObject> {
         val method = "getJsonObject; "
-        val jso: JSONObject?
-        try {
-            if (strJson.isNullOrEmpty()) {
-                jso = JSONObject()
-            } else {
-                jso = JSONObject(strJson)
+        if (strJson.isNullOrEmpty()) return Try.success(JSONObject())
+
+        return Try.of { JSONObject(strJson) }
+            .flatMap { jso ->
                 val error = JsonUtils.optString(jso, "error")
                 if ("Could not authenticate you." == error) {
                     appendToLog("error:$error")
-                    return Try.failure(ConnectionException(toString()))
-                }
+                    Try.failure(ConnectionException(toString()))
+                } else Try.success(jso)
             }
-        } catch (e: JSONException) {
-            return Try.failure(ConnectionException.loggedJsonException(this, method + I18n.trimTextAt(toString(), 500), e, strJson))
-        }
-        return Try.success(jso)
+            .mapFailure { e ->
+                if (e is JSONException) loggedJsonException(
+                    this,
+                    method + I18n.trimTextAt(toString(), 500),
+                    e,
+                    strJson
+                ) else e
+            }
     }
 
     fun list(): Try<List<JSONObject>> {
