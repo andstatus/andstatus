@@ -15,38 +15,19 @@
  */
 package org.andstatus.app.net.social
 
-import androidx.annotation.RawRes
 import org.andstatus.app.account.AccountConnectionData
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
-import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
-import org.andstatus.app.net.http.HttpConnectionOAuth
 import org.andstatus.app.net.http.HttpConnectionOAuthStub
 
 class ConnectionStub private constructor(val connection: Connection) {
-    fun withException(e: ConnectionException): ConnectionStub {
-        getHttpStub().addException(e)
-        return this
-    }
 
-    fun addResponse(@RawRes responseResourceId: Int) {
-        getHttpStub().addResponse(responseResourceId)
-    }
+    val data: AccountConnectionData get() = connection.data
 
-    fun getData(): AccountConnectionData {
-        return connection.data
-    }
-
-    fun getHttp(): HttpConnectionOAuth {
-        return connection.oauthHttpOrThrow
-    }
-
-    fun getHttpStub(): HttpConnectionOAuthStub {
-        return getHttpStub(getHttp())
-    }
+    val http: HttpConnectionOAuthStub get() = getHttpStub(connection.oauthHttpOrThrow)
 
     companion object {
         fun newFor(accountName: String?): ConnectionStub {
@@ -60,7 +41,7 @@ class ConnectionStub private constructor(val connection: Connection) {
             return ConnectionStub(myAccount.connection)
         }
 
-        fun getHttpStub(http: HttpConnection): HttpConnectionOAuthStub {
+        private fun getHttpStub(http: HttpConnection): HttpConnectionOAuthStub {
             if (http is HttpConnectionOAuthStub) return http
             val myContext = MyContextHolder.myContextHolder.getNow()
             myContext.httpConnectionStub

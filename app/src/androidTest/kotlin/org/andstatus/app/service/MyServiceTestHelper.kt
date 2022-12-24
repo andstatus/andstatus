@@ -69,7 +69,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
             Assert.assertTrue("Couldn't stop MyService", stopService(false))
             TestSuite.getMyContextForTest().connectionState = ConnectionState.WIFI
             if (!isSingleStubbedInstance) {
-                httpConnectionStub = ConnectionStub.newFor(accountName).getHttpStub()
+                httpConnectionStub = ConnectionStub.newFor(accountName).http
             }
             connectionInstanceId = httpConnectionStub?.getInstanceId() ?: 0
             serviceConnector = MyServiceEventsReceiver(myContext, this).also {

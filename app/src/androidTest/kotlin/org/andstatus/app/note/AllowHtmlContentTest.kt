@@ -66,20 +66,24 @@ class AllowHtmlContentTest {
         val origin: Origin = DemoData.demoData.getPumpioConversationOrigin()
         Assert.assertNotNull(DemoData.demoData.conversationOriginName + " exists", origin)
         val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.demoData.htmlNoteOid)
-        val note: Note = Note.Companion.loadContentById( myContext, noteId)
+        val note: Note = Note.Companion.loadContentById(myContext, noteId)
         Assert.assertTrue("origin=" + origin.id + "; oid=" + DemoData.demoData.htmlNoteOid, noteId != 0L)
         val noteShare = NoteShare(origin, noteId, NoteDownloads.Companion.fromNoteId(myContext, noteId))
         val intent = noteShare.intentToViewAndShare(true)
         Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT))
         Assert.assertTrue(
-                intent.getStringExtra(Intent.EXTRA_TEXT),
-                intent.getStringExtra(Intent.EXTRA_TEXT)?.contains(
-                        MyHtml.htmlToPlainText(HtmlContentTester.HTML_BODY_IMG_STRING)) == true)
+            intent.getStringExtra(Intent.EXTRA_TEXT),
+            intent.getStringExtra(Intent.EXTRA_TEXT)?.contains(
+                MyHtml.htmlToPlainText(HtmlContentTester.HTML_BODY_IMG_STRING)
+            ) == true
+        )
         if (origin.isHtmlContentAllowed()) {
             Assert.assertTrue(note.content, intent.hasExtra(Intent.EXTRA_HTML_TEXT))
-            MatcherAssert.assertThat(note.content,
-                    intent.getStringExtra(Intent.EXTRA_HTML_TEXT),
-                    CoreMatchers.containsString(HtmlContentTester.HTML_BODY_IMG_STRING))
+            MatcherAssert.assertThat(
+                note.content,
+                intent.getStringExtra(Intent.EXTRA_HTML_TEXT),
+                CoreMatchers.containsString(HtmlContentTester.HTML_BODY_IMG_STRING)
+            )
         }
     }
 
@@ -87,13 +91,20 @@ class AllowHtmlContentTest {
     fun testSharePlainText() {
         val body = "Posting as a plain Text " + DemoData.demoData.testRunUid
         val myAccount: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName)
-        val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(myAccount, body,
-                DemoData.demoData.plainTextNoteOid, DownloadStatus.LOADED)
-        val noteShare = NoteShare(myAccount.origin, activity.getNote().noteId,
-                NoteDownloads.Companion.fromNoteId(myContext, activity.getNote().noteId))
+        val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(
+            myAccount, body,
+            DemoData.demoData.plainTextNoteOid, DownloadStatus.LOADED
+        )
+        val noteShare = NoteShare(
+            myAccount.origin, activity.getNote().noteId,
+            NoteDownloads.Companion.fromNoteId(myContext, activity.getNote().noteId)
+        )
         val intent = noteShare.intentToViewAndShare(true)
         Assert.assertTrue(intent.extras?.containsKey(Intent.EXTRA_TEXT) == true)
-        Assert.assertTrue(intent.getStringExtra(Intent.EXTRA_TEXT), intent.getStringExtra(Intent.EXTRA_TEXT)?.contains(body) == true)
+        Assert.assertTrue(
+            intent.getStringExtra(Intent.EXTRA_TEXT),
+            intent.getStringExtra(Intent.EXTRA_TEXT)?.contains(body) == true
+        )
         Assert.assertTrue(intent.extras?.containsKey(Intent.EXTRA_HTML_TEXT) == true)
         DemoData.demoData.assertConversations()
     }
@@ -103,15 +114,19 @@ class AllowHtmlContentTest {
         Origin.Builder(DemoData.demoData.getGnuSocialOrigin()).setHtmlContentAllowed(allowedInGnuSocial).save()
         TestSuite.forget()
         TestSuite.initialize(this)
-        Assert.assertEquals("is HTML content allowed in PumpIo", allowedInPumpIo,
-                DemoData.demoData.getPumpioConversationOrigin().isHtmlContentAllowed())
+        Assert.assertEquals(
+            "is HTML content allowed in PumpIo", allowedInPumpIo,
+            DemoData.demoData.getPumpioConversationOrigin().isHtmlContentAllowed()
+        )
     }
 
     private fun oneGnuSocialTest(isHtmlAllowed: Boolean) {
-        Assert.assertEquals("is HTML content allowed in GnuSocial", isHtmlAllowed,
-                DemoData.demoData.getGnuSocialOrigin().isHtmlContentAllowed())
+        Assert.assertEquals(
+            "is HTML content allowed in GnuSocial", isHtmlAllowed,
+            DemoData.demoData.getGnuSocialOrigin().isHtmlContentAllowed()
+        )
         val stub: ConnectionStub = ConnectionStub.newFor(DemoData.demoData.gnusocialTestAccountName)
-        stub.addResponse(org.andstatus.app.test.R.raw.gnusocial_note_with_html)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.gnusocial_note_with_html)
         val noteOid = "4453144"
         val activity = stub.connection.getNote(noteOid).get()
         Assert.assertEquals("Received a note $activity", AObjectType.NOTE, activity.getObjectType())
@@ -122,13 +137,19 @@ class AllowHtmlContentTest {
         Assert.assertTrue("inReplyTo should not be empty $activity", activity.getNote().inReplyTo.nonEmpty)
         val jso = JSONObject(RawResourceUtils.getString(org.andstatus.app.test.R.raw.gnusocial_note_with_html))
         val expectedContent = jso.getString(if (isHtmlAllowed) "statusnet_html" else "text")
-        val actualContent = if (isHtmlAllowed) activity.getNote().content else MyHtml.htmlToPlainText(activity.getNote().content)
-        Assert.assertEquals(if (isHtmlAllowed) "HTML content allowed" else "No HTML content", expectedContent, actualContent)
+        val actualContent =
+            if (isHtmlAllowed) activity.getNote().content else MyHtml.htmlToPlainText(activity.getNote().content)
+        Assert.assertEquals(
+            if (isHtmlAllowed) "HTML content allowed" else "No HTML content",
+            expectedContent,
+            actualContent
+        )
         activity.getNote().updatedDate = MyLog.uniqueCurrentTimeMS
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val executionContext = CommandExecutionContext(
-                 myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
+            myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123)
+        )
         DataUpdater(executionContext).onActivity(activity)
     }
 }

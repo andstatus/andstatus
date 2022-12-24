@@ -224,9 +224,11 @@ class AvatarDownloaderTest {
         val actor: Actor = Actor.Companion.load(myContext, ma.actor.actorId)
         val loader: FileDownloader = AvatarDownloader(actor)
         if (imitateNetworkError) {
-            loader.setConnectionStub(
-                ConnectionStub.newFor(ma)
-                    .withException(ConnectionException(StatusCode.NOT_FOUND, "Imitated IO exception")).connection
+            loader.setConnectionStub(ConnectionStub.newFor(ma)
+                .let {
+                    it.http.addException(ConnectionException(StatusCode.NOT_FOUND, "Imitated IO exception"))
+                    it.connection
+                }
             )
         }
         val commandData: CommandData =

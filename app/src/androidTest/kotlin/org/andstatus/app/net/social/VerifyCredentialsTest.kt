@@ -46,7 +46,7 @@ class VerifyCredentialsTest {
     fun setUp() {
         stub = ConnectionStub.newFor(DemoData.demoData.twitterTestAccountName)
         connection = stub.connection
-        val oauthHttp = stub.getHttp()
+        val oauthHttp = stub.http
         oauthHttp.data.originUrl = UrlUtils.fromString("https://twitter.com")
         oauthHttp.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(oauthHttp.data)
         keyStored = oauthHttp.oauthClientKeys?.getConsumerKey()
@@ -62,17 +62,17 @@ class VerifyCredentialsTest {
     @After
     fun tearDown() {
         if (!keyStored.isNullOrEmpty()) {
-            stub.getHttp().oauthClientKeys?.setConsumerKeyAndSecret(keyStored, secretStored)
+            stub.http.oauthClientKeys?.setConsumerKeyAndSecret(keyStored, secretStored)
         }
     }
 
     @Test
     fun testVerifyCredentials() {
-        stub.addResponse(org.andstatus.app.test.R.raw.verify_credentials_twitter)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()
         assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
         val origin: Origin = myContext.origins.firstOfType(OriginType.TWITTER)
-        val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(stub.getData().getAccountName())
+        val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(stub.data.getAccountName())
         builder.onCredentialsVerified(actor).onFailure { e -> AssertionError("Failed: $e") }
         assertTrue("Account is persistent", builder.isPersistent())
         val actorId = builder.myAccount.actorId
@@ -91,8 +91,8 @@ class VerifyCredentialsTest {
         assertEquals(
             "Note permalink at twitter",
             "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
-                    + "/"
-                    + builder.myAccount.username + "/status/" + noteOid,
+                + "/"
+                + builder.myAccount.username + "/status/" + noteOid,
             origin.getNotePermalink(noteId)
         )
     }

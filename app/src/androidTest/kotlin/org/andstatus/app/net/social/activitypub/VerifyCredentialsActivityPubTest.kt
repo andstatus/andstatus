@@ -40,43 +40,61 @@ class VerifyCredentialsActivityPubTest {
     @Before
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        val origin: Origin =  myContext.origins.fromName(DemoData.demoData.activityPubTestOriginName)
+        val origin: Origin = myContext.origins.fromName(DemoData.demoData.activityPubTestOriginName)
         val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN)
         stub = ConnectionStub.newFor(MyAccountBuilder.Companion.fromAccountName(accountName).myAccount)
     }
 
     @Test
     fun verifyCredentials() {
-        stub.addResponse(org.andstatus.app.test.R.raw.activitypub_whoami_pleroma)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.activitypub_whoami_pleroma)
         val actor = stub.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID)).get()
         Assert.assertEquals("Actor's oid is actorOid of this account", ACTOR_OID, actor.oid)
-        val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(stub.getData().getAccountName())
+        val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(stub.data.getAccountName())
         builder.onCredentialsVerified(actor)
         Assert.assertTrue("Account is persistent", builder.isPersistent())
         val actorId = builder.myAccount.actorId
         Assert.assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
         Assert.assertEquals("Account actorOid", "https://pleroma.site/users/AndStatus", actor.oid)
-        Assert.assertEquals("Actor in the database for id=$actorId",
-                actor.oid,
-                MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId, 0))
+        Assert.assertEquals(
+            "Actor in the database for id=$actorId",
+            actor.oid,
+            MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId, 0)
+        )
         assertActor(actor)
-        val stored: Actor = Actor.Companion.loadFromDatabase(stub.getData().getOrigin().myContext, actorId, { Actor.EMPTY }, false)
+        val stored: Actor =
+            Actor.Companion.loadFromDatabase(stub.data.getOrigin().myContext, actorId, { Actor.EMPTY }, false)
         assertActor(stored)
     }
 
     private fun assertActor(actor: Actor) {
         Assert.assertEquals("Username", "AndStatus", actor.getUsername())
         Assert.assertEquals("Name", "AndStatus", actor.getRealName())
-        Assert.assertEquals("Summary", "AndStatus - Open Source multiple accounts client for multiple social networks for Android<br><a href=\"http://andstatus.org/\">http://andstatus.org/</a>", actor.getSummary())
+        Assert.assertEquals(
+            "Summary",
+            "AndStatus - Open Source multiple accounts client for multiple social networks for Android<br><a href=\"http://andstatus.org/\">http://andstatus.org/</a>",
+            actor.getSummary()
+        )
         UriUtilsTest.assertEndpoint(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox", actor)
         UriUtilsTest.assertEndpoint(ActorEndpointType.API_OUTBOX, "https://pleroma.site/users/AndStatus/outbox", actor)
         UriUtilsTest.assertEndpoint(ActorEndpointType.API_PROFILE, "https://pleroma.site/users/AndStatus", actor)
-        UriUtilsTest.assertEndpoint(ActorEndpointType.API_FOLLOWING, "https://pleroma.site/users/AndStatus/following", actor)
-        UriUtilsTest.assertEndpoint(ActorEndpointType.API_FOLLOWERS, "https://pleroma.site/users/AndStatus/followers", actor)
+        UriUtilsTest.assertEndpoint(
+            ActorEndpointType.API_FOLLOWING,
+            "https://pleroma.site/users/AndStatus/following",
+            actor
+        )
+        UriUtilsTest.assertEndpoint(
+            ActorEndpointType.API_FOLLOWERS,
+            "https://pleroma.site/users/AndStatus/followers",
+            actor
+        )
         UriUtilsTest.assertEndpoint(ActorEndpointType.API_SHARED_INBOX, "https://pleroma.site/inbox", actor)
         UriUtilsTest.assertEndpoint(ActorEndpointType.BANNER, "https://pleroma.site/images/banner.png", actor)
-        Assert.assertEquals("Avatar URL", "https://pleroma.site/media/c5f60f06-6620-46b6-b676-f9f4571b518e/bfa1745b8c221225cc6551805d9eaa8bebe5f36fc1856b4924bcfda5d620334d.png",
-                actor.getAvatarUrl())
+        Assert.assertEquals(
+            "Avatar URL",
+            "https://pleroma.site/media/c5f60f06-6620-46b6-b676-f9f4571b518e/bfa1745b8c221225cc6551805d9eaa8bebe5f36fc1856b4924bcfda5d620334d.png",
+            actor.getAvatarUrl()
+        )
         Assert.assertEquals("Profile URL", "https://pleroma.site/users/AndStatus", actor.getProfileUrl())
     }
 

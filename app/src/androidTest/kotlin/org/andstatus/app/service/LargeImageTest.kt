@@ -51,8 +51,10 @@ class LargeImageTest {
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val myContext = ma.myContext
         val inserter = DemoNoteInserter(ma)
-        val activity = inserter.buildActivity(inserter.buildActor(), "", body, null, null,
-                DownloadStatus.LOADED)
+        val activity = inserter.buildActivity(
+            inserter.buildActor(), "", body, null, null,
+            DownloadStatus.LOADED
+        )
         activity.addAttachment(Attachment.Companion.fromUri("http://www.example.com/pictures/large_image.png"))
         inserter.onActivity(activity)
         val dd: DownloadData = DownloadData.Companion.getSingleAttachment(activity.getNote().noteId)
@@ -88,19 +90,24 @@ class LargeImageTest {
             MyLog.i(method, "$index: $commandData")
         }
 
-        val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR,
-                Actor.Companion.fromId(ma.origin, 34234), "")
+        val commandData: CommandData = CommandData.Companion.newActorCommand(
+            CommandEnum.GET_AVATAR,
+            Actor.Companion.fromId(ma.origin, 34234), ""
+        )
         val loader = AttachmentDownloader(ma.myContext, dd)
         val connStub: ConnectionStub = ConnectionStub.newFor(DemoData.demoData.gnusocialTestAccountName)
-        connStub.getHttpStub().addResponseStreamSupplier {
+        connStub.http.addResponseStreamSupplier {
             InstrumentationRegistry.getInstrumentation().context.resources
-                    .openRawResource(org.andstatus.app.test.R.raw.large_image)
+                .openRawResource(org.andstatus.app.test.R.raw.large_image)
         }
         loader.setConnectionStub(connStub.connection)
         loader.load(commandData)
-        Assert.assertEquals("Requested", 1, connStub.getHttpStub().getRequestsCounter())
+        Assert.assertEquals("Requested", 1, connStub.http.getRequestsCounter())
         val data: DownloadData = DownloadData.Companion.fromId(dd.downloadId)
-        Assert.assertFalse("Failed to load stubbed image " + data.getUri() + "\n$commandData", commandData.getResult().hasError())
+        Assert.assertFalse(
+            "Failed to load stubbed image " + data.getUri() + "\n$commandData",
+            commandData.getResult().hasError()
+        )
         Assert.assertTrue("File exists " + data.getUri(), data.file.existed)
         DemoData.demoData.assertConversations()
         data

@@ -77,7 +77,11 @@ class AttachmentDownloaderTest {
             val loader: FileDownloader = FileDownloader.Companion.newForDownloadData(ma.myContext, dataIn)
             if (imitateNetworkError) {
                 loader.setConnectionStub(ConnectionStub.newFor(ma)
-                        .withException(ConnectionException("Imitated IO exception")).connection)
+                    .let {
+                        it.http.addException(ConnectionException("Imitated IO exception"))
+                        it.connection
+                    }
+                )
             }
             val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, Actor.EMPTY, "someActor")
             loader.load(commandData)

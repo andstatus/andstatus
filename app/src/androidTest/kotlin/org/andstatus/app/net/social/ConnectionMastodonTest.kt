@@ -52,11 +52,11 @@ import java.util.function.Consumer
 class ConnectionMastodonTest {
     private val myContext: MyContext = TestSuite.initializeWithAccounts(this)
     private val stub: ConnectionStub = Companion.newFor(DemoData.demoData.mastodonTestAccountName)
-    private val accountActor: Actor = stub.getData().getAccountActor()
+    private val accountActor: Actor = stub.data.getAccountActor()
 
     @Test
     fun testGetHomeTimeline() {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_home_timeline)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_home_timeline)
         val timeline = stub.connection.getTimeline(
             true, ApiRoutineEnum.HOME_TIMELINE,
             TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor
@@ -111,7 +111,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetPrivateNotes() {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_private_notes)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_private_notes)
         val timeline = stub.connection.getTimeline(
             true, ApiRoutineEnum.PRIVATE_NOTES,
             TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor
@@ -172,7 +172,7 @@ class ConnectionMastodonTest {
     }
 
     private fun oneVisibility(stringResponse: String, visibility: Visibility) {
-        stub.getHttpStub().addResponse(stringResponse)
+        stub.http.addResponse(stringResponse)
         val timeline = stub.connection.getTimeline(
             true, ApiRoutineEnum.HOME_TIMELINE,
             TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor
@@ -182,7 +182,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetConversation() {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_get_conversation)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_get_conversation)
         val timeline = stub.connection.getConversation("5596683").get()
         assertNotNull("timeline returned", timeline)
         assertEquals("Number of items in the Timeline", 5, timeline.size.toLong())
@@ -190,7 +190,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetNotifications() {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_notifications)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_notifications)
         val timeline = stub.connection.getTimeline(
             true, ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
             TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, accountActor
@@ -248,7 +248,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun testGetActor() {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_get_actor)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_get_actor)
         val actor = stub.connection.getActor(Actor.Companion.fromOid(accountActor.origin, "5962")).get()
         assertTrue(actor.toString(), actor.nonEmpty)
         assertEquals("Actor's Oid", "5962", actor.oid)
@@ -269,7 +269,7 @@ class ConnectionMastodonTest {
 
     fun mentionsInANoteOneLoad(iteration: Int) {
         MyLog.i("mentionsInANote$iteration", "started")
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_get_note)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_get_note)
         val activity = stub.connection.getNote("101064848262880936").get()
         assertEquals("Is not UPDATE $activity", ActivityType.UPDATE, activity.type)
         assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType())
@@ -309,7 +309,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun reblog() {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_get_reblog)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_get_reblog)
         val activity = stub.connection.getNote("101100271392454703").get()
         assertEquals("Is not ANNOUNCE $activity", ActivityType.ANNOUNCE, activity.type)
         assertEquals("Is not an Activity", AObjectType.ACTIVITY, activity.getObjectType())
@@ -335,7 +335,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun tootWithVideoAttachment() {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_video)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_video)
         assertOneTootWithVideo(
             "263975",
             "https://mastodon.social/media_proxy/11640109/original",
@@ -345,7 +345,7 @@ class ConnectionMastodonTest {
 
     @Test
     fun originalTootWithVideoAttachment() {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_video_original)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_video_original)
         assertOneTootWithVideo(
             "10496",
             "https://mastodont.cat/system/media_attachments/files/000/684/914/original/7424effb937d991c.mp4?1550739268",
@@ -357,7 +357,7 @@ class ConnectionMastodonTest {
         val timeline = stub.connection.getTimeline(
             true, ApiRoutineEnum.ACTOR_TIMELINE,
             TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20,
-            Actor.Companion.fromOid(stub.getData().getOrigin(), actorOid)
+            Actor.Companion.fromOid(stub.data.getOrigin(), actorOid)
         ).get()
         assertNotNull("timeline returned", timeline)
         assertEquals("Number of items in the Timeline", 1, timeline.size().toLong())
@@ -411,7 +411,7 @@ class ConnectionMastodonTest {
     }
 
     private fun getListsOfUser(): List<Actor> {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_lists_of_user)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_lists_of_user)
         val expectedOid = ConnectionMastodon.MASTODON_LIST_OID_PREFIX + "19919"
         val executionContext = CommandExecutionContext(
             myContext, CommandData.Companion.newActorCommand(CommandEnum.GET_LISTS, accountActor, null)
@@ -443,7 +443,7 @@ class ConnectionMastodonTest {
     }
 
     private fun getListMembers(group: Actor) {
-        stub.addResponse(org.andstatus.app.test.R.raw.mastodon_list_members)
+        stub.http.addResponse(org.andstatus.app.test.R.raw.mastodon_list_members)
         val expectedOid = "179473"
         val executionContext = CommandExecutionContext(
             myContext, CommandData.Companion.newActorCommand(CommandEnum.GET_LIST_MEMBERS, group, null)

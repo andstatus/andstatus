@@ -45,9 +45,9 @@ class CommandExecutorStrategyTest {
 
     @Before
     fun setUp() {
-        ma =  myContext.accounts.getFirstPreferablySucceededForOrigin(DemoData.demoData.getGnuSocialOrigin())
+        ma = myContext.accounts.getFirstPreferablySucceededForOrigin(DemoData.demoData.getGnuSocialOrigin())
         stub = ConnectionStub.newFor(ma)
-        httpStub = stub.getHttpStub()
+        httpStub = stub.http
         Assert.assertTrue(ma.toString(), ma.isValidAndSucceeded())
     }
 
@@ -146,7 +146,7 @@ class CommandExecutorStrategyTest {
         httpStub.addResponse(org.andstatus.app.test.R.raw.quitter_update_note_response)
         commandData = CommandData.Companion.newItemCommand(
             CommandEnum.DELETE_NOTE,
-            stub.getData().getMyAccount(),
+            stub.data.getMyAccount(),
             noteId
         )
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
@@ -154,7 +154,7 @@ class CommandExecutorStrategyTest {
         val INEXISTENT_MSG_ID: Long = -1
         commandData = CommandData.Companion.newItemCommand(
             CommandEnum.DELETE_NOTE,
-            stub.getData().getMyAccount(),
+            stub.data.getMyAccount(),
             INEXISTENT_MSG_ID
         )
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
