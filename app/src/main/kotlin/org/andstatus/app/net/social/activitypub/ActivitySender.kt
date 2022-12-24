@@ -29,10 +29,11 @@ import org.andstatus.app.net.social.Attachment
 import org.andstatus.app.net.social.Audience
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.TimelinePosition
+import org.andstatus.app.net.social.activitypub.ConnectionActivityPub.Companion.ID
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
-import org.andstatus.app.util.TryUtils.getOrRecover
+import org.andstatus.app.util.TryUtils.getOrElseRecover
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UriUtils.isRealOid
 import org.json.JSONArray
@@ -43,15 +44,17 @@ import org.json.JSONObject
  * ActivityPub specific
  * @author yvolk@yurivolkov.com
  */
-internal class ActivitySender(val connection: ConnectionActivityPub, activityTypeIn: ActivityType,
-                              val audience: Audience,  val note: Note, val objActor: Actor) {
+internal class ActivitySender(
+    val connection: ConnectionActivityPub, activityTypeIn: ActivityType,
+    val audience: Audience, val note: Note, val objActor: Actor
+) {
     val activityType: ActivityType = calcActivityType(activityTypeIn)
     private val isNote: Boolean get() = note != Note.EMPTY
     private val actor: Actor get() = connection.data.getAccountActor()
     private val objExists: Boolean get() = (if (isNote) note.oid else objActor.oid).isRealOid
     private val strContext = "Activity " + activityType + " " +
-            (if (isNote) "Note" else "Actor") +
-            (if (objExists) " objectId:'" + note.oid + "'" else " (new)")
+        (if (isNote) "Note" else "Actor") +
+        (if (objExists) " objectId:'" + note.oid + "'" else " (new)")
 
     private fun calcActivityType(activityTypeIn: ActivityType): ActivityType {
         val activityType = if (objExists) {
@@ -62,13 +65,22 @@ internal class ActivitySender(val connection: ConnectionActivityPub, activityTyp
 
     fun send(): Try<AActivity> {
         return sendInternal()
-            .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+            .flatMap { result: HttpReadResult ->
+                result.getJsonObject().map { jso ->
+                    if (jso.length() == 0 && result.location.isPresent) JSONObject().apply {
+                        // https://www.w3.org/TR/activitypub/#client-to-server-interactions
+                        // "Servers MUST return a 201 Created HTTP code, and unless the activity is transient,
+                        // MUST include the new id in the Location header."
+                        put(ID, result.location.get())
+                    } else jso
+                }
+            }
             .map { jsoActivity: JSONObject -> connection.activityFromJson(jsoActivity) }
     }
 
     private fun sendInternal(): Try<HttpReadResult> {
         val activity = Try.of { buildActivityToSend(activityType) }
-            .getOrRecover { return TryUtils.failure(strContext, it) }
+            .getOrElseRecover { return TryUtils.failure(strContext, it) }
 
         val activityResponse: HttpReadResult = ConnectionAndUrl.fromActor(
             connection, ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, actor
@@ -78,11 +90,11 @@ internal class ActivitySender(val connection: ConnectionActivityPub, activityTyp
                     .withPostParams(activity)
                     .let(conu::execute)
             }
-            .getOrRecover { return TryUtils.failure(strContext, it) }
+            .getOrElseRecover { return TryUtils.failure(strContext, it) }
 
         val jsonObject: JSONObject = activityResponse
             .getJsonObject()
-            .getOrRecover { return TryUtils.failure(strContext, it) }
+            .getOrElseRecover { return TryUtils.failure(strContext, it) }
 
         if (MyLog.isVerboseEnabled()) {
             Try.of { strContext + " " + jsonObject.toString(2) }
@@ -94,7 +106,7 @@ internal class ActivitySender(val connection: ConnectionActivityPub, activityTyp
                 MyLog.v(
                     this,
                     "$strContext Server bug: " +
-                            "content is not sent, when an image object is posted. Sending an update"
+                        "content is not sent, when an image object is posted. Sending an update"
                 )
             }
             activity.put("type", ActivityType.UPDATE.activityPubValue)
@@ -168,12 +180,12 @@ internal class ActivitySender(val connection: ConnectionActivityPub, activityTyp
     private fun contentNotPosted(activityType: ActivityType, jsActivity: JSONObject): Boolean {
         val objPosted = jsActivity.optJSONObject("object")
         return ActivityType.CREATE == activityType && objPosted != null &&
-                (!note.content.isEmpty() &&
-                        JsonUtils.optString(objPosted, ConnectionActivityPub.CONTENT_PROPERTY).isEmpty() ||
-                        !note.getName().isEmpty() &&
-                        JsonUtils.optString(objPosted, ConnectionActivityPub.NAME_PROPERTY).isEmpty() ||
-                        !note.summary.isEmpty() &&
-                        JsonUtils.optString(objPosted, ConnectionActivityPub.SUMMARY_PROPERTY).isEmpty())
+            (!note.content.isEmpty() &&
+                JsonUtils.optString(objPosted, ConnectionActivityPub.CONTENT_PROPERTY).isEmpty() ||
+                !note.getName().isEmpty() &&
+                JsonUtils.optString(objPosted, ConnectionActivityPub.NAME_PROPERTY).isEmpty() ||
+                !note.summary.isEmpty() &&
+                JsonUtils.optString(objPosted, ConnectionActivityPub.SUMMARY_PROPERTY).isEmpty())
     }
 
     private fun newActivityOfThisActor(activityType: ActivityType): JSONObject {

@@ -17,7 +17,6 @@ package org.andstatus.app.net.social
 
 import android.content.Context
 import org.andstatus.app.R
-import org.andstatus.app.net.social.ActivityType
 
 /**
  * Activity type in a sense of
@@ -48,31 +47,31 @@ enum class ActivityType(val id: Long, val actedResourceId: Int, val activityPubV
     companion object {
         fun undo(type: ActivityType): ActivityType {
             return when (type) {
-                ActivityType.ANNOUNCE -> ActivityType.UNDO_ANNOUNCE
-                ActivityType.FOLLOW -> ActivityType.UNDO_FOLLOW
-                ActivityType.LIKE -> ActivityType.UNDO_LIKE
-                else -> ActivityType.EMPTY
+                ANNOUNCE -> UNDO_ANNOUNCE
+                FOLLOW -> UNDO_FOLLOW
+                LIKE -> UNDO_LIKE
+                else -> EMPTY
             }
         }
 
         /** @return the enum or [.EMPTY]
          */
         fun fromId(id: Long): ActivityType {
-            for (type in ActivityType.values()) {
+            for (type in values()) {
                 if (type.id == id) {
                     return type
                 }
             }
-            return ActivityType.EMPTY
+            return EMPTY
         }
 
         fun from(activityPubValue: String?): ActivityType {
-            for (type in ActivityType.values()) {
+            for (type in values()) {
                 if (type.activityPubValue == activityPubValue) {
                     return type
                 }
             }
-            return ActivityType.EMPTY
+            return EMPTY
         }
     }
 }

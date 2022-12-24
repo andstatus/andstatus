@@ -115,7 +115,7 @@ object TryUtils {
         return this
     }
 
-    inline fun <T> Try<T>.getOrRecover(recoveryFunction: (Throwable) -> T): T {
+    inline fun <T> Try<T>.getOrElseRecover(recoveryFunction: (Throwable) -> T): T {
         return if (isSuccess) get() else recoveryFunction(cause)
     }
 

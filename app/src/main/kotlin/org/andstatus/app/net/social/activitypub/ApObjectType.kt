@@ -46,11 +46,11 @@ internal enum class ApObjectType(private val id: String, compatibleType: ApObjec
     }
 
     open fun isTypeOf(jso: JSONObject?): Boolean {
-        var `is` = false
+        var result = false
         if (jso != null) {
-            `is` = id().equals(JsonUtils.optString(jso, "type"), ignoreCase = true)
+            result = id().equals(JsonUtils.optString(jso, "type"), ignoreCase = true)
         }
-        return `is`
+        return result
     }
 
     companion object {

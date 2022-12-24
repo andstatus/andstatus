@@ -122,12 +122,12 @@ class ConnectionActivityPub : Connection() {
     }
 
     private fun actorFromCollectionTypeJson(jso: JSONObject): Actor {
-        val actor: Actor = Actor.fromTwoIds(data.getOrigin(), GroupType.COLLECTION, 0, JsonUtils.optString(jso, "id"))
+        val actor: Actor = Actor.fromTwoIds(data.getOrigin(), GroupType.COLLECTION, 0, JsonUtils.optString(jso, ID))
         return actor.build()
     }
 
     private fun actorFromPersonTypeJson(jso: JSONObject): Actor {
-        val actor = actorFromOid(JsonUtils.optString(jso, "id"))
+        val actor = actorFromOid(JsonUtils.optString(jso, ID))
         actor.setUsername(JsonUtils.optString(jso, "preferredUsername"))
         actor.setRealName(JsonUtils.optString(jso, NAME_PROPERTY))
         actor.setAvatarUrl(JsonUtils.optStringInside(jso, "icon", "url"))
@@ -137,7 +137,7 @@ class ConnectionActivityPub : Connection() {
         actor.setProfileUrl(JsonUtils.optString(jso, "url"))
         actor.setUpdatedDate(dateFromJson(jso, "updated"))
         actor.endpoints
-            .add(ActorEndpointType.API_PROFILE, JsonUtils.optString(jso, "id"))
+            .add(ActorEndpointType.API_PROFILE, JsonUtils.optString(jso, ID))
             .add(ActorEndpointType.API_INBOX, JsonUtils.optString(jso, "inbox"))
             .add(ActorEndpointType.API_OUTBOX, JsonUtils.optString(jso, "outbox"))
             .add(ActorEndpointType.API_FOLLOWING, JsonUtils.optString(jso, "following"))
@@ -263,7 +263,13 @@ class ConnectionActivityPub : Connection() {
     }
 
     fun activityFromJson(jsoActivity: JSONObject?): AActivity {
-        if (jsoActivity == null) return AActivity.EMPTY
+        if (jsoActivity == null || jsoActivity.length() == 0) return AActivity.EMPTY
+
+        val oid = jsoActivity.optString(ID)
+        if (jsoActivity.length() == 1 && oid.isNotBlank()) {
+            val activity: AActivity = AActivity.from(data.getAccountActor(), ActivityType.EMPTY)
+            return activity.setOid(oid)
+        }
 
         val activityType: ActivityType = ActivityType.from(JsonUtils.optString(jsoActivity, "type"))
         val activity: AActivity = AActivity.from(
@@ -298,7 +304,7 @@ class ConnectionActivityPub : Connection() {
     }
 
     private fun parseActivity(activity: AActivity, jsoActivity: JSONObject): AActivity {
-        val oid = JsonUtils.optString(jsoActivity, "id")
+        val oid = JsonUtils.optString(jsoActivity, ID)
         if (oid.isEmpty()) {
             MyLog.d(this, "Activity has no id:" + jsoActivity.toString(2))
             return AActivity.EMPTY
@@ -389,7 +395,7 @@ class ConnectionActivityPub : Connection() {
 
     private fun noteFromJson(parentActivity: AActivity, jso: JSONObject) {
         try {
-            val oid = JsonUtils.optString(jso, "id")
+            val oid = JsonUtils.optString(jso, ID)
             if (oid.isEmpty()) {
                 MyLog.d(TAG, "ActivityPub object has no id:" + jso.toString(2))
                 return
@@ -478,9 +484,7 @@ class ConnectionActivityPub : Connection() {
         const val SUMMARY_PROPERTY: String = "summary"
         const val SENSITIVE_PROPERTY: String = "sensitive"
         const val CONTENT_PROPERTY: String = "content"
-        const val VIDEO_OBJECT: String = "stream"
-        const val IMAGE_OBJECT: String = "image"
-        const val FULL_IMAGE_OBJECT: String = "fullImage"
+        const val ID: String = "id"
 
         private fun attachmentFromJson(jso: JSONObject): Attachment {
             return ObjectOrId.of(jso, "url")

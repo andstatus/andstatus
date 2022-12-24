@@ -67,6 +67,10 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
         responses.add(StubResponse(streamSupplier = responseStreamSupplier))
     }
 
+    fun addLocation(location: String) {
+        responses.add(StubResponse(location = location))
+    }
+
     fun addException(exception: Exception) {
         responses.add(StubResponse(exception = exception))
     }

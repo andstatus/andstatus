@@ -19,7 +19,10 @@ import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DataUpdater
+import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyContentType
+import org.andstatus.app.data.TextMediaType
+import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.AObjectType
 import org.andstatus.app.net.social.ActivityType
 import org.andstatus.app.net.social.Actor
@@ -35,12 +38,14 @@ import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.CommandExecutionContext
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils.getOrElseRecover
 import org.andstatus.app.util.UriUtils
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.hamcrest.core.StringStartsWith
 import org.hamcrest.text.IsEmptyString
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import java.util.*
@@ -443,6 +448,15 @@ class ConnectionActivityPubTest {
 
     @Test
     fun postNoteIdInLocationReturned() {
-        // TODO:
+        val activityId = stub.data.getOriginUrl()!!.toExternalForm() + "/activities/3237932"
+        stub.http.addLocation(activityId)
+        val note = Note.fromOriginAndOid(stub.data.getOrigin(), null, DownloadStatus.SENDING).apply {
+            setContent("Posting via ActivityPub C2S", TextMediaType.PLAIN)
+        }
+        val activity: AActivity = stub.connection.updateNote(note).getOrElseRecover {
+           throw AssertionError("Should be a success: $it")
+        }
+        assertEquals(activityId, activity.getOid())
+        assertEquals(ActivityType.EMPTY, activity.type)
     }
 }

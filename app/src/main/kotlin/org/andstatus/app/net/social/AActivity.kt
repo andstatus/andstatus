@@ -36,7 +36,7 @@ import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/  */
-class AActivity private constructor(accountActor: Actor, type: ActivityType?) : AObject() {
+class AActivity private constructor(val accountActor: Actor, val type: ActivityType) : AObject() {
     private var prevTimelinePosition: TimelinePosition = TimelinePosition.EMPTY
     private var nextTimelinePosition: TimelinePosition = TimelinePosition.EMPTY
     private var oid: String = ""
@@ -44,8 +44,6 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     private var updatedDate = RelativeTime.DATETIME_MILLIS_NEVER
     private var id: Long = 0
     private var insDate = RelativeTime.DATETIME_MILLIS_NEVER
-    val accountActor: Actor
-    val type: ActivityType
     private var actor: Actor = Actor.EMPTY
 
     // Objects of the Activity may be of several types...
@@ -582,10 +580,5 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE)
             return activity
         }
-    }
-
-    init {
-        this.accountActor = accountActor ?: Actor.EMPTY
-        this.type = type ?: ActivityType.EMPTY
     }
 }
