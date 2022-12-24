@@ -15,12 +15,15 @@
  */
 package org.andstatus.app.net.social.activitypub
 
-import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.DemoData.Companion.demoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DataUpdater
+import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyContentType
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.data.OidEnum
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.AObjectType
@@ -36,6 +39,7 @@ import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.CommandExecutionContext
+import org.andstatus.app.service.CommandExecutorOther
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils.getOrElseRecover
@@ -46,6 +50,7 @@ import org.hamcrest.core.StringStartsWith
 import org.hamcrest.text.IsEmptyString
 import org.junit.Assert
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.util.*
@@ -61,7 +66,7 @@ class ConnectionActivityPubTest {
     @Before
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        stub = ConnectionStub.newFor(DemoData.demoData.activityPubTestAccountName)
+        stub = ConnectionStub.newFor(demoData.activityPubTestAccountName)
     }
 
     @Test
@@ -330,7 +335,7 @@ class ConnectionActivityPubTest {
             TestSuite.utcTime(2019, Calendar.MARCH, 31, 11, 39, 54).toString(),
             TestSuite.utcTime(note.updatedDate).toString()
         )
-        Assert.assertTrue("Note should be sensitive $note", note.isSensitive())
+        assertTrue("Note should be sensitive $note", note.isSensitive())
         val audience = activity.audience()
         assertEquals("Visibility of $activity", Visibility.PUBLIC, audience.visibility)
         val oids = Arrays.asList(
@@ -340,7 +345,7 @@ class ConnectionActivityPubTest {
             "https://pleroma.site/users/AndStatus/followers"
         )
         oids.forEach(Consumer { oid: String? ->
-            Assert.assertTrue(
+            assertTrue(
                 "Audience should contain $oid\n $activity\n $audience",
                 audience.containsOid(oid)
             )
@@ -357,13 +362,13 @@ class ConnectionActivityPubTest {
         val noteStored: Note = Note.Companion.loadContentById(stub.data.getOrigin().myContext, note.noteId)
         val audienceStored = noteStored.audience()
         oids.forEach(Consumer { oid: String? ->
-            Assert.assertTrue(
+            assertTrue(
                 "Audience should contain $oid\n $activity\n $audienceStored",
                 audienceStored.containsOid(oid)
             )
         })
-        Assert.assertTrue("Audience of $activity\n $audienceStored", audienceStored.hasNonSpecial())
-        Assert.assertTrue("Note should be sensitive $noteStored", noteStored.isSensitive())
+        assertTrue("Audience of $activity\n $audienceStored", audienceStored.hasNonSpecial())
+        assertTrue("Note should be sensitive $noteStored", noteStored.isSensitive())
     }
 
     @Test
@@ -392,10 +397,10 @@ class ConnectionActivityPubTest {
             "https://queer.hacktivis.me/users/AndStatus/followers"
         )
         oids.forEach { oid: String? ->
-            Assert.assertTrue("Audience should contain $oid\n $activity\n $audience", audience.containsOid(oid))
+            assertTrue("Audience should contain $oid\n $activity\n $audience", audience.containsOid(oid))
         }
         val attachments = activity.getNote().attachments
-        Assert.assertTrue("Attachments of $activity", attachments.nonEmpty)
+        assertTrue("Attachments of $activity", attachments.nonEmpty)
         val executionContext = CommandExecutionContext(
             myContext,
             CommandData.Companion.newTimelineCommand(
@@ -406,7 +411,7 @@ class ConnectionActivityPubTest {
         )
         DataUpdater(executionContext).onActivity(activity)
         val attachmentsStored: Attachments = Attachments.Companion.newLoaded(myContext, activity.getNote().noteId)
-        Assert.assertTrue(
+        assertTrue(
             "Attachments should be stored of $activity\n $attachmentsStored\n",
             attachmentsStored.nonEmpty
         )
@@ -417,12 +422,12 @@ class ConnectionActivityPubTest {
         val noteStored: Note = Note.Companion.loadContentById(stub.data.getOrigin().myContext, note.noteId)
         val audienceStored = noteStored.audience()
         oids.forEach(Consumer { oid: String? ->
-            Assert.assertTrue(
+            assertTrue(
                 "Audience should contain $oid\n $activity\n $audienceStored",
                 audienceStored.containsOid(oid)
             )
         })
-        Assert.assertTrue("Audience of $activity\n $audienceStored", audienceStored.hasNonSpecial())
+        assertTrue("Audience of $activity\n $audienceStored", audienceStored.hasNonSpecial())
         Assert.assertFalse("Note is sensitive $noteStored", noteStored.isSensitive())
     }
 
@@ -447,16 +452,40 @@ class ConnectionActivityPubTest {
     }
 
     @Test
-    fun postNoteIdInLocationReturned() {
-        val activityId = stub.data.getOriginUrl()!!.toExternalForm() + "/activities/3237932"
-        stub.http.addLocation(activityId)
+    fun postNote_idReturnedInLocation() {
+        val activityOid = stub.data.getOriginUrl()!!.toExternalForm() + "/activities/3237932"
+        stub.http.addLocation(activityOid)
         val note = Note.fromOriginAndOid(stub.data.getOrigin(), null, DownloadStatus.SENDING).apply {
             setContent("Posting via ActivityPub C2S", TextMediaType.PLAIN)
         }
         val activity: AActivity = stub.connection.updateNote(note).getOrElseRecover {
             throw AssertionError("Should be a success: $it")
         }
-        assertEquals(activityId, activity.getOid())
+        assertEquals(activityOid, activity.getOid())
         assertEquals(ActivityType.UNKNOWN, activity.type)
+    }
+
+    @Test
+    fun postNote_IdReturnedInLocation_withSave() {
+        val content = "Issue #573, Note posted, id returned in header " + demoData.testRunUid
+        val activity1 = DemoNoteInserter.sendingCreateNoteActivity(stub.data.getMyAccount(), content)
+
+        val activityOid = stub.data.getOriginUrl()!!.toExternalForm() + "/activities/3237932-" + demoData.testRunUid
+        stub.http.addLocation(activityOid)
+
+        val executionContext = CommandExecutionContext(
+            myContext, CommandData.newItemCommand(CommandEnum.UPDATE_NOTE, stub.data.getMyAccount(), activity1.getId())
+        )
+        val activity2 = CommandExecutorOther(executionContext).updateNote(activity1.getId()).getOrElseRecover {
+            throw AssertionError("Should be a success: $it")
+        }
+        assertEquals("Oid after update $activity2", activityOid, activity2.getOid())
+
+        val activityId2 = MyQuery.oidToId(myContext, OidEnum.ACTIVITY_OID, stub.data.getOrigin().id, activityOid)
+        assertTrue("Oid '$activityOid' was saved for $activity2", activityId2 != 0L)
+        assertEquals(
+            "Oid of $activity1\n  Saved activityId:$activityId2", activityOid,
+            MyQuery.idToOid(myContext, OidEnum.ACTIVITY_OID, activity1.getId(), 0L)
+        )
     }
 }

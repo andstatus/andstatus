@@ -58,6 +58,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 execContext.commandData.command == CommandEnum.FOLLOW
             )
             CommandEnum.UPDATE_NOTE, CommandEnum.UPDATE_MEDIA -> updateNote(execContext.commandData.itemId)
+                .map { true }
             CommandEnum.DELETE_NOTE -> deleteNote(execContext.commandData.itemId)
             CommandEnum.UNDO_ANNOUNCE -> undoAnnounce(execContext.commandData.itemId)
             CommandEnum.GET_CONVERSATION -> getConversation(execContext.commandData.itemId)
@@ -206,10 +207,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         val method = (if (create) "create" else "destroy") + "Favorite"
         return getNoteOid(method, noteId, true)
             .flatMap { oid: String -> if (create) getConnection().like(oid) else getConnection().undoLike(oid) }
-            .flatMap { activity: AActivity ->
-                failIfEmptyNote(method, noteId, activity.getNote())
-                    .map { activity }
-            }
+            .flatMap { activity: AActivity -> failIfEmptyActivity(method, noteId, activity) }
             .flatMap { activity: AActivity ->
                 if (activity.type != if (create) ActivityType.LIKE else ActivityType.UNDO_LIKE) {
                     /*
@@ -417,7 +415,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             }
     }
 
-    private fun updateNote(activityId: Long): Try<Boolean> {
+    fun updateNote(activityId: Long): Try<AActivity> {
         val method = "updateNote"
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activityId)
         val note: Note = Note.loadContentById(execContext.myContext, noteId)
@@ -447,39 +445,37 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         return if (!note.getStatus().mayBeSent()) {
             Try.failure(ConnectionException.hardConnectionException("Wrong note status: " + note.getStatus(), null))
         } else getConnection().updateNote(note)
-            .flatMap { activity: AActivity ->
-                failIfEmptyNote(method, noteId, activity.getNote()).map {
-                    // The note was sent successfully, so now update unsent message
-                    // New Actor's note should be put into the Account's Home timeline.
-                    activity.setId(activityId)
-                    activity.getNote().noteId = noteId
-                    DataUpdater(execContext).onActivity(activity)
-                    execContext.getResult().setItemId(noteId)
-                    true
+            .flatMap { activity: AActivity -> failIfEmptyActivity(method, noteId, activity) }
+            .map { activity: AActivity ->
+                // The note was sent successfully, so now update unsent message
+                // New Actor's note should be put into the Account's Home timeline.
+                activity.setId(activityId)
+                activity.getNote().noteId = noteId
+                DataUpdater(execContext).onActivity(activity).also {
+                    execContext.getResult().setItemId(it.getId())
                 }
-                    .onFailure { execContext.myContext.notifier.onUnsentActivity(activityId) }
             }
+            .onFailure { execContext.myContext.notifier.onUnsentActivity(activityId) }
     }
 
-    private fun failIfEmptyNote(method: String?, noteId: Long, note: Note?): Try<Boolean> {
-        return if (note == null || note.isEmpty) {
+    private fun failIfEmptyActivity(method: String?, noteId: Long, activity: AActivity): Try<AActivity> {
+        val note = activity.getNote()
+        return if (activity.isEmpty) {
             logExecutionError(
-                false, method + "; Received note is empty, "
+                false, method + "; Received Activity is empty, "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId)
             )
-        } else TryUtils.TRUE
+        } else Try.success(activity)
     }
 
-    private fun reblog(rebloggedNoteId: Long): Try<Boolean> {
+    private fun reblog(noteId: Long): Try<Boolean> {
         val method = "Reblog"
-        return getNoteOid(method, rebloggedNoteId, true)
+        return getNoteOid(method, noteId, true)
             .flatMap { oid: String -> getConnection().announce(oid) }
-            .map { activity: AActivity ->
-                failIfEmptyNote(method, rebloggedNoteId, activity.getNote())
-                // The tweet was sent successfully
-                // Reblog should be put into the Account's Home timeline!
+            .flatMap { activity: AActivity -> failIfEmptyActivity(method, noteId, activity) }
+            .map { activity ->
                 DataUpdater(execContext).onActivity(activity)
-                MyProvider.updateNoteReblogged(execContext.myContext, activity.accountActor.origin, rebloggedNoteId)
+                MyProvider.updateNoteReblogged(execContext.myContext, activity.accountActor.origin, noteId)
                 true
             }
     }

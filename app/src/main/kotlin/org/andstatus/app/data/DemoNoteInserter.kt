@@ -69,7 +69,7 @@ class DemoNoteInserter(val accountActor: Actor) {
         } else {
             username = "actorOf" + origin.name + actorOid
             profileUrl = ("https://" + DemoData.demoData.gnusocialTestOriginName
-                    + ".example.com/profiles/" + username)
+                + ".example.com/profiles/" + username)
             actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         }
         actor.setUsername(username)
@@ -94,16 +94,18 @@ class DemoNoteInserter(val accountActor: Actor) {
         } else DemoData.demoData.testRunUid + InstanceId.next()
     }
 
-    fun buildActivity(author: Actor, name: String?, content: String?, inReplyToActivity: AActivity?,
-                      noteOidIn: String?, noteStatus: DownloadStatus): AActivity {
+    fun buildActivity(
+        author: Actor, name: String?, content: String?, inReplyToActivity: AActivity?,
+        noteOidIn: String?, noteStatus: DownloadStatus
+    ): AActivity {
         val method = "buildActivity"
         var noteOid = noteOidIn
         if (noteOid.isNullOrEmpty() && noteStatus != DownloadStatus.SENDING) {
             noteOid = if (origin.originType === OriginType.PUMPIO) {
                 ((if (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))) author.getProfileUrl()
-                    else "http://pumpiotest" + origin.id + ".example.com/actor/" + author.oid)
-                        + "/" + (if (inReplyToActivity == null) "note" else "comment")
-                        + "/thisisfakeuri" + System.nanoTime())
+                else "http://pumpiotest" + origin.id + ".example.com/actor/" + author.oid)
+                    + "/" + (if (inReplyToActivity == null) "note" else "comment")
+                    + "/thisisfakeuri" + System.nanoTime())
             } else {
                 MyLog.uniqueDateTimeFormatted()
             }
@@ -130,8 +132,10 @@ class DemoNoteInserter(val accountActor: Actor) {
 
     fun buildActivity(actor: Actor, type: ActivityType, noteOid: String?): AActivity {
         val activity: AActivity = AActivity.from(accountActor, type)
-        activity.setOid(((if (noteOid.isNullOrEmpty()) MyLog.uniqueDateTimeFormatted() else noteOid))
-                + "-" + activity.type.name.toLowerCase())
+        activity.setOid(
+            ((if (noteOid.isNullOrEmpty()) MyLog.uniqueDateTimeFormatted() else noteOid))
+                + "-" + activity.type.name.toLowerCase()
+        )
         activity.setActor(actor)
         activity.setUpdatedDate(System.currentTimeMillis())
         return activity
@@ -141,9 +145,12 @@ class DemoNoteInserter(val accountActor: Actor) {
         NoteEditorData.recreateKnownAudience(activity)
         val ma = origin.myContext.accounts.fromActorId(accountActor.actorId)
         assertTrue("Persistent account exists for $accountActor $activity", ma.isValid)
-        val timelineType = if (activity.getNote().audience().visibility.isPrivate) TimelineType.PRIVATE else TimelineType.HOME
-        val execContext = CommandExecutionContext(origin.myContext,
-                CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType))
+        val timelineType =
+            if (activity.getNote().audience().visibility.isPrivate) TimelineType.PRIVATE else TimelineType.HOME
+        val execContext = CommandExecutionContext(
+            origin.myContext,
+            CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType)
+        )
         activity.audience().assertContext()
         DataUpdater(execContext).onActivity(activity)
         checkActivityRecursively(activity, 1)
@@ -166,31 +173,43 @@ class DemoNoteInserter(val accountActor: Actor) {
             Assert.assertNotEquals("Note was not added at level $level $activity", 0, note.noteId)
             val permalink = origin.getNotePermalink(note.noteId)
             val urlPermalink = UrlUtils.fromString(permalink)
-            Assert.assertNotNull("Note permalink is a valid URL '$permalink', " +
-                    "$note origin: $origin author: ${activity.getAuthor()}", urlPermalink)
-            origin.url?.takeIf {origin.originType !== OriginType.TWITTER}?.let { url ->
-                assertEquals("Note permalink has the same host as origin, $note",
-                        url.host, urlPermalink?.host)
+            Assert.assertNotNull(
+                "Note permalink is a valid URL '$permalink', " +
+                    "$note origin: $origin author: ${activity.getAuthor()}", urlPermalink
+            )
+            origin.url?.takeIf { origin.originType !== OriginType.TWITTER }?.let { url ->
+                assertEquals(
+                    "Note permalink has the same host as origin, $note",
+                    url.host, urlPermalink?.host
+                )
             }
             if (note.getName().isNotEmpty()) {
-                assertEquals("Note name $activity", note.getName(),
-                        MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId))
+                assertEquals(
+                    "Note name $activity", note.getName(),
+                    MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId)
+                )
             }
             if (note.summary.isNotEmpty()) {
-                assertEquals("Note summary $activity", note.summary,
-                        MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, note.noteId))
+                assertEquals(
+                    "Note summary $activity", note.summary,
+                    MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, note.noteId)
+                )
             }
             if (note.content.isNotEmpty()) {
-                assertEquals("Note content $activity", note.content,
-                        MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId))
+                assertEquals(
+                    "Note content $activity", note.content,
+                    MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId)
+                )
             }
             if (note.url.isNotEmpty()) {
                 assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId))
             }
             val author = activity.getAuthor()
             if (author.nonEmpty) {
-                Assert.assertNotEquals("Author id for $author not set in note $note in $activity", 0,
-                        MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, note.noteId))
+                Assert.assertNotEquals(
+                    "Author id for $author not set in note $note in $activity", 0,
+                    MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, note.noteId)
+                )
             }
             checkStoredActor(author)
         }
@@ -198,18 +217,24 @@ class DemoNoteInserter(val accountActor: Actor) {
             ActivityType.LIKE -> {
                 val stargazers = MyQuery.getStargazers(origin.myContext.database, accountActor.origin, note.noteId)
                 val found = stargazers.stream().anyMatch { stargazer: Actor -> stargazer.actorId == actor.actorId }
-                assertTrue("Actor, who favorited, is not found among stargazers: $activity" +
-                        "\nstargazers: $stargazers", found)
+                assertTrue(
+                    "Actor, who favorited, is not found among stargazers: $activity" +
+                        "\nstargazers: $stargazers", found
+                )
             }
             ActivityType.ANNOUNCE -> {
                 val rebloggers = MyQuery.getRebloggers(origin.myContext.database, accountActor.origin, note.noteId)
                 assertTrue("Reblogger is not found among rebloggers: $activity rebloggers: $rebloggers",
-                        rebloggers.stream().anyMatch { a: Actor -> a.actorId == actor.actorId })
+                    rebloggers.stream().anyMatch { a: Actor -> a.actorId == actor.actorId })
             }
-            ActivityType.FOLLOW -> assertTrue("Friend not found: $activity",
-                    GroupMembership.isSingleGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
-            ActivityType.UNDO_FOLLOW -> Assert.assertFalse("Friend found: $activity",
-                    GroupMembership.isSingleGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
+            ActivityType.FOLLOW -> assertTrue(
+                "Friend not found: $activity",
+                GroupMembership.isSingleGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId)
+            )
+            ActivityType.UNDO_FOLLOW -> Assert.assertFalse(
+                "Friend found: $activity",
+                GroupMembership.isSingleGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId)
+            )
             else -> {
             }
         }
@@ -222,7 +247,7 @@ class DemoNoteInserter(val accountActor: Actor) {
             }
         }
         note.audience().evaluateAndGetActorsToSave(activity.getAuthor())
-                .forEach(::checkStoredActor)
+            .forEach(::checkStoredActor)
         if (activity.getObjActor().nonEmpty) {
             Assert.assertNotEquals("Actor was not added: " + activity.getObjActor(), 0, activity.getObjActor().actorId)
         }
@@ -300,14 +325,21 @@ class DemoNoteInserter(val accountActor: Actor) {
         }
 
         fun assertInteraction(activity: AActivity, eventType: NotificationEventType, notified: TriState) {
-            assertEquals("Notification event type\n$activity\n",
-                    eventType,
-                    NotificationEventType.fromId(
-                            MyQuery.activityIdToLongColumnValue(ActivityTable.INTERACTION_EVENT, activity.getId())))
-            assertEquals("Interacted TriState\n$activity\n",
-                    TriState.fromBoolean(eventType != NotificationEventType.EMPTY &&
-                            eventType != NotificationEventType.HOME),
-                    MyQuery.activityIdToTriState(ActivityTable.INTERACTED, activity.getId()))
+            assertEquals(
+                "Notification event type\n$activity\n",
+                eventType,
+                NotificationEventType.fromId(
+                    MyQuery.activityIdToLongColumnValue(ActivityTable.INTERACTION_EVENT, activity.getId())
+                )
+            )
+            assertEquals(
+                "Interacted TriState\n$activity\n",
+                TriState.fromBoolean(
+                    eventType != NotificationEventType.EMPTY &&
+                        eventType != NotificationEventType.HOME
+                ),
+                MyQuery.activityIdToTriState(ActivityTable.INTERACTED, activity.getId())
+            )
             val notifiedActorId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED_ACTOR_ID, activity.getId())
             val message = "Notified actor ID\n$activity\n"
             if (eventType == NotificationEventType.EMPTY) {
@@ -316,15 +348,19 @@ class DemoNoteInserter(val accountActor: Actor) {
                 Assert.assertNotEquals(message, 0, notifiedActorId)
             }
             if (notified.known) {
-                assertEquals("Notified TriState $activity",
-                        notified,
-                        MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()))
+                assertEquals(
+                    "Notified TriState $activity",
+                    notified,
+                    MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId())
+                )
             }
         }
 
         fun assertStoredVisibility(activity: AActivity, expected: Visibility) {
-            assertEquals("Visibility of\n$activity\n",
-                    expected, Visibility.fromNoteId(activity.getNote().noteId))
+            assertEquals(
+                "Visibility of\n$activity\n",
+                expected, Visibility.fromNoteId(activity.getNote().noteId)
+            )
         }
 
         fun assertVisibility(audience: Audience, visibility: Visibility) {
@@ -336,9 +372,12 @@ class DemoNoteInserter(val accountActor: Actor) {
             activity.getNote().setContent(content, TextMediaType.PLAIN)
             val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
             val executionContext = CommandExecutionContext(
-                myContext, CommandData.newItemCommand(CommandEnum.UPDATE_NOTE, ma, activity.getNote().noteId)
+                myContext, CommandData.newItemCommand(CommandEnum.UPDATE_NOTE, ma, activity.getId())
             )
-            return DataUpdater(executionContext).onActivity(activity)
+            return DataUpdater(executionContext).onActivity(activity).also {
+                assertTrue("Activity wasn't saved: $it", it.getId() != 0L)
+                assertTrue("Note wasn't saved: $it", it.getNote().noteId != 0L)
+            }
         }
     }
 
