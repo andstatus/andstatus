@@ -62,18 +62,16 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
     )) {
     }
 
-    fun onActivity(mbActivity: AActivity?): AActivity? {
-        return onActivity(mbActivity, true)
+    fun onActivity(activity: AActivity): AActivity {
+        return onActivity(activity, true)
     }
 
-    fun onActivity(activity: AActivity?, saveLum: Boolean): AActivity? {
+    fun onActivity(activity: AActivity, saveLum: Boolean): AActivity {
         return onActivityInternal(activity, saveLum, 0)
     }
 
-    // TODO: return non nullable value
-    private fun onActivityInternal(activity: AActivity?, saveLum: Boolean, recursing: Int): AActivity? {
-        if (activity == null ||
-            activity.getObjectType() == AObjectType.EMPTY ||
+    private fun onActivityInternal(activity: AActivity, saveLum: Boolean, recursing: Int): AActivity {
+        if (activity.getObjectType() == AObjectType.EMPTY ||
             recursing > MAX_RECURSING) {
             return activity
         }
@@ -203,10 +201,10 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             for (actor in note.audience().evaluateAndGetActorsToSave(activity.getAuthor())) {
                 updateObjActor(activity.getActor().update(me.actor, actor), recursing + 1)
             }
-            if (!note.via.isNullOrEmpty()) {
+            if (!note.via.isEmpty()) {
                 values.put(NoteTable.VIA, note.via)
             }
-            if (!note.url.isNullOrEmpty()) {
+            if (!note.url.isEmpty()) {
                 values.put(NoteTable.URL, note.url)
             }
             if (note.audience().visibility.isKnown()) {
@@ -283,7 +281,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
 
     private fun updateInReplyTo(activity: AActivity, values: ContentValues) {
         val inReply = activity.getNote().inReplyTo
-        if (!inReply.getNote().oid.isNullOrEmpty()) {
+        if (inReply.getNote().oid.isNotEmpty()) {
             if (UriUtils.nonRealOid(inReply.getNote().conversationOid)) {
                 inReply.getNote().setConversationOid(activity.getNote().conversationOid)
             }

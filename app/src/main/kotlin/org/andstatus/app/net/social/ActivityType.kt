@@ -34,6 +34,7 @@ enum class ActivityType(val id: Long, val actedResourceId: Int, val activityPubV
     UNDO_FOLLOW(8, R.string.undid_follow, "Undo"),
     UNDO_LIKE(9, R.string.undid_like, "Undo"),
     JOIN(10, R.string.joined, "Join"),
+    UNKNOWN(11, R.string.unknown_in_parenthesis, "(unknown)"),
     EMPTY(0, R.string.empty_in_parenthesis, "(empty)");
 
     fun getActedTitle(context: Context?): CharSequence {

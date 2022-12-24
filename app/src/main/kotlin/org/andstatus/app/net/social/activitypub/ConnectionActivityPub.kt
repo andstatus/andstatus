@@ -267,7 +267,7 @@ class ConnectionActivityPub : Connection() {
 
         val oid = jsoActivity.optString(ID)
         if (jsoActivity.length() == 1 && oid.isNotBlank()) {
-            val activity: AActivity = AActivity.from(data.getAccountActor(), ActivityType.EMPTY)
+            val activity: AActivity = AActivity.from(data.getAccountActor(), ActivityType.UNKNOWN)
             return activity.setOid(oid)
         }
 

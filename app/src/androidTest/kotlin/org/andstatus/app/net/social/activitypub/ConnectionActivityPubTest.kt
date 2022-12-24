@@ -77,62 +77,62 @@ class ConnectionActivityPubTest {
             TimelinePosition.Companion.of(sinceId), TimelinePosition.Companion.EMPTY, 20, actorForTimeline
         ).get()
         Assert.assertNotNull("timeline returned", timeline)
-        Assert.assertEquals("Number of items in the Timeline", 5, timeline.size().toLong())
+        assertEquals("Number of items in the Timeline", 5, timeline.size().toLong())
         var activity = timeline[4] ?: throw IllegalStateException("No activity")
-        Assert.assertEquals("Creating a Note $activity", AObjectType.NOTE, activity.getObjectType())
+        assertEquals("Creating a Note $activity", AObjectType.NOTE, activity.getObjectType())
         val note = activity.getNote()
-        Assert.assertEquals(
+        assertEquals(
             "Note oid $note",
             "https://pleroma.site/objects/34ab2ec5-4307-4e0b-94d6-a789d4da1240",
             note.oid
         )
-        Assert.assertEquals(
+        assertEquals(
             "Conversation oid $note", "https://pleroma.site/contexts/c62ba280-2a11-473e-8bd1-9435e9dc83ae",
             note.conversationOid
         )
-        Assert.assertEquals("Note name $note", "", note.getName())
+        assertEquals("Note name $note", "", note.getName())
         MatcherAssert.assertThat(
             "Note body $note",
             note.content,
             StringStartsWith.startsWith("We could successfully create an account")
         )
-        Assert.assertEquals(
+        assertEquals(
             "Activity updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
             TestSuite.utcTime(2019, Calendar.FEBRUARY, 10, 17, 37, 25).toString(),
             TestSuite.utcTime(activity.getUpdatedDate()).toString()
         )
-        Assert.assertEquals(
+        assertEquals(
             "Note updated at " + TestSuite.utcTime(note.updatedDate),
             TestSuite.utcTime(2019, Calendar.FEBRUARY, 10, 17, 37, 25).toString(),
             TestSuite.utcTime(note.updatedDate).toString()
         )
         val actor = activity.getActor()
-        Assert.assertEquals("Actor's oid $activity", "https://pleroma.site/users/ActivityPubTester", actor.oid)
-        Assert.assertEquals("Actor's Webfinger $activity", "", actor.getWebFingerId())
-        Assert.assertEquals("Actor is an Author", actor, activity.getAuthor())
-        Assert.assertEquals("Should be Create $activity", ActivityType.CREATE, activity.type)
-        Assert.assertEquals(
+        assertEquals("Actor's oid $activity", "https://pleroma.site/users/ActivityPubTester", actor.oid)
+        assertEquals("Actor's Webfinger $activity", "", actor.getWebFingerId())
+        assertEquals("Actor is an Author", actor, activity.getAuthor())
+        assertEquals("Should be Create $activity", ActivityType.CREATE, activity.type)
+        assertEquals(
             "Favorited by me $activity",
             TriState.UNKNOWN,
             activity.getNote().getFavoritedBy(activity.accountActor)
         )
         activity = timeline[3] ?: throw IllegalStateException("No activity")
-        Assert.assertEquals("Is not FOLLOW $activity", ActivityType.FOLLOW, activity.type)
-        Assert.assertEquals("Actor", "https://pleroma.site/users/ActivityPubTester", activity.getActor().oid)
-        Assert.assertEquals("Actor is my friend", TriState.UNKNOWN, activity.getActor().isMyFriend)
-        Assert.assertEquals("Activity Object", AObjectType.ACTOR, activity.getObjectType())
+        assertEquals("Is not FOLLOW $activity", ActivityType.FOLLOW, activity.type)
+        assertEquals("Actor", "https://pleroma.site/users/ActivityPubTester", activity.getActor().oid)
+        assertEquals("Actor is my friend", TriState.UNKNOWN, activity.getActor().isMyFriend)
+        assertEquals("Activity Object", AObjectType.ACTOR, activity.getObjectType())
         var objActor = activity.getObjActor()
-        Assert.assertEquals("objActor followed", "https://pleroma.site/users/AndStatus", objActor.oid)
-        Assert.assertEquals("Actor is my friend", TriState.UNKNOWN, objActor.isMyFriend)
+        assertEquals("objActor followed", "https://pleroma.site/users/AndStatus", objActor.oid)
+        assertEquals("Actor is my friend", TriState.UNKNOWN, objActor.isMyFriend)
         for (ind in 0..2) {
             activity = timeline[ind] ?: throw IllegalStateException("No activity")
-            Assert.assertEquals("Is not UPDATE $activity", ActivityType.UPDATE, activity.type)
-            Assert.assertEquals("Actor", AObjectType.ACTOR, activity.getObjectType())
+            assertEquals("Is not UPDATE $activity", ActivityType.UPDATE, activity.type)
+            assertEquals("Actor", AObjectType.ACTOR, activity.getObjectType())
             objActor = activity.getObjActor()
-            Assert.assertEquals("Actor is my friend", TriState.UNKNOWN, objActor.isMyFriend)
-            Assert.assertEquals("Url of objActor", "https://pleroma.site/users/AndStatus", objActor.getProfileUrl())
-            Assert.assertEquals("WebFinger ID", "andstatus@pleroma.site", objActor.getWebFingerId())
-            Assert.assertEquals(
+            assertEquals("Actor is my friend", TriState.UNKNOWN, objActor.isMyFriend)
+            assertEquals("Url of objActor", "https://pleroma.site/users/AndStatus", objActor.getProfileUrl())
+            assertEquals("WebFinger ID", "andstatus@pleroma.site", objActor.getWebFingerId())
+            assertEquals(
                 "Avatar",
                 "https://pleroma.site/media/c5f60f06-6620-46b6-b676-f9f4571b518e/bfa1745b8c221225cc6551805d9eaa8bebe5f36fc1856b4924bcfda5d620334d.png",
                 objActor.getAvatarUrl()
@@ -153,33 +153,33 @@ class ConnectionActivityPubTest {
             TimelinePosition.Companion.of(sinceId), TimelinePosition.Companion.EMPTY, 20, actorForTimeline
         ).get()
         Assert.assertNotNull("timeline returned", timeline)
-        Assert.assertEquals("Number of items in the Timeline", 10, timeline.size().toLong())
+        assertEquals("Number of items in the Timeline", 10, timeline.size().toLong())
         val activity = timeline[2] ?: throw IllegalStateException("No activity")
-        Assert.assertEquals("Announcing $activity", ActivityType.ANNOUNCE, activity.type)
-        Assert.assertEquals("Announcing a Note $activity", AObjectType.NOTE, activity.getObjectType())
+        assertEquals("Announcing $activity", ActivityType.ANNOUNCE, activity.type)
+        assertEquals("Announcing a Note $activity", AObjectType.NOTE, activity.getObjectType())
         val note = activity.getNote()
-        Assert.assertEquals("Note oid $note", "https://lgbtq.cool/users/abby/statuses/101702144808655868", note.oid)
+        assertEquals("Note oid $note", "https://lgbtq.cool/users/abby/statuses/101702144808655868", note.oid)
         val actor = activity.getActor()
-        Assert.assertEquals("Actor's oid $activity", ACTOR_OID2, actor.oid)
-        Assert.assertEquals("Author is unknown", Actor.EMPTY, activity.getAuthor())
+        assertEquals("Actor's oid $activity", ACTOR_OID2, actor.oid)
+        assertEquals("Author is unknown", Actor.EMPTY, activity.getAuthor())
     }
 
     @Test
     fun noteFromPawooNet() {
         stub.http.addResponse(org.andstatus.app.test.R.raw.activitypub_note_from_pawoo_net_pleroma)
         val activity8 = stub.connection.getNote(pawooNoteOid).get()
-        Assert.assertEquals("Updating $activity8", ActivityType.UPDATE, activity8.type)
-        Assert.assertEquals("Acting on a Note $activity8", AObjectType.NOTE, activity8.getObjectType())
+        assertEquals("Updating $activity8", ActivityType.UPDATE, activity8.type)
+        assertEquals("Acting on a Note $activity8", AObjectType.NOTE, activity8.getObjectType())
         val note8 = activity8.getNote()
-        Assert.assertEquals("Note oid $note8", pawooNoteOid, note8.oid)
+        assertEquals("Note oid $note8", pawooNoteOid, note8.oid)
         val author = activity8.getAuthor()
-        Assert.assertEquals("Author's oid $activity8", pawooActorOid, author.oid)
-        Assert.assertEquals("Actor is author", author, activity8.getActor())
+        assertEquals("Author's oid $activity8", pawooActorOid, author.oid)
+        assertEquals("Actor is author", author, activity8.getActor())
         MatcherAssert.assertThat(
             "Note body $note8", note8.content,
             CoreMatchers.containsString("how two attached images may look like")
         )
-        Assert.assertEquals(
+        assertEquals(
             "Note updated at " + TestSuite.utcTime(note8.updatedDate),
             TestSuite.utcTime(2019, Calendar.MARCH, 10, 18, 46, 31).toString(),
             TestSuite.utcTime(note8.updatedDate).toString()
@@ -199,15 +199,15 @@ class ConnectionActivityPubTest {
             TimelinePosition.Companion.of(sinceId), TimelinePosition.Companion.EMPTY, 20, actorForTimeline
         ).get()
         Assert.assertNotNull("timeline returned", timeline)
-        Assert.assertEquals("Number of items in the Timeline", 10, timeline.size().toLong())
+        assertEquals("Number of items in the Timeline", 10, timeline.size().toLong())
         val activity8 = timeline[8] ?: throw IllegalStateException("No activity")
-        Assert.assertEquals("Creating $activity8", ActivityType.CREATE, activity8.type)
-        Assert.assertEquals("Acting on a Note $activity8", AObjectType.NOTE, activity8.getObjectType())
+        assertEquals("Creating $activity8", ActivityType.CREATE, activity8.type)
+        assertEquals("Acting on a Note $activity8", AObjectType.NOTE, activity8.getObjectType())
         val note8 = activity8.getNote()
-        Assert.assertEquals("Note oid $note8", pawooNoteOid, note8.oid)
+        assertEquals("Note oid $note8", pawooNoteOid, note8.oid)
         val author = activity8.getAuthor()
-        Assert.assertEquals("Author's oid $activity8", pawooActorOid, author.oid)
-        Assert.assertEquals("Actor is author", author, activity8.getActor())
+        assertEquals("Author's oid $activity8", pawooActorOid, author.oid)
+        assertEquals("Actor is author", author, activity8.getActor())
         MatcherAssert.assertThat(
             "Note summary should be absent $note8",
             note8.summary,
@@ -217,75 +217,75 @@ class ConnectionActivityPubTest {
             "Note body $note8", note8.content,
             CoreMatchers.containsString("how two attached images may look like")
         )
-        Assert.assertEquals(
+        assertEquals(
             "Note updated at " + TestSuite.utcTime(note8.updatedDate),
             TestSuite.utcTime(2019, Calendar.MARCH, 10, 18, 46, 31).toString(),
             TestSuite.utcTime(note8.updatedDate).toString()
         )
-        Assert.assertEquals("Media attachments " + note8.attachments, 2, note8.attachments.size.toLong())
+        assertEquals("Media attachments " + note8.attachments, 2, note8.attachments.size.toLong())
         val attachment0 = note8.attachments.list[0]
-        Assert.assertEquals("Content type", MyContentType.IMAGE, attachment0.contentType)
-        Assert.assertEquals(
+        assertEquals("Content type", MyContentType.IMAGE, attachment0.contentType)
+        assertEquals(
             "Media URI",
             UriUtils.fromString("https://img.pawoo.net/media_attachments/files/013/102/220/original/b70c78bee2bf7c99.jpg"),
             attachment0.uri
         )
         val attachment1 = note8.attachments.list[1]
-        Assert.assertEquals("Content type", MyContentType.IMAGE, attachment1.contentType)
-        Assert.assertEquals(
+        assertEquals("Content type", MyContentType.IMAGE, attachment1.contentType)
+        assertEquals(
             "Media URI",
             UriUtils.fromString("https://img.pawoo.net/media_attachments/files/013/102/261/original/104659a0cd852f39.jpg"),
             attachment1.uri
         )
         val activity9 = timeline[9] ?: throw IllegalStateException("No activity")
-        Assert.assertEquals("Creating a Note $activity9", AObjectType.NOTE, activity9.getObjectType())
+        assertEquals("Creating a Note $activity9", AObjectType.NOTE, activity9.getObjectType())
         val note9 = activity9.getNote()
-        Assert.assertEquals(
+        assertEquals(
             "Prev timeline position $activity9",
             "https://pleroma.site/users/AndStatus/inbox?max_id=9gOowwftJe67DBVQum",
             activity9.getPrevTimelinePosition().getPosition()
         )
-        Assert.assertEquals(
+        assertEquals(
             "Next timeline position $activity9",
             "https://pleroma.site/users/AndStatus/inbox?max_id=9gmg7FVl50VMgeCw0u",
             activity9.getNextTimelinePosition().getPosition()
         )
-        Assert.assertEquals(
+        assertEquals(
             "Activity oid $activity9",
             "https://pleroma.site/activities/0f74296c-0f8c-43e2-a250-692f3e61c9c3",
             activity9.getOid()
         )
-        Assert.assertEquals(
+        assertEquals(
             "Note oid $note9",
             "https://pleroma.site/objects/78bcd5dd-c1ee-4ac1-b2e0-206a508e60e9",
             note9.oid
         )
-        Assert.assertEquals(
+        assertEquals(
             "Conversation oid $note9",
             "https://pleroma.site/contexts/cebf1c4d-f7f2-46a5-8025-fd8bd9cde1ab",
             note9.conversationOid
         )
-        Assert.assertEquals("Note name $note9", "", note9.getName())
+        assertEquals("Note name $note9", "", note9.getName())
         MatcherAssert.assertThat(
             "Note body $note9", note9.content,
             CoreMatchers.`is`("@pawooandstatustester@pawoo.net We are implementing conversation retrieval via #ActivityPub")
         )
-        Assert.assertEquals(
+        assertEquals(
             "Activity updated at " + TestSuite.utcTime(activity9.getUpdatedDate()),
             TestSuite.utcTime(2019, Calendar.MARCH, 15, 4, 38, 48).toString(),
             TestSuite.utcTime(activity9.getUpdatedDate()).toString()
         )
-        Assert.assertEquals(
+        assertEquals(
             "Note updated at " + TestSuite.utcTime(note9.updatedDate),
             TestSuite.utcTime(2019, Calendar.MARCH, 15, 4, 38, 48).toString(),
             TestSuite.utcTime(note9.updatedDate).toString()
         )
         val actor9 = activity9.getActor()
-        Assert.assertEquals("Actor's oid $activity9", VerifyCredentialsActivityPubTest.ACTOR_OID, actor9.oid)
-        Assert.assertEquals("Actor's Webfinger $activity9", "", actor9.getWebFingerId())
-        Assert.assertEquals("Actor is an Author", actor9, activity9.getAuthor())
-        Assert.assertEquals("Should be Create $activity9", ActivityType.CREATE, activity9.type)
-        Assert.assertEquals(
+        assertEquals("Actor's oid $activity9", VerifyCredentialsActivityPubTest.ACTOR_OID, actor9.oid)
+        assertEquals("Actor's Webfinger $activity9", "", actor9.getWebFingerId())
+        assertEquals("Actor is an Author", actor9, activity9.getAuthor())
+        assertEquals("Should be Create $activity9", ActivityType.CREATE, activity9.type)
+        assertEquals(
             "Favorited by me $activity9",
             TriState.UNKNOWN,
             activity9.getNote().getFavoritedBy(activity9.accountActor)
@@ -302,11 +302,11 @@ class ConnectionActivityPubTest {
             ApiRoutineEnum.GET_FRIENDS,
             TimelinePosition.Companion.EMPTY, actor
         ).get()
-        Assert.assertEquals(
+        assertEquals(
             "Number of actors, " +
                 "who " + actor.getUniqueNameWithOrigin() + " is following " + page, 1, page.size().toLong()
         )
-        Assert.assertEquals("https://pleroma.site/users/AndStatus", page[0]?.oid)
+        assertEquals("https://pleroma.site/users/AndStatus", page[0]?.oid)
     }
 
     @Test
@@ -314,25 +314,25 @@ class ConnectionActivityPubTest {
         stub.http.addResponse(org.andstatus.app.test.R.raw.activitypub_with_audience_pleroma)
         val noteOid = "https://pleroma.site/objects/032e7c06-48aa-4cc9-b84a-0a36a24a7779"
         val activity = stub.connection.getNote(noteOid).get()
-        Assert.assertEquals("Creating $activity", ActivityType.CREATE, activity.type)
-        Assert.assertEquals("Acting on a Note $activity", AObjectType.NOTE, activity.getObjectType())
+        assertEquals("Creating $activity", ActivityType.CREATE, activity.type)
+        assertEquals("Acting on a Note $activity", AObjectType.NOTE, activity.getObjectType())
         val note = activity.getNote()
-        Assert.assertEquals("Note oid $note", noteOid, note.oid)
+        assertEquals("Note oid $note", noteOid, note.oid)
         val author = activity.getAuthor()
-        Assert.assertEquals("Author's oid $activity", VerifyCredentialsActivityPubTest.ACTOR_OID, author.oid)
-        Assert.assertEquals("Actor is author", author, activity.getActor())
+        assertEquals("Author's oid $activity", VerifyCredentialsActivityPubTest.ACTOR_OID, author.oid)
+        assertEquals("Actor is author", author, activity.getActor())
         MatcherAssert.assertThat(
             "Note body $note", note.content,
             CoreMatchers.containsString("Testing public reply to Conversation participants")
         )
-        Assert.assertEquals(
+        assertEquals(
             "Note updated at " + TestSuite.utcTime(note.updatedDate),
             TestSuite.utcTime(2019, Calendar.MARCH, 31, 11, 39, 54).toString(),
             TestSuite.utcTime(note.updatedDate).toString()
         )
         Assert.assertTrue("Note should be sensitive $note", note.isSensitive())
         val audience = activity.audience()
-        Assert.assertEquals("Visibility of $activity", Visibility.PUBLIC, audience.visibility)
+        assertEquals("Visibility of $activity", Visibility.PUBLIC, audience.visibility)
         val oids = Arrays.asList(
             "https://pleroma.site/users/kaniini",
             "https://pawoo.net/users/pawooAndStatusTester",
@@ -371,23 +371,23 @@ class ConnectionActivityPubTest {
         stub.http.addResponse(org.andstatus.app.test.R.raw.activitypub_with_attachment_pleroma)
         val noteOid = "https://queer.hacktivis.me/objects/afc8092f-d25e-40a5-9dfe-5a067fb2e67d"
         val activity = stub.connection.getNote(noteOid).get()
-        Assert.assertEquals("Updating $activity", ActivityType.UPDATE, activity.type)
-        Assert.assertEquals("Acting on a Note $activity", AObjectType.NOTE, activity.getObjectType())
+        assertEquals("Updating $activity", ActivityType.UPDATE, activity.type)
+        assertEquals("Acting on a Note $activity", AObjectType.NOTE, activity.getObjectType())
         val note = activity.getNote()
-        Assert.assertEquals("Note oid $note", noteOid, note.oid)
+        assertEquals("Note oid $note", noteOid, note.oid)
         val author = activity.getAuthor()
-        Assert.assertEquals("Author's oid $activity", "https://queer.hacktivis.me/users/AndStatus", author.oid)
+        assertEquals("Author's oid $activity", "https://queer.hacktivis.me/users/AndStatus", author.oid)
         MatcherAssert.assertThat("Note name $note", note.getName(), CoreMatchers.`is`("TestPost003"))
         MatcherAssert.assertThat("Note summary $note", note.summary, CoreMatchers.`is`("TestPost003Subject"))
         MatcherAssert.assertThat("Note body $note", note.content, CoreMatchers.`is`("With attachment"))
-        Assert.assertEquals(
+        assertEquals(
             "Note updated at " + TestSuite.utcTime(note.updatedDate),
             TestSuite.utcTime(2019, Calendar.NOVEMBER, 10, 10, 44, 37).toString(),
             TestSuite.utcTime(note.updatedDate).toString()
         )
         Assert.assertFalse("Note is sensitive $note", note.isSensitive())
         val audience = activity.audience()
-        Assert.assertEquals("Visibility of $activity", Visibility.PUBLIC, audience.visibility)
+        assertEquals("Visibility of $activity", Visibility.PUBLIC, audience.visibility)
         val oids = Arrays.asList(
             "https://queer.hacktivis.me/users/AndStatus/followers"
         )
@@ -410,7 +410,7 @@ class ConnectionActivityPubTest {
             "Attachments should be stored of $activity\n $attachmentsStored\n",
             attachmentsStored.nonEmpty
         )
-        Assert.assertEquals(
+        assertEquals(
             "Attachment stored of $activity\n $attachmentsStored\n",
             attachments.list, attachmentsStored.list
         )
@@ -432,7 +432,7 @@ class ConnectionActivityPubTest {
         val actorOid = "https://pleroma.site/users/ActivityPubTester"
         val partial: Actor = Actor.Companion.fromOid(stub.data.getOrigin(), actorOid)
         val received = stub.connection.getActor(partial).get()
-        Assert.assertEquals("Actor's oid $received", actorOid, received.oid)
+        assertEquals("Actor's oid $received", actorOid, received.oid)
         MatcherAssert.assertThat("Note name $received", received.getUsername(), CoreMatchers.`is`("ActivityPubTester"))
         val executionContext = CommandExecutionContext(
             myContext,
@@ -443,7 +443,7 @@ class ConnectionActivityPubTest {
         val activity = executionContext.getMyAccount().actor.update(received)
         DataUpdater(executionContext).onActivity(activity)
         val stored: Actor = Actor.Companion.load(executionContext.myContext, received.actorId, true, { Actor.EMPTY })
-        Assert.assertEquals("Actor's oid $stored", actorOid, stored.oid)
+        assertEquals("Actor's oid $stored", actorOid, stored.oid)
     }
 
     @Test
@@ -454,9 +454,9 @@ class ConnectionActivityPubTest {
             setContent("Posting via ActivityPub C2S", TextMediaType.PLAIN)
         }
         val activity: AActivity = stub.connection.updateNote(note).getOrElseRecover {
-           throw AssertionError("Should be a success: $it")
+            throw AssertionError("Should be a success: $it")
         }
         assertEquals(activityId, activity.getOid())
-        assertEquals(ActivityType.EMPTY, activity.type)
+        assertEquals(ActivityType.UNKNOWN, activity.type)
     }
 }
