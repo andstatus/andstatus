@@ -53,22 +53,22 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
         return append("", text, " ", false)
     }
 
-    fun atNewLine(text: CharSequence?): MyStringBuilder {
+    fun atNewLine(text: Any?): MyStringBuilder {
         return atNewLine("", text)
     }
 
-    fun atNewLine(label: CharSequence?, text: CharSequence?): MyStringBuilder {
+    fun atNewLine(label: CharSequence?, obj: Any?): MyStringBuilder {
         val separator = if (isEmpty) "" else {
-            when(get(lastIndex-1)) {
+            when (get(lastIndex - 1)) {
                 '\n' -> ""
                 ',' -> "\n"
                 else -> ",\n"
             }
         }
-        return append(label, text, separator, false)
+        return append(label, obj, separator, false)
     }
 
-    fun append(label: CharSequence?, obj: Any?, separator: String, quoted: Boolean): MyStringBuilder {
+    fun append(label: CharSequence?, obj: Any?, separator: String = ", ", quoted: Boolean = false): MyStringBuilder {
         if (obj == null) return this
         val text = obj.toString()
         if (text.isEmpty()) return this
@@ -80,8 +80,8 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
         return this
     }
 
-    fun append(text: CharSequence?): MyStringBuilder {
-        if (!text.isNullOrEmpty()) {
+    fun append(text: Any?): MyStringBuilder {
+        if (text != null && (text !is CharSequence || text.isNotEmpty())) {
             builder.append(text)
         }
         return this

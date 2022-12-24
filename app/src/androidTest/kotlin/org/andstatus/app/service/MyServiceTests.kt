@@ -279,12 +279,12 @@ class MyServiceTests: IgnoredInTravis2() {
                 CommandEnum.RATE_LIMIT_STATUS, DemoData.demoData.getGnuSocialAccount()
             )
         ) {
-            mService.getHttp().setRuntimeException(SQLiteDiskIOException(method))
+            mService.getHttp().addException(SQLiteDiskIOException(method))
             "$method Sending first command $it"
         }
         mService.waitForCommandStart("First command", counter1, TriState.TRUE)
         assertTrue("Service should stop", mService.stopService(true))
-        assertEquals("No DiskIoException", 1, ExceptionsCounter.getDiskIoExceptionsCount())
+        assertEquals("DiskIoException should be caught", 0, ExceptionsCounter.getDiskIoExceptionsCount())
         MyLog.i(this, "$method ended")
     }
 

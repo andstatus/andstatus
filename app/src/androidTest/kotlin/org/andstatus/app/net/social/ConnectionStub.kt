@@ -27,8 +27,8 @@ import org.andstatus.app.net.http.HttpConnectionOAuth
 import org.andstatus.app.net.http.HttpConnectionOAuthStub
 
 class ConnectionStub private constructor(val connection: Connection) {
-    fun withException(e: ConnectionException?): ConnectionStub {
-        getHttpStub().setException(e)
+    fun withException(e: ConnectionException): ConnectionStub {
+        getHttpStub().addException(e)
         return this
     }
 

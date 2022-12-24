@@ -146,7 +146,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         return if (conversationOid.isEmpty()) {
             logExecutionError(
                 true, method + " empty conversationId " +
-                        MyQuery.noteInfoForLog(execContext.myContext, noteId)
+                    MyQuery.noteInfoForLog(execContext.myContext, noteId)
             )
         } else getConnection()
             .getConversation(conversationOid)
@@ -166,7 +166,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     }
                 }
             }
-            .map { activities -> true }
+            .map { true }
             .mapFailure { e: Throwable ->
                 ConnectionException.of(
                     e,
@@ -195,7 +195,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 DataUpdater(execContext).onActivity(activity)
                 true
             }
-            .onFailure { e: Throwable? -> actorIn2.requestAvatarDownload() }
+            .onFailure { actorIn2.requestAvatarDownload() }
     }
 
     /**
@@ -207,7 +207,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             .flatMap { oid: String -> if (create) getConnection().like(oid) else getConnection().undoLike(oid) }
             .flatMap { activity: AActivity ->
                 failIfEmptyNote(method, noteId, activity.getNote())
-                    .map { b: Boolean -> activity }
+                    .map { activity }
             }
             .flatMap { activity: AActivity ->
                 if (activity.type != if (create) ActivityType.LIKE else ActivityType.UNDO_LIKE) {
@@ -234,7 +234,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                         // works even for the "Unfavorited" tweet :-)
                         return@flatMap logExecutionError<AActivity>(
                             false, method + "; Favorited flag didn't change yet. " +
-                                    MyQuery.noteInfoForLog(execContext.myContext, noteId)
+                                MyQuery.noteInfoForLog(execContext.myContext, noteId)
                         )
                     }
                 }
@@ -252,7 +252,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         return if (required && oid.isEmpty()) {
             logExecutionError(
                 true, method + "; no note ID in the Social Network "
-                        + MyQuery.noteInfoForLog(execContext.myContext, noteId)
+                    + MyQuery.noteInfoForLog(execContext.myContext, noteId)
             )
         } else Try.success(oid)
     }
@@ -269,7 +269,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 friend.isMyFriend =
                     TriState.UNKNOWN // That "hack" attribute may only confuse us here as it can show outdated info
                 failIfActorIsEmpty(method, friend)
-                    .map { a: Actor ->
+                    .map {
                         DataUpdater(execContext).onActivity(activity)
                         true
                     }
@@ -297,7 +297,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             noteId,
             method
         ) else TryUtils.TRUE)
-            .onSuccess { b: Boolean? -> MyProvider.deleteNoteAndItsActivities(execContext.myContext, noteId) }
+            .onSuccess { MyProvider.deleteNoteAndItsActivities(execContext.myContext, noteId) }
     }
 
     private fun deleteNoteAtServer(noteId: Long, method: String): Try<Boolean> {
@@ -318,7 +318,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 if (e.statusCode == StatusCode.NOT_FOUND) TryUtils.TRUE
                 else logConnectionException(
                     e, method + "; noteOid:" + tryOid.getOrElse("?") + ", " +
-                            MyQuery.noteInfoForLog(execContext.myContext, noteId)
+                        MyQuery.noteInfoForLog(execContext.myContext, noteId)
                 )
             }
     }
@@ -332,8 +332,8 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         if (reblogAndType.second != ActivityType.ANNOUNCE) {
             return logExecutionError(
                 true, "No local Reblog of "
-                        + MyQuery.noteInfoForLog(execContext.myContext, noteId) +
-                        " by " + execContext.getMyAccount()
+                    + MyQuery.noteInfoForLog(execContext.myContext, noteId) +
+                    " by " + execContext.getMyAccount()
             )
         }
         val reblogOid = MyQuery.idToOid(execContext.myContext, OidEnum.REBLOG_OID, noteId, actorId)
@@ -347,10 +347,10 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 if (e.statusCode == StatusCode.NOT_FOUND) TryUtils.TRUE
                 else logConnectionException(
                     e, method + "; reblogOid:" + reblogOid + ", " +
-                            MyQuery.noteInfoForLog(execContext.myContext, noteId)
+                        MyQuery.noteInfoForLog(execContext.myContext, noteId)
                 )
             }
-            .onSuccess { b: Boolean ->  // And delete the reblog from local storage
+            .onSuccess {    // And delete the reblog from local storage
                 MyProvider.deleteActivity(execContext.myContext, reblogAndType.first ?: 0, noteId, false)
             }
     }
@@ -363,7 +363,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 if (activity.isEmpty) {
                     return@flatMap logExecutionError<Boolean>(
                         false, "Received Note is empty, "
-                                + MyQuery.noteInfoForLog(execContext.myContext, noteId)
+                            + MyQuery.noteInfoForLog(execContext.myContext, noteId)
                     )
                 } else {
                     try {
@@ -372,7 +372,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     } catch (e: Exception) {
                         return@flatMap logExecutionError<Boolean>(
                             false, "Error while saving to the local cache,"
-                                    + MyQuery.noteInfoForLog(execContext.myContext, noteId) + ", " + e.message
+                                + MyQuery.noteInfoForLog(execContext.myContext, noteId) + ", " + e.message
                         )
                     }
                 }
@@ -404,19 +404,19 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         DemoData.crashTest { note.content.startsWith("Crash me on sending 2015-04-10") }
         if (MyLog.isVerboseEnabled()) {
             val msgLog = ((if (!note.getName().isEmpty()) "name:'" + note.getName() + "'; " else "")
-                    + (if (!note.summary.isEmpty()) "summary:'" + note.summary + "'; " else "")
-                    + (if (!note.content.isEmpty()) "content:'" + MyLog.trimmedString(
+                + (if (!note.summary.isEmpty()) "summary:'" + note.summary + "'; " else "")
+                + (if (!note.content.isEmpty()) "content:'" + MyLog.trimmedString(
                 note.getContentToPost(),
                 80
             ) + "'" else "")
-                    + if (note.attachments.isEmpty) "" else "; " + note.attachments)
+                + if (note.attachments.isEmpty) "" else "; " + note.attachments)
             MyLog.v(this) { "$method;$msgLog" }
         }
         return if (!note.getStatus().mayBeSent()) {
             Try.failure(ConnectionException.hardConnectionException("Wrong note status: " + note.getStatus(), null))
         } else getConnection().updateNote(note)
             .flatMap { activity: AActivity ->
-                failIfEmptyNote(method, noteId, activity.getNote()).map { b: Boolean? ->
+                failIfEmptyNote(method, noteId, activity.getNote()).map {
                     // The note was sent successfully, so now update unsent message
                     // New Actor's note should be put into the Account's Home timeline.
                     activity.setId(activityId)
@@ -425,7 +425,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     execContext.getResult().setItemId(noteId)
                     true
                 }
-                    .onFailure { e: Throwable? -> execContext.myContext.notifier.onUnsentActivity(activityId) }
+                    .onFailure { execContext.myContext.notifier.onUnsentActivity(activityId) }
             }
     }
 
@@ -433,7 +433,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         return if (note == null || note.isEmpty) {
             logExecutionError(
                 false, method + "; Received note is empty, "
-                        + MyQuery.noteInfoForLog(execContext.myContext, noteId)
+                    + MyQuery.noteInfoForLog(execContext.myContext, noteId)
             )
         } else TryUtils.TRUE
     }

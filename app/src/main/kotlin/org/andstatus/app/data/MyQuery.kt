@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -73,14 +73,14 @@ object MyQuery {
         val msgLog = "oidToId; $oidEnum, origin=$originId, oid=$oid"
         val sql: String = when (oidEnum) {
             OidEnum.NOTE_OID -> "SELECT " + BaseColumns._ID + " FROM " + NoteTable.TABLE_NAME +
-                    " WHERE " + NoteTable.ORIGIN_ID + "=" + originId + " AND " + NoteTable.NOTE_OID +
-                    "=" + quoteIfNotQuoted(oid)
+                " WHERE " + NoteTable.ORIGIN_ID + "=" + originId + " AND " + NoteTable.NOTE_OID +
+                "=" + quoteIfNotQuoted(oid)
             OidEnum.ACTOR_OID -> "SELECT " + BaseColumns._ID + " FROM " + ActorTable.TABLE_NAME +
-                    " WHERE " + ActorTable.ORIGIN_ID + "=" + originId + " AND " + ActorTable.ACTOR_OID +
-                    "=" + quoteIfNotQuoted(oid)
+                " WHERE " + ActorTable.ORIGIN_ID + "=" + originId + " AND " + ActorTable.ACTOR_OID +
+                "=" + quoteIfNotQuoted(oid)
             OidEnum.ACTIVITY_OID -> "SELECT " + BaseColumns._ID + " FROM " + ActivityTable.TABLE_NAME +
-                    " WHERE " + ActivityTable.ORIGIN_ID + "=" + originId + " AND " + ActivityTable.ACTIVITY_OID +
-                    "=" + quoteIfNotQuoted(oid)
+                " WHERE " + ActivityTable.ORIGIN_ID + "=" + originId + " AND " + ActivityTable.ACTIVITY_OID +
+                "=" + quoteIfNotQuoted(oid)
             else -> throw IllegalArgumentException("$msgLog; Unknown oidEnum")
         }
         return sqlToLong(myContext.database, msgLog, sql)
@@ -88,7 +88,7 @@ object MyQuery {
 
     fun sqlToLong(databaseIn: SQLiteDatabase?, msgLogIn: String?, sql: String?): Long {
         val msgLog = StringUtil.notNull(msgLogIn)
-        val db = databaseIn ?:  MyContextHolder.myContextHolder.getNow().database
+        val db = databaseIn ?: MyContextHolder.myContextHolder.getNow().database
         if (db == null) {
             MyLog.databaseIsNull { msgLog }
             return 0
@@ -178,18 +178,18 @@ object MyQuery {
             try {
                 sql = when (oe) {
                     OidEnum.NOTE_OID -> "SELECT " + NoteTable.NOTE_OID + " FROM " +
-                            NoteTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId
+                        NoteTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId
                     OidEnum.ACTOR_OID -> "SELECT " + ActorTable.ACTOR_OID + " FROM " +
-                            ActorTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId
+                        ActorTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId
                     OidEnum.REBLOG_OID -> {
                         if (rebloggerActorId == 0L) {
                             MyLog.w(TAG, "$method; rebloggerActorId was not defined")
                         }
                         ("SELECT " + ActivityTable.ACTIVITY_OID + " FROM "
-                                + ActivityTable.TABLE_NAME + " WHERE "
-                                + ActivityTable.NOTE_ID + "=" + entityId + " AND "
-                                + ActivityTable.ACTIVITY_TYPE + "=" + ActivityType.ANNOUNCE.id + " AND "
-                                + ActivityTable.ACTOR_ID + "=" + rebloggerActorId)
+                            + ActivityTable.TABLE_NAME + " WHERE "
+                            + ActivityTable.NOTE_ID + "=" + entityId + " AND "
+                            + ActivityTable.ACTIVITY_TYPE + "=" + ActivityType.ANNOUNCE.id + " AND "
+                            + ActivityTable.ACTOR_ID + "=" + rebloggerActorId)
                     }
                     else -> throw IllegalArgumentException("$method; Unknown parameter: $oe")
                 }
@@ -230,18 +230,19 @@ object MyQuery {
     /** @return ID of the last type1 or type2 activity and the type of the activity for the selected actor
      */
     fun noteIdToLastOfTypes(
-            db: SQLiteDatabase?, noteId: Long, actorId: Long, type1: ActivityType, type2: ActivityType): Pair<Long, ActivityType> {
+        db: SQLiteDatabase?, noteId: Long, actorId: Long, type1: ActivityType, type2: ActivityType
+    ): Pair<Long, ActivityType> {
         val method = "noteIdIdToLastOfTypes"
         if (db == null || noteId == 0L || actorId == 0L) {
             return Pair(0L, ActivityType.EMPTY)
         }
         val sql = ("SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + BaseColumns._ID
-                + " FROM " + ActivityTable.TABLE_NAME
-                + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
-                + ActivityTable.ACTIVITY_TYPE
-                + " IN(" + type1.id + "," + type2.id + ") AND "
-                + ActivityTable.ACTOR_ID + "=" + actorId
-                + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1")
+            + " FROM " + ActivityTable.TABLE_NAME
+            + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
+            + ActivityTable.ACTIVITY_TYPE
+            + " IN(" + type1.id + "," + type2.id + ") AND "
+            + ActivityTable.ACTOR_ID + "=" + actorId
+            + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1")
         try {
             db.rawQuery(sql, null).use { cursor ->
                 if (cursor.moveToNext()) {
@@ -265,7 +266,8 @@ object MyQuery {
     /** @return Actors, who did activities of one of these types with the note
      */
     fun noteIdToActors(
-            db: SQLiteDatabase?, origin: Origin, noteId: Long, mainType: ActivityType, undoType: ActivityType): MutableList<Actor> {
+        db: SQLiteDatabase?, origin: Origin, noteId: Long, mainType: ActivityType, undoType: ActivityType
+    ): MutableList<Actor> {
         val method = "noteIdToActors"
         val foundActors: MutableList<Long> = ArrayList()
         val actors: MutableList<Actor> = ArrayList()
@@ -273,19 +275,20 @@ object MyQuery {
             return actors
         }
         val sql = ("SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.ACTOR_ID + ", "
-                + ActorTable.WEBFINGER_ID + ", " + TimelineSql.usernameField() + " AS " + ActorTable.ACTIVITY_ACTOR_NAME
-                + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
-                + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
-                + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
-                + ActivityTable.ACTIVITY_TYPE + " IN(" + mainType.id + "," + undoType.id + ")"
-                + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC")
+            + ActorTable.WEBFINGER_ID + ", " + TimelineSql.usernameField() + " AS " + ActorTable.ACTIVITY_ACTOR_NAME
+            + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
+            + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
+            + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
+            + ActivityTable.ACTIVITY_TYPE + " IN(" + mainType.id + "," + undoType.id + ")"
+            + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC")
         try {
             db.rawQuery(sql, null).use { cursor ->
                 while (cursor.moveToNext()) {
                     val actorId = DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)
                     if (!foundActors.contains(actorId)) {
                         foundActors.add(actorId)
-                        val activityType: ActivityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
+                        val activityType: ActivityType =
+                            ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
                         if (activityType == mainType) {
                             val actor: Actor = Actor.fromId(origin, actorId)
                             actor.setRealName(DbUtils.getString(cursor, ActorTable.ACTIVITY_ACTOR_NAME))
@@ -311,18 +314,19 @@ object MyQuery {
             return actorToNote
         }
         val sql = ("SELECT " + ActivityTable.ACTIVITY_TYPE + ", " + ActivityTable.SUBSCRIBED
-                + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
-                + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
-                + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
-                + ActivityTable.ACTOR_ID + "=" + actorId
-                + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC")
+            + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
+            + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
+            + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
+            + ActivityTable.ACTOR_ID + "=" + actorId
+            + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC")
         try {
             db.rawQuery(sql, null).use { cursor ->
                 while (cursor.moveToNext()) {
                     if (DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED) == TriState.TRUE) {
                         actorToNote.subscribed = true
                     }
-                    val activityType: ActivityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
+                    val activityType: ActivityType =
+                        ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
                     when (activityType) {
                         ActivityType.LIKE, ActivityType.UNDO_LIKE -> if (!favoriteFound) {
                             favoriteFound = true
@@ -354,15 +358,16 @@ object MyQuery {
                     // TODO:
                     throw IllegalArgumentException("$method; Not implemented \"$actorIdColumnName\"")
                 } else if (actorIdColumnName.contentEquals(NoteTable.AUTHOR_ID) ||
-                        actorIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)) {
+                    actorIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)
+                ) {
                     ("SELECT " + usernameField(actorInTimeline) + " FROM " + ActorTable.TABLE_NAME
-                            + " INNER JOIN " + NoteTable.TABLE_NAME + " ON "
-                            + NoteTable.TABLE_NAME + "." + actorIdColumnName + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
-                            + " WHERE " + NoteTable.TABLE_NAME + "." + BaseColumns._ID + "=" + noteId)
+                        + " INNER JOIN " + NoteTable.TABLE_NAME + " ON "
+                        + NoteTable.TABLE_NAME + "." + actorIdColumnName + "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID
+                        + " WHERE " + NoteTable.TABLE_NAME + "." + BaseColumns._ID + "=" + noteId)
                 } else {
                     throw IllegalArgumentException("$method; Unknown name \"$actorIdColumnName\"")
                 }
-                val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().database
+                val db: SQLiteDatabase? = MyContextHolder.myContextHolder.getNow().database
                 if (db == null) {
                     MyLog.databaseIsNull { method }
                     return ""
@@ -424,11 +429,13 @@ object MyQuery {
         return conditionToLongColumnValue(null, columnName, tableName, columnName, condition)
     }
 
-    fun conditionToLongColumnValue(databaseIn: SQLiteDatabase?, msgLog: String?,
-                                   tableName: String, columnName: String, condition: String?): Long {
+    fun conditionToLongColumnValue(
+        databaseIn: SQLiteDatabase?, msgLog: String?,
+        tableName: String, columnName: String, condition: String?
+    ): Long {
         val sql = "SELECT t." + columnName +
-                " FROM " + tableName + " AS t" +
-                if (condition.isNullOrEmpty()) "" else " WHERE $condition"
+            " FROM " + tableName + " AS t" +
+            if (condition.isNullOrEmpty()) "" else " WHERE $condition"
         return if (tableName.isEmpty()) {
             throw IllegalArgumentException("tableName is empty: $sql")
         } else if (columnName.isEmpty()) {
@@ -459,9 +466,14 @@ object MyQuery {
         return if (systemId == 0L) "" else conditionToStringColumnValue(db, tableName, columnName, "_id=$systemId")
     }
 
-    fun conditionToStringColumnValue(dbIn: SQLiteDatabase?, tableName: String, columnName: String, condition: String): String {
+    fun conditionToStringColumnValue(
+        dbIn: SQLiteDatabase?,
+        tableName: String,
+        columnName: String,
+        condition: String
+    ): String {
         val method = "cond2str"
-        val db = dbIn ?:  MyContextHolder.myContextHolder.getNow().database
+        val db = dbIn ?: MyContextHolder.myContextHolder.getNow().database
         if (db == null) {
             MyLog.databaseIsNull { method }
             return ""
@@ -472,8 +484,8 @@ object MyQuery {
 
         var columnValue: String? = ""
         try {
-            db.compileStatement(sql).use {
-                prog -> columnValue = prog.simpleQueryForString()
+            db.compileStatement(sql).use { prog ->
+                columnValue = prog.simpleQueryForString()
             }
         } catch (e: SQLiteDoneException) {
             MyLog.ignored(TAG, e)
@@ -488,30 +500,24 @@ object MyQuery {
         return columnValue ?: ""
     }
 
-    fun noteIdToActorId(noteActorIdColumnName: String, systemId: Long): Long {
-        var actorId: Long = 0
-        actorId = try {
-            if (noteActorIdColumnName.contentEquals(ActivityTable.ACTOR_ID) ||
-                    noteActorIdColumnName.contentEquals(NoteTable.AUTHOR_ID) ||
-                    noteActorIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)) {
-                noteIdToLongColumnValue(noteActorIdColumnName, systemId)
-            } else {
-                throw IllegalArgumentException("noteIdToActorId; Illegal column '$noteActorIdColumnName'")
-            }
-        } catch (e: Exception) {
-            MyLog.e(TAG, "noteIdToActorId", e)
-            return 0
+    fun noteIdToActorId(noteActorIdColumnName: String, systemId: Long): Long = try {
+        if (noteActorIdColumnName.contentEquals(ActivityTable.ACTOR_ID) ||
+            noteActorIdColumnName.contentEquals(NoteTable.AUTHOR_ID) ||
+            noteActorIdColumnName.contentEquals(NoteTable.IN_REPLY_TO_ACTOR_ID)
+        ) {
+            noteIdToLongColumnValue(noteActorIdColumnName, systemId)
+        } else {
+            throw IllegalArgumentException("noteIdToActorId; Illegal column '$noteActorIdColumnName'")
         }
-        return actorId
+    } catch (e: Exception) {
+        MyLog.e(TAG, "noteIdToActorId", e)
+        0
     }
 
-    fun noteIdToOriginId(systemId: Long): Long {
-        return noteIdToLongColumnValue(NoteTable.ORIGIN_ID, systemId)
-    }
+    fun noteIdToOriginId(systemId: Long): Long = noteIdToLongColumnValue(NoteTable.ORIGIN_ID, systemId)
 
-    fun activityIdToTriState(columnName: String, systemId: Long): TriState {
-        return TriState.fromId(activityIdToLongColumnValue(columnName, systemId))
-    }
+    fun activityIdToTriState(columnName: String, systemId: Long): TriState =
+        TriState.fromId(activityIdToLongColumnValue(columnName, systemId))
 
     /**
      * Convenience method to get column value from [ActivityTable] table
@@ -519,17 +525,13 @@ object MyQuery {
      * @param systemId  MyDatabase.NOTE_TABLE_NAME + "." + Note._ID
      * @return 0 in case not found or error
      */
-    fun activityIdToLongColumnValue(columnName: String, systemId: Long): Long {
-        return idToLongColumnValue(null, ActivityTable.TABLE_NAME, columnName, systemId)
-    }
+    fun activityIdToLongColumnValue(columnName: String, systemId: Long): Long =
+        idToLongColumnValue(null, ActivityTable.TABLE_NAME, columnName, systemId)
 
-    fun noteIdToTriState(columnName: String, systemId: Long): TriState {
-        return TriState.fromId(noteIdToLongColumnValue(columnName, systemId))
-    }
+    fun noteIdToTriState(columnName: String, systemId: Long): TriState =
+        TriState.fromId(noteIdToLongColumnValue(columnName, systemId))
 
-    fun isSensitive(systemId: Long): Boolean {
-        return noteIdToLongColumnValue(NoteTable.SENSITIVE, systemId) == 1L
-    }
+    fun isSensitive(systemId: Long): Boolean = noteIdToLongColumnValue(NoteTable.SENSITIVE, systemId) == 1L
 
     /**
      * Convenience method to get column value from [NoteTable] table
@@ -537,14 +539,12 @@ object MyQuery {
      * @param systemId  NoteTable._ID
      * @return 0 in case not found or error
      */
-    fun noteIdToLongColumnValue(columnName: String, systemId: Long): Long {
-        return when (columnName) {
-            ActivityTable.ACTOR_ID,
-            ActivityTable.AUTHOR_ID,
-            ActivityTable.UPDATED_DATE,
-            ActivityTable.LAST_UPDATE_ID -> noteIdToLongActivityColumnValue(null, columnName, systemId)
-            else -> idToLongColumnValue(null, NoteTable.TABLE_NAME, columnName, systemId)
-        }
+    fun noteIdToLongColumnValue(columnName: String, systemId: Long): Long = when (columnName) {
+        ActivityTable.ACTOR_ID,
+        ActivityTable.AUTHOR_ID,
+        ActivityTable.UPDATED_DATE,
+        ActivityTable.LAST_UPDATE_ID -> noteIdToLongActivityColumnValue(null, columnName, systemId)
+        else -> idToLongColumnValue(null, NoteTable.TABLE_NAME, columnName, systemId)
     }
 
     /** Data from the latest activity for this note...  */
@@ -556,29 +556,31 @@ object MyQuery {
             BaseColumns._ID, ActivityTable.ACTOR_ID -> {
                 columnName = columnNameIn
                 condition = (ActivityTable.ACTIVITY_TYPE + " IN("
-                        + ActivityType.CREATE.id + ","
-                        + ActivityType.UPDATE.id + ","
-                        + ActivityType.ANNOUNCE.id + ","
-                        + ActivityType.LIKE.id + ")")
+                    + ActivityType.CREATE.id + ","
+                    + ActivityType.UPDATE.id + ","
+                    + ActivityType.ANNOUNCE.id + ","
+                    + ActivityType.LIKE.id + ")")
             }
             ActivityTable.AUTHOR_ID -> {
                 columnName = ActivityTable.ACTOR_ID
                 condition = (ActivityTable.ACTIVITY_TYPE + " IN("
-                        + ActivityType.CREATE.id + ","
-                        + ActivityType.UPDATE.id + ")")
+                    + ActivityType.CREATE.id + ","
+                    + ActivityType.UPDATE.id + ")")
             }
             ActivityTable.LAST_UPDATE_ID, ActivityTable.UPDATED_DATE -> {
                 columnName = if (columnNameIn == ActivityTable.LAST_UPDATE_ID) BaseColumns._ID else columnNameIn
                 condition = (ActivityTable.ACTIVITY_TYPE + " IN("
-                        + ActivityType.CREATE.id + ","
-                        + ActivityType.UPDATE.id + ","
-                        + ActivityType.DELETE.id + ")")
+                    + ActivityType.CREATE.id + ","
+                    + ActivityType.UPDATE.id + ","
+                    + ActivityType.DELETE.id + ")")
             }
             else -> throw IllegalArgumentException("$method; Illegal column '$columnNameIn'")
         }
-        return conditionToLongColumnValue(databaseIn, method, ActivityTable.TABLE_NAME, columnName,
-                ActivityTable.NOTE_ID + "=" + noteId + " AND " + condition
-                        + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1")
+        return conditionToLongColumnValue(
+            databaseIn, method, ActivityTable.TABLE_NAME, columnName,
+            ActivityTable.NOTE_ID + "=" + noteId + " AND " + condition
+                + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1"
+        )
     }
 
     fun webFingerIdToId(myContext: MyContext, originId: Long, webFingerId: String, checkOid: Boolean): Long {
@@ -598,8 +600,10 @@ object MyQuery {
         return actorColumnValueToId(myContext, originId, ActorTable.USERNAME, username, checkOid)
     }
 
-    private fun actorColumnValueToId(myContext: MyContext, originId: Long, columnName: String, columnValue: String,
-                                     checkOid: Boolean): Long {
+    private fun actorColumnValueToId(
+        myContext: MyContext, originId: Long, columnName: String, columnValue: String,
+        checkOid: Boolean
+    ): Long {
         val method = "actor" + columnName + "ToId"
         val db = myContext.database
         if (db == null) {
@@ -638,41 +642,38 @@ object MyQuery {
 
     private fun sql4actorColumnValueToId(originId: Long, columnName: String, value: String, checkOid: Boolean): String {
         return "SELECT " + BaseColumns._ID +
-                " FROM " + ActorTable.TABLE_NAME +
-                " WHERE " +
-                (if (originId == 0L) "" else ActorTable.ORIGIN_ID + "=" + originId + " AND ") +
-                (if (checkOid) ActorTable.ACTOR_OID + " NOT LIKE('andstatustemp:%') AND " else "") +
-                columnName + "='" + value + "'" +
-                " ORDER BY " + BaseColumns._ID
+            " FROM " + ActorTable.TABLE_NAME +
+            " WHERE " +
+            (if (originId == 0L) "" else ActorTable.ORIGIN_ID + "=" + originId + " AND ") +
+            (if (checkOid) ActorTable.ACTOR_OID + " NOT LIKE('andstatustemp:%') AND " else "") +
+            columnName + "='" + value + "'" +
+            " ORDER BY " + BaseColumns._ID
     }
 
     fun getCountOfActivities(condition: String?): Long {
         val sql = ("SELECT COUNT(*) FROM " + ActivityTable.TABLE_NAME
-                + if (condition.isNullOrEmpty()) "" else " WHERE $condition")
+            + if (condition.isNullOrEmpty()) "" else " WHERE $condition")
         return getLongs(sql).firstOrNull() ?: 0
     }
 
-    fun getLongs(sql: String): Set<Long> {
-        return getLongs(MyContextHolder.myContextHolder.getNow(), sql)
-    }
+    fun getLongs(sql: String): Set<Long> = getLongs(MyContextHolder.myContextHolder.getNow(), sql)
 
-    fun getLongs(myContext: MyContext, sql: String): Set<Long> {
-        return get<Long>(myContext, sql) { cursor: Cursor -> cursor.getLong(0) }
-    }
+    fun getLongs(myContext: MyContext, sql: String): Set<Long> =
+        get<Long>(myContext, sql) { cursor: Cursor -> cursor.getLong(0) }
 
     /**
      * @return Empty set on UI thread
      */
     operator fun <T> get(myContext: MyContext, sql: String, fromCursor: Function<Cursor, T>): MutableSet<T> {
         return foldLeft(myContext,
-                sql,
-                HashSet(),
-                { t: HashSet<T> ->
-                    Function { cursor: Cursor ->
-                        t.add(fromCursor.apply(cursor))
-                        t
-                    }
+            sql,
+            HashSet(),
+            { t: HashSet<T> ->
+                Function { cursor: Cursor ->
+                    t.add(fromCursor.apply(cursor))
+                    t
                 }
+            }
         )
     }
 
@@ -681,30 +682,32 @@ object MyQuery {
      */
     fun <T> getList(myContext: MyContext, sql: String, fromCursor: Function<Cursor, T>): List<T> {
         return foldLeft(myContext,
-                sql,
-                ArrayList(),
-                { t: ArrayList<T> ->
-                    Function { cursor: Cursor ->
-                        t.add(fromCursor.apply(cursor))
-                        t
-                    }
+            sql,
+            ArrayList(),
+            { t: ArrayList<T> ->
+                Function { cursor: Cursor ->
+                    t.add(fromCursor.apply(cursor))
+                    t
                 }
+            }
         )
     }
 
     /**
      * @return identity on UI thread
      */
-    fun <U> foldLeft(myContext: MyContext, sql: String, identity: U,
-                     f: Function<U, Function<Cursor, U>>): U {
-        return foldLeft(myContext.database, sql, identity, f)
-    }
+    fun <U> foldLeft(
+        myContext: MyContext, sql: String, identity: U,
+        f: Function<U, Function<Cursor, U>>
+    ): U = foldLeft(myContext.database, sql, identity, f)
 
     /**
      * @return identity on UI thread
      */
-    fun <U> foldLeft(database: SQLiteDatabase?, sql: String, identity: U,
-                     f: Function<U, Function<Cursor, U>>): U {
+    fun <U> foldLeft(
+        database: SQLiteDatabase?, sql: String, identity: U,
+        f: Function<U, Function<Cursor, U>>
+    ): U {
         val method = "foldLeft"
         if (database == null) {
             MyLog.databaseIsNull { method }
@@ -718,7 +721,8 @@ object MyQuery {
         }
         var result: U = identity
         try {
-            database.rawQuery(sql, null).use { cursor -> while (cursor.moveToNext()) result = f.apply(result).apply(cursor) }
+            database.rawQuery(sql, null)
+                .use { cursor -> while (cursor.moveToNext()) result = f.apply(result).apply(cursor) }
         } catch (e: Exception) {
             MyLog.i(TAG, "$method; SQL:'$sql'", e)
         }
@@ -738,9 +742,11 @@ object MyQuery {
     }
 
     fun conversationOidToId(originId: Long, conversationOid: String?): Long {
-        return conditionToLongColumnValue(NoteTable.TABLE_NAME, NoteTable.CONVERSATION_ID,
-                NoteTable.ORIGIN_ID + "=" + originId
-                        + " AND " + NoteTable.CONVERSATION_OID + "=" + quoteIfNotQuoted(conversationOid))
+        return conditionToLongColumnValue(
+            NoteTable.TABLE_NAME, NoteTable.CONVERSATION_ID,
+            NoteTable.ORIGIN_ID + "=" + originId
+                + " AND " + NoteTable.CONVERSATION_OID + "=" + quoteIfNotQuoted(conversationOid)
+        )
     }
 
     fun noteIdToConversationOid(myContext: MyContext, noteId: Long): String {

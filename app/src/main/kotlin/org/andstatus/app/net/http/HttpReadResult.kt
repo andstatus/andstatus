@@ -45,7 +45,7 @@ class HttpReadResult(val request: HttpRequest) {
         private set
     private var headers: MutableMap<String, MutableList<String>> = mutableMapOf()
     var redirected = false
-    private var location: Optional<String> = Optional.empty()
+    var location: Optional<String> = Optional.empty()
     var retriedWithoutAuthentication = false
     private val logBuilder: StringBuilder = StringBuilder()
     private var exception: Exception? = null
@@ -98,19 +98,15 @@ class HttpReadResult(val request: HttpRequest) {
         // Header field names are case-insensitive, see https://stackoverflow.com/a/5259004/297710
         val lowercaseKeysMap: MutableMap<String, MutableList<String>> = HashMap()
         headers.entries.forEach { entry ->
-            lowercaseKeysMap[if (entry.key.isEmpty()) "" else entry.key.toLowerCase()] = entry.value
+            lowercaseKeysMap[if (entry.key.isEmpty()) "" else entry.key.lowercase(Locale.ENGLISH)] = entry.value
         }
         this.headers = lowercaseKeysMap
         location = Optional.ofNullable(this.headers.get("location"))
-                .orElse(mutableListOf<String>()).stream()
-                .filter { obj: String -> obj.isNotEmpty() }
-                .findFirst()
-                .map { l: String -> l.replace("%3F", "?") }
+            .orElse(mutableListOf<String>()).stream()
+            .filter { obj: String -> obj.isNotEmpty() }
+            .findFirst()
+            .map { l: String -> l.replace("%3F", "?") }
         return this
-    }
-
-    fun getLocation(): Optional<String> {
-        return location
     }
 
     fun setUrl(urlIn: URL?): HttpReadResult {
@@ -141,29 +137,36 @@ class HttpReadResult(val request: HttpRequest) {
 
     override fun toString(): String {
         return (logMsg()
-                + (if (statusCode == StatusCode.OK || statusLine.isEmpty()) "" else "; statusLine:'$statusLine'")
-                + (if (statusCodeInt == 0) "" else "; statusCode:$statusCode ($statusCodeInt)")
-                + (if (redirected) "; redirected" else "")
-                + "; url:'$url'"
-                + (if (retriedWithoutAuthentication) "; retried without auth" else "")
-                + (if (strResponse.isEmpty()) "" else "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
-                + location.map { str: String -> "; location:'$str'" }.orElse("")
-                + (if (exception == null) "" else ";\nexception: $exception")
-                + "\nRequested: " + request)
+            + (if (statusCode == StatusCode.OK || statusLine.isEmpty()) "" else "; statusLine:'$statusLine'")
+            + (if (statusCodeInt == 0) "" else "; statusCode:$statusCode ($statusCodeInt)")
+            + (if (redirected) "; redirected" else "")
+            + "; url:'$url'"
+            + (if (retriedWithoutAuthentication) "; retried without auth" else "")
+            + (if (strResponse.isEmpty()) "" else "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
+            + location.map { str: String -> "; location:'$str'" }.orElse("")
+            + (if (exception == null) "" else ";\nexception: $exception")
+            + "\nRequested: " + request)
     }
 
     fun getJsonArrayInObject(arrayName: String): Try<JSONArray> {
         val method = "getRequestArrayInObject"
         return getJsonObject()
-                .flatMap { jso: JSONObject? ->
-                    if (jso != null) {
-                        try {
-                            Try.success(jso.getJSONArray(arrayName))
-                        } catch (e: JSONException) {
-                            Try.failure(ConnectionException.loggedJsonException(this, "$method, arrayName=$arrayName", e, jso))
-                        }
-                    } else Try.success(JSONArray())
-                }
+            .flatMap { jso: JSONObject? ->
+                if (jso != null) {
+                    try {
+                        Try.success(jso.getJSONArray(arrayName))
+                    } catch (e: JSONException) {
+                        Try.failure(
+                            ConnectionException.loggedJsonException(
+                                this,
+                                "$method, arrayName=$arrayName",
+                                e,
+                                jso
+                            )
+                        )
+                    }
+                } else Try.success(JSONArray())
+            }
     }
 
     fun getJsonObject(): Try<JSONObject> {
@@ -221,8 +224,12 @@ class HttpReadResult(val request: HttpRequest) {
                     obj = try {
                         jso.getJSONArray(arrayKey)
                     } catch (e: JSONException) {
-                        return Try.failure(ConnectionException.loggedJsonException(this, "'" + arrayKey + "' is not an array?!"
-                                + method + toString(), e, jso))
+                        return Try.failure(
+                            ConnectionException.loggedJsonException(
+                                this, "'" + arrayKey + "' is not an array?!"
+                                    + method + toString(), e, jso
+                            )
+                        )
                     }
                 } else {
                     val iterator = jso.keys()
@@ -283,11 +290,16 @@ class HttpReadResult(val request: HttpRequest) {
         }
         if (isStatusOk()) {
             if (request.isFileTooLarge()) {
-                setException(ConnectionException.hardConnectionException(
+                setException(
+                    ConnectionException.hardConnectionException(
                         "File, downloaded from '$url', is too large: "
-                                + Formatter.formatShortFileSize( MyContextHolder.myContextHolder.getNow().context,
-                                request.fileResult?.length() ?: 0),
-                        null))
+                            + Formatter.formatShortFileSize(
+                            MyContextHolder.myContextHolder.getNow().context,
+                            request.fileResult?.length() ?: 0
+                        ),
+                        null
+                    )
+                )
                 return Try.failure(ConnectionException.from(this))
             }
             MyLog.v(this) { this.toString() }
@@ -314,11 +326,12 @@ class HttpReadResult(val request: HttpRequest) {
         if (MyPreferences.isLogNetworkLevelMessages()) {
             val anyTag: Any = "response"
             MyLog.logNetworkLevelMessage(anyTag, request.getLogName(), strResponse,
-                    MyStringBuilder.of("")
-                            .atNewLine("logger-URL", url.toString())
-                            .atNewLine("logger-account", request.connectionData().getAccountName().name)
-                            .atNewLine("logger-authenticated", java.lang.Boolean.toString(authenticate()))
-                            .apply { builder: MyStringBuilder -> appendHeaders(builder) }.toString())
+                MyStringBuilder.of("")
+                    .atNewLine("logger-URL", url.toString())
+                    .atNewLine("logger-account", request.connectionData().getAccountName().name)
+                    .atNewLine("logger-authenticated", java.lang.Boolean.toString(authenticate()))
+                    .apply { builder: MyStringBuilder -> appendHeaders(builder) }.toString()
+            )
         }
         return this
     }
@@ -359,16 +372,17 @@ class HttpReadResult(val request: HttpRequest) {
 
     companion object {
         private fun <T> toHeaders(
-                keyMapper: (T) -> String?,
-                valueMapper: (T) -> String?): Collector<T, *, MutableMap<String, MutableList<String>>> {
+            keyMapper: (T) -> String?,
+            valueMapper: (T) -> String?
+        ): Collector<T, *, MutableMap<String, MutableList<String>>> {
             return Collectors.toMap(
-                    { e: T -> keyMapper(e) ?: "" },
-                    { e: T -> valueMapper(e)?.let { mutableListOf(it) } ?: mutableListOf() },
-                    { a: MutableList<String>, b: MutableList<String> ->
-                        val out: MutableList<String> = ArrayList(a)
-                        out.addAll(b)
-                        out
-                    })
+                { e: T -> keyMapper(e) ?: "" },
+                { e: T -> valueMapper(e)?.let { mutableListOf(it) } ?: mutableListOf() },
+                { a: MutableList<String>, b: MutableList<String> ->
+                    val out: MutableList<String> = ArrayList(a)
+                    out.addAll(b)
+                    out
+                })
         }
 
         fun Try<*>.toHttpReadResult(): HttpReadResult? =
@@ -378,7 +392,7 @@ class HttpReadResult(val request: HttpRequest) {
                     else -> null
                 }
             }, {
-                when(it) {
+                when (it) {
                     is HttpReadResult -> it
                     else -> null
                 }

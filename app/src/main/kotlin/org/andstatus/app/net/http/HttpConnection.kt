@@ -142,13 +142,13 @@ open class HttpConnection {
     fun onMoved(result: HttpReadResult): Boolean {
         result.appendToLog("statusLine:'" + result.statusLine + "'")
         result.redirected = true
-        return TryUtils.fromOptional(result.getLocation())
+        return TryUtils.fromOptional(result.location)
             .mapFailure { ConnectionException(StatusCode.MOVED, "No 'Location' header on MOVED response") }
             .flatMap { location: String -> UrlUtils.redirectTo(result.url, location) }
             .mapFailure {
                 ConnectionException(
                     StatusCode.MOVED, "Invalid redirect from '${result.url}'" +
-                            " to '${result.getLocation()}'"
+                        " to '${result.location}'"
                 )
             }
             .map { redirected: URL -> result.setUrl(redirected) }

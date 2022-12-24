@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (c) 2022 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,44 +23,33 @@ import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.http.StatusCode.Companion.STATUS_CODE_INT_NOT_FOUND
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RawResourceUtils
 import org.andstatus.app.util.UrlUtils
 import org.json.JSONObject
 import java.io.InputStream
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
-import java.util.function.Consumer
 import java.util.stream.Collectors
 
 class HttpConnectionOAuthStub : HttpConnectionOAuth() {
+    private val instanceId = InstanceId.next()
+
     init {
         isStub = true
         userToken = "token"
         userSecret = "secret"
+        MyLog.v(this, "Created, instanceId:$instanceId")
     }
 
     private val results: MutableList<HttpReadResult> = CopyOnWriteArrayList()
-    private val responses: MutableList<String> = CopyOnWriteArrayList()
+    val responses: MutableList<StubResponse> = CopyOnWriteArrayList()
 
     @Volatile
     var responsesCounter = 0
-    private var sameResponse = false
-
-    @Volatile
-    private var responseStreamSupplier: CheckedFunction<Unit, InputStream>? = null
-
-    @Volatile
-    private var runtimeException: RuntimeException? = null
-
-    @Volatile
-    private var exception: ConnectionException? = null
+    var sameResponse: Boolean = false
 
     private val networkDelayMs: Long = 1000
-    private val mInstanceId = InstanceId.next()
-
-    fun setSameResponse(sameResponse: Boolean) {
-        this.sameResponse = sameResponse
-    }
 
     override fun errorOnInvalidUrls(): Boolean {
         return false
@@ -71,19 +60,15 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
     }
 
     fun addResponse(responseString: String) {
-        responses.add(responseString)
+        responses.add(StubResponse(strResponse = responseString))
     }
 
-    fun setResponseStreamSupplier(responseStreamSupplier: CheckedFunction<Unit, InputStream>?) {
-        this.responseStreamSupplier = responseStreamSupplier
+    fun addResponseStreamSupplier(responseStreamSupplier: CheckedFunction<Unit, InputStream>?) {
+        responses.add(StubResponse(streamSupplier = responseStreamSupplier))
     }
 
-    fun setRuntimeException(exception: RuntimeException?) {
-        runtimeException = exception
-    }
-
-    fun setException(exception: ConnectionException?) {
-        this.exception = exception
+    fun addException(exception: Exception) {
+        responses.add(StubResponse(exception = exception))
     }
 
     override fun pathToUrlString(path: String): String {
@@ -105,50 +90,46 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
             }
         }
 
-    override fun postRequest(result: HttpReadResult): HttpReadResult {
-        onRequest("postRequestWithObject", result)
-        setExceptions(result)
-        return result
-    }
+    override fun postRequest(result: HttpReadResult): HttpReadResult = onRequest("postRequest", result)
+    override fun getRequest(result: HttpReadResult): HttpReadResult = onRequest("getRequest", result)
 
-    private fun setExceptions(result: HttpReadResult) {
-        if (runtimeException != null) {
-            result.setException(runtimeException)
-        } else if (exception != null) {
-            result.setException(exception)
-        }
-    }
-
-    private fun onRequest(method: String, result: HttpReadResult) {
-        result.strResponse = getNextResponse()
-        responseStreamSupplier?.let {
-            result.readStream("", it)
-        }
-        if (result.strResponse.isEmpty() &&
-            (result.request.fileResult == null || responseStreamSupplier == null)
-        ) {
-            result.setStatusCodeInt(STATUS_CODE_INT_NOT_FOUND)
+    private fun onRequest(method: String, result: HttpReadResult): HttpReadResult {
+        getNextResponse().run {
+            strResponse?.let {
+                result.strResponse = it
+            }
+            location?.let {
+                result.location = Optional.of(it)
+            }
+            streamSupplier?.let {
+                result.readStream("", it)
+            }
+            exception?.let {
+                if (it is RuntimeException) throw it
+                result.setException(exception)
+            }
+            if (isEmpty) {
+                result.setStatusCodeInt(STATUS_CODE_INT_NOT_FOUND)
+            }
         }
         results.add(result)
         MyLog.v(
             this,
             method + " num:" + results.size + "; path:'" + result.url + "'" +
-                    ", originUrl:'" + data.originUrl + "', instanceId:" + mInstanceId
+                ", originUrl:'" + data.originUrl + "', instanceId:" + instanceId
         )
         MyLog.v(this, Arrays.toString(Thread.currentThread().stackTrace))
         DbUtils.waitMs("networkDelay", Math.toIntExact(networkDelayMs))
+        return result
     }
 
     @Synchronized
-    private fun getNextResponse(): String {
-        return if (sameResponse) if (responses.isEmpty()) "" else responses.get(responses.size - 1)
-        else if (responsesCounter < responses.size) responses.get(responsesCounter++) else ""
-    }
-
-    private fun getRequestInner(method: String, result: HttpReadResult): HttpReadResult {
-        onRequest(method, result)
-        setExceptions(result)
-        return result
+    private fun getNextResponse(): StubResponse = if (sameResponse) {
+        if (responses.isEmpty()) StubResponse.EMPTY
+        else responses.get(responses.size - 1)
+    } else {
+        if (responsesCounter < responses.size) responses.get(responsesCounter++)
+        else StubResponse.EMPTY
     }
 
     override fun getConsumer(): OAuthConsumer? = null
@@ -186,7 +167,7 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
 
     fun getPostedCounter(): Int {
         return getResults().stream().reduce(0,
-            { a: Int, r: HttpReadResult -> r.request.postParams.map { p: JSONObject? -> a + 1 }.orElse(a) },
+            { a: Int, r: HttpReadResult -> r.request.postParams.map { a + 1 }.orElse(a) },
             { a1: Int, a2: Int -> a1 + a2 })
     }
 
@@ -194,16 +175,11 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
         results.clear()
         responses.clear()
         responsesCounter = 0
-        setSameResponse(false)
-        setRuntimeException(null)
+        sameResponse = false
     }
 
     fun getInstanceId(): Long {
-        return mInstanceId
-    }
-
-    override fun getRequest(result: HttpReadResult): HttpReadResult {
-        return getRequestInner("getRequest", result)
+        return instanceId
     }
 
     fun waitForPostContaining(substring: String): HttpReadResult {
@@ -218,43 +194,18 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
     }
 
     override fun toString(): String {
-        val builder = StringBuilder()
-        builder.append("HttpConnectionStub [")
-        builder.append("Requests sent: " + getRequestsCounter())
-        builder.append("; Data posted " + getPostedCounter() + " times")
-        builder.append("\nSent $responsesCounter responses")
-        if (results.size > 0) {
-            builder.append("\nresults:${results.size}")
-            results.forEach(Consumer { r: HttpReadResult? ->
-                builder.append("\nResult: ${r.toString()}")
-            })
-        }
-        if (responses.size > 0) {
-            builder.append("\n\nresponses:${responses.size}")
-            responses.forEach(Consumer { r: String? ->
-                builder.append("\nResponse: ${r.toString()}")
-            })
-        }
-        responseStreamSupplier?.let {
-            builder.append("\nResponse stream supplier: $it")
-        }
-        if (exception != null) {
-            builder.append("\nexception=")
-            builder.append(exception)
-        }
-        builder.append(", userToken=")
-        builder.append(userToken)
-        builder.append(", userSecret=")
-        builder.append(userSecret)
-        builder.append(", networkDelayMs=")
-        builder.append(networkDelayMs)
-        builder.append(", mInstanceId=")
-        builder.append(mInstanceId)
-        builder.append("]")
-        return builder.toString()
-    }
-
-    init {
-        MyLog.v(this, "Created, instanceId:$mInstanceId")
+        val builder = MyStringBuilder()
+        builder.append("Requests sent", getRequestsCounter())
+        builder.append("Data posted, times", getPostedCounter())
+        builder.atNewLine("Responses sent", responsesCounter)
+        builder.atNewLine("Results", results.size)
+        results.forEach { builder.atNewLine("Result", it) }
+        builder.atNewLine("Responses", responses.size)
+        responses.forEach(builder::atNewLine)
+        builder.atNewLine("userToken", userToken)
+        builder.append("userSecret", userSecret)
+        builder.append("networkDelayMs", networkDelayMs)
+        builder.append("instanceId", instanceId)
+        return builder.toKeyValue("HttpConnectionStub")
     }
 }
