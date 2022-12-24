@@ -16,16 +16,18 @@
 package org.andstatus.app.service
 
 import android.content.SyncResult
-import android.database.sqlite.SQLiteDiskIOException
 import org.andstatus.app.account.DemoAccountInserter
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.DemoData.Companion.DISK_IO_EXCEPTION_PREFIX
+import org.andstatus.app.context.DemoData.Companion.demoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.DemoNoteInserter
+import org.andstatus.app.data.DemoNoteInserter.Companion.sendingCreateNoteActivity
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.os.ExceptionsCounter
@@ -47,7 +49,7 @@ import org.junit.BeforeClass
 import org.junit.Test
 import java.util.*
 
-class MyServiceTests: IgnoredInTravis2() {
+class MyServiceTests : IgnoredInTravis2() {
     companion object {
         private var myServiceTestHelper: MyServiceTestHelper? = null
 
@@ -274,17 +276,16 @@ class MyServiceTests: IgnoredInTravis2() {
     fun testDiskIoErrorCatching() {
         val method = "testDiskIoErrorCatching"
         MyLog.i(this, "$method started")
+
+        val activity = sendingCreateNoteActivity(ma, DISK_IO_EXCEPTION_PREFIX + " " + demoData.testRunUid)
         val counter1 = mService.sendCommand(
-            CommandData.newAccountCommand(
-                CommandEnum.RATE_LIMIT_STATUS, DemoData.demoData.getGnuSocialAccount()
-            )
+            CommandData.newUpdateStatus(ma, activity.getId(), activity.getNote().noteId)
         ) {
-            mService.getHttp().addException(SQLiteDiskIOException(method))
             "$method Sending first command $it"
         }
         mService.waitForCommandStart("First command", counter1, TriState.TRUE)
         assertTrue("Service should stop", mService.stopService(true))
-        assertEquals("DiskIoException should be caught", 0, ExceptionsCounter.getDiskIoExceptionsCount())
+        assertEquals("DiskIoException should be caught", 1, ExceptionsCounter.getDiskIoExceptionsCount())
         MyLog.i(this, "$method ended")
     }
 

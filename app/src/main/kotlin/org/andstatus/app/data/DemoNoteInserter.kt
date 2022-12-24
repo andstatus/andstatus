@@ -18,6 +18,8 @@ package org.andstatus.app.data
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.database.table.NoteTable
@@ -327,6 +329,16 @@ class DemoNoteInserter(val accountActor: Actor) {
 
         fun assertVisibility(audience: Audience, visibility: Visibility) {
             assertEquals("Visibility check $audience\n", visibility, audience.visibility)
+        }
+
+        fun sendingCreateNoteActivity(ma: MyAccount, content: String): AActivity {
+            val activity = AActivity.newPartialNote(ma.actor, ma.actor, null, status = DownloadStatus.SENDING)
+            activity.getNote().setContent(content, TextMediaType.PLAIN)
+            val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
+            val executionContext = CommandExecutionContext(
+                myContext, CommandData.newItemCommand(CommandEnum.UPDATE_NOTE, ma, activity.getNote().noteId)
+            )
+            return DataUpdater(executionContext).onActivity(activity)
         }
     }
 

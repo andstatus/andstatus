@@ -136,10 +136,12 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         view?.setOnClickListener { item: View? -> onTimelineTitleClick(item) }
         syncYoungerView = View.inflate(this, R.layout.sync_younger, null)
         syncYoungerView?.findViewById<View?>(R.id.sync_younger_button)?.setOnClickListener { v: View ->
-            syncWithInternet(getParamsLoaded().timeline, true, true) }
+            syncWithInternet(getParamsLoaded().timeline, true, true)
+        }
         syncOlderView = View.inflate(this, R.layout.sync_older, null)
         syncOlderView?.findViewById<View?>(R.id.sync_older_button)?.setOnClickListener { v: View? ->
-            syncWithInternet(getParamsLoaded().timeline, false, true) }
+            syncWithInternet(getParamsLoaded().timeline, false, true)
+        }
         actorProfileViewer = ActorProfileViewer(this)
         addSyncButtons()
         searchView = findViewById(R.id.my_search_view)
@@ -153,11 +155,14 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     override fun newListAdapter(): BaseTimelineAdapter<T> {
         return if (getParamsNew().getTimelineType().showsActivities()) {
-            ActivityAdapter(contextMenu ?: throw IllegalStateException("No context menu"),
-                    getListData() as TimelineData<ActivityViewItem>) as BaseTimelineAdapter<T>
+            ActivityAdapter(
+                contextMenu ?: throw IllegalStateException("No context menu"),
+                getListData() as TimelineData<ActivityViewItem>
+            ) as BaseTimelineAdapter<T>
         } else NoteAdapter(
-                contextMenu?.note ?: throw IllegalStateException("No context menu"),
-                getListData() as TimelineData<NoteViewItem>) as BaseTimelineAdapter<T>
+            contextMenu?.note ?: throw IllegalStateException("No context menu"),
+            getListData() as TimelineData<NoteViewItem>
+        ) as BaseTimelineAdapter<T>
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -168,10 +173,10 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     private fun initializeDrawer() {
         mDrawerLayout = findViewById<DrawerLayout>(R.id.drawer_layout)?.also { layout ->
             mDrawerToggle = ActionBarDrawerToggle(
-                    this,
-                    layout,
-                    R.string.drawer_open,
-                    R.string.drawer_close
+                this,
+                layout,
+                R.string.drawer_open,
+                R.string.drawer_close
             ).also { toggle ->
                 layout.addDrawerListener(toggle)
                 toggle.setHomeAsUpIndicator(MyPreferences.getActionBarTextHomeIconResourceId())
@@ -181,20 +186,31 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     private fun restoreActivityState(savedInstanceState: Bundle) {
         val parsedUri: ParsedUri = ParsedUri.fromUri(
-                Uri.parse(savedInstanceState.getString(IntentExtra.MATCHED_URI.key, "")))
+            Uri.parse(savedInstanceState.getString(IntentExtra.MATCHED_URI.key, ""))
+        )
         val timeline: Timeline = Timeline.fromParsedUri(myContext, parsedUri, "")
-        val params = TimelineParameters(myContext,
-                if (timeline.isEmpty) myContext.timelines.getDefault() else timeline, WhichPage.CURRENT)
+        val params = TimelineParameters(
+            myContext,
+            if (timeline.isEmpty) myContext.timelines.getDefault() else timeline, WhichPage.CURRENT
+        )
         setParamsNew(params)
         if (timeline.nonEmpty) {
             contextMenu?.note?.loadState(savedInstanceState)
         }
         val viewParameters = LoadableListViewParameters(
-                TriState.fromBoolean(savedInstanceState.getBoolean(
-                        IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates())),
-                0,
-                Optional.of(myContext.origins.fromId(savedInstanceState.getLong(
-                        IntentExtra.ORIGIN_ID.key)))
+            TriState.fromBoolean(
+                savedInstanceState.getBoolean(
+                    IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates()
+                )
+            ),
+            0,
+            Optional.of(
+                myContext.origins.fromId(
+                    savedInstanceState.getLong(
+                        IntentExtra.ORIGIN_ID.key
+                    )
+                )
+            )
         )
         getListData().updateView(viewParameters)
         actorProfileViewer?.ensureView(getParamsNew().timeline.hasActorProfile())
@@ -251,8 +267,10 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     }
 
     fun onTimelineTypeButtonClick(item: View?) {
-        TimelineSelector.selectTimeline(this, ActivityRequestCode.SELECT_TIMELINE,
-                getParamsNew().timeline, myContext.accounts.currentAccount)
+        TimelineSelector.selectTimeline(
+            this, ActivityRequestCode.SELECT_TIMELINE,
+            getParamsNew().timeline, myContext.accounts.currentAccount
+        )
         closeDrawer()
     }
 
@@ -264,8 +282,10 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     }
 
     fun onSelectProfileOriginButtonClick(view: View?) {
-        OriginSelector.selectOriginForActor(this, MyContextMenu.MENU_GROUP_ACTOR_PROFILE,
-                ActivityRequestCode.SELECT_ORIGIN, getParamsLoaded().timeline.actor)
+        OriginSelector.selectOriginForActor(
+            this, MyContextMenu.MENU_GROUP_ACTOR_PROFILE,
+            ActivityRequestCode.SELECT_ORIGIN, getParamsLoaded().timeline.actor
+        )
     }
 
     /**
@@ -302,9 +322,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         MyLog.v(this, method)
         hideLoading(method)
         hideSyncing(method)
-        DemoData.crashTest {
-            getNoteEditor()?.getData()?.getContent()?.startsWith("Crash me on pause 2015-04-10") ?: false
-        }
+        DemoData.crashTest(getNoteEditor()?.getData()?.getContent() ?: "")
         saveTimelinePosition()
         myContext.timelines.saveChanged()
         super.onPause()
@@ -368,7 +386,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
         val ma = myContext.accounts.currentAccount
         val enableSync = ((getParamsLoaded().timeline.isCombined || ma.isValidAndSucceeded())
-                && getParamsLoaded().timeline.isSynableSomehow())
+            && getParamsLoaded().timeline.isSynableSomehow())
         val item = menu.findItem(R.id.sync_menu_item)
         if (item != null) {
             item.isEnabled = enableSync
@@ -390,13 +408,19 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     }
 
     private fun prepareCombinedTimelineToggle(drawerView: View?) {
-        if (ViewUtils.showView(drawerView, R.id.combinedTimelineToggle,  // Show the "Combined" toggle even for one account to see notes,
-                        // which are not on the timeline.
-                        // E.g. notes by actors, downloaded on demand.
-                        getParamsNew().getSelectedActorId() == 0L ||
-                                getParamsNew().getSelectedActorId() == getParamsNew().getMyAccount().actorId)) {
-            MyCheckBox.setEnabled(drawerView, R.id.combinedTimelineToggle,
-                    getParamsLoaded().timeline.isCombined)
+        if (ViewUtils.showView(
+                drawerView,
+                R.id.combinedTimelineToggle,  // Show the "Combined" toggle even for one account to see notes,
+                // which are not on the timeline.
+                // E.g. notes by actors, downloaded on demand.
+                getParamsNew().getSelectedActorId() == 0L ||
+                    getParamsNew().getSelectedActorId() == getParamsNew().getMyAccount().actorId
+            )
+        ) {
+            MyCheckBox.setEnabled(
+                drawerView, R.id.combinedTimelineToggle,
+                getParamsLoaded().timeline.isCombined
+            )
         }
     }
 
@@ -438,13 +462,16 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     }
 
     fun onItemClick(item: NoteViewItem) {
-        val ma = myContext.accounts.getAccountForThisNote(item.getOrigin(),
-                getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false)
+        val ma = myContext.accounts.getAccountForThisNote(
+            item.getOrigin(),
+            getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false
+        )
         MyLog.v(this) { "onItemClick, " + item + "; " + item + " account=" + ma.getAccountName() }
         if (item.getNoteId() <= 0) return
         val uri: Uri = MatchedUri.getTimelineItemUri(
-                myContext.timelines[TimelineType.EVERYTHING, Actor.EMPTY, item.getOrigin()],
-                item.getNoteId())
+            myContext.timelines[TimelineType.EVERYTHING, Actor.EMPTY, item.getOrigin()],
+            item.getNoteId()
+        )
         val action = intent.action
         if (Intent.ACTION_PICK == action || Intent.ACTION_GET_CONTENT == action) {
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
@@ -463,8 +490,10 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         // Empty
     }
 
-    override fun onScroll(view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int,
-                          totalItemCount: Int) {
+    override fun onScroll(
+        view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int,
+        totalItemCount: Int
+    ) {
         var up = false
         if (firstVisibleItem == 0) {
             val v = listView?.getChildAt(0)
@@ -476,16 +505,19 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         }
         // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
         if (!up && visibleItemCount > 0
-                && firstVisibleItem + visibleItemCount >= totalItemCount - 1
-                && getListData().mayHaveOlderPage()) {
+            && firstVisibleItem + visibleItemCount >= totalItemCount - 1
+            && getListData().mayHaveOlderPage()
+        ) {
             MyLog.d(this, "Start Loading older items, rows=$totalItemCount")
             showList(WhichPage.OLDER)
         }
     }
 
     private fun timelineTypeButtonText(): String {
-        return TimelineTitle.from(myContext, getParamsLoaded().timeline,
-                MyAccount.EMPTY, false, TimelineTitle.Destination.DEFAULT).toString()
+        return TimelineTitle.from(
+            myContext, getParamsLoaded().timeline,
+            MyAccount.EMPTY, false, TimelineTitle.Destination.DEFAULT
+        ).toString()
     }
 
     private fun updateAccountButtonText(drawerView: View) {
@@ -515,9 +547,11 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                 timeline.setSyncSucceededDate(System.currentTimeMillis()) // To avoid repetition
                 MyServiceManager.setServiceAvailable()
                 MyServiceManager.sendManualForegroundCommand(
-                        CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline))
+                    CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline)
+                )
                 MyServiceManager.sendCommand(
-                        CommandData.newActorCommand(CommandEnum.GET_FRIENDS, timeline.myAccountToSync.actor, ""))
+                    CommandData.newActorCommand(CommandEnum.GET_FRIENDS, timeline.myAccountToSync.actor, "")
+                )
             } else {
                 onNoRowsLoaded(timeline)
             }
@@ -529,13 +563,18 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             MyLog.v(this, "parseNewIntent")
         }
         mRateLimitText = ""
-        val whichPage: WhichPage = WhichPage.load(intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT)
+        val whichPage: WhichPage =
+            WhichPage.load(intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT)
         val searchQuery = intentNew.getStringExtra(IntentExtra.SEARCH_QUERY.key)
         val parsedUri: ParsedUri = ParsedUri.fromUri(intentNew.getData())
         val timeline: Timeline = Timeline.fromParsedUri(myContext, parsedUri, searchQuery)
-        setParamsNew(TimelineParameters(myContext,
+        setParamsNew(
+            TimelineParameters(
+                myContext,
                 if (timeline.isEmpty) myContext.timelines.getDefault() else timeline,
-                whichPage))
+                whichPage
+            )
+        )
         actorProfileViewer?.ensureView(getParamsNew().timeline.hasActorProfile())
         if (Intent.ACTION_SEND == intentNew.getAction()) {
             sharedNote = SharedNote.fromIntent(intentNew)
@@ -554,18 +593,23 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         mDrawerToggle?.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome())
         if (getParamsLoaded().isAtHome()) {
             myContext.accounts.currentAccount.actor.avatarFile
-                    .loadDrawable({ drawable: Drawable? -> scaleDrawableForToolbar(drawable) })
-                    { indicator: Drawable? -> mDrawerToggle?.setHomeAsUpIndicator(indicator) }
+                .loadDrawable({ drawable: Drawable? -> scaleDrawableForToolbar(drawable) })
+                { indicator: Drawable? -> mDrawerToggle?.setHomeAsUpIndicator(indicator) }
         } else {
             mDrawerToggle?.setHomeAsUpIndicator(null)
         }
         showRecentAccounts()
         ViewUtils.showView(
-                findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome())
-        ViewUtils.showView(this, R.id.collapseDuplicatesToggle,
-                MyPreferences.getMaxDistanceBetweenDuplicates() > 0)
-        MyCheckBox.setEnabled(this, R.id.collapseDuplicatesToggle,
-                getListData().isCollapseDuplicates())
+            findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome()
+        )
+        ViewUtils.showView(
+            this, R.id.collapseDuplicatesToggle,
+            MyPreferences.getMaxDistanceBetweenDuplicates() > 0
+        )
+        MyCheckBox.setEnabled(
+            this, R.id.collapseDuplicatesToggle,
+            getListData().isCollapseDuplicates()
+        )
         MyCheckBox.setEnabled(this, R.id.showSensitiveContentToggle, MyPreferences.isShowSensitiveContent())
         showSyncListButtons()
         showActorProfile()
@@ -587,7 +631,8 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         val recentAccounts: MutableList<MyAccount> = ArrayList(myContext.accounts.recentAccounts)
         for (ind in 0..2) {
             val ma = if (recentAccounts.size > ind) recentAccounts[ind] else MyAccount.EMPTY
-            val avatarView = findViewById<AvatarView?>(if (ind == 0) R.id.current_account_avatar_image else if (ind == 1) R.id.account_avatar_image_1 else R.id.account_avatar_image_2)
+            val avatarView =
+                findViewById<AvatarView?>(if (ind == 0) R.id.current_account_avatar_image else if (ind == 1) R.id.account_avatar_image_1 else R.id.account_avatar_image_2)
                     ?: break
             ViewUtils.showView(avatarView, ma.isValid)
             if (ma.nonValid) {
@@ -602,8 +647,9 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             }
             avatarView.setOnClickListener(if (ind == 0) View.OnClickListener { v: View? ->
                 startForTimeline(
-                        myContext, this,
-                        myContext.timelines.forUser(TimelineType.SENT, ma.actor))
+                    myContext, this,
+                    myContext.timelines.forUser(TimelineType.SENT, ma.actor)
+                )
                 closeDrawer()
             } else View.OnClickListener { v: View? ->
                 onAccountSelected(ma)
@@ -614,8 +660,10 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     }
 
     override fun updateTitle(additionalTitleText: String?) {
-        TimelineTitle.from(myContext, getParamsLoaded().timeline, MyAccount.EMPTY, true,
-                TimelineTitle.Destination.TIMELINE_ACTIVITY).updateActivityTitle(this, additionalTitleText)
+        TimelineTitle.from(
+            myContext, getParamsLoaded().timeline, MyAccount.EMPTY, true,
+            TimelineTitle.Destination.TIMELINE_ACTIVITY
+        ).updateActivityTitle(this, additionalTitleText)
     }
 
     fun getContextMenu(): NoteContextMenu? {
@@ -629,9 +677,9 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     override fun getListData(): TimelineData<T> {
         return listData ?: TimelineData<T>(null, TimelinePage(getParamsNew(), mutableListOf()))
-                .also {
-                    listData = it
-                }
+            .also {
+                listData = it
+            }
     }
 
     private fun setListData(pageLoaded: TimelinePage<T>): TimelineData<T> {
@@ -645,8 +693,10 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     }
 
     protected fun showList(whichPage: WhichPage, chainedRequest: TriState) {
-        showList(TimelineParameters.clone(getReferenceParametersFor(whichPage), whichPage),
-                chainedRequest)
+        showList(
+            TimelineParameters.clone(getReferenceParametersFor(whichPage), whichPage),
+            chainedRequest
+        )
     }
 
     private fun getReferenceParametersFor(whichPage: WhichPage): TimelineParameters {
@@ -690,17 +740,23 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         } else {
             MyLog.v(this) {
                 (method
-                        + (if (chainedRequest == TriState.TRUE) "; chained" else "")
-                        + "; requesting " + (if (isDifferentRequest) "" else "duplicating ")
-                        + params.toSummary())
+                    + (if (chainedRequest == TriState.TRUE) "; chained" else "")
+                    + "; requesting " + (if (isDifferentRequest) "" else "duplicating ")
+                    + params.toSummary())
             }
             if (chainedRequest.untrue) saveTimelinePosition()
             disableHeaderSyncButton(R.string.loading)
             disableFooterButton(R.string.loading)
-            showLoading(method, getText(R.string.loading).toString() + " "
-                    + params.toSummary() + HORIZONTAL_ELLIPSIS)
-            super.showList(chainedRequest.toBundle(params.whichPage.toBundle(),
-                    IntentExtra.CHAINED_REQUEST.key))
+            showLoading(
+                method, getText(R.string.loading).toString() + " "
+                    + params.toSummary() + HORIZONTAL_ELLIPSIS
+            )
+            super.showList(
+                chainedRequest.toBundle(
+                    params.whichPage.toBundle(),
+                    IntentExtra.CHAINED_REQUEST.key
+                )
+            )
         }
     }
 
@@ -709,7 +765,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         val whichPage: WhichPage = WhichPage.load(args)
         val params = paramsToLoad?.let {
             if (whichPage == WhichPage.EMPTY) TimelineParameters(myContext, Timeline.EMPTY, whichPage) else it
-        } ?:  TimelineParameters(myContext, Timeline.EMPTY, whichPage)
+        } ?: TimelineParameters(myContext, Timeline.EMPTY, whichPage)
         if (params.whichPage != WhichPage.EMPTY) {
             MyLog.v(this) { "$method; $params" }
             val intent = intent
@@ -726,7 +782,8 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         val dataLoaded = setListData((getLoaded() as TimelineLoader<T>).getPage())
         MyLog.v(this) { method + "; " + dataLoaded.params.toSummary() }
         val pos = if (posIn.nonEmpty && getListData().isSameTimeline &&
-                isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP) posIn
+            isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP
+        ) posIn
         else TimelineViewPositionStorage.loadListPosition(dataLoaded.params)
         super.onLoadFinished(pos)
         if (dataLoaded.params.whichPage == WhichPage.TOP) {
@@ -794,27 +851,36 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             disableHeaderSyncButton(R.string.not_syncable)
             return
         }
-        val stats: SyncStats = SyncStats.fromYoungestDates(myContext.timelines.toTimelinesToSync(getParamsLoaded().timeline))
-        val format = getText(if (stats.itemDate > RelativeTime.SOME_TIME_AGO) R.string.sync_younger_messages
-        else R.string.options_menu_sync).toString()
+        val stats: SyncStats =
+            SyncStats.fromYoungestDates(myContext.timelines.toTimelinesToSync(getParamsLoaded().timeline))
+        val format = getText(
+            if (stats.itemDate > RelativeTime.SOME_TIME_AGO) R.string.sync_younger_messages
+            else R.string.options_menu_sync
+        ).toString()
         syncYoungerView?.let { view ->
-            MyUrlSpan.showText(view, R.id.sync_younger_button,
-                    StringUtil.format(format,
-                            if (stats.syncSucceededDate > RelativeTime.SOME_TIME_AGO)
-                                RelativeTime.getDifference(this, stats.syncSucceededDate) else getText(R.string.never),
-                            DateUtils.getRelativeTimeSpanString(this, stats.itemDate)),
-                    false,
-                    false)
+            MyUrlSpan.showText(
+                view, R.id.sync_younger_button,
+                StringUtil.format(
+                    format,
+                    if (stats.syncSucceededDate > RelativeTime.SOME_TIME_AGO)
+                        RelativeTime.getDifference(this, stats.syncSucceededDate) else getText(R.string.never),
+                    DateUtils.getRelativeTimeSpanString(this, stats.itemDate)
+                ),
+                false,
+                false
+            )
             view.setEnabled(true)
         }
     }
 
     private fun disableHeaderSyncButton(resInfo: Int) {
         syncYoungerView?.let { view ->
-            MyUrlSpan.showText(view, R.id.sync_younger_button,
-                    getText(resInfo).toString(),
-                    false,
-                    false)
+            MyUrlSpan.showText(
+                view, R.id.sync_younger_button,
+                getText(resInfo).toString(),
+                false,
+                false
+            )
             view.setEnabled(false)
         }
     }
@@ -828,24 +894,31 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             disableFooterButton(R.string.no_more_messages)
             return
         }
-        val stats: SyncStats = SyncStats.fromOldestDates(myContext.timelines.toTimelinesToSync(getParamsLoaded().timeline))
+        val stats: SyncStats =
+            SyncStats.fromOldestDates(myContext.timelines.toTimelinesToSync(getParamsLoaded().timeline))
         syncOlderView?.let { view ->
-            MyUrlSpan.showText(view, R.id.sync_older_button,
-                    StringUtil.format(this, if (stats.itemDate > RelativeTime.SOME_TIME_AGO) R.string.sync_older_messages
+            MyUrlSpan.showText(
+                view, R.id.sync_older_button,
+                StringUtil.format(
+                    this, if (stats.itemDate > RelativeTime.SOME_TIME_AGO) R.string.sync_older_messages
                     else R.string.options_menu_sync,
-                            DateUtils.getRelativeTimeSpanString(this, stats.itemDate)),
-                    false,
-                    false)
+                    DateUtils.getRelativeTimeSpanString(this, stats.itemDate)
+                ),
+                false,
+                false
+            )
             view.setEnabled(true)
         }
     }
 
     private fun disableFooterButton(resInfo: Int) {
         syncOlderView?.let { view ->
-            MyUrlSpan.showText(view, R.id.sync_older_button,
-                    getText(resInfo).toString(),
-                    false,
-                    false)
+            MyUrlSpan.showText(
+                view, R.id.sync_older_button,
+                getText(resInfo).toString(),
+                false,
+                false
+            )
             view.setEnabled(false)
         }
     }
@@ -867,7 +940,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     protected fun syncWithInternet(timelineToSync: Timeline, syncYounger: Boolean, manuallyLaunched: Boolean) {
         myContext.timelines.toTimelinesToSync(timelineToSync)
-                .forEach { timeline: Timeline -> syncOneTimeline(timeline, syncYounger, manuallyLaunched) }
+            .forEach { timeline: Timeline -> syncOneTimeline(timeline, syncYounger, manuallyLaunched) }
     }
 
     private fun syncOneTimeline(timeline: Timeline, syncYounger: Boolean, manuallyLaunched: Boolean) {
@@ -876,8 +949,11 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             setCircularSyncIndicator(method, true)
             showSyncing(method, getText(R.string.options_menu_sync))
             MyServiceManager.sendForegroundCommand(
-                    CommandData.newTimelineCommand(if (syncYounger) CommandEnum.GET_TIMELINE else CommandEnum.GET_OLDER_TIMELINE, timeline)
-                            .setManuallyLaunched(manuallyLaunched)
+                CommandData.newTimelineCommand(
+                    if (syncYounger) CommandEnum.GET_TIMELINE else CommandEnum.GET_OLDER_TIMELINE,
+                    timeline
+                )
+                    .setManuallyLaunched(manuallyLaunched)
             )
         }
     }
@@ -899,13 +975,13 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     override fun startActivityForResult(intent: Intent?, requestCode: Int) {
         selectorActivityStub?.startActivityForResult(intent, requestCode)
-                ?: super.startActivityForResult(intent, requestCode)
+            ?: super.startActivityForResult(intent, requestCode)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         MyLog.v(this) {
             ("onActivityResult; request:" + requestCode
-                    + ", result:" + if (resultCode == RESULT_OK) "ok" else "fail")
+                + ", result:" + if (resultCode == RESULT_OK) "ok" else "fail")
         }
         if (resultCode != RESULT_OK || data == null) {
             return
@@ -915,12 +991,13 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> setSelectedActingAccount(data)
             ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA -> sharedNote.ifPresent { shared: SharedNote ->
                 getNoteEditor()?.startEditingSharedData(
-                        myContext.accounts.fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)),
-                        shared)
+                    myContext.accounts.fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)),
+                    shared
+                )
             }
             ActivityRequestCode.SELECT_TIMELINE -> {
                 val timeline = myContext.timelines
-                        .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0))
+                    .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0))
                 if (timeline.isValid()) {
                     switchView(timeline)
                 }
@@ -937,7 +1014,12 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     private fun onAccountSelected(ma: MyAccount) {
         if (ma.isValid) {
             myContext.accounts.setCurrentAccount(ma)
-            switchView(if (getParamsLoaded().timeline.isCombined) getParamsLoaded().timeline else getParamsLoaded().timeline.fromMyAccount(myContext, ma))
+            switchView(
+                if (getParamsLoaded().timeline.isCombined) getParamsLoaded().timeline else getParamsLoaded().timeline.fromMyAccount(
+                    myContext,
+                    ma
+                )
+            )
         }
     }
 
@@ -950,10 +1032,12 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     private fun setSelectedActingAccount(data: Intent) {
         val ma = myContext.accounts.fromAccountName(
-                data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
+            data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)
+        )
         if (ma.isValid) {
             val contextMenu = getContextMenu(
-                    data.getIntExtra(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE))
+                data.getIntExtra(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE)
+            )
             contextMenu.setSelectedActingAccount(ma)
             contextMenu.showContextMenu()
         }
@@ -964,7 +1048,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             MyContextMenu.MENU_GROUP_ACTOR -> contextMenu?.actor
             MyContextMenu.MENU_GROUP_OBJACTOR -> contextMenu?.objActor
             MyContextMenu.MENU_GROUP_ACTOR_PROFILE -> if (actorProfileViewer == null) contextMenu?.note
-                else actorProfileViewer?.contextMenu
+            else actorProfileViewer?.contextMenu
             else -> contextMenu?.note
         } ?: throw IllegalStateException("No context menu for $menuGroup")
     }
@@ -1000,7 +1084,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         when (commandData.command) {
             CommandEnum.RATE_LIMIT_STATUS -> if (commandData.getResult().getHourlyLimit() > 0) {
                 mRateLimitText = (commandData.getResult().getRemainingHits().toString() + "/"
-                        + commandData.getResult().getHourlyLimit())
+                    + commandData.getResult().getHourlyLimit())
                 updateTitle(mRateLimitText)
             }
             else -> {
@@ -1024,7 +1108,8 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         when (commandData.command) {
             CommandEnum.GET_TIMELINE, CommandEnum.GET_OLDER_TIMELINE -> {
                 if (!getParamsLoaded().isLoaded
-                        || getParamsLoaded().getTimelineType() != commandData.getTimelineType()) {
+                    || getParamsLoaded().getTimelineType() != commandData.getTimelineType()
+                ) {
                     // Nothing
                 } else if (commandData.getResult().getDownloadedCount() > 0) {
                     needed = true
@@ -1057,7 +1142,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             MyLog.v(this) { "switchTimelineActivity; $timeline" }
             if (isFinishing) {
                 val intent = getIntentForTimeline(myContext, timeline, false)
-                 MyContextHolder.myContextHolder.initialize(this).thenStartActivity(intent)
+                MyContextHolder.myContextHolder.initialize(this).thenStartActivity(intent)
             } else {
                 startForTimeline(myContext, this, timeline)
             }
@@ -1083,9 +1168,12 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     companion object {
         val HORIZONTAL_ELLIPSIS: String = "\u2026"
+
         @JvmOverloads
-        fun startForTimeline(myContext: MyContext, context: Context, timeline: Timeline, clearTask: Boolean = false,
-                             initialAccountSync: Boolean = false) {
+        fun startForTimeline(
+            myContext: MyContext, context: Context, timeline: Timeline, clearTask: Boolean = false,
+            initialAccountSync: Boolean = false
+        ) {
             timeline.save(myContext)
             val intent = getIntentForTimeline(myContext, timeline, clearTask)
             if (initialAccountSync) {
@@ -1095,7 +1183,8 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         }
 
         private fun getIntentForTimeline(myContext: MyContext, timeline: Timeline, clearTask: Boolean): Intent {
-            val intent = Intent(myContext.context, if (clearTask) FirstActivity::class.java else TimelineActivity::class.java)
+            val intent =
+                Intent(myContext.context, if (clearTask) FirstActivity::class.java else TimelineActivity::class.java)
             intent.data = timeline.getUri()
             if (clearTask) {
                 // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android

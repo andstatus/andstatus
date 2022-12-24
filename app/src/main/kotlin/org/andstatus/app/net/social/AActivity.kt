@@ -19,6 +19,7 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.provider.BaseColumns
 import io.vavr.control.Try
+import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.DownloadStatus
@@ -29,6 +30,9 @@ import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.origin.OriginConfig
 import org.andstatus.app.os.AsyncUtil
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
@@ -580,5 +584,13 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
             activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE)
             return activity
         }
+    }
+
+    fun requestDownload(ma: MyAccount, activityId: Long, isManuallyLaunched: Boolean) {
+        MyLog.v(EMPTY.classTag) { "Activity id:$activityId will be loaded from the Internet" }
+        val command: CommandData = CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, activityId)
+            .setManuallyLaunched(isManuallyLaunched)
+            .setInForeground(isManuallyLaunched)
+        MyServiceManager.sendCommand(command)
     }
 }

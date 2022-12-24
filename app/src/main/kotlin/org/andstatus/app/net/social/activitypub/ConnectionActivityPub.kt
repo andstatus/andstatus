@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2022 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,6 +195,13 @@ class ConnectionActivityPub : Connection() {
                     }
             }
 
+    override fun getActivity(activityOid: String): Try<AActivity> = HttpRequest
+        .of(ApiRoutineEnum.GET_ACTIVITY, UriUtils.fromString(activityOid))
+        .let(::execute)
+        .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+        .map { jsoActivity: JSONObject? -> this.activityFromJson(jsoActivity) }
+
+    /** TODO: Some special code may be needed here, not the same as for Activity */
     override fun getNote1(noteOid: String): Try<AActivity> = HttpRequest
         .of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid))
         .let(::execute)

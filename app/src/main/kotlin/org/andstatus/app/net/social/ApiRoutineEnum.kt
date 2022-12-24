@@ -61,6 +61,7 @@ enum class ApiRoutineEnum constructor(private val isNotePrivate: Boolean = false
     ACTOR_TIMELINE, PUBLIC_TIMELINE, TAG_TIMELINE, LIKED_TIMELINE,
 
     SEARCH_NOTES, SEARCH_ACTORS,
+    GET_ACTIVITY,
     GET_NOTE,
     DOWNLOAD_FILE,
 

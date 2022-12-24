@@ -247,6 +247,13 @@ abstract class Connection protected constructor() : IsEmpty {
         return getNote1(noteOid)
     }
 
+    /** Request an Activity from a server by ID.
+     * For Social Networks that do not have an "Activity" notion this defaults to getting a Note with this ID
+     * */
+    open fun getActivity(activityOid: String): Try<AActivity> {
+        return getNote1(activityOid)
+    }
+
     /** See [.getNote]  */
     protected abstract fun getNote1(noteOid: String): Try<AActivity>
     open fun canGetConversation(conversationOid: String?): Boolean {

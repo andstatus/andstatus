@@ -516,6 +516,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="timeline_title_user">Actor</string>
   <string name="title">Title</string>
   <string name="title_account">Account</string>
+  <string name="title_command_fetch_activity">Fetch activity</string>
   <string name="title_command_fetch_attachment">Fetch attachment</string>
   <string name="title_command_fetch_avatar">Avatar</string>
   <string name="title_command_get_status">Fetch note</string>

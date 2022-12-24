@@ -61,6 +61,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             CommandEnum.DELETE_NOTE -> deleteNote(execContext.commandData.itemId)
             CommandEnum.UNDO_ANNOUNCE -> undoAnnounce(execContext.commandData.itemId)
             CommandEnum.GET_CONVERSATION -> getConversation(execContext.commandData.itemId)
+            CommandEnum.GET_ACTIVITY -> getActivity(execContext.commandData.itemId)
             CommandEnum.GET_NOTE -> getNote(execContext.commandData.itemId)
             CommandEnum.GET_ACTOR -> getActorCommand(getActor(), execContext.commandData.getUsername())
             CommandEnum.SEARCH_ACTORS -> searchActors(execContext.commandData.getUsername())
@@ -247,7 +248,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             }
     }
 
-    private fun getNoteOid(method: String?, noteId: Long, required: Boolean): Try<String> {
+    private fun getNoteOid(method: String, noteId: Long, required: Boolean): Try<String> {
         val oid = MyQuery.idToOid(execContext.myContext, OidEnum.NOTE_OID, noteId, 0)
         return if (required && oid.isEmpty()) {
             logExecutionError(
@@ -355,6 +356,38 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             }
     }
 
+    private fun getActivity(activityId: Long): Try<Boolean> {
+        val method = "getActivity"
+        val oid = MyQuery.idToOid(execContext.myContext, OidEnum.ACTIVITY_OID, activityId, 0)
+        if (oid.isEmpty()) {
+            return logExecutionError(true, "$method; no Activity ID in the Social Network, local id:$activityId")
+        }
+
+        return getConnection().getActivity(oid)
+            .flatMap { activity: AActivity ->
+                if (activity.isEmpty) {
+                    return@flatMap logExecutionError<Boolean>(
+                        false, "Received Activity is empty, oid:$oid, id:$activityId"
+                    )
+                } else {
+                    try {
+                        DataUpdater(execContext).onActivity(activity)
+                        return@flatMap TryUtils.TRUE
+                    } catch (e: Exception) {
+                        return@flatMap logExecutionError<Boolean>(
+                            false, "Error while saving to the local cache: " +
+                                "oid:$oid, id:$activityId, ${e.message}"
+                        )
+                    }
+                }
+            }
+            .onFailure { e: Throwable ->
+                if (ConnectionException.of(e).statusCode == StatusCode.NOT_FOUND) {
+                    execContext.getResult().incrementParseExceptions()
+                }
+            }
+    }
+
     private fun getNote(noteId: Long): Try<Boolean> {
         val method = "getNote"
         return getNoteOid(method, noteId, true)
@@ -380,8 +413,6 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             .onFailure { e: Throwable ->
                 if (ConnectionException.of(e).statusCode == StatusCode.NOT_FOUND) {
                     execContext.getResult().incrementParseExceptions()
-                    // This means that there is no such "Status"
-                    // TODO: so we don't need to retry this command
                 }
             }
     }
@@ -401,7 +432,8 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     .setOid(inReplyToNoteOid)
             }
             .onSuccess { activity: AActivity? -> note.setInReplyTo(activity) }
-        DemoData.crashTest { note.content.startsWith("Crash me on sending 2015-04-10") }
+        DemoData.diskIoExceptionTest(note.content)
+        DemoData.crashTest(note.content)
         if (MyLog.isVerboseEnabled()) {
             val msgLog = ((if (!note.getName().isEmpty()) "name:'" + note.getName() + "'; " else "")
                 + (if (!note.summary.isEmpty()) "summary:'" + note.summary + "'; " else "")

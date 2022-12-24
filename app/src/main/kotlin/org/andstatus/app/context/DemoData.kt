@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.context
 
+import android.database.sqlite.SQLiteDiskIOException
 import android.net.Uri
 import org.andstatus.app.account.CredentialsVerificationStatus
 import org.andstatus.app.account.MyAccount
@@ -32,7 +33,6 @@ import org.andstatus.app.os.ExceptionsCounter
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.BooleanSupplier
 import java.util.function.Consumer
 
 class DemoData {
@@ -46,7 +46,8 @@ class DemoData {
     val activityPubTestAccountUniqueName: String = "$activityPubUsername@$activityPubMainHost"
     val activityPubTestAccountName: String = "$activityPubTestAccountUniqueName/$activityPubTestOriginName"
     val activityPubTestAccountActorOid: String = "https://$activityPubMainHost/users/$activityPubUsername"
-    val activityPubTestAccountAvatarUrl: String = "https://cdn.icon-icons.com/icons2/2699/PNG/512/w_activitypub_logo_icon_169246.png"
+    val activityPubTestAccountAvatarUrl: String =
+        "https://cdn.icon-icons.com/icons2/2699/PNG/512/w_activitypub_logo_icon_169246.png"
     val pumpioOriginName: String = "PumpioTest"
     val pumpioMainHost: String = "pump1.$testOriginParentHost"
     val pumpioSecondHost: String = "pump2.$testOriginParentHost"
@@ -57,12 +58,12 @@ class DemoData {
     val gnusocialTestHost: String = "gnusocial.$testOriginParentHost"
     val gnusocialTestAccountUsername = t131tUsername
     val gnusocialTestAccountName: String = gnusocialTestAccountUsername + "@" + gnusocialTestHost +
-            "/" + OriginType.GNUSOCIAL.title
+        "/" + OriginType.GNUSOCIAL.title
     val gnusocialTestAccountActorOid: String = "115391"
     val gnusocialTestAccountAvatarUrl: String = "https://findicons.com/files/icons/2036/farm/48/rabbit.png"
     val gnusocialTestAccount2Username: String = "gtester2"
     val gnusocialTestAccount2Name: String = gnusocialTestAccount2Username + "@" + gnusocialTestHost +
-            "/" + OriginType.GNUSOCIAL.title
+        "/" + OriginType.GNUSOCIAL.title
     val gnusocialTestAccount2ActorOid: String = "8902454"
     val twitterTestOriginName: String = "TwitterTest"
     val twitterTestHostWithoutApiDot: String = "twitter.$testOriginParentHost"
@@ -70,12 +71,12 @@ class DemoData {
     val twitterTestAccountUsername = t131tUsername
     val twitterTestAccountActorOid: String = "144771645"
     val twitterTestAccountName: String = twitterTestAccountUsername + "@" + twitterTestHostWithoutApiDot +
-            "/" + OriginType.TWITTER.title
+        "/" + OriginType.TWITTER.title
     val mastodonTestOriginName: String = "MastodonTest"
     val mastodonTestHost: String = "mastodon.$testOriginParentHost"
     val mastodonTestAccountUsername: String = "t131t1"
     val mastodonTestAccountName: String = mastodonTestAccountUsername + "@" + mastodonTestHost +
-            "/" + OriginType.MASTODON.title
+        "/" + OriginType.MASTODON.title
     val mastodonTestAccountActorOid: String = "37"
     val conversationOriginType: OriginType = OriginType.PUMPIO
     val conversationOriginName = pumpioOriginName
@@ -84,7 +85,7 @@ class DemoData {
     val conversationAccountActorOid: String = OriginPumpio.ACCOUNT_PREFIX + conversationAccountUniqueName
     val conversationAccountAvatarUrl: String = LOGO_URI
     val conversationEntryNoteOid: String = (HTTP + pumpioMainHost
-            + "/testerofandstatus/comment/thisisfakeuri" + testRunUid)
+        + "/testerofandstatus/comment/thisisfakeuri" + testRunUid)
     val conversationEntryAuthorOid: String = "acct:first@pumpentry.example.com"
     val conversationAuthorSecondUniqueName: String = "second@$pumpioMainHost"
     val conversationAuthorSecondActorOid: String = OriginPumpio.ACCOUNT_PREFIX + conversationAuthorSecondUniqueName
@@ -105,7 +106,8 @@ class DemoData {
     val localImageTestUri2: Uri = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo")
     val localVideoTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.test/raw/video320_mp4")
     val localGifTestUri: Uri = Uri.parse("android.resource://org.andstatus.app.test/raw/sample_gif")
-    val image1Url: Uri = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png")
+    val image1Url: Uri =
+        Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png")
 
     @Volatile
     private var dataPath: String = ""
@@ -120,7 +122,10 @@ class DemoData {
         val asyncTask = addAsync(myContext, ProgressLogger.EMPTY_LISTENER)
         var count: Long = 200
         while (count > 0) {
-            MyLog.v(this, "$method; " + (if (asyncTask.isFinished) "Task completed " else "Waiting for task completion ") + count)
+            MyLog.v(
+                this,
+                "$method; " + (if (asyncTask.isFinished) "Task completed " else "Waiting for task completion ") + count
+            )
             if (asyncTask.isFinished || DbUtils.waitMs(method, 5000)) {
                 break
             }
@@ -129,11 +134,14 @@ class DemoData {
         if (ExceptionsCounter.firstError.get() != null) {
             Assert.fail("Error during Demo data creation: " + ExceptionsCounter.firstError.get())
         }
-        Assert.assertEquals("Demo data creation failed, count=" + count +
+        Assert.assertEquals(
+            "Demo data creation failed, count=" + count +
                 ", $asyncTask", true, asyncTask.noMoreBackgroundWork
         )
-        Assert.assertTrue("Error during Demo data creation: " + asyncTask.firstError + ", $asyncTask",
-                asyncTask.firstError.isEmpty())
+        Assert.assertTrue(
+            "Error during Demo data creation: " + asyncTask.firstError + ", $asyncTask",
+            asyncTask.firstError.isEmpty()
+        )
         MyLog.v(TAG, "$method; ended")
     }
 
@@ -148,38 +156,43 @@ class DemoData {
     }
 
     fun assertConversations() {
-        Assert.assertEquals("Conversations need fixes", 0,
-                CheckConversations()
-                        .setMyContext( MyContextHolder.myContextHolder.getNow())
-                        .setLogger(ProgressLogger.getEmpty("CheckConversations"))
-                        .setCountOnly(true)
-                        .fix())
+        Assert.assertEquals(
+            "Conversations need fixes", 0,
+            CheckConversations()
+                .setMyContext(MyContextHolder.myContextHolder.getNow())
+                .setLogger(ProgressLogger.getEmpty("CheckConversations"))
+                .setCountOnly(true)
+                .fix()
+        )
     }
 
     fun setSuccessfulAccountAsCurrent() {
-        MyLog.i(TAG, "Persistent accounts: " +  MyContextHolder.myContextHolder.getNow().accounts.size())
-        var found = ( MyContextHolder.myContextHolder.getNow().accounts.currentAccount.credentialsVerified
-                == CredentialsVerificationStatus.SUCCEEDED)
+        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.myContextHolder.getNow().accounts.size())
+        var found = (MyContextHolder.myContextHolder.getNow().accounts.currentAccount.credentialsVerified
+            == CredentialsVerificationStatus.SUCCEEDED)
         if (!found) {
-            for (ma in  MyContextHolder.myContextHolder.getNow().accounts.get()) {
+            for (ma in MyContextHolder.myContextHolder.getNow().accounts.get()) {
                 MyLog.i(TAG, ma.toString())
                 if (ma.credentialsVerified == CredentialsVerificationStatus.SUCCEEDED) {
                     found = true
-                     MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+                    MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
                     break
                 }
             }
         }
         Assert.assertTrue("Found account, which is successfully verified", found)
-        Assert.assertTrue("Current account is successfully verified",
+        Assert.assertTrue(
+            "Current account is successfully verified",
             MyContextHolder.myContextHolder.getNow().accounts.currentAccount.credentialsVerified
-                == CredentialsVerificationStatus.SUCCEEDED)
+                == CredentialsVerificationStatus.SUCCEEDED
+        )
     }
 
     fun checkDataPath() {
         if (dataPath.isNotEmpty()) {
-            Assert.assertEquals("Data path. " +  MyContextHolder.myContextHolder.getNow(), dataPath,
-                     MyContextHolder.myContextHolder.getNow().context.getDatabasePath("andstatus")?.path
+            Assert.assertEquals(
+                "Data path. " + MyContextHolder.myContextHolder.getNow(), dataPath,
+                MyContextHolder.myContextHolder.getNow().context.getDatabasePath("andstatus")?.path
             )
         }
     }
@@ -193,14 +206,14 @@ class DemoData {
     }
 
     fun getMyAccount(accountName: String?): MyAccount {
-        val ma: MyAccount =  MyContextHolder.myContextHolder.getBlocking().accounts.fromAccountName(accountName)
+        val ma: MyAccount = MyContextHolder.myContextHolder.getBlocking().accounts.fromAccountName(accountName)
         Assert.assertTrue("$accountName exists", ma.isValid)
         Assert.assertTrue("Origin for $accountName doesn't exist", ma.origin.isValid)
         return ma
     }
 
     fun getAccountActorByOid(actorOid: String?): Actor {
-        for (ma in  MyContextHolder.myContextHolder.getBlocking().accounts.get()) {
+        for (ma in MyContextHolder.myContextHolder.getBlocking().accounts.get()) {
             if (ma.getActorOid() == actorOid) {
                 return ma.actor
             }
@@ -217,19 +230,31 @@ class DemoData {
     }
 
     companion object {
+        const val DISK_IO_EXCEPTION_PREFIX = "Throw Disk IO Exception on sending 2015-04-10"
+        const val CRASH_PREFIX = "Crash me on sending 2015-04-10"
+
         @Volatile
         var demoData: DemoData = DemoData()
         private val TAG: String = DemoData::class.simpleName!!
         private const val HTTP: String = "http://"
-        fun crashTest(supplier: BooleanSupplier) {
-            if (MyLog.isVerboseEnabled() && supplier.asBoolean) {
-                MyLog.e(supplier, "Initiating crash test exception")
+
+        fun diskIoExceptionTest(content: String) {
+            if (MyLog.isVerboseEnabled() && content.startsWith(DISK_IO_EXCEPTION_PREFIX)) {
+                MyLog.w(TAG, "Initiating crash test exception")
+                throw SQLiteDiskIOException("This is a test Disk IO exception event")
+            }
+        }
+
+        fun crashTest(content: String) {
+            if (MyLog.isVerboseEnabled() && content.startsWith(DISK_IO_EXCEPTION_PREFIX)) {
+                MyLog.w(TAG, "Initiating crash test exception")
                 throw NullPointerException("This is a test crash event")
             }
         }
 
         fun assertOriginsContext() {
-            MyContextHolder.myContextHolder.getNow().origins.collection().forEach(Consumer { obj: Origin -> obj.assertContext() })
+            MyContextHolder.myContextHolder.getNow().origins.collection()
+                .forEach(Consumer { obj: Origin -> obj.assertContext() })
         }
     }
 }
