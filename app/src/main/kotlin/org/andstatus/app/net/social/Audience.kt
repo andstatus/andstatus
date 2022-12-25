@@ -320,7 +320,7 @@ class Audience(val origin: Origin) {
                         DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                         DbUtils.getString(cursor, ActorTable.ACTOR_OID))
             }
-            MyQuery.get(origin.myContext, sql, function).forEach(Consumer { actor: Actor -> audience.add(actor) })
+            MyQuery.getSet(origin.myContext, sql, function).forEach(Consumer { actor: Actor -> audience.add(actor) })
             return audience
         }
 
@@ -329,7 +329,7 @@ class Audience(val origin: Origin) {
             audience.visibility = optVisibility.orElseGet { Visibility.fromNoteId(noteId) }
             val sql = LOAD_SQL + noteId
             val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromCursor(origin.myContext, cursor, true) }
-            MyQuery.get(origin.myContext, sql, function).forEach(Consumer(audience::add))
+            MyQuery.getSet(origin.myContext, sql, function).forEach(Consumer(audience::add))
             return audience
         }
 
@@ -350,7 +350,7 @@ class Audience(val origin: Origin) {
                     " FROM " + AudienceTable.TABLE_NAME +
                     " WHERE " + AudienceTable.NOTE_ID + "=" + noteId
             val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromId(origin, cursor.getLong(0)) }
-            MyQuery.get(origin.myContext, sql, function).forEach(Consumer { actor: Actor -> audience.add(actor) })
+            MyQuery.getSet(origin.myContext, sql, function).forEach(Consumer { actor: Actor -> audience.add(actor) })
             audience.visibility = optVisibility.orElseGet { Visibility.fromNoteId(noteId) }
             return audience
         }

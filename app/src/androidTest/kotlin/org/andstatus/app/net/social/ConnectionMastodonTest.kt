@@ -329,7 +329,7 @@ class ConnectionMastodonTest {
             myContext, CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123)
         )
         DataUpdater(executionContext).onActivity(activity)
-        assertNotEquals("Activity wasn't saved $activity", 0, activity.getId())
+        assertNotEquals("Activity wasn't saved $activity", 0, activity.id)
         assertNotEquals("Reblogged note wasn't saved $activity", 0, activity.getNote().noteId)
     }
 
@@ -394,7 +394,7 @@ class ConnectionMastodonTest {
         assertEquals("Preview $downloads", dVideo.downloadId, dPreview.getPreviewOfDownloadId())
         assertEquals("Video URL $downloads", video.uri, dVideo.getUri())
         assertEquals("Video $downloads", 1, dVideo.getDownloadNumber())
-        val nfa = NoteForAnyAccount(myContext, activity.getId(), activity.getNote().noteId)
+        val nfa = NoteForAnyAccount(myContext, activity.id, activity.getNote().noteId)
         assertEquals(preview.uri, nfa.downloads.getFirstForTimeline().getUri())
         assertEquals(MyContentType.IMAGE, nfa.downloads.getFirstForTimeline().getContentType())
         assertEquals(dVideo.downloadId, nfa.downloads.getFirstForTimeline().getPreviewOfDownloadId())

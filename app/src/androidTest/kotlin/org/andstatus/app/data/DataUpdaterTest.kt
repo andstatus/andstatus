@@ -92,7 +92,7 @@ class DataUpdaterTest {
         TestSuite.clearAssertions()
         val noteId = dataUpdater.onActivity(activity).getNote().noteId
         Assert.assertNotEquals("Note added", 0, noteId)
-        Assert.assertNotEquals("Activity added", 0, activity.getId())
+        Assert.assertNotEquals("Activity added", 0, activity.id)
         val data = TestSuite.getMyContextForTest().getAssertionData(DataUpdater.Companion.MSG_ASSERTION_KEY)
         assertTrue("Data put", data.nonEmpty)
         Assert.assertEquals("Note Oid", noteOid, data.values
@@ -112,7 +112,7 @@ class DataUpdaterTest {
         Assert.assertEquals("Sender of the note", somebody.actorId, senderId)
         url = MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_PAGE, senderId)
         Assert.assertEquals("Url of the author " + somebody.getUsername(), somebody.getProfileUrl(), url)
-        Assert.assertEquals("Latest activity of $somebody", activity.getId(),
+        Assert.assertEquals("Latest activity of $somebody", activity.id,
                 MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId))
         val contentUri = myContext.timelines[TimelineType.FRIENDS, ma.actor,  Origin.EMPTY].getUri()
         val sa = SelectionAndArgs()
@@ -154,7 +154,7 @@ class DataUpdaterTest {
         note.audience().visibility = Visibility.PRIVATE
         val noteId = DataUpdater(ma).onActivity(activity).getNote().noteId
         Assert.assertNotEquals("Note added", 0, noteId)
-        Assert.assertNotEquals("Activity added", 0, activity.getId())
+        Assert.assertNotEquals("Activity added", 0, activity.id)
         Assert.assertEquals("Note should be private $note", Visibility.PRIVATE, Visibility.Companion.fromNoteId(noteId))
         Assert.assertEquals("Note name $note", noteName, MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId))
         DemoNoteInserter.Companion.assertInteraction(activity, NotificationEventType.PRIVATE, TriState.TRUE)
@@ -188,8 +188,8 @@ class DataUpdaterTest {
         val likeActivity: AActivity = AActivity.Companion.fromInner(otherActor, ActivityType.LIKE, activity)
         val noteId = DataUpdater(ma).onActivity(likeActivity).getNote().noteId
         Assert.assertNotEquals("Note added", 0, noteId)
-        Assert.assertNotEquals("First activity added", 0, activity.getId())
-        Assert.assertNotEquals("LIKE activity added", 0, likeActivity.getId())
+        Assert.assertNotEquals("First activity added", 0, activity.id)
+        Assert.assertNotEquals("LIKE activity added", 0, likeActivity.id)
         val stargazers = MyQuery.getStargazers(myContext.database, accountActor.origin, note.noteId)
         var favoritedByOtherActor = false
         for (actor in stargazers) {
@@ -209,7 +209,7 @@ class DataUpdaterTest {
         Assert.assertNotEquals("Note is favorited (by some my account)", TriState.TRUE,
                 MyQuery.noteIdToTriState(NoteTable.FAVORITED, noteId))
         Assert.assertEquals("Activity is subscribed $likeActivity", TriState.UNKNOWN,
-                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, likeActivity.getId()))
+                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, likeActivity.id))
         DemoNoteInserter.Companion.assertInteraction(likeActivity, NotificationEventType.EMPTY, TriState.FALSE)
         Assert.assertEquals("Note is reblogged", TriState.UNKNOWN,
                 MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId))
@@ -275,10 +275,10 @@ class DataUpdaterTest {
         note.setInReplyTo(inReplyTo)
         val noteId = DataUpdater(ma).onActivity(activity).getNote().noteId
         Assert.assertNotEquals("Note added " + activity.getNote(), 0, noteId)
-        Assert.assertNotEquals("Activity added $accountActor", 0, activity.getId())
+        Assert.assertNotEquals("Activity added $accountActor", 0, activity.id)
         if (!favorited) {
             Assert.assertNotEquals("In reply to note added " + inReplyTo.getNote(), 0, inReplyTo.getNote().noteId)
-            Assert.assertNotEquals("In reply to activity added $inReplyTo", 0, inReplyTo.getId())
+            Assert.assertNotEquals("In reply to activity added $inReplyTo", 0, inReplyTo.id)
         }
         val stargazers = MyQuery.getStargazers(myContext.database, accountActor.origin, note.noteId)
         var favoritedByMe = false
@@ -299,7 +299,7 @@ $activity""",
                     MyQuery.noteIdToTriState(NoteTable.FAVORITED, noteId))
         }
         Assert.assertEquals("Activity is subscribed", TriState.UNKNOWN,
-                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, activity.getId()))
+                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, activity.id))
         DemoNoteInserter.Companion.assertInteraction(activity, NotificationEventType.EMPTY, TriState.FALSE)
         Assert.assertEquals("Note is reblogged", TriState.UNKNOWN,
                 MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId))
@@ -320,7 +320,7 @@ $activity""",
         assertTrue("Account is valid $ma", ma.isValid)
         val noteId = DataUpdater(ma).onActivity(activity).getNote().noteId
         Assert.assertNotEquals("Note added " + activity.getNote(), 0, noteId)
-        Assert.assertNotEquals("Activity added $activity", 0, activity.getId())
+        Assert.assertNotEquals("Activity added $activity", 0, activity.id)
         val dd: DownloadData = DownloadData.Companion.getSingleAttachment(noteId)
         Assert.assertEquals("Image URI stored", activity.getNote().attachments.list[0].uri, dd.getUri())
     }
@@ -338,7 +338,7 @@ $activity""",
         DataUpdater(ma).onActivity(activity)
         val note1 = activity.getNote()
         Assert.assertNotEquals("Note added $activity", 0, note1.noteId)
-        Assert.assertNotEquals("Activity added $activity", 0, activity.getId())
+        Assert.assertNotEquals("Activity added $activity", 0, activity.id)
         Assert.assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.Companion.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note1.noteId)))
         DbUtils.waitMs(method, 1000)
@@ -600,7 +600,7 @@ $activity""",
         assertTrue("After build should be unknown if it's mine$myAuthor1", myAuthor1.user.isMyUser.unknown)
         val activity1 = newLoadedNote(accountActor, myAuthor1,
                 "My account's first note from another Social Network " + DemoData.demoData.testRunUid)
-        assertTrue("Activity should be added", dataUpdater.onActivity(activity1).getId() != 0L)
+        assertTrue("Activity should be added", dataUpdater.onActivity(activity1).id != 0L)
         assertTrue("Author should be mine " + activity1.getAuthor(), activity1.getAuthor().user.isMyUser.isTrue)
         val author2: Actor = Actor.Companion.fromOid(accountActor.origin, "replier" + DemoData.demoData.testRunUid)
         author2.setUsername("replier@anotherdoman.com")
@@ -608,7 +608,7 @@ $activity""",
         val activity2 = newLoadedNote(accountActor, author2,
                 "@" + DemoData.demoData.t131tUsername + " Replying to my user from another instance")
         activity2.getNote().setInReplyTo(activity1)
-        assertTrue("Activity should be added", dataUpdater.onActivity(activity2).getId() != 0L)
+        assertTrue("Activity should be added", dataUpdater.onActivity(activity2).id != 0L)
         Assert.assertEquals("Audience should contain one actor " + activity2.getNote().audience(),
                 1, activity2.getNote().audience().getNonSpecialActors().size.toLong())
         Assert.assertEquals("Audience", myAuthor1, activity2.getNote().audience().getFirstNonSpecial())
@@ -636,14 +636,14 @@ $activity""",
         val activity1 = dataUpdater.onActivity(activity0)
         val note1 = activity1.getNote()
         assertTrue("Note should be added $activity1", note1.noteId != 0L)
-        assertTrue("Activity should be added $activity1", activity1.getId() != 0L)
+        assertTrue("Activity should be added $activity1", activity1.id != 0L)
         Assert.assertEquals("Note $note1", DownloadStatus.SENDING, note1.getStatus())
         val audience: Audience = fromNoteId(accountActor.origin, note1.noteId)
         DemoNoteInserter.Companion.assertVisibility(audience, Visibility.PRIVATE)
 
         // Response from a server
         val activity2: AActivity = AActivity.Companion.from(accountActor, ActivityType.CREATE)
-        activity2.setId(activity1.getId())
+        activity2.id = activity1.id
         activity2.setOid("https://" + DemoData.demoData.activityPubMainHost + "/activities/" + MyLog.uniqueCurrentTimeMS)
         activity2.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
 
@@ -654,13 +654,13 @@ $activity""",
         activity2.setNote(note2)
 
         // This is what is done in org.andstatus.app.service.CommandExecutorOther.updateNote to link the notes
-        activity2.setId(activity1.getId())
+        activity2.id = activity1.id
         activity2.getNote().noteId = note1.noteId
         val activity3 = dataUpdater.onActivity(activity2)
         val note3 = activity3.getNote()
         Assert.assertEquals("The same note should be updated $activity3", note1.noteId, note3.noteId)
         Assert.assertEquals("Note oid $activity3", note2.oid, MyQuery.idToOid(myContext, OidEnum.NOTE_OID, note3.noteId, 0))
-        assertTrue("Activity should be added $activity3", activity3.getId() != 0L)
+        assertTrue("Activity should be added $activity3", activity3.id != 0L)
         Assert.assertEquals("Note $note3", DownloadStatus.SENT, note3.getStatus())
     }
 
@@ -681,7 +681,7 @@ $activity""",
         note.audience().withVisibility(Visibility.TO_FOLLOWERS)
         val noteId = DataUpdater(ma).onActivity(activity).getNote().noteId
         Assert.assertNotEquals("Note added", 0, noteId)
-        Assert.assertNotEquals("First activity added", 0, activity.getId())
+        Assert.assertNotEquals("First activity added", 0, activity.id)
         val audience: Audience = fromNoteId(accountActor.origin, noteId)
         DemoNoteInserter.Companion.assertVisibility(audience, Visibility.TO_FOLLOWERS)
     }

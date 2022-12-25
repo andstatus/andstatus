@@ -8,7 +8,8 @@ class StubResponse(
     val strResponse: String? = null,
     val location: String? = null,
     val exception: Exception? = null,
-    val streamSupplier: CheckedFunction<Unit, InputStream>? = null
+    val streamSupplier: CheckedFunction<Unit, InputStream>? = null,
+    val requestUriSubstring: String? = null
 ) : IsEmpty {
     companion object {
         val EMPTY: StubResponse = StubResponse()

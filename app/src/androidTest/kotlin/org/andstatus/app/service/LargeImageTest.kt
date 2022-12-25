@@ -96,7 +96,7 @@ class LargeImageTest {
         )
         val loader = AttachmentDownloader(ma.myContext, dd)
         val connStub: ConnectionStub = ConnectionStub.newFor(DemoData.demoData.gnusocialTestAccountName)
-        connStub.http.addResponseStreamSupplier {
+        connStub.http.addResponseStreamSupplier(null) {
             InstrumentationRegistry.getInstrumentation().context.resources
                 .openRawResource(org.andstatus.app.test.R.raw.large_image)
         }

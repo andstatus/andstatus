@@ -22,6 +22,8 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyContentType
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.http.OAuthClientKeys
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.AObjectType
@@ -301,7 +303,7 @@ class ConnectionPumpioTest {
             { Actor.EMPTY }, false
         )
         assertJpopeActor(actorStored, true)
-        val noteStored: Note = Note.Companion.loadContentById(stub.data.getOrigin().myContext, note.noteId)
+        val noteStored: Note = Note.Companion.loadContentById(myContext, note.noteId)
         val audienceStored = noteStored.audience()
         Assert.assertEquals(
             "Should be Public with Followers $audienceStored",
@@ -315,6 +317,13 @@ class ConnectionPumpioTest {
             audienceStored.getRecipients().toString(),
             audienceStored.getNonSpecialActors(),
             Matchers.`is`(Matchers.empty())
+        )
+
+        val conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteStored.noteId)
+        val noteLinked: Note = Note.Companion.loadContentById(myContext, conversationId)
+        Assert.assertEquals(
+            "Note linked to wrong conversation $noteStored\nLinked to $conversationId, $noteLinked",
+            noteStored.noteId, conversationId
         )
     }
 

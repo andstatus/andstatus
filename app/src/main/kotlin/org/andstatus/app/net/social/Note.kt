@@ -73,7 +73,25 @@ class Note : AObject {
     /** Some additional attributes may appear from "My account's" (authenticated Account's) point of view  */ // In our system
     val origin: Origin
     var noteId = 0L
+        set(value) {
+            if (this === EMPTY) {
+                IllegalArgumentException("Setting id of EMPTY note to $value").also {
+                    MyLog.e(this, it)
+                    throw it
+                }
+            }
+            field = value
+        }
     private var conversationId = 0L
+        set(value) {
+            if (this === EMPTY) {
+                IllegalArgumentException("Setting conversationId of EMPTY note to $value").also {
+                    MyLog.e(this, it)
+                    throw it
+                }
+            }
+            field = value
+        }
 
     private fun loadAudience(): Note {
         audience = Audience.load(origin, noteId, Optional.empty())
@@ -117,7 +135,7 @@ class Note : AObject {
 
     private fun evalContentToSearch(): String {
         return MyHtml.getContentToSearch(
-                (if (name.isNotEmpty()) "$name " else "") +
+            (if (name.isNotEmpty()) "$name " else "") +
                 (if (summary.isNotEmpty()) "$summary " else "") +
                 content
         )
@@ -167,14 +185,16 @@ class Note : AObject {
         }
         if (conversationId == 0L && inReplyTo.nonEmpty) {
             if (inReplyTo.getNote().noteId != 0L) {
-                conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID,
-                        inReplyTo.getNote().noteId)
+                conversationId = MyQuery.noteIdToLongColumnValue(
+                    NoteTable.CONVERSATION_ID,
+                    inReplyTo.getNote().noteId
+                )
             }
         }
-        return setConversationIdFromMsgId()
+        return setConversationIdFromNoteId()
     }
 
-    fun setConversationIdFromMsgId(): Long {
+    fun setConversationIdFromNoteId(): Long {
         if (conversationId == 0L && noteId != 0L) {
             conversationId = noteId
         }
@@ -194,7 +214,7 @@ class Note : AObject {
             (status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT || !hasSomeContent())
 
     fun hasSomeContent(): Boolean = name.isNotEmpty() || summary.isNotEmpty() || content.isNotEmpty() ||
-            attachments.nonEmpty
+        attachments.nonEmpty
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -319,8 +339,10 @@ class Note : AObject {
             }
             TriState.UNKNOWN
         } else {
-            val favAndType = MyQuery.noteIdToLastFavoriting( MyContextHolder.myContextHolder.getNow().database,
-                    noteId, accountActor.actorId)
+            val favAndType = MyQuery.noteIdToLastFavoriting(
+                MyContextHolder.myContextHolder.getNow().database,
+                noteId, accountActor.actorId
+            )
             when (favAndType.second) {
                 ActivityType.LIKE -> TriState.TRUE
                 ActivityType.UNDO_LIKE -> TriState.FALSE
@@ -375,7 +397,7 @@ class Note : AObject {
 
     companion object {
         private val TAG: String = Note::class.simpleName!!
-        val EMPTY: Note = Note( Origin.EMPTY, getTempOid())
+        val EMPTY: Note = Note(Origin.EMPTY, newTempOid())
 
         fun fromOriginAndOid(origin: Origin, oid: String?, status: DownloadStatus): Note {
             val note = Note(origin, fixedOid(oid))
@@ -384,7 +406,7 @@ class Note : AObject {
         }
 
         private fun fixedOid(oid: String?): String {
-            return if (oid == null || UriUtils.isEmptyOid(oid)) getTempOid() else oid
+            return if (oid == null || UriUtils.isEmptyOid(oid)) newTempOid() else oid
         }
 
         private fun fixedStatus(oid: String?, status: DownloadStatus): DownloadStatus {
@@ -395,22 +417,24 @@ class Note : AObject {
 
         fun getSqlToLoadContent(id: Long): String {
             val sql = ("SELECT " + BaseColumns._ID
-                    + ", " + NoteTable.CONTENT
-                    + ", " + NoteTable.CONTENT_TO_SEARCH
-                    + ", " + NoteTable.NOTE_OID
-                    + ", " + NoteTable.ORIGIN_ID
-                    + ", " + NoteTable.NAME
-                    + ", " + NoteTable.SUMMARY
-                    + ", " + NoteTable.SENSITIVE
-                    + ", " + NoteTable.NOTE_STATUS
-                    + " FROM " + NoteTable.TABLE_NAME)
+                + ", " + NoteTable.CONTENT
+                + ", " + NoteTable.CONTENT_TO_SEARCH
+                + ", " + NoteTable.NOTE_OID
+                + ", " + NoteTable.ORIGIN_ID
+                + ", " + NoteTable.NAME
+                + ", " + NoteTable.SUMMARY
+                + ", " + NoteTable.SENSITIVE
+                + ", " + NoteTable.NOTE_STATUS
+                + " FROM " + NoteTable.TABLE_NAME)
             return sql + if (id == 0L) "" else " WHERE " + BaseColumns._ID + "=" + id
         }
 
         fun contentFromCursor(myContext: MyContext, cursor: Cursor): Note {
-            val note = fromOriginAndOid(myContext.origins.fromId(DbUtils.getLong(cursor, NoteTable.ORIGIN_ID)),
-                    DbUtils.getString(cursor, NoteTable.NOTE_OID),
-                    DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS)))
+            val note = fromOriginAndOid(
+                myContext.origins.fromId(DbUtils.getLong(cursor, NoteTable.ORIGIN_ID)),
+                DbUtils.getString(cursor, NoteTable.NOTE_OID),
+                DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS))
+            )
             note.noteId = DbUtils.getLong(cursor, BaseColumns._ID)
             note.setName(DbUtils.getString(cursor, NoteTable.NAME))
             note.setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY))
@@ -419,26 +443,27 @@ class Note : AObject {
             return note
         }
 
-        fun loadContentById(myContext: MyContext, noteId: Long): Note {
-            return MyQuery[myContext, getSqlToLoadContent(noteId), { cursor: Cursor -> contentFromCursor(myContext, cursor) }]
-                    .stream().findAny().map { obj: Note -> obj.loadAudience() }.orElse(EMPTY)
-        }
+        fun loadContentById(myContext: MyContext, noteId: Long): Note =
+            if (noteId == 0L) EMPTY
+            else MyQuery.getSet(myContext, getSqlToLoadContent(noteId)) { cursor: Cursor ->
+                contentFromCursor(myContext, cursor)
+            }.firstOrNull()?.loadAudience() ?: EMPTY
 
-        private fun getTempOid(): String {
+        private fun newTempOid(): String {
             return StringUtil.toTempOid("note:" + MyLog.uniqueCurrentTimeMS)
         }
 
         fun mayBeEdited(originType: OriginType?, downloadStatus: DownloadStatus?): Boolean {
             return if (originType == null || downloadStatus == null) false
             else downloadStatus == DownloadStatus.DRAFT || downloadStatus.mayBeSent() ||
-                    downloadStatus.isPresentAtServer() && originType.allowEditing()
+                downloadStatus.isPresentAtServer() && originType.allowEditing()
         }
 
         fun requestDownload(ma: MyAccount, noteId: Long, isManuallyLaunched: Boolean) {
             MyLog.v(TAG) { "Note id:$noteId will be loaded from the Internet" }
             val command: CommandData = CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, noteId)
-                    .setManuallyLaunched(isManuallyLaunched)
-                    .setInForeground(isManuallyLaunched)
+                .setManuallyLaunched(isManuallyLaunched)
+                .setInForeground(isManuallyLaunched)
             MyServiceManager.sendCommand(command)
         }
     }

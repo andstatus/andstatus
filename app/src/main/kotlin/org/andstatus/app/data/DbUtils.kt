@@ -76,7 +76,13 @@ object DbUtils {
     /**
      * @return Number of rows updated
      */
-    fun updateRowWithRetry(myContext: MyContext, tableName: String?, rowId: Long, values: ContentValues?, nRetries: Int): Try<Unit> {
+    fun updateRowWithRetry(
+        myContext: MyContext,
+        tableName: String?,
+        rowId: Long,
+        values: ContentValues?,
+        nRetries: Int
+    ): Try<Unit> {
         val method = "updateRowWithRetry"
         var rowsUpdated = 0
         val db = myContext.database
@@ -143,7 +149,13 @@ object DbUtils {
     }
 
     private fun closeLegacy(toClose: Any?, message: String?) {
-        if (toClose is Closeable) {
+        if (toClose is AutoCloseable) {
+            try {
+                toClose.close()
+            } catch (e: Exception) {
+                MyLog.e("Failed to close AutoClosable $message", e)
+            }
+        } else if (toClose is Closeable) {
             toClose.close()
         } else if (toClose is Cursor) {
             if (!toClose.isClosed()) {
@@ -167,8 +179,8 @@ object DbUtils {
             toClose.disconnect()
         } else {
             val detailMessage = ("Couldn't close silently an object of the class: "
-                    + toClose?.javaClass?.canonicalName
-                    + if (message.isNullOrEmpty()) "" else "; $message")
+                + toClose?.javaClass?.canonicalName
+                + if (message.isNullOrEmpty()) "" else "; $message")
             MyLog.w(TAG, "$detailMessage \n${MyLog.currentStackTrace}")
         }
     }

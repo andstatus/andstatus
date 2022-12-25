@@ -164,7 +164,7 @@ class CommandExecutorStrategyTest {
     private suspend fun getCommandDataForUnsentNote(suffix: String?): CommandData {
         val body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms"
         val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(ma, body, "", DownloadStatus.SENDING)
-        return CommandData.Companion.newUpdateStatus(ma, activity.getId(), activity.getNote().noteId)
+        return CommandData.Companion.newUpdateStatus(ma, activity.id, activity.getNote().noteId)
     }
 
     @Test

@@ -42,7 +42,10 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
         val stopWatch: StopWatch = StopWatch.createStarted()
         val method = "initialize"
         timelines.clear()
-        MyQuery[myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME, { cursor: Cursor -> Timeline.fromCursor(myContext, cursor) }]
+        MyQuery.getSet(
+            myContext,
+            "SELECT * FROM " + TimelineTable.TABLE_NAME,
+            { cursor: Cursor -> Timeline.fromCursor(myContext, cursor) })
                 .forEach(Consumer { timeline: Timeline ->
             if (timeline.isValid()) {
                 timelines[timeline.getId()] = timeline

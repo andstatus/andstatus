@@ -25,6 +25,7 @@ import org.andstatus.app.data.MyContentType
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
 import org.andstatus.app.data.TextMediaType
+import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.AObjectType
 import org.andstatus.app.net.social.ActivityType
@@ -369,6 +370,21 @@ class ConnectionActivityPubTest {
         })
         assertTrue("Audience of $activity\n $audienceStored", audienceStored.hasNonSpecial())
         assertTrue("Note should be sensitive $noteStored", noteStored.isSensitive())
+
+        val conversationOidExpected = "https://pleroma.site/contexts/cebf1c4d-f7f2-46a5-8025-fd8bd9cde1ab"
+        assertEquals("ConversationOid of $noteStored", conversationOidExpected,
+            MyQuery.noteIdToConversationOid(myContext, noteStored.noteId))
+        val conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteStored.noteId)
+        if (conversationId != 0L) {
+            val conversationOidOfConversation = MyQuery.noteIdToConversationOid(myContext, conversationId)
+            val conversationIdOfConversation = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteStored.noteId)
+            val noteLinked: Note = Note.Companion.loadContentById(myContext, conversationId)
+            assertEquals("Note linked to a note with different conversationId $noteStored" +
+                "\nLinked to noteId:$conversationId, $noteLinked", conversationId, conversationIdOfConversation)
+            assertEquals("Note linked to a note with different conversationOid $noteStored" +
+                "\nLinked to noteId:$conversationId, $noteLinked", conversationOidExpected, conversationOidOfConversation)
+        }
+
     }
 
     @Test
@@ -471,12 +487,12 @@ class ConnectionActivityPubTest {
         val activity1 = DemoNoteInserter.sendingCreateNoteActivity(stub.data.getMyAccount(), content)
 
         val activityOid = stub.data.getOriginUrl()!!.toExternalForm() + "/activities/3237932-" + demoData.testRunUid
-        stub.http.addLocation(activityOid)
+        stub.http.addLocation(activityOid, "/users/apTestUser/outbox")
 
         val executionContext = CommandExecutionContext(
-            myContext, CommandData.newItemCommand(CommandEnum.UPDATE_NOTE, stub.data.getMyAccount(), activity1.getId())
+            myContext, CommandData.newItemCommand(CommandEnum.UPDATE_NOTE, stub.data.getMyAccount(), activity1.id)
         )
-        val activity2 = CommandExecutorOther(executionContext).updateNote(activity1.getId()).getOrElseRecover {
+        val activity2 = CommandExecutorOther(executionContext).updateNote(activity1.id).getOrElseRecover {
             throw AssertionError("Should be a success: $it")
         }
         assertEquals("Oid after update $activity2", activityOid, activity2.getOid())
@@ -485,7 +501,7 @@ class ConnectionActivityPubTest {
         assertTrue("Oid '$activityOid' was saved for $activity2", activityId2 != 0L)
         assertEquals(
             "Oid of $activity1\n  Saved activityId:$activityId2", activityOid,
-            MyQuery.idToOid(myContext, OidEnum.ACTIVITY_OID, activity1.getId(), 0L)
+            MyQuery.idToOid(myContext, OidEnum.ACTIVITY_OID, activity1.id, 0L)
         )
     }
 }

@@ -23,6 +23,7 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.SqlIds
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.UriUtils.isRealOid
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -42,7 +43,7 @@ class CheckConversations : DataChecker() {
         var inReplyToId: Long = 0
         var conversationIdInitial: Long = 0
         var conversationId: Long = 0
-        var conversationOid: String? = ""
+        var conversationOid: String = ""
         fun fixConversationId(conversationId: Long): Boolean {
             val different = this.conversationId != conversationId
             if (different) {
@@ -72,15 +73,23 @@ class CheckConversations : DataChecker() {
         }
 
         override fun toString(): String {
-            return "MsgItem{" +
-                    "id=" + id +
-                    ", originId=" + originId +
-                    ", inReplyToId_initial=" + inReplyToIdInitial +
-                    ", inReplyToId=" + inReplyToId +
-                    ", conversationId_initial=" + conversationIdInitial +
-                    ", conversationId=" + conversationId +
-                    ", conversationOid='" + conversationOid + '\'' +
-                    '}'
+            return "NoteItem{" +
+                "id=" + id +
+                ", originId=" + originId +
+                if (inReplyToIdInitial == inReplyToId) {
+                    ", inReplyToId=" + inReplyToId
+                } else {
+                    ", inReplyToId changed from " + inReplyToIdInitial +
+                        " to " + inReplyToId
+                } +
+                if (conversationIdInitial == conversationId) {
+                    ", conversationId=" + conversationId
+                } else {
+                    ", conversationId changed from " + conversationIdInitial +
+                        " to " + conversationId
+                } +
+                ", conversationOid='" + conversationOid + '\'' +
+                '}'
         }
     }
 
@@ -104,17 +113,17 @@ class CheckConversations : DataChecker() {
         items.clear()
         replies.clear()
         var sql = ("SELECT " + BaseColumns._ID
-                + ", " + NoteTable.ORIGIN_ID
-                + ", " + NoteTable.IN_REPLY_TO_NOTE_ID
-                + ", " + NoteTable.CONVERSATION_ID
-                + ", " + NoteTable.CONVERSATION_OID
-                + " FROM " + NoteTable.TABLE_NAME)
+            + ", " + NoteTable.ORIGIN_ID
+            + ", " + NoteTable.IN_REPLY_TO_NOTE_ID
+            + ", " + NoteTable.CONVERSATION_ID
+            + ", " + NoteTable.CONVERSATION_OID
+            + " FROM " + NoteTable.TABLE_NAME)
         if (noteIdsOfOneConversation.size > 0) {
             sql += (" WHERE " + NoteTable.CONVERSATION_ID + " IN ("
-                    + "SELECT DISTINCT " + NoteTable.CONVERSATION_ID
-                    + " FROM " + NoteTable.TABLE_NAME + " WHERE "
-                    + BaseColumns._ID + SqlIds.fromIds(noteIdsOfOneConversation).getSql()
-                    + ")")
+                + "SELECT DISTINCT " + NoteTable.CONVERSATION_ID
+                + " FROM " + NoteTable.TABLE_NAME + " WHERE "
+                + BaseColumns._ID + SqlIds.fromIds(noteIdsOfOneConversation).getSql()
+                + ")")
         }
         var cursor: Cursor? = null
         var rowsCount: Long = 0
@@ -146,7 +155,7 @@ class CheckConversations : DataChecker() {
         for (item in items.values) {
             if (item.inReplyToId != 0L) {
                 val parent = items[item.inReplyToId]
-                if (parent == null) {
+                if (parent == null || parent.originId != item.originId) {
                     item.fixInReplyToId(0)
                 } else {
                     if (parent.conversationId == 0L) {
@@ -164,14 +173,11 @@ class CheckConversations : DataChecker() {
 
     private fun fixConversationsUsingConversationOid() {
         val counter = AtomicInteger()
-        val origins: MutableMap<Long?, MutableMap<String?, NoteItem?>?> = ConcurrentHashMap()
+        val originToConversations: MutableMap<Long, MutableMap<String, NoteItem>> = ConcurrentHashMap()
         for (item in items.values) {
-            if (!item.conversationOid.isNullOrEmpty()) {
-                var firstConversationMembers = origins[item.originId]
-                if (firstConversationMembers == null) {
-                    firstConversationMembers = ConcurrentHashMap()
-                    origins[item.originId] = firstConversationMembers
-                }
+            if (item.conversationOid.isRealOid) {
+                val firstConversationMembers: MutableMap<String, NoteItem> = originToConversations
+                    .computeIfAbsent(item.originId) { ConcurrentHashMap() }
                 val parent = firstConversationMembers[item.conversationOid]
                 if (parent == null) {
                     item.fixConversationId(if (item.conversationId == 0L) item.id else item.conversationId)
@@ -190,7 +196,9 @@ class CheckConversations : DataChecker() {
     private fun changeConversationOfReplies(parent: NoteItem, level: Int) {
         val replies1 = replies[parent.id] ?: return
         for (item in replies1) {
-            if (item.fixConversationId(parent.conversationId)) {
+            if (item.originId != parent.originId) {
+                item.fixInReplyToId(0)
+            } else if (item.fixConversationId(parent.conversationId)) {
                 if (level > 0) {
                     changeConversationOfReplies(item, level - 1)
                 } else {
@@ -202,7 +210,7 @@ class CheckConversations : DataChecker() {
 
     private fun fixOneConversation() {
         val newConversationId = items.values.stream().map { noteItem: NoteItem -> noteItem.conversationId }
-                .min { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }.orElse(0L)
+            .min { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }.orElse(0L)
         check(newConversationId != 0L) { "Conversation ID=0, $noteIdsOfOneConversation" }
         for (item in items.values) {
             item.conversationId = newConversationId
@@ -215,22 +223,23 @@ class CheckConversations : DataChecker() {
             if (item.isChanged()) {
                 var sql = ""
                 try {
-                    if (counter.get() < 5 && MyLog.isVerboseEnabled()) {
-                        MyLog.v(this, "noteId=" + item.id + "; "
-                                + (if (item.isInReplyToIdChanged()) "inReplyToId changed from "
-                                + item.inReplyToIdInitial + " to " + item.inReplyToId else "")
-                                + (if (item.isInReplyToIdChanged() && item.isConversationIdChanged()) " and " else "")
-                                + (if (item.isConversationIdChanged()) "conversationId changed from "
-                                + item.conversationIdInitial + " to " + item.conversationId else "")
-                                + ", Content:'" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, item.id) + "'")
+//                    if (counter.get() < 5 && MyLog.isVerboseEnabled()) {
+                    if (MyLog.isVerboseEnabled()) {
+                        MyLog.v(this, "$item" +
+                                ", content:'" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, item.id) + "'"
+                        )
                     }
                     if (!countOnly) {
                         sql = ("UPDATE " + NoteTable.TABLE_NAME
-                                + " SET "
-                                + (if (item.isInReplyToIdChanged()) NoteTable.IN_REPLY_TO_NOTE_ID + "=" + DbUtils.sqlZeroToNull(item.inReplyToId) else "")
-                                + (if (item.isInReplyToIdChanged() && item.isConversationIdChanged()) ", " else "")
-                                + (if (item.isConversationIdChanged()) NoteTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) else "")
-                                + " WHERE " + BaseColumns._ID + "=" + item.id)
+                            + " SET "
+                            + (if (item.isInReplyToIdChanged()) NoteTable.IN_REPLY_TO_NOTE_ID + "=" + DbUtils.sqlZeroToNull(
+                            item.inReplyToId
+                        ) else "")
+                            + (if (item.isInReplyToIdChanged() && item.isConversationIdChanged()) ", " else "")
+                            + (if (item.isConversationIdChanged()) NoteTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(
+                            item.conversationId
+                        ) else "")
+                            + " WHERE " + BaseColumns._ID + "=" + item.id)
                         myContext.database?.execSQL(sql)
                     }
                     counter.incrementAndGet()

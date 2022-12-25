@@ -38,8 +38,8 @@ internal class CheckTimelines : DataChecker() {
         val toDelete: MutableSet<Timeline> = HashSet()
         var deletedCount: Long = 0
         try {
-            MyQuery[myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME,
-                    { cursor: Cursor -> Timeline.fromCursor(myContext, cursor) }]
+            MyQuery.getSet(myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME,
+                { cursor: Cursor -> Timeline.fromCursor(myContext, cursor) })
                     .forEach(Consumer { timeline: Timeline ->
                 if (!timeline.isValid()) {
                     logger.logProgress("Invalid timeline: $timeline")

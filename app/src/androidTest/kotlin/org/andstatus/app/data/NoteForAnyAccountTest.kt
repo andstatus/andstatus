@@ -32,7 +32,7 @@ class NoteForAnyAccountTest {
                 null, DownloadStatus.LOADED)
         ni.onActivity(activity1)
         val nfaActivity1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
-                activity1.getId(), activity1.getNote().noteId)
+                activity1.id, activity1.getNote().noteId)
         val dataActivity1 = NoteContextMenuData(nfaActivity1, ma)
         assertTrue(dataActivity1.isAuthor)
         assertTrue(dataActivity1.isActor)
@@ -48,7 +48,7 @@ class NoteForAnyAccountTest {
         replyTo1.getNote().audience().visibility = Visibility.PRIVATE
         ni.onActivity(replyTo1)
         val nfaReplyTo1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
-                replyTo1.getId(), replyTo1.getNote().noteId)
+                replyTo1.id, replyTo1.getNote().noteId)
         val dataReplyTo1 = NoteContextMenuData(nfaReplyTo1, ma)
         assertFalse(dataReplyTo1.isAuthor)
         assertFalse(dataReplyTo1.isActor)

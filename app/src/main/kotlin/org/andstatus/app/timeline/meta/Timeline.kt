@@ -1020,7 +1020,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         }
 
         fun fromId(myContext: MyContext, id: Long): Timeline {
-            return if (id == 0L) EMPTY else MyQuery.get(myContext,
+            return if (id == 0L) EMPTY else MyQuery.getSet(myContext,
                     "SELECT * FROM " + TimelineTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + id
             ) { cursor: Cursor -> fromCursor(myContext, cursor) }.stream().findFirst().orElse(EMPTY)
         }

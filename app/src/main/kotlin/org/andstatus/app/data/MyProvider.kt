@@ -497,7 +497,7 @@ class MyProvider : ContentProvider() {
 
         fun updateActivityOid(myContext: MyContext, activityId: Long, oid: String) {
             update(myContext, ActivityTable.TABLE_NAME,
-                ActivityTable.ACTIVITY_OID + "='$oid'",
+                ActivityTable.ACTIVITY_OID + "=" + MyQuery.quoteIfNotQuoted(oid),
                 BaseColumns._ID + "=$activityId")
         }
 

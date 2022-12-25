@@ -116,7 +116,7 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
                     + " FROM " + ActorSql.tables(isFullProjection = false, userOnly = true, userIsOptional = false)
                     + " WHERE " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + "=" + actorId)
             val function = Function { cursor: Cursor -> fromCursor(myContext, cursor, true) }
-            return MyQuery[myContext, sql, function].stream().findFirst().orElse(EMPTY)
+            return MyQuery.getSet(myContext, sql, function).stream().findFirst().orElse(EMPTY)
         }
 
         fun fromCursor(myContext: MyContext, cursor: Cursor, useCache: Boolean): User {

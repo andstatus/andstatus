@@ -390,11 +390,13 @@ class NoteEditorData private constructor(
                         ma.actor, noteOid,
                         System.currentTimeMillis(),
                         DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)))
-                activity.setId(MyQuery.oidToId(ma.myContext, OidEnum.ACTIVITY_OID,
-                        activity.accountActor.origin.id,
-                        activity.getOid()))
-                if (activity.getId() == 0L) {
-                    activity.setId(MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId))
+                activity.id = MyQuery.oidToId(
+                    ma.myContext, OidEnum.ACTIVITY_OID,
+                    activity.accountActor.origin.id,
+                    activity.getOid()
+                )
+                if (activity.id == 0L) {
+                    activity.id = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId)
                 }
             }
             activity.getNote().noteId = noteId

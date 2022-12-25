@@ -85,7 +85,7 @@ class DemoConversationInserter {
         DemoNoteInserter.assertStoredVisibility(privateReply2, Visibility.PRIVATE)
         DemoNoteInserter.assertInteraction(privateReply2, NotificationEventType.EMPTY, TriState.FALSE)
         assertEquals("Should be subscribed $selected", TriState.TRUE,
-                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()))
+                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.id))
         DemoNoteInserter.assertInteraction(selected, NotificationEventType.HOME, TriState.FALSE)
         val reply3 = buildActivity(getAuthor1(), "Another note title",
                 "Reply 3 to selected by the same author", selected, null)

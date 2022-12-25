@@ -265,7 +265,7 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
                 " AND NOT EXISTS (SELECT * FROM " + ActivityTable.TABLE_NAME +
                 " WHERE " + ActivityTable.ACTOR_ID + " = " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + ")")
         val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromCursor(myContext, cursor, true) }
-        val actors = MyQuery.get(myContext, sql, function)
+        val actors = MyQuery.getSet(myContext, sql, function)
         logger.logProgress("To delete: " + actors.size + " temporary unused actors")
         val counter = AtomicInteger()
         actors.forEach(Consumer { actor: Actor ->

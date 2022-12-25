@@ -43,6 +43,7 @@ import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import java.util.stream.Collectors
 
 internal class CommandExecutorOther(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
@@ -248,12 +249,12 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
 
     private fun getNoteOid(method: String, noteId: Long, required: Boolean): Try<String> {
         val oid = MyQuery.idToOid(execContext.myContext, OidEnum.NOTE_OID, noteId, 0)
-        return if (required && oid.isEmpty()) {
-            logExecutionError(
-                true, method + "; no note ID in the Social Network "
-                    + MyQuery.noteInfoForLog(execContext.myContext, noteId)
-            )
-        } else Try.success(oid)
+        return if (oid.isRealOid) Try.success(oid)
+        else if (required && oid.isEmpty()) {
+            val errorMsg = (method + "; no note ID in the Social Network "
+                + MyQuery.noteInfoForLog(execContext.myContext, noteId))
+            logExecutionError(true, errorMsg)
+        } else TryUtils.failure("Not real or empty Oid")
     }
 
     /**
@@ -303,7 +304,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         val tryOid = getNoteOid(method, noteId, false)
         val statusStored: DownloadStatus =
             DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId))
-        if (tryOid.filter { obj: String? -> StringUtil.nonEmptyNonTemp(obj) }.isFailure || statusStored != DownloadStatus.LOADED) {
+        if (tryOid.isFailure || statusStored != DownloadStatus.LOADED) {
             MyLog.i(this, "$method; OID='$tryOid', status='$statusStored' for noteId=$noteId")
             return TryUtils.TRUE
         }
@@ -421,7 +422,6 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         val note: Note = Note.loadContentById(execContext.myContext, noteId)
             .withAttachments(Attachments.newLoaded(execContext.myContext, noteId))
         getNoteOid(method, MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId), false)
-            .filter { obj: String? -> StringUtil.nonEmptyNonTemp(obj) }
             .map { inReplyToNoteOid: String? ->
                 AActivity.newPartialNote(
                     execContext.getMyAccount().actor,
@@ -449,10 +449,10 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             .map { activity: AActivity ->
                 // The note was sent successfully, so now update unsent message
                 // New Actor's note should be put into the Account's Home timeline.
-                activity.setId(activityId)
-                activity.getNote().noteId = noteId
+                activity.id = activityId
+                activity.getNote().takeIf(Note::nonEmpty)?.noteId = noteId
                 DataUpdater(execContext).onActivity(activity).also {
-                    execContext.getResult().setItemId(it.getId())
+                    execContext.getResult().setItemId(it.id)
                 }
             }
             .onFailure { execContext.myContext.notifier.onUnsentActivity(activityId) }

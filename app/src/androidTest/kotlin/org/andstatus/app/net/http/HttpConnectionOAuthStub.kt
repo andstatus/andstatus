@@ -55,24 +55,27 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
         return false
     }
 
-    fun addResponse(@RawRes responseResourceId: Int) {
-        addResponse(RawResourceUtils.getString(responseResourceId))
+    fun addResponse(@RawRes responseResourceId: Int, requestSubstring: String? = null) {
+        addResponse(RawResourceUtils.getString(responseResourceId), requestSubstring)
     }
 
-    fun addResponse(responseString: String) {
-        responses.add(StubResponse(strResponse = responseString))
+    fun addResponse(responseString: String, requestSubstring: String? = null) {
+        responses.add(StubResponse(strResponse = responseString, requestUriSubstring = requestSubstring))
     }
 
-    fun addResponseStreamSupplier(responseStreamSupplier: CheckedFunction<Unit, InputStream>?) {
-        responses.add(StubResponse(streamSupplier = responseStreamSupplier))
+    fun addResponseStreamSupplier(
+        requestSubstring: String?,
+        responseStreamSupplier: CheckedFunction<Unit, InputStream>?
+    ) {
+        responses.add(StubResponse(streamSupplier = responseStreamSupplier, requestUriSubstring = requestSubstring))
     }
 
-    fun addLocation(location: String) {
-        responses.add(StubResponse(location = location))
+    fun addLocation(location: String, requestSubstring: String? = null) {
+        responses.add(StubResponse(location = location, requestUriSubstring = requestSubstring))
     }
 
-    fun addException(exception: Exception) {
-        responses.add(StubResponse(exception = exception))
+    fun addException(exception: Exception, requestSubstring: String? = null) {
+        responses.add(StubResponse(exception = exception, requestUriSubstring = requestSubstring))
     }
 
     override fun pathToUrlString(path: String): String {
@@ -97,43 +100,63 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
     override fun postRequest(result: HttpReadResult): HttpReadResult = onRequest("postRequest", result)
     override fun getRequest(result: HttpReadResult): HttpReadResult = onRequest("getRequest", result)
 
+    @Synchronized
     private fun onRequest(method: String, result: HttpReadResult): HttpReadResult {
-        getNextResponse().run {
-            strResponse?.let {
-                result.strResponse = it
-            }
-            location?.let {
-                result.location = Optional.of(it)
-            }
-            streamSupplier?.let {
-                result.readStream("", it)
-            }
-            exception?.let {
-                if (it is RuntimeException) throw it
-                result.setException(exception)
-            }
-            if (isEmpty) {
-                result.setStatusCodeInt(STATUS_CODE_INT_NOT_FOUND)
+        val responseMsg = MyStringBuilder()
+        val responseIndex = currentResponseIndex()
+        responseMsg.withComma("responseIndex", responseIndex)
+        if (responseIndex < 0) {
+            result.setStatusCodeInt(STATUS_CODE_INT_NOT_FOUND)
+            responseMsg.withComma("(NOT_FOUND - no responses left of ${responses.size})")
+        } else {
+            responses[responseIndex].run {
+                if (requestUriSubstring.isNullOrBlank() || result.request.uri.toString().contains(requestUriSubstring)) {
+                    responsesCounter++
+                    strResponse?.let {
+                        result.strResponse = it
+                        responseMsg.withSpaceQuoted(it)
+                    }
+                    location?.let {
+                        result.location = Optional.of(it)
+                        responseMsg.withCommaQuoted("Location:", it, true)
+                    }
+                    streamSupplier?.let {
+                        result.readStream("", it)
+                        responseMsg.withComma("(stream)")
+                    }
+                    exception?.let {
+                        if (it is RuntimeException) throw it
+                        result.setException(exception)
+                        responseMsg.withComma("Exception", exception)
+                    }
+                    if (isEmpty) {
+                        result.setStatusCodeInt(STATUS_CODE_INT_NOT_FOUND)
+                        responseMsg.withComma("(NOT_FOUND)")
+                    } else {
+                    }
+                } else {
+                    result.setStatusCodeInt(STATUS_CODE_INT_NOT_FOUND)
+                    responseMsg.withComma("(NOT_FOUND - no response)")
+                }
             }
         }
         results.add(result)
         MyLog.v(
             this,
             method + " num:" + results.size + "; path:'" + result.url + "'" +
-                ", originUrl:'" + data.originUrl + "', instanceId:" + instanceId
+                ", originUrl:'" + data.originUrl + "', instanceId:" + instanceId + "; Response: $responseMsg"
         )
         MyLog.v(this, Arrays.toString(Thread.currentThread().stackTrace))
         DbUtils.waitMs("networkDelay", Math.toIntExact(networkDelayMs))
         return result
     }
 
-    @Synchronized
-    private fun getNextResponse(): StubResponse = if (sameResponse) {
-        if (responses.isEmpty()) StubResponse.EMPTY
-        else responses.get(responses.size - 1)
+    private fun currentResponseIndex(): Int = if (sameResponse) {
+        if (responses.isEmpty()) -1
+        else responses.size - 1
     } else {
-        if (responsesCounter < responses.size) responses.get(responsesCounter++)
-        else StubResponse.EMPTY
+        if (responsesCounter < responses.size) responsesCounter
+        else -1
     }
 
     override fun getConsumer(): OAuthConsumer? = null

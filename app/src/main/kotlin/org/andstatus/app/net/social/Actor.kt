@@ -880,7 +880,7 @@ class Actor private constructor(// In our system
                     + " FROM " + ActorSql.allTables()
                     + " WHERE " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + "=" + actorId)
             val function = { cursor: Cursor -> fromCursor(myContext, cursor, useCache) }
-            return MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier)
+            return MyQuery.getSet(myContext, sql, function).stream().findFirst().orElseGet(supplier)
         }
 
         /** Updates cache on load  */

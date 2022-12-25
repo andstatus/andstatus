@@ -46,7 +46,16 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
     private var oid: String = ""
     private var storedUpdatedDate = RelativeTime.DATETIME_MILLIS_NEVER
     private var updatedDate = RelativeTime.DATETIME_MILLIS_NEVER
-    private var id: Long = 0
+    var id: Long = 0
+        set(value) {
+            if (this === EMPTY) {
+                IllegalArgumentException("Setting id of EMPTY Activity to $value").also {
+                    MyLog.e(this, it)
+                    throw it
+                }
+            }
+            field = value
+        }
     private var insDate = RelativeTime.DATETIME_MILLIS_NEVER
     private var actor: Actor = Actor.EMPTY
 
@@ -263,10 +272,6 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
                 "}"
     }
 
-    fun getId(): Long {
-        return id
-    }
-
     fun isSubscribedByMe(): TriState {
         return subscribedByMe
     }
@@ -286,7 +291,7 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
     fun save(myContext: MyContext): Long {
         if (wontSave(myContext)) return id
         if (updatedDate > RelativeTime.SOME_TIME_AGO) calculateInteraction(myContext)
-        if (getId() == 0L) {
+        if (id == 0L) {
             DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3)
                 .onSuccess { idAdded: Long ->
                     id = idAdded
@@ -294,7 +299,7 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
                 }
                 .onFailure { e: Throwable? -> MyLog.w(this, "Failed to add $this", e) }
         } else {
-            DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, getId(), toContentValues(), 3)
+            DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, id, toContentValues(), 3)
                 .onSuccess { _ -> MyLog.v(this) { "Updated $this" } }
                 .onFailure { e: Throwable? -> MyLog.w(this, "Failed to update $this", e) }
         }
@@ -304,20 +309,20 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
 
     private fun wontSave(myContext: MyContext): Boolean {
         if (isEmpty || type == ActivityType.UPDATE && getObjectType() == AObjectType.ACTOR
-            || oid.isNullOrEmpty() && getId() != 0L
+            || oid.isNullOrEmpty() && id != 0L
         ) {
             MyLog.v(this) { "Won't save $this" }
             return true
         }
         check(!AsyncUtil.isUiThread) { "Saving activity on the Main thread " + toString() }
         check(accountActor.actorId != 0L) { "Account is unknown " + toString() }
-        if (getId() == 0L) {
+        if (id == 0L) {
             findExisting(myContext)
         }
         storedUpdatedDate = MyQuery.idToLongColumnValue(
             myContext.database, ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id
         )
-        if (getId() != 0L) {
+        if (id != 0L) {
             if (updatedDate <= storedUpdatedDate) {
                 MyLog.v(this) { "Skipped as not younger $this" }
                 return true
@@ -498,10 +503,6 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
 
     fun getNewNotificationEventType(): NotificationEventType {
         return newNotificationEventType
-    }
-
-    fun setId(id: Long) {
-        this.id = id
     }
 
     fun withVisibility(visibility: Visibility): AActivity {

@@ -661,12 +661,12 @@ object MyQuery {
     fun getLongs(sql: String): Set<Long> = getLongs(MyContextHolder.myContextHolder.getNow(), sql)
 
     fun getLongs(myContext: MyContext, sql: String): Set<Long> =
-        get<Long>(myContext, sql) { cursor: Cursor -> cursor.getLong(0) }
+        getSet(myContext, sql) { cursor: Cursor -> cursor.getLong(0) }
 
     /**
      * @return Empty set on UI thread
      */
-    operator fun <T> get(myContext: MyContext, sql: String, fromCursor: Function<Cursor, T>): MutableSet<T> {
+    fun <T> getSet(myContext: MyContext, sql: String, fromCursor: Function<Cursor, T>): MutableSet<T> {
         return foldLeft(myContext,
             sql,
             HashSet(),

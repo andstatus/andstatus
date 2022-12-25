@@ -279,7 +279,7 @@ class MyServiceTests : IgnoredInTravis2() {
 
         val activity = sendingCreateNoteActivity(ma, DISK_IO_EXCEPTION_PREFIX + " " + demoData.testRunUid)
         val counter1 = mService.sendCommand(
-            CommandData.newUpdateStatus(ma, activity.getId(), activity.getNote().noteId)
+            CommandData.newUpdateStatus(ma, activity.id, activity.getNote().noteId)
         ) {
             "$method Sending first command $it"
         }

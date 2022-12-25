@@ -276,7 +276,7 @@ class ConnectionTwitterTest {
         )
         DataUpdater(executionContext).onActivity(activity)
         Assert.assertNotEquals("Note was not added $activity", 0, activity.getNote().noteId)
-        Assert.assertNotEquals("Activity was not added $activity", 0, activity.getId())
+        Assert.assertNotEquals("Activity was not added $activity", 0, activity.id)
     }
 
     @Test
@@ -316,6 +316,6 @@ class ConnectionTwitterTest {
         DataUpdater(executionContext).onActivity(activity)
         val friendId = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID, ma.originId, actorOid)
         Assert.assertNotEquals("Followed Actor was not added $activity", 0, friendId)
-        Assert.assertNotEquals("Activity was not added $activity", 0, activity.getId())
+        Assert.assertNotEquals("Activity was not added $activity", 0, activity.id)
     }
 }

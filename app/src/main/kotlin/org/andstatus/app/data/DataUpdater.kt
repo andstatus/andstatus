@@ -102,23 +102,23 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
         )
         if (idWithThisOid != 0L) return activity
 
-        if (activity.getId() != 0L) {
+        if (activity.id != 0L) {
             if (StringUtil.isEmptyOrTemp(
                     MyQuery.idToOid(
                         execContext.myContext,
-                        OidEnum.ACTIVITY_OID, activity.getId(), 0
+                        OidEnum.ACTIVITY_OID, activity.id, 0
                     )
                 )
             ) {
-                updateActivityOid(execContext.myContext, activity.getId(), activity.getOid())
-                val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activity.getId())
+                updateActivityOid(execContext.myContext, activity.id, activity.getOid())
+                val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activity.id)
                 val downloadStatus = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId))
                 if (downloadStatus != DownloadStatus.LOADED && downloadStatus != DownloadStatus.NEEDS_UPDATE) {
                     updateNoteDownloadStatus(execContext.myContext, noteId, DownloadStatus.SENT)
                 }
             }
         }
-        AActivity.requestDownload(execContext.getMyAccount(), activity.getId(), false)
+        AActivity.requestDownload(execContext.getMyAccount(), activity.id, false)
         return activity
     }
 
@@ -131,17 +131,17 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
         }
         if (activity.isNotified().unknown && execContext.myContext.users.isMe(activity.getActor()) &&
             activity.getNote().getStatus().isPresentAtServer() &&
-            MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()).isTrue
+            MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.id).isTrue
         ) {
             activity.setNotified(TriState.FALSE)
         }
         activity.save(execContext.myContext)
-        lum.onNewActorActivity(ActorActivity(activity.getActor().actorId, activity.getId(), activity.getUpdatedDate()))
+        lum.onNewActorActivity(ActorActivity(activity.getActor().actorId, activity.id, activity.getUpdatedDate()))
         if (!activity.isAuthorActor()) {
             lum.onNewActorActivity(
                 ActorActivity(
                     activity.getAuthor().actorId,
-                    activity.getId(),
+                    activity.id,
                     activity.getUpdatedDate()
                 )
             )
@@ -291,7 +291,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 note.noteId = ParsedUri.fromUri(msgUri).getNoteId()
                 if (note.getConversationId() == 0L) {
                     val values2 = ContentValues()
-                    values2.put(NoteTable.CONVERSATION_ID, note.setConversationIdFromMsgId())
+                    values2.put(NoteTable.CONVERSATION_ID, note.setConversationIdFromNoteId())
                     execContext.getContext().contentResolver.update(msgUri, values2, null, null)
                 }
                 MyLog.v("Note") { "Added $note" }
@@ -333,9 +333,10 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 inReply.getNote().setConversationOid(activity.getNote().conversationOid)
             }
             DataUpdater(execContext).onActivity(inReply)
-            if (inReply.getNote().noteId != 0L) {
+            val inReplyNoteId = inReply.getNote().noteId
+            if (inReplyNoteId != 0L) {
                 activity.getNote().audience().add(inReply.getAuthor())
-                values.put(NoteTable.IN_REPLY_TO_NOTE_ID, inReply.getNote().noteId)
+                values.put(NoteTable.IN_REPLY_TO_NOTE_ID, inReplyNoteId)
                 if (inReply.getAuthor().actorId != 0L) {
                     values.put(NoteTable.IN_REPLY_TO_ACTOR_ID, inReply.getAuthor().actorId)
                 }

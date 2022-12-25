@@ -159,9 +159,9 @@ class DemoNoteInserter(val accountActor: Actor) {
     private fun checkActivityRecursively(activity: AActivity, level: Int) {
         val note = activity.getNote()
         if (level == 1 && note.nonEmpty) {
-            Assert.assertNotEquals("Activity was not added: $activity", 0, activity.getId())
+            Assert.assertNotEquals("Activity was not added: $activity", 0, activity.id)
         }
-        if (level > DataUpdater.MAX_RECURSING || activity.getId() == 0L) return
+        if (level > DataUpdater.MAX_RECURSING || activity.id == 0L) return
         Assert.assertNotEquals("Account is unknown: $activity", 0, activity.accountActor.actorId)
         val actor = activity.getActor()
         if (actor.nonEmpty) {
@@ -241,7 +241,7 @@ class DemoNoteInserter(val accountActor: Actor) {
         if (note.replies.isNotEmpty()) {
             for (replyActivity in note.replies) {
                 if (replyActivity.nonEmpty) {
-                    Assert.assertNotEquals("Reply added at level $level $replyActivity", 0, replyActivity.getId())
+                    Assert.assertNotEquals("Reply added at level $level $replyActivity", 0, replyActivity.id)
                     checkActivityRecursively(replyActivity, level + 1)
                 }
             }
@@ -329,7 +329,7 @@ class DemoNoteInserter(val accountActor: Actor) {
                 "Notification event type\n$activity\n",
                 eventType,
                 NotificationEventType.fromId(
-                    MyQuery.activityIdToLongColumnValue(ActivityTable.INTERACTION_EVENT, activity.getId())
+                    MyQuery.activityIdToLongColumnValue(ActivityTable.INTERACTION_EVENT, activity.id)
                 )
             )
             assertEquals(
@@ -338,9 +338,9 @@ class DemoNoteInserter(val accountActor: Actor) {
                     eventType != NotificationEventType.EMPTY &&
                         eventType != NotificationEventType.HOME
                 ),
-                MyQuery.activityIdToTriState(ActivityTable.INTERACTED, activity.getId())
+                MyQuery.activityIdToTriState(ActivityTable.INTERACTED, activity.id)
             )
-            val notifiedActorId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED_ACTOR_ID, activity.getId())
+            val notifiedActorId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED_ACTOR_ID, activity.id)
             val message = "Notified actor ID\n$activity\n"
             if (eventType == NotificationEventType.EMPTY) {
                 assertEquals(message, 0, notifiedActorId)
@@ -351,7 +351,7 @@ class DemoNoteInserter(val accountActor: Actor) {
                 assertEquals(
                     "Notified TriState $activity",
                     notified,
-                    MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId())
+                    MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.id)
                 )
             }
         }
@@ -373,10 +373,10 @@ class DemoNoteInserter(val accountActor: Actor) {
             activity.getNote().setContent(content, TextMediaType.PLAIN)
             val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
             val executionContext = CommandExecutionContext(
-                myContext, CommandData.newItemCommand(CommandEnum.UPDATE_NOTE, ma, activity.getId())
+                myContext, CommandData.newItemCommand(CommandEnum.UPDATE_NOTE, ma, activity.id)
             )
             return DataUpdater(executionContext).onActivity(activity).also {
-                assertTrue("Activity wasn't saved: $it", it.getId() != 0L)
+                assertTrue("Activity wasn't saved: $it", it.id != 0L)
                 assertTrue("Note wasn't saved: $it", it.getNote().noteId != 0L)
             }
         }

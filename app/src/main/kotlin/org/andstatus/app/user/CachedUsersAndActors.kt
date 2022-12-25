@@ -62,7 +62,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
                 + " FROM " + ActorSql.allTables()
                 + " WHERE " + UserTable.IS_MY + "=" + TriState.TRUE.id)
         val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromCursor(myContext, cursor, true) }
-        MyQuery.get(myContext, sql, function).forEach(Consumer { actor: Actor -> updateCache(actor) })
+        MyQuery.getSet(myContext, sql, function).forEach(Consumer { actor: Actor -> updateCache(actor) })
     }
 
     private fun initializeMyFriendsOrFollowers(groupType: GroupType, groupMembers: MutableMap<Long, MutableSet<Long>>) {
@@ -74,7 +74,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
                 " INNER JOIN (" + GroupMembership.selectSingleGroupMemberIds(myActors.keys, groupType, true) +
                 " ) as friends ON friends." + GroupMembersTable.MEMBER_ID +
                 "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID)
-        MyQuery.get(myContext, sql) { cursor: Cursor ->
+        MyQuery.getSet(myContext, sql) { cursor: Cursor ->
             val other: Actor = Actor.fromCursor(myContext, cursor, true)
             val me: Actor = Actor.load(myContext, DbUtils.getLong(cursor, MY_ACTOR_ID))
             groupMembers.compute(other.actorId, CollectionsUtil.addValue(me.actorId))
@@ -111,7 +111,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
                 + " FROM " + TimelineTable.TABLE_NAME
                 + ")")
         val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromCursor(myContext, cursor, true) }
-        MyQuery.get(myContext, sql, function)
+        MyQuery.getSet(myContext, sql, function)
     }
 
     fun containsMe(actors: Collection<Actor>): Boolean {
