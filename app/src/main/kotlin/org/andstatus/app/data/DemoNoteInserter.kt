@@ -369,6 +369,7 @@ class DemoNoteInserter(val accountActor: Actor) {
 
         fun sendingCreateNoteActivity(ma: MyAccount, content: String): AActivity {
             val activity = AActivity.newPartialNote(ma.actor, ma.actor, null, status = DownloadStatus.SENDING)
+            activity.audience().addVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS)
             activity.getNote().setContent(content, TextMediaType.PLAIN)
             val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
             val executionContext = CommandExecutionContext(

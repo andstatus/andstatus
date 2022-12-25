@@ -359,7 +359,7 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
     }
 
     private fun findExisting(myContext: MyContext) {
-        if (!oid.isNullOrEmpty()) {
+        if (oid.isNotEmpty()) {
             id = MyQuery.oidToId(myContext, OidEnum.ACTIVITY_OID, accountActor.origin.id, oid)
         }
         if (id != 0L) {
@@ -584,13 +584,13 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
             activity.insDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE)
             return activity
         }
-    }
 
-    fun requestDownload(ma: MyAccount, activityId: Long, isManuallyLaunched: Boolean) {
-        MyLog.v(EMPTY.classTag) { "Activity id:$activityId will be loaded from the Internet" }
-        val command: CommandData = CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, activityId)
-            .setManuallyLaunched(isManuallyLaunched)
-            .setInForeground(isManuallyLaunched)
-        MyServiceManager.sendCommand(command)
+        fun requestDownload(ma: MyAccount, activityId: Long, isManuallyLaunched: Boolean) {
+            MyLog.v(EMPTY.classTag) { "Activity id:$activityId will be loaded from the Internet" }
+            val command: CommandData = CommandData.newItemCommand(CommandEnum.GET_ACTIVITY, ma, activityId)
+                .setManuallyLaunched(isManuallyLaunched)
+                .setInForeground(isManuallyLaunched)
+            MyServiceManager.sendCommand(command)
+        }
     }
 }

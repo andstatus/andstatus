@@ -22,6 +22,8 @@ import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.MyProvider.Companion.updateActivityOid
+import org.andstatus.app.data.MyProvider.Companion.updateNoteDownloadStatus
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.database.table.NoteTable
@@ -43,6 +45,7 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import java.util.*
 
 /**
@@ -54,11 +57,12 @@ import java.util.*
 class DataUpdater(private val execContext: CommandExecutionContext) {
     private val lum: LatestActorActivities = LatestActorActivities()
     private val keywordsFilter: KeywordsFilter = KeywordsFilter(
-            SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""))
+        SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, "")
+    )
 
     constructor(ma: MyAccount) : this(CommandExecutionContext(
-            ma.myContext.takeIf { !it.isEmptyOrExpired } ?: MyContextHolder.myContextHolder.getNow(),
-            CommandData.newAccountCommand(CommandEnum.EMPTY, ma)
+        ma.myContext.takeIf { !it.isEmptyOrExpired } ?: MyContextHolder.myContextHolder.getNow(),
+        CommandData.newAccountCommand(CommandEnum.EMPTY, ma)
     )) {
     }
 
@@ -71,10 +75,12 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
     }
 
     private fun onActivityInternal(activity: AActivity, saveLum: Boolean, recursing: Int): AActivity {
-        if (activity.getObjectType() == AObjectType.EMPTY ||
-            recursing > MAX_RECURSING) {
+        if (activity.type == ActivityType.UNKNOWN) {
+            if (activity.getOid().isRealOid) return onActivityOidReceived(activity)
             return activity
         }
+        if (activity.getObjectType() == AObjectType.EMPTY || recursing > MAX_RECURSING) return activity
+
         updateObjActor(activity.accountActor.update(activity.getActor()), recursing + 1)
         when (activity.getObjectType()) {
             AObjectType.ACTIVITY -> onActivityInternal(activity.getActivity(), false, recursing + 1)
@@ -89,21 +95,56 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
         return activity
     }
 
+    private fun onActivityOidReceived(activity: AActivity): AActivity {
+        val idWithThisOid = MyQuery.oidToId(
+            execContext.myContext, OidEnum.ACTIVITY_OID,
+            activity.accountActor.origin.id, activity.getOid()
+        )
+        if (idWithThisOid != 0L) return activity
+
+        if (activity.getId() != 0L) {
+            if (StringUtil.isEmptyOrTemp(
+                    MyQuery.idToOid(
+                        execContext.myContext,
+                        OidEnum.ACTIVITY_OID, activity.getId(), 0
+                    )
+                )
+            ) {
+                updateActivityOid(execContext.myContext, activity.getId(), activity.getOid())
+                val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activity.getId())
+                val downloadStatus = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId))
+                if (downloadStatus != DownloadStatus.LOADED && downloadStatus != DownloadStatus.NEEDS_UPDATE) {
+                    updateNoteDownloadStatus(execContext.myContext, noteId, DownloadStatus.SENT)
+                }
+            }
+        }
+        AActivity.requestDownload(execContext.getMyAccount(), activity.getId(), false)
+        return activity
+    }
+
     private fun updateActivity(activity: AActivity) {
         if (activity.isSubscribedByMe().notFalse
-                && activity.getUpdatedDate() > 0 && (activity.isMyActorOrAuthor(execContext.myContext)
-                        || activity.getNote().audience().containsMe(execContext.myContext))) {
+            && activity.getUpdatedDate() > 0 && (activity.isMyActorOrAuthor(execContext.myContext)
+                || activity.getNote().audience().containsMe(execContext.myContext))
+        ) {
             activity.setSubscribedByMe(TriState.TRUE)
         }
         if (activity.isNotified().unknown && execContext.myContext.users.isMe(activity.getActor()) &&
-                activity.getNote().getStatus().isPresentAtServer() &&
-                MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()).isTrue) {
+            activity.getNote().getStatus().isPresentAtServer() &&
+            MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()).isTrue
+        ) {
             activity.setNotified(TriState.FALSE)
         }
         activity.save(execContext.myContext)
         lum.onNewActorActivity(ActorActivity(activity.getActor().actorId, activity.getId(), activity.getUpdatedDate()))
         if (!activity.isAuthorActor()) {
-            lum.onNewActorActivity(ActorActivity(activity.getAuthor().actorId, activity.getId(), activity.getUpdatedDate()))
+            lum.onNewActorActivity(
+                ActorActivity(
+                    activity.getAuthor().actorId,
+                    activity.getId(),
+                    activity.getUpdatedDate()
+                )
+            )
         }
         execContext.getResult().onNotificationEvent(activity.getNewNotificationEventType())
     }
@@ -140,7 +181,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             val statusStored: DownloadStatus
             if (note.noteId != 0L) {
                 statusStored = DownloadStatus.load(
-                        MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId))
+                    MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId)
+                )
                 updatedDateStored = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, note.noteId)
             } else {
                 updatedDateStored = 0
@@ -154,12 +196,16 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
              * 2. Note was "unsent" i.e. it had content, but didn't have oid
              */
             val isFirstTimeLoaded = (note.getStatus() == DownloadStatus.LOADED || note.noteId == 0L) &&
-                    statusStored != DownloadStatus.LOADED
+                statusStored != DownloadStatus.LOADED
             val isFirstTimeSent = !isFirstTimeLoaded && note.noteId != 0L &&
-                    StringUtil.nonEmptyNonTemp(note.oid) &&
-                    statusStored.isUnsentDraft() &&
-                    StringUtil.isEmptyOrTemp(MyQuery.idToOid(execContext.myContext,
-                            OidEnum.NOTE_OID, note.noteId, 0))
+                StringUtil.nonEmptyNonTemp(note.oid) &&
+                statusStored.isUnsentDraft() &&
+                StringUtil.isEmptyOrTemp(
+                    MyQuery.idToOid(
+                        execContext.myContext,
+                        OidEnum.NOTE_OID, note.noteId, 0
+                    )
+                )
             if (note.getStatus() == DownloadStatus.UNKNOWN && isFirstTimeSent) {
                 note.setStatus(DownloadStatus.SENT)
             }
@@ -228,19 +274,20 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this) {
                     ((if (note.noteId == 0L) "insertNote" else "updateNote " + note.noteId)
-                            + ":" + note.getStatus()
-                            + (if (isFirstTimeLoaded) " new;" else "")
-                            + (if (isDraftUpdated) " draft updated;" else "")
-                            + (if (isFirstTimeSent) " just sent;" else "")
-                            + if (isNewerThanInDatabase) " newer, updated at " + Date(note.updatedDate) + ";" else "")
+                        + ":" + note.getStatus()
+                        + (if (isFirstTimeLoaded) " new;" else "")
+                        + (if (isDraftUpdated) " draft updated;" else "")
+                        + (if (isFirstTimeSent) " just sent;" else "")
+                        + if (isNewerThanInDatabase) " newer, updated at " + Date(note.updatedDate) + ";" else "")
                 }
             }
-            if ( MyContextHolder.myContextHolder.getNow().isTestRun) {
-                 MyContextHolder.myContextHolder.getNow().putAssertionData(MSG_ASSERTION_KEY, values)
+            if (MyContextHolder.myContextHolder.getNow().isTestRun) {
+                MyContextHolder.myContextHolder.getNow().putAssertionData(MSG_ASSERTION_KEY, values)
             }
             if (note.noteId == 0L) {
                 val msgUri = execContext.getContext().contentResolver.insert(
-                        MatchedUri.getMsgUri(me.actorId, 0), values) ?: Uri.EMPTY
+                    MatchedUri.getMsgUri(me.actorId, 0), values
+                ) ?: Uri.EMPTY
                 note.noteId = ParsedUri.fromUri(msgUri).getNoteId()
                 if (note.getConversationId() == 0L) {
                     val values2 = ContentValues()
@@ -321,7 +368,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 return
             }
         } else if (objActor.isNotFullyDefined() && objActor.isMyFriend.unknown
-                && activity.followedByActor().unknown && objActor.groupType == GroupType.UNKNOWN) {
+            && activity.followedByActor().unknown && objActor.groupType == GroupType.UNKNOWN
+        ) {
             MyLog.v(this) { "$method; Skipping existing partially defined: $objActor" }
             return
         }
@@ -414,8 +462,9 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 values.put(ActorTable.ORIGIN_ID, actor.origin.id)
                 values.put(ActorTable.USER_ID, actor.user.userId)
                 actor.actorId = ParsedUri.fromUri(
-                        execContext.getContext().contentResolver.insert(actorUri, values))
-                        .getActorId()
+                    execContext.getContext().contentResolver.insert(actorUri, values)
+                )
+                    .getActorId()
             } else if (values.size() > 0) {
                 execContext.getContext().contentResolver.update(actorUri, values, null, null)
             }
@@ -438,7 +487,12 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
     private fun updateFriendships(activity: AActivity, me: MyAccount) {
         val actor = activity.getObjActor()
         GroupMembership.setFriendshipAndReload(execContext.myContext, me.actor, actor.isMyFriend, actor)
-        GroupMembership.setFriendshipAndReload(execContext.myContext, activity.getActor(), activity.followedByActor(), actor)
+        GroupMembership.setFriendshipAndReload(
+            execContext.myContext,
+            activity.getActor(),
+            activity.followedByActor(),
+            actor
+        )
     }
 
     private fun fixActorUpdatedDate(activity: AActivity, actor: Actor) {
@@ -450,14 +504,16 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
 
     fun downloadOneNoteBy(actor: Actor): Try<Unit> {
         return execContext.getConnection()
-                .getTimeline(true, TimelineType.SENT.connectionApiRoutine, TimelinePosition.EMPTY,
-                        TimelinePosition.EMPTY, 1, actor)
-                .map { page: InputTimelinePage ->
-                    for (item in page.items) {
-                        onActivity(item, false)
-                    }
-                    saveLum()
+            .getTimeline(
+                true, TimelineType.SENT.connectionApiRoutine, TimelinePosition.EMPTY,
+                TimelinePosition.EMPTY, 1, actor
+            )
+            .map { page: InputTimelinePage ->
+                for (item in page.items) {
+                    onActivity(item, false)
                 }
+                saveLum()
+            }
     }
 
     companion object {

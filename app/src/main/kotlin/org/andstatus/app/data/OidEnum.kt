@@ -28,5 +28,6 @@ enum class OidEnum {
     REBLOG_OID,
 
     /** oid of this Actor  */
-    ACTOR_OID, ACTIVITY_OID
+    ACTOR_OID,
+    ACTIVITY_OID
 }

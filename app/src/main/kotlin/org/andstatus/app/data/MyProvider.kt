@@ -480,6 +480,12 @@ class MyProvider : ContentProvider() {
                     BaseColumns._ID + "=" + noteId)
         }
 
+        fun updateNoteDownloadStatus(myContext: MyContext, noteId: Long, downloadStatus: DownloadStatus) {
+            update(myContext, NoteTable.TABLE_NAME,
+                NoteTable.NOTE_STATUS + "=" + downloadStatus.save(),
+                BaseColumns._ID + "=" + noteId)
+        }
+
         fun updateNoteFavorited(myContext: MyContext, origin: Origin, noteId: Long) {
             val favorited: TriState = TriState.fromBoolean(
                     myContext.users.containsMe(MyQuery.getStargazers(myContext.database, origin, noteId))
@@ -487,6 +493,12 @@ class MyProvider : ContentProvider() {
             update(myContext, NoteTable.TABLE_NAME,
                     NoteTable.FAVORITED + "=" + favorited.id,
                     BaseColumns._ID + "=" + noteId)
+        }
+
+        fun updateActivityOid(myContext: MyContext, activityId: Long, oid: String) {
+            update(myContext, ActivityTable.TABLE_NAME,
+                ActivityTable.ACTIVITY_OID + "='$oid'",
+                BaseColumns._ID + "=$activityId")
         }
 
         fun clearAllNotifications(myContext: MyContext) {

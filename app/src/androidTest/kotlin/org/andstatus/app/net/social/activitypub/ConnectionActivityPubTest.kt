@@ -467,7 +467,7 @@ class ConnectionActivityPubTest {
 
     @Test
     fun postNote_IdReturnedInLocation_withSave() {
-        val content = "Issue #573, Note posted, id returned in header " + demoData.testRunUid
+        val content = "Issue #573, Note posted, id returned in a header " + demoData.testRunUid
         val activity1 = DemoNoteInserter.sendingCreateNoteActivity(stub.data.getMyAccount(), content)
 
         val activityOid = stub.data.getOriginUrl()!!.toExternalForm() + "/activities/3237932-" + demoData.testRunUid

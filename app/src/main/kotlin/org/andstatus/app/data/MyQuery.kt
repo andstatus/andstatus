@@ -177,6 +177,8 @@ object MyQuery {
         if (entityId > 0) {
             try {
                 sql = when (oe) {
+                    OidEnum.ACTIVITY_OID -> "SELECT " + ActivityTable.ACTIVITY_OID + " FROM " +
+                        ActivityTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId
                     OidEnum.NOTE_OID -> "SELECT " + NoteTable.NOTE_OID + " FROM " +
                         NoteTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + entityId
                     OidEnum.ACTOR_OID -> "SELECT " + ActorTable.ACTOR_OID + " FROM " +
