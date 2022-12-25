@@ -1,1 +1,1 @@
-v.59.12 Improve OAuth 2.0 support
+v.59.14 Improve ActivityPub C2S support
