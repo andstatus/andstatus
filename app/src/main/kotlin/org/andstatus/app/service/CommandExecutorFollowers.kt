@@ -144,7 +144,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
         execContext.getResult().incrementDownloadedCount()
         broadcastProgress(execContext.getContext().getText(actionStringRes).toString()
                 + ": " + actorIdsOld.size + " -> " + actorsNew.size, false)
-        val loadLatestNotes = actorsNew.size < 30 // TODO: Too long...
+        val loadLatestNotes = actorsNew.size < 2 // TODO: This is too long, so we almost disabled this feature...
         if (loadLatestNotes && !areAllNotesLoaded(actorsNew)) {
             if (updateNewActorsAndTheirLatestActions(actorsNew)) return
         } else {
