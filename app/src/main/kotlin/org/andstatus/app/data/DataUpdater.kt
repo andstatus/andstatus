@@ -473,10 +473,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             updateFriendships(activity, me)
             actor.avatarFile.resetAvatarErrors(execContext.myContext)
             execContext.myContext.users.reload(actor)
-            if (actor.isNotFullyDefined() && actor.canGetActor()) {
-                actor.requestDownload(false)
-            }
-            actor.requestAvatarDownload()
+            actor.autoRequestDownloadIfNeeded()
             if (actor.hasLatestNote()) {
                 updateNote(actor.getLatestActivity(), recursing + 1)
             }

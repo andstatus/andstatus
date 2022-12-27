@@ -744,6 +744,13 @@ class Actor private constructor(// In our system
         return AvatarFile.EMPTY !== avatarFile
     }
 
+    fun autoRequestDownloadIfNeeded() {
+        if (isNotFullyDefined() && canGetActor() && groupType == GroupType.NOT_A_GROUP) {
+            requestDownload(false)
+            requestAvatarDownload()
+        }
+    }
+
     fun requestDownload(isManuallyLaunched: Boolean) {
         if (canGetActor()) {
             MyLog.v(this) { "Actor $this will be loaded from the Internet" }
@@ -877,8 +884,8 @@ class Actor private constructor(// In our system
             useCache: Boolean
         ): Actor {
             val sql = ("SELECT " + ActorSql.selectFullProjection()
-                    + " FROM " + ActorSql.allTables()
-                    + " WHERE " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + "=" + actorId)
+                + " FROM " + ActorSql.allTables()
+                + " WHERE " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + "=" + actorId)
             val function = { cursor: Cursor -> fromCursor(myContext, cursor, useCache) }
             return MyQuery.getSet(myContext, sql, function).stream().findFirst().orElseGet(supplier)
         }
@@ -980,7 +987,7 @@ class Actor private constructor(// In our system
                 } else {
                     return Optional.of(
                         uniqueName.toLowerCase() + "@" +
-                                origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
+                            origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
                     )
                 }
             }

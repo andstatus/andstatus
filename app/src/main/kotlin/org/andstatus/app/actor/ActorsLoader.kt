@@ -64,7 +64,7 @@ open class ActorsLoader(val myContext: MyContext,
         val existing = items.indexOf(item)
         if (existing >= 0) return items[existing].actor
         items.add(item)
-        if (actor.actorId == 0L && mAllowLoadingFromInternet) actor.requestDownload(false)
+        if (actor.actorId == 0L && mAllowLoadingFromInternet) actor.autoRequestDownloadIfNeeded()
         mProgress?.publish(Integer.toString(size()))
         return actor
     }

@@ -574,4 +574,10 @@ class ConnectionPumpioTest {
         val oid = DemoData.demoData.conversationAuthorSecondActorOid
         Assert.assertEquals("Username from $oid", "second", connection.actorOidToUsername(oid))
     }
+
+    @Test
+    fun testGetFriendsTypeActor() {
+        // TODO:
+    }
+
 }
