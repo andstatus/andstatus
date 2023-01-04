@@ -118,7 +118,7 @@ class MyService(
     }
 
     private fun isForcedToStop(): Boolean {
-        return mForcedToStop || MyContextHolder.myContextHolder.isShuttingDown()
+        return mForcedToStop || MyContextHolder.myContextHolder.isShuttingDown
     }
 
     fun broadcastBeforeExecutingCommand(commandData: CommandData) {

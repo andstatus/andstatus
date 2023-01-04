@@ -62,6 +62,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.TryUtils.getOrElseRecover
 import org.andstatus.app.util.UriUtils
 import java.util.concurrent.TimeUnit
 
@@ -84,8 +85,8 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
 
     override fun onResume() {
         super.onResume()
-        val activity = getMyActivity()
-        if (activity == null || activity.restartMeIfNeeded()) return
+        val activity = getMyActivity() ?: return
+        activity.myReadyContextOrRestartMe().getOrElseRecover { return }
         activity.setTitle(MySettingsGroup.from(this).getTitleResId())
         showAllPreferences()
         SharedPreferencesUtil.getDefaultSharedPreferences()?.registerOnSharedPreferenceChangeListener(this)

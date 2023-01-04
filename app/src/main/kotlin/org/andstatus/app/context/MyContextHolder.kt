@@ -35,6 +35,7 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TamperingDetector
+import org.andstatus.app.util.TryUtils
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.function.Consumer
@@ -51,10 +52,11 @@ class MyContextHolder private constructor(
     private val appStartedAt = SystemClock.elapsedRealtime()
 
     @Volatile
-    private var isShuttingDown = false
+    var isShuttingDown = false
 
     // TODO: Should be one object for atomic updates. start ---
     private val contextLock: Any = Any()
+
     @Volatile
     private var myFutureContext: MyFutureContext = MyFutureContext.completed(MyContextEmpty.EMPTY)
     // end ---
@@ -98,6 +100,15 @@ class MyContextHolder private constructor(
         return getFuture().tryNow()
     }
 
+    /**
+     * Immediately return current or previous context or failure if it is not ready
+     */
+    fun tryReadyNow(): Try<MyContext> = tryNow()
+        .flatMap {
+            if (it.isReady) Try.success(it)
+            else TryUtils.failure("Context is not ready: ${it.state}")
+        }
+
     fun getBlocking(): MyContext {
         return myFutureContext.tryBlocking().getOrElse(myFutureContext.getNow())
     }
@@ -119,7 +130,7 @@ class MyContextHolder private constructor(
     }
 
     fun needToRestartActivity(): Boolean {
-        return !getFuture().isReady()
+        return !getFuture().isReady
     }
 
     fun initialize(context: Context?): MyContextHolder {
@@ -151,12 +162,17 @@ class MyContextHolder private constructor(
     }
 
     fun thenStartActivity(intent: Intent?): MyContextHolder {
-        return whenSuccessAsync({ myContext: MyContext -> MyFutureContext.startActivity(myContext, intent) },
-                UiThreadExecutor.INSTANCE)
+        return whenSuccessAsync(
+            { myContext: MyContext -> MyFutureContext.startActivity(myContext, intent) },
+            UiThreadExecutor.INSTANCE
+        )
     }
 
     fun thenStartApp(): MyContextHolder {
-        return whenSuccessAsync({ myContext: MyContext -> FirstActivity.startApp(myContext) }, UiThreadExecutor.INSTANCE)
+        return whenSuccessAsync(
+            { myContext: MyContext -> FirstActivity.startApp(myContext) },
+            UiThreadExecutor.INSTANCE
+        )
     }
 
     fun whenSuccessAsync(consumer: Consumer<MyContext>, executor: Executor): MyContextHolder {
@@ -183,7 +199,10 @@ class MyContextHolder private constructor(
         synchronized(contextLock) {
             if (getNow().isEmpty) {
                 val contextCreator = MyContextImpl(MyContextEmpty.EMPTY, context, calledBy)
-                requireNonNullContext(contextCreator.baseContext, calledBy, "no compatible context")
+                checkNotNull(contextCreator.baseContext) {
+                    "No compatible context" + ", called by " +
+                        Taggable.anyToTag(calledBy)
+                }
                 myFutureContext = MyFutureContext.completed(contextCreator)
             }
         }
@@ -201,8 +220,12 @@ class MyContextHolder private constructor(
         if (showVersion) builder.append(getVersionText(context))
         MyStringBuilder.appendWithSpace(builder, MyLog.currentDateTimeForLogLine())
         MyStringBuilder.appendWithSpace(builder, ", started")
-        MyStringBuilder.appendWithSpace(builder, RelativeTime.getDifference(context, appStartedAt,
-                SystemClock.elapsedRealtime()))
+        MyStringBuilder.appendWithSpace(
+            builder, RelativeTime.getDifference(
+                context, appStartedAt,
+                SystemClock.elapsedRealtime()
+            )
+        )
         builder.append("\n")
         builder.append(ImageCaches.getCacheInfo())
         builder.append("\n")
@@ -224,8 +247,10 @@ class MyContextHolder private constructor(
         if (builder.isEmpty()) {
             builder.append("AndStatus v.?")
         }
-        MyStringBuilder.appendWithSpace(builder,
-            if (executionMode == ExecutionMode.DEVICE) "" else executionMode.code)
+        MyStringBuilder.appendWithSpace(
+            builder,
+            if (executionMode == ExecutionMode.DEVICE) "" else executionMode.code
+        )
         MyStringBuilder.appendWithSpace(builder, TamperingDetector.getAppSignatureInfo())
         return builder.toString()
     }
@@ -239,26 +264,9 @@ class MyContextHolder private constructor(
         return onRestore
     }
 
-    private fun calculateExecutionMode(): ExecutionMode {
-        val myContext = getNow()
-        if (myContext.isEmpty) return ExecutionMode.UNKNOWN
-
-        if ("true" == Settings.System.getString(myContext.context.contentResolver, "firebase.test.lab")) {
-            // See https://firebase.google.com/docs/test-lab/android-studio
-            return if (myContext.isTestRun) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
-        }
-        return if (myContext.isTestRun) {
-            ExecutionMode.TEST
-        } else ExecutionMode.DEVICE
-    }
-
     fun onShutDown() {
         isShuttingDown = true
         release { "onShutDown" }
-    }
-
-    fun isShuttingDown(): Boolean {
-        return isShuttingDown
     }
 
     fun release(reason: Supplier<String>) {
@@ -267,9 +275,5 @@ class MyContextHolder private constructor(
 
     companion object {
         val myContextHolder: MyContextHolder = MyContextHolder()
-
-        private fun requireNonNullContext(context: Context?, caller: Any?, message: String) {
-            checkNotNull(context) { ": " + message + ", called by " + Taggable.anyToTag(caller) }
-        }
     }
 }

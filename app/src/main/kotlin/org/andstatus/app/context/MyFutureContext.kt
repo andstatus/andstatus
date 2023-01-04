@@ -32,6 +32,7 @@ import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.Taggable
+import org.andstatus.app.util.TryUtils
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.function.Consumer
@@ -55,20 +56,18 @@ class MyFutureContext private constructor(
         return completed(previousContext)
     }
 
-    fun isCompletedExceptionally(): Boolean {
-        return future.isCompletedExceptionally()
-    }
+    val isCompletedExceptionally: Boolean get() = future.isCompletedExceptionally
 
-    fun isReady(): Boolean {
-        return getNow().isReady
-    }
+    val isReady: Boolean get() = getNow().isReady
 
     fun getNow(): MyContext {
         return tryNow().getOrElse(previousContext)
     }
 
     fun tryNow(): Try<MyContext> {
-        return Try.success(previousContext).map { valueIfAbsent: MyContext? -> future.getNow(valueIfAbsent) }
+        return Try.success(previousContext)
+            .map { future.getNow(it) }
+            .flatMap { Try.success(it) ?: TryUtils.failure("No context returned from future") }
     }
 
     fun whenSuccessAsync(consumer: Consumer<MyContext>, executor: Executor): MyFutureContext {
@@ -100,8 +99,12 @@ class MyFutureContext private constructor(
     private fun getHealthyFuture(calledBy: Any?): CompletableFuture<MyContext> {
         if (future.isDone()) {
             tryNow().onFailure { throwable: Throwable? ->
-                MyLog.i(instanceTag, if (future.isCancelled()) "Previous initialization was cancelled"
-                else "Previous initialization completed exceptionally, now called by " + calledBy, throwable)
+                MyLog.i(
+                    instanceTag,
+                    if (future.isCancelled()) "Previous initialization was cancelled"
+                    else "Previous initialization completed exceptionally, now called by $calledBy",
+                    throwable
+                )
             }
         }
         return if (future.isCompletedExceptionally()) completedFuture(previousContext) else future
@@ -116,7 +119,7 @@ class MyFutureContext private constructor(
 
         fun fromPrevious(previousFuture: MyFutureContext, calledBy: Any?): MyFutureContext {
             val future = previousFuture.getHealthyFuture(calledBy)
-                    .thenApplyAsync(initializeMyContextIfNeeded(calledBy ?: previousFuture), NonUiThreadExecutor.INSTANCE)
+                .thenApplyAsync(initializeMyContextIfNeeded(calledBy ?: previousFuture), NonUiThreadExecutor.INSTANCE)
             return MyFutureContext(previousFuture.getNow(), future)
         }
 
@@ -136,8 +139,8 @@ class MyFutureContext private constructor(
                 } else {
                     val reasonSupplier = Supplier {
                         ("Initialization: " + reason
-                                + ", previous:" + Taggable.anyToTag(previousContext)
-                                + " by " + Taggable.anyToTag(calledBy))
+                            + ", previous:" + Taggable.anyToTag(previousContext)
+                            + " by " + Taggable.anyToTag(calledBy))
                     }
                     MyLog.v(TAG) { "Preparing for " + reasonSupplier.get() }
                     release(previousContext, reasonSupplier)

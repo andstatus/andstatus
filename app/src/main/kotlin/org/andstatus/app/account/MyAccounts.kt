@@ -59,8 +59,10 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         }
         calculateDistinctOriginsCount()
         recentAccounts.addAll(myAccounts.stream().limit(3).collect(Collectors.toList()))
-        MyLog.i(this, "accountsInitializedMs:" + stopWatch.time + "; "
-                + myAccounts.size + " accounts in " + distinctOriginsCount + " origins")
+        MyLog.i(
+            this, "accountsInitializedMs:" + stopWatch.time + "; "
+                + myAccounts.size + " accounts in " + distinctOriginsCount + " origins"
+        )
         return this
     }
 
@@ -85,7 +87,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
      */
     fun delete(ma: MyAccount): Boolean {
         val myAccountToDelete = myAccounts.stream().filter { myAccount: MyAccount -> myAccount == ma }
-                .findFirst().orElse(MyAccount.EMPTY)
+            .findFirst().orElse(MyAccount.EMPTY)
         if (myAccountToDelete.nonValid) return false
         MyAccountBuilder.fromMyAccount(myAccountToDelete).deleteData()
         myAccounts.remove(myAccountToDelete)
@@ -149,59 +151,77 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
 
     private fun fromActor(other: Actor, sameOriginOnly: Boolean, succeededOnly: Boolean): MyAccount {
         return myAccounts.stream().filter { ma: MyAccount -> ma.isValidAndSucceeded() || !succeededOnly }
-                .filter { ma: MyAccount -> ma.actor.isSame(other, sameOriginOnly) }
-                .findFirst().orElseGet { fromMyActors(other, sameOriginOnly) }
+            .filter { ma: MyAccount -> ma.actor.isSame(other, sameOriginOnly) }
+            .findFirst().orElseGet { fromMyActors(other, sameOriginOnly) }
     }
 
     private fun fromMyActors(other: Actor, sameOriginOnly: Boolean): MyAccount {
         return myAccounts.stream().filter { ma: MyAccount ->
             ((!sameOriginOnly || ma.origin == other.origin)
-                    && myContext.users.myActors.values.stream()
-                    .filter { actor: Actor -> actor.user.userId == ma.actor.user.userId }
-                    .anyMatch { actor: Actor -> actor.isSame(other, sameOriginOnly) })
+                && myContext.users.myActors.values.stream()
+                .filter { actor: Actor -> actor.user.userId == ma.actor.user.userId }
+                .anyMatch { actor: Actor -> actor.isSame(other, sameOriginOnly) })
         }
-                .findFirst().orElse(MyAccount.EMPTY)
+            .findFirst().orElse(MyAccount.EMPTY)
     }
 
     /** My account, which can be used to sync the "other" actor's data and to interact with that actor  */
     fun toSyncThatActor(other: Actor): MyAccount {
         return if (other.isEmpty) MyAccount.EMPTY else Stream.of(fromActor(other, true, true))
-                .filter { obj: MyAccount -> obj.isValid }.findFirst()
-                .orElseGet {
-                    forRelatedActor(other, true, true)
-                            .orElseGet({ if (other.origin.isEmpty) MyAccount.EMPTY else getFirstPreferablySucceededForOrigin(other.origin) })
-                }
+            .filter { obj: MyAccount -> obj.isValid }.findFirst()
+            .orElseGet {
+                forRelatedActor(other, true, true)
+                    .orElseGet {
+                        if (other.origin.isEmpty) MyAccount.EMPTY
+                        else getFirstPreferablySucceededForOrigin(other.origin)
+                    }
+            }
     }
 
-    private fun forRelatedActor(relatedActor: Actor, sameOriginOnly: Boolean, succeededOnly: Boolean): Optional<MyAccount> {
-        val forFriend = forFriendOfFollower(relatedActor, sameOriginOnly, succeededOnly,
-                myContext.users.friendsOfMyActors)
-        return if (forFriend.isPresent()) forFriend else forFriendOfFollower(relatedActor, sameOriginOnly, succeededOnly, myContext.users.followersOfMyActors)
+    private fun forRelatedActor(
+        relatedActor: Actor,
+        sameOriginOnly: Boolean,
+        succeededOnly: Boolean
+    ): Optional<MyAccount> {
+        val forFriend = forFriendOfFollower(
+            relatedActor, sameOriginOnly, succeededOnly,
+            myContext.users.friendsOfMyActors
+        )
+        return if (forFriend.isPresent()) forFriend else forFriendOfFollower(
+            relatedActor,
+            sameOriginOnly,
+            succeededOnly,
+            myContext.users.followersOfMyActors
+        )
     }
 
-    private fun forFriendOfFollower(friend: Actor, sameOriginOnly: Boolean, succeededOnly: Boolean,
-                                    friendsOrFollowers: MutableMap<Long, MutableSet<Long>>): Optional<MyAccount> {
+    private fun forFriendOfFollower(
+        friend: Actor, sameOriginOnly: Boolean, succeededOnly: Boolean,
+        friendsOrFollowers: MutableMap<Long, MutableSet<Long>>
+    ): Optional<MyAccount> {
         return friendsOrFollowers.getOrDefault(friend.actorId, emptySet<Long>()).stream()
-                .map { actorId: Long -> fromActorId(actorId) }
-                .filter { ma: MyAccount -> ma.isValidAndSucceeded() || !succeededOnly }
-                .filter { ma: MyAccount -> !sameOriginOnly || ma.origin == friend.origin }
-                .sorted()
-                .findFirst()
+            .map { actorId: Long -> fromActorId(actorId) }
+            .filter { ma: MyAccount -> ma.isValidAndSucceeded() || !succeededOnly }
+            .filter { ma: MyAccount -> !sameOriginOnly || ma.origin == friend.origin }
+            .sorted()
+            .findFirst()
     }
 
     /** Doesn't take origin into account  */
     fun fromWebFingerId(webFingerId: String?): MyAccount {
         return if (webFingerId.isNullOrEmpty()) MyAccount.EMPTY else myAccounts.stream()
-                .filter { myAccount: MyAccount -> myAccount.getWebFingerId() == webFingerId }
-                .findFirst()
-                .orElse(MyAccount.EMPTY)
+            .filter { myAccount: MyAccount -> myAccount.getWebFingerId() == webFingerId }
+            .findFirst()
+            .orElse(MyAccount.EMPTY)
     }
 
     /**
      * @return current MyAccount (MyAccount selected by the User) or EMPTY if no persistent accounts exist
      */
-    val currentAccount: MyAccount get() = recentAccounts.stream()
-            .findFirst().orElse(myAccounts.stream().findFirst().orElse(MyAccount.EMPTY))
+    val currentAccount: MyAccount
+        get() = recentAccounts.firstOrNull()
+            ?: myAccounts.firstOrNull()
+            ?: MyAccount.EMPTY
 
     /**
      * @return 0 if no valid persistent accounts exist
@@ -209,7 +229,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     val currentAccountActorId: Long get() = currentAccount.actorId
 
     fun getFirstSucceeded(): MyAccount {
-        return getFirstPreferablySucceededForOrigin( Origin.EMPTY)
+        return getFirstPreferablySucceededForOrigin(Origin.EMPTY)
     }
 
     /**
@@ -262,8 +282,8 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
      */
     fun firstOtherSucceededForSameOrigin(origin: Origin, thisAccount: MyAccount): MyAccount {
         return succeededForSameOrigin(origin).stream()
-                .filter { ma: MyAccount -> ma != thisAccount }
-                .sorted().findFirst().orElse(thisAccount)
+            .filter { ma: MyAccount -> ma != thisAccount }
+            .sorted().findFirst().orElse(thisAccount)
     }
 
     /**
@@ -273,18 +293,18 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
      */
     fun succeededForSameOrigin(origin: Origin): MutableSet<MyAccount> {
         return if (origin.isEmpty) myAccounts.stream()
-                .filter { obj: MyAccount -> obj.isValidAndSucceeded() }.collect(Collectors.toSet()) else myAccounts.stream()
-                .filter { ma: MyAccount -> origin == ma.origin }
-                .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
-                .collect(Collectors.toSet())
+            .filter { obj: MyAccount -> obj.isValidAndSucceeded() }.collect(Collectors.toSet()) else myAccounts.stream()
+            .filter { ma: MyAccount -> origin == ma.origin }
+            .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
+            .collect(Collectors.toSet())
     }
 
     /** @return this account if there are no others
      */
     fun firstOtherSucceededForSameUser(actor: Actor, thisAccount: MyAccount): MyAccount {
         return succeededForSameUser(actor).stream()
-                .filter { ma: MyAccount -> ma != thisAccount }
-                .sorted().findFirst().orElse(thisAccount)
+            .filter { ma: MyAccount -> ma != thisAccount }
+            .sorted().findFirst().orElse(thisAccount)
     }
 
     /**
@@ -295,11 +315,11 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     fun succeededForSameUser(actor: Actor): MutableSet<MyAccount> {
         val origins = actor.user.knownInOrigins(myContext)
         return if (origins.isEmpty()) myAccounts.stream()
-                .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
-                .collect(Collectors.toSet()) else myAccounts.stream()
-                .filter { ma: MyAccount -> origins.contains(ma.origin) }
-                .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
-                .collect(Collectors.toSet())
+            .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
+            .collect(Collectors.toSet()) else myAccounts.stream()
+            .filter { ma: MyAccount -> origins.contains(ma.origin) }
+            .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
+            .collect(Collectors.toSet())
     }
 
     fun hasSyncedAutomatically(): Boolean {
@@ -313,17 +333,19 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
      */
     fun minSyncIntervalMillis(): Long {
         return myAccounts.stream()
-                .filter { obj: MyAccount -> obj.shouldBeSyncedAutomatically() }
-                .map { obj: MyAccount -> obj.getEffectiveSyncFrequencyMillis() }
-                .min { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }.orElse(0L)
+            .filter { obj: MyAccount -> obj.shouldBeSyncedAutomatically() }
+            .map { obj: MyAccount -> obj.getEffectiveSyncFrequencyMillis() }
+            .min { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }.orElse(0L)
     }
 
     /** Should not be called from UI thread
      * Find MyAccount, which may be linked to a note in this origin.
      * First try two supplied accounts, then try any other existing account
      */
-    fun getAccountForThisNote(origin: Origin, firstAccount: MyAccount, preferredAccount: MyAccount,
-                              succeededOnly: Boolean): MyAccount {
+    fun getAccountForThisNote(
+        origin: Origin, firstAccount: MyAccount, preferredAccount: MyAccount,
+        succeededOnly: Boolean
+    ): MyAccount {
         val method = "getAccountForThisNote"
         var ma = firstAccount ?: MyAccount.EMPTY
         if (!accountFits(ma, origin, succeededOnly)) {
@@ -336,10 +358,12 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
             ma = MyAccount.EMPTY
         }
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; origin=" + origin.name
+            MyLog.v(
+                this, method + "; origin=" + origin.name
                     + "; account1=" + ma
                     + (if (ma == preferredAccount) "" else "; account2=$preferredAccount")
-                    + if (succeededOnly) "; succeeded only" else "")
+                    + if (succeededOnly) "; succeeded only" else ""
+            )
         }
         return ma
     }
@@ -349,8 +373,10 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
             (!origin.isValid || ma.origin == origin)
     }
 
-    private fun betterFit(oldMa: MyAccount, newMa: MyAccount, origin: Origin,
-                          succeededOnly: Boolean): MyAccount {
+    private fun betterFit(
+        oldMa: MyAccount, newMa: MyAccount, origin: Origin,
+        succeededOnly: Boolean
+    ): MyAccount {
         if (accountFits(oldMa, origin, succeededOnly) || !accountFits(newMa, origin, false)) {
             return oldMa
         }
@@ -365,7 +391,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         if (ma.nonValid || ma == prevAccount) return
         MyLog.v(this) {
             ("Changing current account from '" + prevAccount.getAccountName()
-                    + "' to '" + ma.getAccountName() + "'")
+                + "' to '" + ma.getAccountName() + "'")
         }
         recentAccounts.remove(ma)
         recentAccounts.add(0, ma)
@@ -374,29 +400,31 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     fun onDefaultSyncFrequencyChanged() {
         val syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds()
         for (ma in myAccounts) {
-            if (ma.syncFrequencySeconds <= 0) AccountUtils.getExistingAndroidAccount(ma.getOAccountName()
+            if (ma.syncFrequencySeconds <= 0) AccountUtils.getExistingAndroidAccount(
+                ma.getOAccountName()
             ).onSuccess { account: Account? -> AccountUtils.setSyncFrequencySeconds(account, syncFrequencySeconds) }
         }
     }
 
     fun accountsToSync(): MutableList<MyAccount> {
         val syncedAutomaticallyOnly = hasSyncedAutomatically()
-        return myAccounts.stream().filter { myAccount: MyAccount -> accountToSyncFilter(myAccount, syncedAutomaticallyOnly) }
-                .collect(Collectors.toList())
+        return myAccounts.stream()
+            .filter { myAccount: MyAccount -> accountToSyncFilter(myAccount, syncedAutomaticallyOnly) }
+            .collect(Collectors.toList())
     }
 
     private fun accountToSyncFilter(account: MyAccount, syncedAutomaticallyOnly: Boolean): Boolean {
         if (!account.isValidAndSucceeded()) {
             MyLog.v(this) {
                 "Account '" + account.getAccountName() + "'" +
-                        " skipped as invalid authenticated account"
+                    " skipped as invalid authenticated account"
             }
             return false
         }
         if (syncedAutomaticallyOnly && !account.isSyncedAutomatically) {
             MyLog.v(this) {
                 "Account '" + account.getAccountName() + "'" +
-                        " skipped as it is not synced automatically"
+                    " skipped as it is not synced automatically"
             }
             return false
         }
@@ -430,28 +458,32 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
                 val order = ind + 1
                 MyLog.v(this, method + "; restoring " + order + " of " + jsa.length())
                 AccountConverter.convertJson(data.getMyContext(), jsa[ind] as JSONObject, false)
-                        .onSuccess { jso: JSONObject ->
-                            val accountData: AccountData = AccountData.fromJson(myContext, jso, false)
-                            val builder: MyAccountBuilder = MyAccountBuilder.loadFromAccountData(accountData, "fromJson")
-                            val verified = builder.myAccount.credentialsVerified
-                            if (verified != CredentialsVerificationStatus.SUCCEEDED) {
-                                newDescriptor.getLogger().logProgress("Account " + builder.myAccount.getAccountName() +
-                                        " was not successfully verified")
-                                builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED)
-                            }
-                            builder.saveSilently().onSuccess { r: Boolean? ->
-                                MyLog.v(this, "$method; restored $order: $builder")
-                                restoredCount.incrementAndGet()
-                                if (verified != CredentialsVerificationStatus.SUCCEEDED) {
-                                    builder.setCredentialsVerificationStatus(verified)
-                                    builder.saveSilently()
-                                }
-                            }.onFailure { e: Throwable? -> MyLog.e(this, "$method; failed to restore $order: $builder") }
+                    .onSuccess { jso: JSONObject ->
+                        val accountData: AccountData = AccountData.fromJson(myContext, jso, false)
+                        val builder: MyAccountBuilder = MyAccountBuilder.loadFromAccountData(accountData, "fromJson")
+                        val verified = builder.myAccount.credentialsVerified
+                        if (verified != CredentialsVerificationStatus.SUCCEEDED) {
+                            newDescriptor.getLogger().logProgress(
+                                "Account " + builder.myAccount.getAccountName() +
+                                    " was not successfully verified"
+                            )
+                            builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED)
                         }
+                        builder.saveSilently().onSuccess { r: Boolean? ->
+                            MyLog.v(this, "$method; restored $order: $builder")
+                            restoredCount.incrementAndGet()
+                            if (verified != CredentialsVerificationStatus.SUCCEEDED) {
+                                builder.setCredentialsVerificationStatus(verified)
+                                builder.saveSilently()
+                            }
+                        }.onFailure { e: Throwable? -> MyLog.e(this, "$method; failed to restore $order: $builder") }
+                    }
             }
             if (restoredCount.get() != newDescriptor.getAccountsCount()) {
-                throw FileNotFoundException("Restored only " + restoredCount + " accounts of " +
-                        newDescriptor.getAccountsCount())
+                throw FileNotFoundException(
+                    "Restored only " + restoredCount + " accounts of " +
+                        newDescriptor.getAccountsCount()
+                )
             }
             newDescriptor.getLogger().logProgress("Restored $restoredCount accounts")
         } catch (e: JSONException) {
@@ -503,13 +535,13 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
 
         fun myAccountIds(): SqlIds {
             return SqlIds.fromIds(
-                    AccountUtils.getCurrentAccounts( MyContextHolder.myContextHolder.getNow().context).stream()
-                            .map({ account: Account ->
-                                AccountData.fromAndroidAccount( MyContextHolder.myContextHolder.getNow(), account)
-                                        .getDataLong(MyAccount.KEY_ACTOR_ID, 0)
-                            })
-                            .filter { id: Long -> id > 0 }
-                            .collect(Collectors.toList())
+                AccountUtils.getCurrentAccounts(MyContextHolder.myContextHolder.getNow().context).stream()
+                    .map({ account: Account ->
+                        AccountData.fromAndroidAccount(MyContextHolder.myContextHolder.getNow(), account)
+                            .getDataLong(MyAccount.KEY_ACTOR_ID, 0)
+                    })
+                    .filter { id: Long -> id > 0 }
+                    .collect(Collectors.toList())
             )
         }
     }

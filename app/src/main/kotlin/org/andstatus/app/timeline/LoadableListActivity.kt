@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.ParsedUri
 import org.andstatus.app.list.MyBaseListActivity
@@ -47,6 +48,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils.getOrElseRecover
 import org.andstatus.app.widget.MySearchView
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -57,7 +59,8 @@ import kotlin.reflect.KClass
  *
  * @author yvolk@yurivolkov.com
  */
-abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseListActivity(clazz), MyServiceEventsListener {
+abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseListActivity(clazz),
+    MyServiceEventsListener {
     protected var showSyncIndicatorSetting = true
     protected var textualSyncIndicator: View? = null
     protected var syncingText: CharSequence? = ""
@@ -65,7 +68,8 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
     private var onRefreshHandled = false
     var parsedUri: ParsedUri = ParsedUri.fromUri(Uri.EMPTY)
         private set
-    var myContext: MyContext = MyContextHolder.myContextHolder.getNow()
+    @Volatile
+    var myContext: MyContext = MyContextEmpty.EMPTY
     private var configChangeTime: Long = 0
     var myServiceReceiver: MyServiceEventsReceiver? = null
 
@@ -88,15 +92,14 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
     protected var searchView: MySearchView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        myContext = MyContextHolder.myContextHolder.getNow()
         super.onCreate(savedInstanceState)
-        if (restartMeIfNeeded()) return
+        myContext = myReadyContextOrRestartMe().getOrElseRecover { return }
         textualSyncIndicator = findViewById(R.id.sync_indicator)
         configChangeTime = myContext.preferencesChangeTime
         if (MyLog.isDebugEnabled()) {
             MyLog.d(
                 this, "onCreate, config changed " + RelativeTime.secondsAgo(configChangeTime) + " seconds ago"
-                        + if (myContext.isReady) "" else ", MyContext is not ready"
+                    + if (myContext.isReady) "" else ", MyContext is not ready"
             )
         }
         if (myContext.isReady) {
@@ -120,8 +123,8 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
         val chainedRequest: TriState = TriState.fromBundle(args, IntentExtra.CHAINED_REQUEST)
         val msgLog = StringBuilder(
             "showList" + (if (chainedRequest == TriState.TRUE) ", chained" else "")
-                    + ", " + whichPage + " page"
-                    + if (centralItemId == 0L) "" else ", center:$centralItemId"
+                + ", " + whichPage + " page"
+                + if (centralItemId == 0L) "" else ", center:$centralItemId"
         )
         if (whichPage == WhichPage.EMPTY) {
             MyLog.v(this) { "Ignored Empty page request: $msgLog" }
@@ -158,7 +161,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
         if (reset) {
             MyLog.d(
                 this, "WorkingLoader finished but didn't reset loaderIsWorking flag "
-                        + mWorkingLoader
+                    + mWorkingLoader
             )
         }
         return loaderIsWorking
@@ -248,9 +251,9 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
                 val timeTotal = endedAt - createdAt
                 MyLog.v(this) {
                     ("Load completed, " +
-                            (mSyncLoader?.size()?.toString() ?: "?") + " items, " +
-                            timeTotal + " ms total, " +
-                            (endedAt - backgroundEndedAt.get()) + " ms on UI thread")
+                        (mSyncLoader?.size()?.toString() ?: "?") + " items, " +
+                        timeTotal + " ms total, " +
+                        (endedAt - backgroundEndedAt.get()) + " ms on UI thread")
                 }
             }
             resetIsWorkingFlag()
@@ -343,9 +346,12 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
     override fun onResume() {
         val method = "onResume"
         super.onResume()
-        val isFinishing = restartMeIfNeeded()
-        MyLog.v(this) { method + if (isFinishing) ", and finishing" else "" }
-        if (!isFinishing) {
+        myContext = myReadyContextOrRestartMe().getOrElseRecover {
+            MyLog.v(this) { "$method, and finishing" }
+            return
+        }
+        MyLog.v(this) { "$method, $myContext" }
+        if (myContext.isReady) {
             myServiceReceiver?.registerReceiver(this)
             myContext.isInForeground = true
             if (!isLoading()) {

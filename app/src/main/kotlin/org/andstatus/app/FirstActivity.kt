@@ -81,7 +81,7 @@ class FirstActivity(
                 finish()
             }
             MyAction.CLOSE_ALL_ACTIVITIES -> finish()
-            else -> if ( MyContextHolder.myContextHolder.getFuture().isReady() ||  MyContextHolder.myContextHolder.getNow().state == MyContextState.UPGRADING) {
+            else -> if ( MyContextHolder.myContextHolder.getFuture().isReady ||  MyContextHolder.myContextHolder.getNow().state == MyContextState.UPGRADING) {
                 startNextActivitySync( MyContextHolder.myContextHolder.getNow(), intent)
                 finish()
             } else {

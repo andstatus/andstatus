@@ -112,8 +112,7 @@ open class MyContextImpl internal constructor(
         val stopWatch: StopWatch = StopWatch.createStarted()
         MyLog.i(this, "Starting initialization by $initializedBy")
         val myContext: MyContext = initializeInternal(initializedBy)
-        MyLog.i(this, "myContextInitializedMs:" + stopWatch.time + "; "
-                + state + " by " + initializedBy)
+        MyLog.i(this, "myContextInitializedMs:" + stopWatch.time + "; " + state + " by " + initializedBy)
         return myContext
     }
 
@@ -138,7 +137,7 @@ open class MyContextImpl internal constructor(
         when (state) {
             MyContextState.DATABASE_READY -> state = if (!origins.initialize()) {
                 MyContextState.DATABASE_UNAVAILABLE
-            } else if ( MyContextHolder.myContextHolder.isOnRestore()) {
+            } else if (MyContextHolder.myContextHolder.isOnRestore()) {
                 MyContextState.RESTORING
             } else {
                 users.initialize()
@@ -191,16 +190,16 @@ open class MyContextImpl internal constructor(
 
     private fun tryToSetExternalStorageOnDataCreation() {
         val useExternalStorage = (!Environment.isExternalStorageEmulated()
-                && MyStorage.isWritableExternalStorageAvailable(null))
+            && MyStorage.isWritableExternalStorageAvailable(null))
         MyLog.i(this, "External storage is " + (if (useExternalStorage) "" else "not") + " used")
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorage)
     }
 
     override fun toString(): String {
         return instanceTag + " by " + initializedBy + "; state=" + state +
-                (if (this.isExpired) "; expired" else "") +
-                "; " + accounts.size() + " accounts, " +
-                ("context=" + context.javaClass.name)
+            (if (this.isExpired) "; expired" else "") +
+            "; " + accounts.size() + " accounts, " +
+            ("context=" + context.javaClass.name)
     }
 
     override val initialized: Boolean get() = state != MyContextState.EMPTY
@@ -248,10 +247,10 @@ open class MyContextImpl internal constructor(
     override val connectionState: ConnectionState get() = UriUtils.getConnectionState(context)
 
     override var isInForeground: Boolean
-      get() = inForeground
-      set(value) {
-          inForeground = value
-      }
+        get() = inForeground
+        set(value) {
+            inForeground = value
+        }
 
     override fun notify(data: NotificationData) {
         notifier.notifyAndroid(data)

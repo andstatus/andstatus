@@ -80,6 +80,7 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.TryUtils.getOrElseRecover
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.ViewUtils
 import org.andstatus.app.view.EnumSelector
@@ -162,7 +163,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         resumedOnce = false
         mLayoutId = R.layout.account_settings_main
         super.onCreate(savedInstanceState)
-        if (restartMeIfNeeded()) return
+        myReadyContextOrRestartMe().getOrElseRecover { return }
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         restoreState(intent, "onActivityCreated")
     }
@@ -688,7 +689,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         MyLog.v(this) { "onResume: ${state.accountAction}, ${state.builder}" }
         super.onResume()
         MyContextHolder.myContextHolder.getNow().isInForeground = true
-        if (restartMeIfNeeded()) return
+        myReadyContextOrRestartMe().getOrElseRecover { return }
 
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()

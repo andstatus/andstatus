@@ -25,6 +25,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import io.vavr.control.Try
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyTheme
@@ -35,6 +38,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.Taggable.Companion.anyToTag
 import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -67,7 +71,7 @@ open class MyActivity(
 
     override fun applyOverrideConfiguration(overrideConfiguration: Configuration?) {
         super.applyOverrideConfiguration(
-                MyLocale.applyOverrideConfiguration(baseContext, overrideConfiguration)
+            MyLocale.applyOverrideConfiguration(baseContext, overrideConfiguration)
         )
     }
 
@@ -83,8 +87,8 @@ open class MyActivity(
                 MyTheme.setContentView(this, mLayoutId)
             } catch (e: InflateException) {
                 val logMsg = ("Error inflating layoutId:$mLayoutId"
-                        + if (previousErrorInflatingTime == 0L) ", going Home..." else ", again. Similar error occurred "
-                        + RelativeTime.getDifference(this, previousErrorInflatingTime))
+                    + if (previousErrorInflatingTime == 0L) ", going Home..." else ", again. Similar error occurred "
+                    + RelativeTime.getDifference(this, previousErrorInflatingTime))
                 MyLog.e(this, logMsg, e)
                 if (previousErrorInflatingTime == 0L) {
                     previousErrorInflatingTime = System.currentTimeMillis()
@@ -206,18 +210,26 @@ open class MyActivity(
         }
     }
 
-    /** @return true if the Activity is finishing
+    /** Restart me if MyContext is not ready
+     * @return failure if the Activity is finishing
+     *         success MyContext Ready or EMPTY if not ready
      */
-    fun restartMeIfNeeded(): Boolean {
-        return ( MyContextHolder.myContextHolder.needToRestartActivity() && initializeThenRestartActivity()
-                || isFinishing)
+    fun myReadyContextOrRestartMe(): Try<MyContext> {
+        val myContext = MyContextHolder.myContextHolder.tryReadyNow()
+        var finishing = isFinishing
+        if (myContext.isFailure) {
+            if (initializeThenRestartActivity()) finishing = true
+        }
+        return if (finishing) {
+            TryUtils.failure("Finishing...")
+        } else myContext.recover(java.lang.Exception::class.java) { MyContextEmpty.EMPTY }
     }
 
     /** @return true if we are restarting
      */
     fun initializeThenRestartActivity(): Boolean {
         if (onFinishAction.compareAndSet(OnFinishAction.NONE, OnFinishAction.RESTART_ME)) {
-            finish()
+            if (!isFinishing) finish()
             return true
         }
         return false
