@@ -29,9 +29,9 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="59.12" android:versionCode="357"
-        versionDate="2022-12-17"
-        versionTitle="Improve OAuth 2.0 support">
+    <release android:versionName="59.15" android:versionCode="360"
+        versionDate="2022-12-30"
+        versionTitle="Improve OAuth 2.0 and ActivityPub C2S support">
         <changes>
             <change>Support OAuth 2.0 Authorization Server Metadata (RFC 8414).<br/>
                 According to "OAuth 2.0 Authorization Server Metadata" (RFC 8414)
@@ -42,6 +42,10 @@
             </change>
             <change>Dynamic Client Registration compliant with
                 <a href="https://www.rfc-editor.org/rfc/rfc7591">RFC 7591</a>.</change>
+            <change>Working with #microblogpub team we are improving ActivityPub Client-to-Server support in AndStatus.
+                Follow/unfollow action implemented.
+                <a href="https://github.com/andstatus/andstatus/issues/564">#564</a>
+            </change>
         </changes>
     </release>
     <release android:versionName="59.10" android:versionCode="355"
