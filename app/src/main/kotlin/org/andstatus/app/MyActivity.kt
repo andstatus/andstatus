@@ -79,9 +79,8 @@ open class MyActivity(
         MyLog.v(this) { "onCreate" + if (isFinishing) " finishing" else "" }
         MyTheme.loadTheme(this)
         super.onCreate(savedInstanceState)
-        if (isFinishing) {
-            return
-        }
+        if (isFinishing) return
+
         if (mLayoutId != 0) {
             try {
                 MyTheme.setContentView(this, mLayoutId)

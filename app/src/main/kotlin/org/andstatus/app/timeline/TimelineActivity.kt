@@ -127,13 +127,13 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.timeline
         super.onCreate(savedInstanceState)
-        showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, false)
         if (isFinishing) return
+
+        showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, false)
         contextMenu = ActivityContextMenu(this)
         initializeDrawer()
         listView?.setOnScrollListener(this)
-        val view = findViewById<View?>(R.id.my_action_bar)
-        view?.setOnClickListener { item: View? -> onTimelineTitleClick(item) }
+        findViewById<View?>(R.id.my_action_bar)?.setOnClickListener { item: View? -> onTimelineTitleClick(item) }
         syncYoungerView = View.inflate(this, R.layout.sync_younger, null)
         syncYoungerView?.findViewById<View?>(R.id.sync_younger_button)?.setOnClickListener { v: View ->
             syncWithInternet(getParamsLoaded().timeline, true, true)

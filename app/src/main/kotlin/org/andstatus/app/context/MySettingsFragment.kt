@@ -87,6 +87,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         super.onResume()
         val activity = getMyActivity() ?: return
         activity.myReadyContextOrRestartMe().getOrElseRecover { return }
+
         activity.setTitle(MySettingsGroup.from(this).getTitleResId())
         showAllPreferences()
         SharedPreferencesUtil.getDefaultSharedPreferences()?.registerOnSharedPreferenceChangeListener(this)

@@ -37,9 +37,9 @@ abstract class NoteEditorListActivity<T : ViewItem<T>>(clazz: KClass<*>) : Loada
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!isFinishing) {
-            noteEditor = NoteEditor(this)
-        }
+        if (isFinishing) return
+
+        noteEditor = NoteEditor(this)
     }
 
     override fun canSwipeRefreshChildScrollUp(): Boolean {

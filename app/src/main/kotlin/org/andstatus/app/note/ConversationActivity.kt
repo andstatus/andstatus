@@ -61,9 +61,8 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(Conver
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.conversation
         super.onCreate(savedInstanceState)
-        if (isFinishing) {
-            return
-        }
+        if (isFinishing) return
+
         origin = parsedUri.getOrigin(myContext)
         mContextMenu = NoteContextMenu(this)
         showThreadsOfConversation = MyPreferences.isShowThreadsOfConversation()

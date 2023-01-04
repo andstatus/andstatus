@@ -52,6 +52,7 @@ abstract class OriginList(clazz: KClass<*>) : MyListActivity(clazz) {
         mLayoutId = getLayoutResourceId()
         super.onCreate(savedInstanceState)
         if (isFinishing) return
+
         processNewIntent(intent)
     }
 

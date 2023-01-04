@@ -51,9 +51,8 @@ open class ActorsScreen(clazz: KClass<*> = ActorsScreen::class) : NoteEditorList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (isFinishing) {
-            return
-        }
+        if (isFinishing) return
+
         actorsScreenType = parsedUri.getActorsScreenType()
         contextMenu = ActorContextMenu(this, MyContextMenu.MENU_GROUP_OBJACTOR)
         centralActor = Actor.load(myContext, centralItemId)

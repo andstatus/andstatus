@@ -164,6 +164,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         mLayoutId = R.layout.account_settings_main
         super.onCreate(savedInstanceState)
         myReadyContextOrRestartMe().getOrElseRecover { return }
+
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
         restoreState(intent, "onActivityCreated")
     }

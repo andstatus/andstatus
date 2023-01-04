@@ -94,6 +94,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         myContext = myReadyContextOrRestartMe().getOrElseRecover { return }
+
         textualSyncIndicator = findViewById(R.id.sync_indicator)
         configChangeTime = myContext.preferencesChangeTime
         if (MyLog.isDebugEnabled()) {
@@ -350,6 +351,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
             MyLog.v(this) { "$method, and finishing" }
             return
         }
+
         MyLog.v(this) { "$method, $myContext" }
         if (myContext.isReady) {
             myServiceReceiver?.registerReceiver(this)
