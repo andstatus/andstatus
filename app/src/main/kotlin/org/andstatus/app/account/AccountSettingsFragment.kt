@@ -23,13 +23,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import io.vavr.control.Try
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.R
 import org.andstatus.app.account.AccountSettingsActivity.FragmentAction
-import org.andstatus.app.os.NonUiThreadExecutor
-import org.andstatus.app.os.UiThreadExecutor
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.util.MyLog
-import java.util.concurrent.CompletableFuture
+import org.andstatus.app.util.TryUtils
 import java.util.concurrent.TimeUnit
 
 class AccountSettingsFragment : Fragment() {
@@ -44,28 +45,29 @@ class AccountSettingsFragment : Fragment() {
     }
 
     private fun onRemoveAccount() {
-        val accountSettingsActivity = activity as AccountSettingsActivity?
-        val state = accountSettingsActivity?.state
-        if (state?.builder != null && state.builder.isPersistent()) {
+        val accountSettingsActivity = activity as AccountSettingsActivity? ?: return
+        val state = accountSettingsActivity.state
+        if (state.builder.isPersistent()) {
             for (account in AccountUtils.getCurrentAccounts(accountSettingsActivity)) {
                 if (state.myAccount.getAccountName() == account.name) {
                     MyLog.i(this, "Removing account: " + account.name)
-                    val am = AccountManager.get(activity)
-                    CompletableFuture.supplyAsync({
-                        try {
-                            val result = am.removeAccount(account, activity, null, null)
-                                    .getResult(10, TimeUnit.SECONDS)
-                            return@supplyAsync result != null && result.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)
-                        } catch (e: Exception) {
-                            MyLog.w(this, "Failed to remove account " + account.name, e)
-                            return@supplyAsync false
-                        }
-                    }, NonUiThreadExecutor.INSTANCE)
-                            .thenAcceptAsync({ ok: Boolean ->
-                                if (ok) {
-                                    activity?.finish()
+                    AsyncRunnable(taskId = this, AsyncEnum.DEFAULT_POOL, cancelable = false)
+                        .doInBackground {
+                            Try.of { AccountManager.get(accountSettingsActivity) }
+                                .map { it.removeAccount(account, accountSettingsActivity, null, null) }
+                                .map { it.getResult(10, TimeUnit.SECONDS) }
+                                .flatMap { result ->
+                                    if (result != null && result.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)) {
+                                        TryUtils.SUCCESS
+                                    } else TryUtils.failure("result: $result")
                                 }
-                            }, UiThreadExecutor.INSTANCE)
+
+                        }
+                        .onPostExecute { params: Unit, result: Try<Unit> ->
+                            result.onSuccess { accountSettingsActivity.finish() }
+                                .onFailure { accountSettingsActivity.appendError(result.cause.toString()) }
+                        }
+                        .execute(this, Unit)
                     break
                 }
             }

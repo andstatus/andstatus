@@ -347,7 +347,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
     override fun onResume() {
         val method = "onResume"
         super.onResume()
-        myContext = myReadyContextOrRestartMe().getOrElseRecover {
+        myReadyContextOrRestartMe().getOrElseRecover {
             MyLog.v(this) { "$method, and finishing" }
             return
         }
