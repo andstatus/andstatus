@@ -119,7 +119,7 @@ class MyAsyncTaskTest {
         assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         assertTrue("inBackground $task", task.inBackgroundVal.get())
         assertFalse("onCancel $task", task.onCancelVal.get())
-        assertEquals("done normal", task.resultRef.get().getOrElse("(none)"))
+        assertEquals("done normal", task.result.getOrElse("(none)"))
         assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
@@ -137,7 +137,7 @@ class MyAsyncTaskTest {
         assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         assertFalse("inBackground $task", task.inBackgroundVal.get())
         assertFalse("onCancel $task", task.onCancelVal.get())
-        assertEquals("normal fun", task.resultRef.get().getOrElse("(none)"))
+        assertEquals("normal fun", task.result.getOrElse("(none)"))
         assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
     }
 
@@ -161,7 +161,7 @@ class MyAsyncTaskTest {
         assertTrue("onPreExecute $task", task.onPreExecuteVal.get())
         assertFalse("inBackground $task", task.inBackgroundVal.get())
         assertFalse("onCancel $task", task.onCancelVal.get())
-        assertEquals("normal fun", task.resultRef.get().getOrElse("(none)"))
+        assertEquals("normal fun", task.result.getOrElse("(none)"))
         assertNull("onPostExecute $task", task.onPostExecuteVal.get())
         assertTrue("onPostExecute local $task", onPostExecuteVal)
     }

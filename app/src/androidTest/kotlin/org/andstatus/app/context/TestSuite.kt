@@ -104,7 +104,7 @@ object TestSuite {
                     creatorSet = true
                     FirstActivity.Companion.startMeAsync(co, MyAction.INITIALIZE_APP)
                     DbUtils.waitMs(method, 3000)
-                    if (myContextHolder.getFuture().future.isDone()) {
+                    if (myContextHolder.getFuture().future.isFinished) {
                         val myContext: MyContext = myContextHolder.getNow()
                         MyLog.i(TAG, "After starting FirstActivity $iter $myContext")
                         if (myContext.state == MyContextState.READY) break

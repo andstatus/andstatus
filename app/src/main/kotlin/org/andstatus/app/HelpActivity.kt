@@ -186,7 +186,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
                 text.withSpace(myContextHolder.getNow().state.toString())
                 text.withSpace(myContextHolder.getNow().lastDatabaseError)
             }
-            myContextHolder.tryNow().onFailure { e: Throwable ->
+            myContextHolder.tryCurrent.onFailure { e: Throwable ->
                 text.append(" ${e.message} \n${MyLog.getStackTrace(e)}")
             }
             versionText.text = text.toString()

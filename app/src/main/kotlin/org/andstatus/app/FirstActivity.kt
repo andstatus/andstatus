@@ -23,6 +23,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.AndroidRuntimeException
 import androidx.appcompat.app.AppCompatActivity
+import io.vavr.control.Try
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyContextState
@@ -37,7 +38,7 @@ import org.andstatus.app.util.Identified
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState
-import java.util.concurrent.CompletableFuture
+import org.andstatus.app.util.TryUtils
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.BiConsumer
@@ -75,7 +76,7 @@ class FirstActivity(
     private fun parseNewIntent(intent: Intent?) {
         when (MyAction.fromIntent(intent)) {
             MyAction.INITIALIZE_APP -> myContextHolder.initialize(this)
-                .whenSuccessAsync({ myContext: MyContext? -> finish() }, UiThreadExecutor.INSTANCE)
+                .whenSuccessAsync(true) { myContext: MyContext? -> finish() }
             MyAction.SET_DEFAULT_VALUES -> {
                 setDefaultValuesOnUiThread(this)
                 finish()
@@ -86,8 +87,21 @@ class FirstActivity(
                 finish()
             } else {
                 myContextHolder.initialize(this)
-                    .with { future: CompletableFuture<MyContext> ->
-                        future.whenCompleteAsync(startNextActivity, UiThreadExecutor.INSTANCE)
+                    .with("startNextActivity", true) { tryMyContext: Try<MyContext> ->
+                        tryMyContext.flatMap { myContext ->
+                            val msg = "Launching next activity from $instanceIdString"
+                            if (myContext.isReady && !myContext.isExpired) {
+                                try {
+                                    startNextActivitySync(myContext, intent)
+                                    TryUtils.SUCCESS
+                                } catch (e: Exception) {
+                                    MyLog.w(instanceTag, msg, e)
+                                    TryUtils.failure<Unit>(msg, e)
+                                }
+                            } else TryUtils.failure<Unit>("$msg, MyContext is not ready: ${myContext.state}")
+                        }
+                    }.also {
+                        finish()
                     }
             }
         }

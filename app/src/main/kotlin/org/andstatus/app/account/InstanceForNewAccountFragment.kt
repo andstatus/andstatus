@@ -28,11 +28,10 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
-import org.andstatus.app.os.UiThreadExecutor
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UrlUtils
-import java.util.concurrent.CompletableFuture
 
 class InstanceForNewAccountFragment : Fragment() {
     private var originType: OriginType = OriginType.UNKNOWN
@@ -116,12 +115,14 @@ class InstanceForNewAccountFragment : Fragment() {
             }
             activity.verifyCredentials(true)
         } else {
-            val future1: CompletableFuture<MyContext> = myContextHolder.initialize(activity).getFuture().future
+            // TODO: fewer logging below
+            val future1: AsyncResult<MyContext, MyContext> = myContextHolder.initialize(activity).getFuture().future
             MyLog.d(this, "onNewOrigin After 'initialize' $future1")
-            val future2: CompletableFuture<MyContext> = myContextHolder.whenSuccessAsync({ myContext: MyContext ->
-                activity.finish()
-                AccountSettingsActivity.startAddingNewAccount(myContext.context, originNew.name, true)
-            }, UiThreadExecutor.INSTANCE).getFuture().future
+            val future2: AsyncResult<MyContext, MyContext> =
+                myContextHolder.whenSuccessAsync(true) { myContext: MyContext ->
+                    activity.finish()
+                    AccountSettingsActivity.startAddingNewAccount(myContext.context, originNew.name, true)
+                }.getFuture().future
             MyLog.d(this, "onNewOrigin After 'whenSuccessAsync' $future2")
         }
     }

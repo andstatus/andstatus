@@ -26,9 +26,6 @@ import org.andstatus.app.FirstActivity
 import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.os.AsyncTaskLauncher
-import org.andstatus.app.os.NonUiThreadExecutor
-import org.andstatus.app.os.UiThreadExecutor
-import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
@@ -36,11 +33,8 @@ import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TamperingDetector
 import org.andstatus.app.util.TryUtils
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
 import java.util.function.Consumer
 import java.util.function.Supplier
-import java.util.function.UnaryOperator
 
 /**
  * Holds globally cached state of the application: [MyContext]
@@ -89,24 +83,23 @@ class MyContextHolder private constructor(
             }
         }
 
-    /** Immediately get currently available context, even if it's empty  */
+    /** Immediately get currently available context, even if it's empty,
+     * return previous context if current is in error */
     fun getNow(): MyContext {
         return getFuture().getNow()
     }
 
-    /** Immediately get completed context or previous if not completed,
-     * or failure if future failed  */
-    fun tryNow(): Try<MyContext> {
-        return getFuture().tryNow()
-    }
+    /** Immediately get current state of MyContext initialization,
+     * error if not completed yet or if completed with error */
+    val tryCurrent: Try<MyContext> get() = getFuture().tryCurrent
 
     /**
      * Immediately return current or previous context or failure if it is not ready
      */
-    fun tryReadyNow(): Try<MyContext> = tryNow()
-        .flatMap {
+    fun tryReadyNow(): Try<MyContext> = getNow()
+        .let {
             if (it.isReady) Try.success(it)
-            else TryUtils.failure("Context is not ready: ${it.state}")
+            else TryUtils.failure("No ready context: ${it.state}")
         }
 
     fun getBlocking(): MyContext {
@@ -122,7 +115,7 @@ class MyContextHolder private constructor(
      */
     fun trySetCreator(contextCreatorNew: MyContext): Boolean {
         synchronized(contextLock) {
-            if (!myFutureContext.future.isDone) return false
+            if (!myFutureContext.future.isFinished) return false
             myFutureContext.getNow().release { "trySetCreator" }
             myFutureContext = MyFutureContext.completed(contextCreatorNew)
         }
@@ -153,42 +146,35 @@ class MyContextHolder private constructor(
         } else if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
             MyLog.d(this, "Skipping initialization: upgrade in progress (called by: $calledBy)")
         } else {
-            synchronized(contextLock) { myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy) }
-            whenSuccessOrPreviousAsync(NonUiThreadExecutor.INSTANCE) {
-                if (it.nonEmpty) MyServiceManager.registerReceiver(it.context)
+            synchronized(contextLock) {
+                myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy)
             }
         }
         return this
     }
 
     fun thenStartActivity(intent: Intent?): MyContextHolder {
-        return whenSuccessAsync(
-            { myContext: MyContext -> MyFutureContext.startActivity(myContext, intent) },
-            UiThreadExecutor.INSTANCE
-        )
+        return whenSuccessAsync(true) { myContext: MyContext ->
+            MyFutureContext.startActivity(myContext, intent)
+        }
     }
 
     fun thenStartApp(): MyContextHolder {
-        return whenSuccessAsync(
-            { myContext: MyContext -> FirstActivity.startApp(myContext) },
-            UiThreadExecutor.INSTANCE
-        )
+        return whenSuccessAsync(true) { myContext: MyContext ->
+            FirstActivity.startApp(myContext)
+        }
     }
 
-    fun whenSuccessAsync(consumer: Consumer<MyContext>, executor: Executor): MyContextHolder {
-        synchronized(contextLock) { myFutureContext = myFutureContext.whenSuccessAsync(consumer, executor) }
+    fun whenSuccessAsync(mainThread: Boolean, consumer: Consumer<MyContext>): MyContextHolder {
+        myFutureContext.whenSuccessAsync(mainThread) { it -> consumer.accept(it) }
         return this
     }
 
-    fun whenSuccessOrPreviousAsync(executor: Executor, consumer: Consumer<MyContext>): MyContextHolder {
-        synchronized(contextLock) { myFutureContext = myFutureContext.whenSuccessOrPreviousAsync(executor, consumer) }
-        return this
-    }
-
-    fun with(future: UnaryOperator<CompletableFuture<MyContext>>): MyContextHolder {
-        synchronized(contextLock) { myFutureContext = myFutureContext.with(future) }
-        return this
-    }
+    fun with(
+        actionName: String,
+        mainThread: Boolean = true,
+        action: (Try<MyContext>) -> Try<Unit>
+    ) = myFutureContext.with(MyContextAction(actionName, action, mainThread))
 
     /**
      * This allows to refer to the context even before myInitializedContext is initialized.
@@ -270,7 +256,9 @@ class MyContextHolder private constructor(
     }
 
     fun release(reason: Supplier<String>) {
-        synchronized(contextLock) { myFutureContext = myFutureContext.releaseNow(reason) }
+        synchronized(contextLock) {
+            myFutureContext = myFutureContext.releaseNow(reason)
+        }
     }
 
     companion object {

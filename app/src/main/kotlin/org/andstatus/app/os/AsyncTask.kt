@@ -185,7 +185,16 @@ open class AsyncTask<Params, Progress, Result>(
             backgroundEndedAt.set(System.currentTimeMillis())
         }
     }
-    val resultRef: AtomicReference<Try<Result>> = AtomicReference(TryUtils.notFound())
+
+    var result: Try<Result> get() = resultRef.get()
+        set(value) {
+            startedAt.set(System.currentTimeMillis())
+            backgroundStartedAt.set(System.currentTimeMillis())
+            backgroundEndedAt.set(System.currentTimeMillis())
+            resultRef.set(value)
+            finishedAt.set(System.currentTimeMillis())
+        }
+    private val resultRef: AtomicReference<Try<Result>> = AtomicReference(TryUtils.notFound())
 
     protected open suspend fun doInBackground(params: Params): Try<Result> = TryUtils.notFound()
 

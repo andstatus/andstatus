@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2023 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,140 +18,178 @@ package org.andstatus.app.context
 import android.content.Intent
 import android.util.AndroidRuntimeException
 import io.vavr.control.Try
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.HelpActivity
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.http.TlsSniSocketFactory
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.ExceptionsCounter
-import org.andstatus.app.os.NonUiThreadExecutor
+import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.syncadapter.SyncInitiator
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.Identified
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.Taggable
-import org.andstatus.app.util.TryUtils
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
-import java.util.function.Consumer
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Supplier
-import java.util.function.UnaryOperator
 
 /**
  * @author yvolk@yurivolkov.com
  */
 class MyFutureContext private constructor(
     private val previousContext: MyContext,
-    val future: CompletableFuture<MyContext>,
+    val future: AsyncResult<MyContext, MyContext>,
+    val queue: BlockingQueue<MyContextAction> = ArrayBlockingQueue(20),
     private val identifiable: Identifiable = Identified(MyFutureContext::class)
 ) : Identifiable by identifiable {
+
     val createdAt = MyLog.uniqueCurrentTimeMS
+    private val actionTaskRef: AtomicReference<AsyncResult<Unit, Unit>?> = AtomicReference()
     override val instanceId = InstanceId.next()
+
+    fun onActionTaskExecuted(task: AsyncResult<Unit, Unit>, myContextAction: MyContextAction, result: Try<Unit>) {
+        if (result.isSuccess) {
+            MyLog.v(this, "Executed $myContextAction, result:${result.get()}")
+        } else {
+            MyLog.w(this, "Failed $myContextAction, result:${result.cause}")
+        }
+        checkQueueExecutor(task, false)
+    }
 
     fun releaseNow(reason: Supplier<String>): MyFutureContext {
         val previousContext = getNow()
-        release(previousContext, reason)
+        release(this, previousContext, reason)
         return completed(previousContext)
     }
 
-    val isCompletedExceptionally: Boolean get() = future.isCompletedExceptionally
+    val isCompletedExceptionally: Boolean get() = future.isFinished && future.result.isFailure
 
     val isReady: Boolean get() = getNow().isReady
 
     fun getNow(): MyContext {
-        return tryNow().getOrElse(previousContext)
+        return future.result.getOrElse(previousContext)
     }
 
-    fun tryNow(): Try<MyContext> {
-        return Try.success(previousContext)
-            .map { future.getNow(it) }
-            .flatMap { Try.success(it) ?: TryUtils.failure("No context returned from future") }
+    /** Immediately get current state of MyContext initialization,
+     * error if not completed yet or if completed with error */
+    val tryCurrent: Try<MyContext> get() = future.result
+
+    fun whenSuccessAsync(mainThread: Boolean, consumer: (MyContext) -> Unit) =
+        with("whenSuccessAsync", mainThread) { tryMyContext -> tryMyContext.map { consumer(it) } }
+
+    fun with(
+        actionName: String,
+        mainThread: Boolean = true,
+        action: (Try<MyContext>) -> Try<Unit>
+    ) = with(MyContextAction(actionName, action, mainThread))
+
+    fun with(myContextAction: MyContextAction) {
+        queue.put(myContextAction)
+        MyLog.d(instanceTag, "with: $myContextAction")
+        checkQueueExecutor(null, false)
     }
 
-    fun whenSuccessAsync(consumer: Consumer<MyContext>, executor: Executor): MyFutureContext {
-        return with { future: CompletableFuture<MyContext> ->
-            future.whenCompleteAsync({ myContext: MyContext?, throwable: Throwable? ->
-                MyLog.d(instanceTag, "whenSuccessAsync $myContext, $future")
-                if (myContext != null) {
-                    consumer.accept(myContext)
+    private fun checkQueueExecutor(taskThatEnded: AsyncResult<Unit, Unit>?, futureFinishing: Boolean) {
+        if (!futureFinishing && !future.isFinished) {
+            MyLog.v(
+                this,
+                "CheckQueue; Future is not finished:$future Task ended: $taskThatEnded, actions in queue:${queue.size}"
+            )
+            return
+        }
+        synchronized(queue) {
+            MyLog.v(
+                this, "CheckQueue; " + (if (futureFinishing) "Future finishing, " else "") +
+                    (if (taskThatEnded != null) "Task ended: $taskThatEnded, " else "") +
+                    "actions in queue:${queue.size}"
+            )
+            if (taskThatEnded == null) {
+                if (actionTaskRef.get()?.isFinished ?: true) {
+                    queue.poll()?.let { action ->
+                        action.newTask(this).let { task ->
+                            actionTaskRef.set(task)
+                            task.execute(Unit)
+                        }
+                    }
                 }
-            }, executor)
-        }
-    }
-
-    fun whenSuccessOrPreviousAsync(executor: Executor, consumer: Consumer<MyContext>): MyFutureContext {
-        return with { future: CompletableFuture<MyContext> ->
-            future.whenCompleteAsync({ myContext: MyContext?, throwable: Throwable? ->
-                consumer.accept(myContext ?: previousContext)
-            }, executor)
-        }
-    }
-
-    fun with(futures: UnaryOperator<CompletableFuture<MyContext>>): MyFutureContext {
-        val healthyFuture: CompletableFuture<MyContext> = getHealthyFuture("(with)")
-        val nextFuture = futures.apply(healthyFuture)
-        MyLog.d(instanceTag, "with, after apply, next: $nextFuture")
-        return MyFutureContext(previousContext, nextFuture)
-    }
-
-    private fun getHealthyFuture(calledBy: Any?): CompletableFuture<MyContext> {
-        if (future.isDone()) {
-            tryNow().onFailure { throwable: Throwable? ->
-                MyLog.i(
-                    instanceTag,
-                    if (future.isCancelled()) "Previous initialization was cancelled"
-                    else "Previous initialization completed exceptionally, now called by $calledBy",
-                    throwable
-                )
+            } else if (taskThatEnded === actionTaskRef.get()) {
+                queue.poll()?.let { action ->
+                    action.newTask(this).let { task ->
+                        actionTaskRef.set(task)
+                        task.execute(Unit)
+                    }
+                }
             }
         }
-        return if (future.isCompletedExceptionally()) completedFuture(previousContext) else future
     }
 
-    fun tryBlocking(): Try<MyContext> {
-        return Try.of { future.get() }
+    fun tryBlocking(): Try<MyContext> = runBlocking {
+        StopWatch.tillPassedSeconds(20) {
+            delay(500)
+            future.isFinished
+        }
+        future.result
     }
 
     companion object {
         private val TAG: String = MyFutureContext::class.simpleName!!
 
         fun fromPrevious(previousFuture: MyFutureContext, calledBy: Any?): MyFutureContext {
-            val future = previousFuture.getHealthyFuture(calledBy)
-                .thenApplyAsync(initializeMyContextIfNeeded(calledBy ?: previousFuture), NonUiThreadExecutor.INSTANCE)
-            return MyFutureContext(previousFuture.getNow(), future)
-        }
-
-        private fun initializeMyContextIfNeeded(calledBy: Any?): UnaryOperator<MyContext> {
-            return UnaryOperator { previousContext: MyContext ->
-                val reason: String = if (!previousContext.isReady) {
-                    "Context not ready"
-                } else if (previousContext.isExpired) {
-                    "Context expired"
-                } else if (previousContext.isPreferencesChanged) {
-                    "Preferences changed"
-                } else {
-                    ""
+            val future = completedOrNewFutureIfNeeded(previousFuture, calledBy)
+            return MyFutureContext(previousFuture.getNow(), future).also { futureContext ->
+                future.onPostExecute { _, _ ->
+                    futureContext.checkQueueExecutor(null, true)
                 }
-                if (reason.isEmpty()) {
-                    previousContext
-                } else {
-                    val reasonSupplier = Supplier {
-                        ("Initialization: " + reason
-                            + ", previous:" + Taggable.anyToTag(previousContext)
-                            + " by " + Taggable.anyToTag(calledBy))
-                    }
-                    MyLog.v(TAG) { "Preparing for " + reasonSupplier.get() }
-                    release(previousContext, reasonSupplier)
-                    val myContext = previousContext.newInitialized(calledBy ?: previousContext)
-                    SyncInitiator.register(myContext)
-                    myContext
+                if (future.isPending) {
+                    future.execute(futureContext.previousContext)
                 }
             }
         }
 
-        private fun release(previousContext: MyContext, reason: Supplier<String>) {
+        private fun completedOrNewFutureIfNeeded(
+            previousFuture: MyFutureContext,
+            calledBy: Any?
+        ): AsyncResult<MyContext, MyContext> {
+            val previousContext = previousFuture.getNow()
+            val reason: String = if (!previousContext.isReady) {
+                "Context not ready"
+            } else if (previousContext.isExpired) {
+                "Context expired"
+            } else if (previousContext.isPreferencesChanged) {
+                "Preferences changed"
+            } else {
+                return completedFuture(previousContext)
+            }
+
+            return AsyncResult<MyContext, MyContext>(calledBy, AsyncEnum.QUICK_UI, false)
+                .doInBackground {
+                    Try.of {
+                        val reasonSupplier = Supplier {
+                            ("Initialization: " + reason
+                                + ", previous:" + Taggable.anyToTag(previousContext)
+                                + " by " + Taggable.anyToTag(calledBy))
+                        }
+                        MyLog.v(previousFuture) { "Preparing for " + reasonSupplier.get() }
+
+                        release(previousFuture, previousContext, reasonSupplier)
+                        val myContext = previousContext.newInitialized(calledBy ?: previousContext)
+                        SyncInitiator.register(myContext)
+                        MyServiceManager.registerReceiver(myContext.context)
+                        myContext
+                    }
+                }
+        }
+
+        private fun release(previousFuture: MyFutureContext, previousContext: MyContext, reason: Supplier<String>) {
             SyncInitiator.unregister(previousContext)
             TlsSniSocketFactory.forget()
             previousContext.save(reason)
@@ -162,17 +200,17 @@ class MyFutureContext private constructor(
             FirstActivity.isFirstrun.set(true)
             previousContext.release(reason)
             // There is InterruptedException after above..., so we catch it below:
-            DbUtils.waitMs(TAG, 10)
-            MyLog.d(TAG, "Release completed, " + reason.get())
+            DbUtils.waitMs(previousFuture, 10)
+            MyLog.d(previousFuture, "Release completed, " + reason.get())
         }
 
         fun completed(myContext: MyContext): MyFutureContext {
             return MyFutureContext(MyContextEmpty.EMPTY, completedFuture(myContext))
         }
 
-        private fun completedFuture(myContext: MyContext): CompletableFuture<MyContext> {
-            val future = CompletableFuture<MyContext>()
-            future.complete(myContext)
+        private fun completedFuture(myContext: MyContext): AsyncResult<MyContext, MyContext> {
+            val future = AsyncResult<MyContext, MyContext>("completedMyContext", AsyncEnum.QUICK_UI, true)
+            future.result = Try.success(myContext)
             return future
         }
 

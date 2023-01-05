@@ -801,7 +801,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
     private fun returnToOurActivity() {
         myContextHolder
             .initialize(this)
-            .whenSuccessAsync({ myContext: MyContext ->
+            .whenSuccessAsync(false) { myContext: MyContext ->
                 MyLog.v(this, "Returning to $activityOnFinish")
                 val myAccount = myContext.accounts.fromAccountName(state.myAccount.getAccountName())
                 if (myAccount.isValid) {
@@ -824,7 +824,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                         FirstActivity.goHome(this@AccountSettingsActivity)
                     }
                 }
-            }, NonUiThreadExecutor.INSTANCE)
+            }
     }
 
     /**
@@ -940,14 +940,14 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                     state.builder.myAccount.myContext.setExpired { "Client registered" }
                     myContextHolder
                         .initialize(this@AccountSettingsActivity, this)
-                        .whenSuccessAsync({ myContext: MyContext ->
+                        .whenSuccessAsync(true) { myContext: MyContext ->
                             state.builder.rebuildMyAccount(myContext)
                             updateScreen()
                             OAuthAcquireRequestTokenTask(this@AccountSettingsActivity)
                                 .execute(this, Unit)
                                 .onFailure { e: Throwable -> appendError(e.message) }
                             activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
-                        }, UiThreadExecutor.INSTANCE)
+                        }
                 }.onFailure {
                     appendError(it.message)
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)

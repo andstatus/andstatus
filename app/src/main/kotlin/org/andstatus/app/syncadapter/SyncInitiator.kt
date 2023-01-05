@@ -26,7 +26,6 @@ import android.os.SystemClock
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
-import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.service.ConnectionRequired
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
@@ -54,7 +53,9 @@ class SyncInitiator : BroadcastReceiver() {
 
     private fun initializeApp(context: Context) {
         myContextHolder.initialize(context, this)
-            .whenSuccessAsync({ myContext: MyContext -> checkConnectionState(myContext) }, NonUiThreadExecutor.INSTANCE)
+            .whenSuccessAsync(false) { myContext: MyContext ->
+                checkConnectionState(myContext)
+            }
     }
 
     private fun checkConnectionState(myContext: MyContext) {
