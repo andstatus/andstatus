@@ -17,7 +17,7 @@ package org.andstatus.app.net.social
 
 import android.content.ContentResolver
 import android.net.Uri
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.DownloadType
 import org.andstatus.app.data.FileProvider
@@ -124,7 +124,7 @@ class Attachment : Comparable<Attachment>, IsEmpty {
         fun fromUriAndMimeType(uriIn: Uri, mimeTypeIn: String): Attachment {
             Objects.requireNonNull(uriIn)
             Objects.requireNonNull(mimeTypeIn)
-            return Attachment( MyContextHolder.myContextHolder.getNow().context?.getContentResolver(), uriIn, mimeTypeIn)
+            return Attachment(myContextHolder.getNow().context.getContentResolver(), uriIn, mimeTypeIn)
         }
     }
 }

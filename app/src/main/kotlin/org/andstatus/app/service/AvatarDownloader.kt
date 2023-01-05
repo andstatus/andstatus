@@ -17,7 +17,7 @@ package org.andstatus.app.service
 
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.AvatarData
 import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.MyQuery
@@ -30,14 +30,15 @@ class AvatarDownloader(myContext: MyContext, data: DownloadData) : FileDownloade
     constructor(actor: Actor) : this(actor.origin.myContext, AvatarData.getCurrentForActor(actor)) {}
 
     override fun findBestAccountForDownload(): MyAccount {
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromId(
-                MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, data.actorId))
-        return  MyContextHolder.myContextHolder.getNow().accounts.getFirstPreferablySucceededForOrigin(origin)
+        val origin: Origin = myContextHolder.getNow().origins.fromId(
+            MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, data.actorId)
+        )
+        return myContextHolder.getNow().accounts.getFirstPreferablySucceededForOrigin(origin)
     }
 
     override fun onSuccessfulLoad() {
-        data.deleteOtherOfThisActor( MyContextHolder.myContextHolder.getNow())
-         MyContextHolder.myContextHolder.getNow().users.load(data.actorId, true)
+        data.deleteOtherOfThisActor(myContextHolder.getNow())
+        myContextHolder.getNow().users.load(data.actorId, true)
         MyLog.v(this) { "Loaded avatar actorId:" + data.actorId + "; uri:'" + data.getUri() + "'" }
     }
 }

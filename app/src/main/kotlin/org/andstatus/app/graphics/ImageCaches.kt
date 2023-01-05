@@ -19,7 +19,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.graphics.Point
 import android.view.WindowManager
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MyTheme
 import org.andstatus.app.data.AvatarFile
@@ -58,12 +58,16 @@ object ImageCaches {
 
     private fun initializeAttachedImagesCache(context: Context) {
         // We assume that current display orientation is preferred, so we use "y" size only
-        var imageSize = Math.round(AttachedImageView.MAX_ATTACHED_IMAGE_PART *
-                getDisplaySize(context).y).toInt()
+        var imageSize = Math.round(
+            AttachedImageView.MAX_ATTACHED_IMAGE_PART *
+                getDisplaySize(context).y
+        ).toInt()
         var cacheSize = 0
         for (i in 0..4) {
-            cacheSize = calcCacheSize(context, imageSize,
-                    ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_APP_MEMORY)
+            cacheSize = calcCacheSize(
+                context, imageSize,
+                ATTACHED_IMAGES_CACHE_PART_OF_TOTAL_APP_MEMORY
+            )
             if (cacheSize >= ATTACHED_IMAGES_CACHE_SIZE_MIN || imageSize < 2) {
                 break
             }
@@ -72,8 +76,10 @@ object ImageCaches {
         if (cacheSize > ATTACHED_IMAGES_CACHE_SIZE_MAX) {
             cacheSize = ATTACHED_IMAGES_CACHE_SIZE_MAX
         }
-        attachedImagesCache = ImageCache(context, CacheName.ATTACHED_IMAGE, imageSize,
-                cacheSize)
+        attachedImagesCache = ImageCache(
+            context, CacheName.ATTACHED_IMAGE, imageSize,
+            cacheSize
+        )
     }
 
     private fun initializeAvatarsCache(context: Context) {
@@ -145,13 +151,15 @@ object ImageCaches {
             builder.append(attachedImagesCache?.getInfo() + "; ")
             builder.append("Styled images: " + styledImages.size + "; ")
         }
-        val myContext = MyContextHolder.myContextHolder.getNow()
+        val myContext = myContextHolder.getNow()
         if (!myContext.isEmpty) {
-            val context: Context =  myContext.context
+            val context: Context = myContext.context
             builder.append("Memory. App total: " + I18n.formatBytes(getTotalAppMemory(context)))
             val memInfo = getMemoryInfo(context)
-            builder.append("; Device: available " + I18n.formatBytes(memInfo.availMem) + " of "
-                    + I18n.formatBytes(memInfo.totalMem))
+            builder.append(
+                "; Device: available " + I18n.formatBytes(memInfo.availMem) + " of "
+                    + I18n.formatBytes(memInfo.totalMem)
+            )
         }
         return builder.toString()
     }
@@ -183,9 +191,9 @@ object ImageCaches {
     fun getStyledImage(resourceIdLight: Int, resourceId: Int): CachedImage {
         var styledImage = styledImages[resourceId]
         if (styledImage == null) {
-            val myContext = MyContextHolder.myContextHolder.getNow()
+            val myContext = myContextHolder.getNow()
             if (!myContext.isEmpty) {
-                val context: Context =  myContext.context
+                val context: Context = myContext.context
                 val image = getImageCompat(context, resourceId)
                 val imageLight = getImageCompat(context, resourceIdLight)
                 styledImage = arrayOf(image, imageLight)

@@ -48,7 +48,7 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.data.TextMediaType
@@ -124,7 +124,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
 
         constructor(status: ResultStatus) : this(status, "", Optional.empty<Uri>(), Uri.EMPTY) {}
         constructor(status: ResultStatus, message: CharSequence?) :
-                this(status, message, Optional.empty<Uri>(), Uri.EMPTY) {
+            this(status, message, Optional.empty<Uri>(), Uri.EMPTY) {
         }
 
         fun isSuccess(): Boolean {
@@ -210,9 +210,9 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         val newState: StateOfAccountChangeProcess = StateOfAccountChangeProcess.fromIntent(intent)
         if (state.actionCompleted || newState.useThisState) {
             message += "; " +
-                    (if (state.actionCompleted) "Old completed, " else "") +
-                    (if (newState.useThisState) "Using this: " else "") +
-                    "New state"
+                (if (state.actionCompleted) "Old completed, " else "") +
+                (if (newState.useThisState) "Using this: " else "") +
+                "New state"
             state = newState
             if (state.originShouldBeSelected) {
                 EnumSelector.newInstance<OriginType>(ActivityRequestCode.SELECT_ORIGIN_TYPE, OriginType::class.java)
@@ -251,7 +251,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
 
         toFinish = if (resultCode == RESULT_OK) {
             val accountName: AccountName = AccountName.fromAccountName(
-                MyContextHolder.myContextHolder.getNow(),
+                myContextHolder.getNow(),
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)
             )
             builder.rebuildMyAccount(accountName)
@@ -275,7 +275,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         if (resultCode == RESULT_OK) {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key))
             if (originType.isSelectable()) {
-                val origins: MutableList<Origin> = MyContextHolder.myContextHolder.getNow()
+                val origins: MutableList<Origin> = myContextHolder.getNow()
                     .origins.originsOfType(originType)
                 when (origins.size) {
                     0 -> originType = OriginType.UNKNOWN
@@ -305,7 +305,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
     private fun onOriginSelected(resultCode: Int, data: Intent) {
         var origin: Origin = Origin.EMPTY
         if (resultCode == RESULT_OK) {
-            origin = MyContextHolder.myContextHolder.getNow().origins
+            origin = myContextHolder.getNow().origins
                 .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
             if (origin.isPersistent()) {
                 onOriginSelected(origin)
@@ -604,8 +604,8 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
             R.id.log_out,
             R.string.log_out,
             myAccount.getCredentialsPresent() ||
-                    myAccount.connection.areOAuthClientKeysPresent() &&
-                    myAccount.connection.oauthHttp?.oauthClientKeys?.areDynamic == true
+                myAccount.connection.areOAuthClientKeysPresent() &&
+                myAccount.connection.oauthHttp?.oauthClientKeys?.areDynamic == true
         )
             ?.setOnClickListener {
                 with(state.builder) {
@@ -638,11 +638,11 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         val view = findFragmentViewById(R.id.sync_frequency) as EditText?
         if (label != null && view != null) {
             val labelText = getText(R.string.sync_frequency_minutes).toString() + " " +
-                    SharedPreferencesUtil.getSummaryForListPreference(
-                        this, java.lang.Long.toString(MyPreferences.getSyncFrequencySeconds()),
-                        R.array.fetch_frequency_values, R.array.fetch_frequency_entries,
-                        R.string.summary_preference_frequency
-                    )
+                SharedPreferencesUtil.getSummaryForListPreference(
+                    this, java.lang.Long.toString(MyPreferences.getSyncFrequencySeconds()),
+                    R.array.fetch_frequency_values, R.array.fetch_frequency_entries,
+                    R.string.summary_preference_frequency
+                )
             label.text = labelText
             val value = if (state.builder.myAccount.syncFrequencySeconds <= 0) ""
             else (state.builder.myAccount.syncFrequencySeconds / 60).toString()
@@ -689,7 +689,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
     override fun onResume() {
         MyLog.v(this) { "onResume: ${state.accountAction}, ${state.builder}" }
         super.onResume()
-        MyContextHolder.myContextHolder.getNow().isInForeground = true
+        myContextHolder.getNow().isInForeground = true
         myReadyContextOrRestartMe().getOrElseRecover { return }
 
         MyServiceManager.setServiceUnavailable()
@@ -784,13 +784,13 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
     override fun onPause() {
         super.onPause()
         state.save()
-        MyContextHolder.myContextHolder.getNow().isInForeground = false
+        myContextHolder.getNow().isInForeground = false
     }
 
     override fun finish() {
         if (resumedOnce || !isMyResumed()) {
             if (activityOnFinish == ActivityOnFinish.NONE) {
-                MyContextHolder.myContextHolder.initialize(this)
+                myContextHolder.initialize(this)
             } else {
                 returnToOurActivity()
             }
@@ -799,7 +799,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
     }
 
     private fun returnToOurActivity() {
-        MyContextHolder.myContextHolder
+        myContextHolder
             .initialize(this)
             .whenSuccessAsync({ myContext: MyContext ->
                 MyLog.v(this, "Returning to $activityOnFinish")
@@ -938,7 +938,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
             if (!this@AccountSettingsActivity.isFinishing) {
                 result.onSuccess {
                     state.builder.myAccount.myContext.setExpired { "Client registered" }
-                    MyContextHolder.myContextHolder
+                    myContextHolder
                         .initialize(this@AccountSettingsActivity, this)
                         .whenSuccessAsync({ myContext: MyContext ->
                             state.builder.rebuildMyAccount(myContext)
@@ -1154,8 +1154,8 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                             whoAmI = MyOAuth2AccessTokenJsonExtractor.extractWhoAmI(accessSecret)
                         } else {
                             message = "Incorrect state parameter in Authorization Response." +
-                                    " Expected: '${state.oauthStateParameter}'" +
-                                    ", Actual: '$stateParameter'"
+                                " Expected: '${state.oauthStateParameter}'" +
+                                ", Actual: '$stateParameter'"
                         }
                     } else {
                         val requestToken = state.getRequestToken()
@@ -1188,7 +1188,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                     state.builder.setUserTokenWithSecret(accessToken, accessSecret)
                     MyLog.d(
                         this, "Access token for " + myAccount.getAccountName() +
-                                ": " + accessToken + ", " + accessSecret
+                            ": " + accessToken + ", " + accessSecret
                     )
                 }
             }
@@ -1209,7 +1209,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 }.onFailure {
                     val stepErrorMessage = this@AccountSettingsActivity
                         .getString(R.string.acquiring_an_access_token_failed) +
-                            if (!it.message.isNullOrEmpty()) ": " + it.message else ""
+                        if (!it.message.isNullOrEmpty()) ": " + it.message else ""
                     appendError(stepErrorMessage)
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
                     updateScreen()
@@ -1260,7 +1260,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 .onSuccess { myAccount: MyAccount ->
                     state.forget()
                     val myContext: MyContext =
-                        MyContextHolder.myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
+                        myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
                     val timeline = myContext.timelines.forUser(TimelineType.HOME, myAccount.actor)
                     if (timeline.isTimeToAutoSync()) {

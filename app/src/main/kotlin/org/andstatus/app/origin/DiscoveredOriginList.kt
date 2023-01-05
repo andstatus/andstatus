@@ -18,7 +18,7 @@ package org.andstatus.app.origin
 import android.os.Bundle
 import android.view.MenuItem
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceEvent
@@ -27,7 +27,7 @@ import org.andstatus.app.service.MyServiceEventsReceiver
 import org.andstatus.app.service.MyServiceManager
 
 class DiscoveredOriginList : OriginList(DiscoveredOriginList::class), MyServiceEventsListener {
-    private var mServiceConnector: MyServiceEventsReceiver? = MyServiceEventsReceiver( MyContextHolder.myContextHolder.getNow(), this)
+    private var mServiceConnector: MyServiceEventsReceiver? = MyServiceEventsReceiver(myContextHolder.getNow(), this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,9 +48,11 @@ class DiscoveredOriginList : OriginList(DiscoveredOriginList::class), MyServiceE
     private fun manualSync() {
         MyServiceManager.setServiceAvailable()
         MyServiceManager.sendForegroundCommand(
-                CommandData.newOriginCommand(CommandEnum.GET_OPEN_INSTANCES,
-                         MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.GNUSOCIAL)
-                ))
+            CommandData.newOriginCommand(
+                CommandEnum.GET_OPEN_INSTANCES,
+                myContextHolder.getNow().origins.firstOfType(OriginType.GNUSOCIAL)
+            )
+        )
     }
 
     override fun onResume() {

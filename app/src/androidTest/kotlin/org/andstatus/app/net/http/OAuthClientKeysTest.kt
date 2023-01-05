@@ -15,7 +15,7 @@
  */
 package org.andstatus.app.net.http
 
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.net.social.ConnectionFactory
 import org.andstatus.app.origin.OriginType
@@ -34,10 +34,10 @@ class OAuthClientKeysTest {
 
     @Test
     fun testKeysSave() {
-        val myAccount = MyContextHolder.myContextHolder.getNow()
+        val myAccount = myContextHolder.getNow()
             .accounts
             .getFirstPreferablySucceededForOrigin(
-                MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.PUMPIO)
+                myContextHolder.getNow().origins.firstOfType(OriginType.PUMPIO)
             )
         val connection = ConnectionFactory.fromMyAccount(myAccount, TriState.UNKNOWN)
         val httpData: HttpConnectionData = connection.http.data

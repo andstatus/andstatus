@@ -22,6 +22,7 @@ import android.os.Environment
 import org.andstatus.app.ClassInApplicationPackage
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.account.MyAccounts
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.database.DatabaseHolder
 import org.andstatus.app.graphics.ImageCaches
@@ -137,7 +138,7 @@ open class MyContextImpl internal constructor(
         when (state) {
             MyContextState.DATABASE_READY -> state = if (!origins.initialize()) {
                 MyContextState.DATABASE_UNAVAILABLE
-            } else if (MyContextHolder.myContextHolder.isOnRestore()) {
+            } else if (myContextHolder.isOnRestore()) {
                 MyContextState.RESTORING
             } else {
                 users.initialize()

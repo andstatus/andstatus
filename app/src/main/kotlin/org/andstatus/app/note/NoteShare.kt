@@ -21,7 +21,7 @@ import android.content.Intent
 import android.net.Uri
 import org.andstatus.app.R
 import org.andstatus.app.context.ActorInTimeline
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.FileProvider
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.NoteTable
@@ -47,7 +47,8 @@ class NoteShare(private val origin: Origin, private val noteId: Long, private va
             return false
         }
         context.startActivity(
-            Intent.createChooser(intentToViewAndShare(true), context.getText(R.string.menu_item_share)))
+            Intent.createChooser(intentToViewAndShare(true), context.getText(R.string.menu_item_share))
+        )
         return true
     }
 
@@ -62,14 +63,15 @@ class NoteShare(private val origin: Origin, private val noteId: Long, private va
         if (subjectString.isEmpty()) {
             subjectString = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(noteContent), 80)
         }
-        subjectString = (if (MyQuery.isSensitive(noteId)) "(" +  MyContextHolder.myContextHolder.getNow().context.getText(R.string.sensitive) + ") " else "") +
-                 MyContextHolder.myContextHolder.getNow().context.getText(origin.alternativeTermForResourceId(R.string.message)) +
+        subjectString =
+            (if (MyQuery.isSensitive(noteId)) "(" + myContextHolder.getNow().context.getText(R.string.sensitive) + ") " else "") +
+                myContextHolder.getNow().context.getText(origin.alternativeTermForResourceId(R.string.message)) +
                 " - " + subjectString
         val intent = Intent(if (share) Intent.ACTION_SEND else Intent.ACTION_VIEW)
         val downloadData = downloads.getFirstToShare()
         val mediaFileUri = if (downloadData.file.existsNow())
             FileProvider.downloadFilenameToUri(downloadData.filename)
-            else downloadData.getUri()
+        else downloadData.getUri()
         if (share || UriUtils.isEmpty(mediaFileUri)) {
             intent.type = "text/*"
         } else {
@@ -87,16 +89,18 @@ class NoteShare(private val origin: Origin, private val noteId: Long, private va
 
     private fun buildBody(origin: Origin, noteContent: String?, isHtml: Boolean): String {
         return StringBuilder()
-                .append(noteContent)
-                .append(
-                        StringUtil.format(
-                                if (isHtml) SIGNATURE_FORMAT_HTML else SIGNATURE_PLAIN_TEXT,
-                                MyQuery.noteIdToUsername(
-                                        NoteTable.AUTHOR_ID,
-                                        noteId,
-                                        if (origin.isMentionAsWebFingerId()) ActorInTimeline.WEBFINGER_ID else ActorInTimeline.USERNAME),
-                                origin.getNotePermalink(noteId)
-                        )).toString()
+            .append(noteContent)
+            .append(
+                StringUtil.format(
+                    if (isHtml) SIGNATURE_FORMAT_HTML else SIGNATURE_PLAIN_TEXT,
+                    MyQuery.noteIdToUsername(
+                        NoteTable.AUTHOR_ID,
+                        noteId,
+                        if (origin.isMentionAsWebFingerId()) ActorInTimeline.WEBFINGER_ID else ActorInTimeline.USERNAME
+                    ),
+                    origin.getNotePermalink(noteId)
+                )
+            ).toString()
     }
 
     /**

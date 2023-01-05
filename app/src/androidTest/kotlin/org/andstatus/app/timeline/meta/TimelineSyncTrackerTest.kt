@@ -3,7 +3,7 @@ package org.andstatus.app.timeline.meta
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.service.TimelineSyncTracker
@@ -36,7 +36,7 @@ class TimelineSyncTrackerTest {
     }
 
     private fun oneTimelineType(timelineType: TimelineType, accountName: String) {
-        val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+        val myContext: MyContext = myContextHolder.getNow()
         val ma: MyAccount = DemoData.demoData.getMyAccount(accountName)
         val message = timelineType.save() + " " + ma
         Assert.assertTrue(ma.isValid)
@@ -46,32 +46,43 @@ class TimelineSyncTrackerTest {
         if (timelineType.isAtOrigin()) {
             if (timeline.getOrigin().originType.isTimelineTypeSyncable(timelineType)) {
                 assertDefaultTimelinePersistence(
-                        message, TimelineType.Companion.getDefaultOriginTimelineTypes().contains(timelineType), timeline)
+                    message, TimelineType.Companion.getDefaultOriginTimelineTypes().contains(timelineType), timeline
+                )
             }
         } else {
             assertDefaultTimelinePersistence(
-                    message, ma.actor.getDefaultMyAccountTimelineTypes().contains(timelineType), timeline)
+                message, ma.actor.getDefaultMyAccountTimelineTypes().contains(timelineType), timeline
+            )
         }
         val time1 = System.currentTimeMillis()
         var syncTracker = TimelineSyncTracker(timeline, true)
         syncTracker.onTimelineDownloaded()
         syncTracker.onNewActivity(
-                System.currentTimeMillis() - LATEST_ITEM_MILLIS_AGO,
-                TimelinePosition.Companion.of("position_" + timelineType.save() + "_" + accountName),
-                TimelinePosition.Companion.of("position_" + timelineType.save() + "_" + accountName))
+            System.currentTimeMillis() - LATEST_ITEM_MILLIS_AGO,
+            TimelinePosition.Companion.of("position_" + timelineType.save() + "_" + accountName),
+            TimelinePosition.Companion.of("position_" + timelineType.save() + "_" + accountName)
+        )
         timeline.save(myContext)
         val timeline2 = findTimeline(myContext, timelineType, ma)
         syncTracker = TimelineSyncTracker(timeline2, true)
         val time2 = System.currentTimeMillis()
         if (timeline2.isValid()) {
-            Assert.assertTrue("$timeline2 was downloaded $syncTracker",
-                    syncTracker.getPreviousSyncedDate() >= time1)
-            Assert.assertTrue("$timeline2 was downloaded $syncTracker",
-                    syncTracker.getPreviousSyncedDate() <= time2)
-            Assert.assertTrue("$timeline2 latest item $syncTracker",
-                    syncTracker.getPreviousItemDate() >= time1 - LATEST_ITEM_MILLIS_AGO)
-            Assert.assertTrue("$timeline2 latest item $syncTracker",
-                    syncTracker.getPreviousItemDate() <= time2 - LATEST_ITEM_MILLIS_AGO)
+            Assert.assertTrue(
+                "$timeline2 was downloaded $syncTracker",
+                syncTracker.getPreviousSyncedDate() >= time1
+            )
+            Assert.assertTrue(
+                "$timeline2 was downloaded $syncTracker",
+                syncTracker.getPreviousSyncedDate() <= time2
+            )
+            Assert.assertTrue(
+                "$timeline2 latest item $syncTracker",
+                syncTracker.getPreviousItemDate() >= time1 - LATEST_ITEM_MILLIS_AGO
+            )
+            Assert.assertTrue(
+                "$timeline2 latest item $syncTracker",
+                syncTracker.getPreviousItemDate() <= time2 - LATEST_ITEM_MILLIS_AGO
+            )
         } else {
             Assert.assertEquals("Remembered timeline dates for $timeline", 0, syncTracker.getPreviousItemDate())
             Assert.assertEquals("Remembered timeline dates for $timeline", 0, syncTracker.getPreviousSyncedDate())
@@ -80,13 +91,17 @@ class TimelineSyncTrackerTest {
 
     private fun assertDefaultTimelinePersistence(message: String, isAddedByDefault: Boolean, timeline: Timeline) {
         Assert.assertEquals("$message; Is added by default\n$timeline\n", isAddedByDefault, timeline.isAddedByDefault())
-        Assert.assertEquals("$message; Timeline persistence\n$timeline\n", isAddedByDefault,
-                timeline.isValid() && timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER)
+        Assert.assertEquals(
+            "$message; Timeline persistence\n$timeline\n", isAddedByDefault,
+            timeline.isValid() && timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER
+        )
     }
 
     private fun findTimeline(myContext: MyContext, timelineType: TimelineType, ma: MyAccount): Timeline {
-        return myContext.timelines.filter(false, TriState.UNKNOWN, timelineType, ma.actor,
-                ma.origin).findFirst().orElse(Timeline.EMPTY)
+        return myContext.timelines.filter(
+            false, TriState.UNKNOWN, timelineType, ma.actor,
+            ma.origin
+        ).findFirst().orElse(Timeline.EMPTY)
     }
 
     companion object {

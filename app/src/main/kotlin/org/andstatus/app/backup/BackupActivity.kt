@@ -26,7 +26,7 @@ import androidx.documentfile.provider.DocumentFile
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.os.AsyncEffects
 import org.andstatus.app.os.AsyncEnum
@@ -121,13 +121,13 @@ class BackupActivity : MyActivity(BackupActivity::class), ProgressLogger.Progres
     }
 
     override fun onResume() {
-        MyContextHolder.myContextHolder.getNow().isInForeground = true
+        myContextHolder.getNow().isInForeground = true
         super.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        MyContextHolder.myContextHolder.getNow().isInForeground = false
+        myContextHolder.getNow().isInForeground = false
     }
 
     override fun onProgressMessage(message: CharSequence) {

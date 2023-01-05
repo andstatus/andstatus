@@ -15,7 +15,7 @@
  */
 package org.andstatus.app.data
 
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.util.IsEmpty
@@ -100,7 +100,7 @@ class SqlIds : IsEmpty {
         }
 
         fun myActorsIds(): SqlIds {
-            return fromIds( MyContextHolder.myContextHolder.getNow().users.myActors.keys)
+            return fromIds(myContextHolder.getNow().users.myActors.keys)
         }
 
         fun actorIdsOfTimelineAccount(timeline: Timeline): SqlIds {

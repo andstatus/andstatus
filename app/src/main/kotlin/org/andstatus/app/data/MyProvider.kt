@@ -26,7 +26,7 @@ import android.provider.BaseColumns
 import org.andstatus.app.actor.ActorsScreenType
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorEndpointTable
 import org.andstatus.app.database.table.ActorTable
@@ -59,7 +59,7 @@ class MyProvider : ContentProvider() {
      * @see android.content.ContentProvider.onCreate
      */
     override fun onCreate(): Boolean {
-         MyContextHolder.myContextHolder.initialize(context, this)
+        myContextHolder.initialize(context, this)
         return true
     }
 
@@ -87,7 +87,7 @@ class MyProvider : ContentProvider() {
         val rowId: Long
         var newUri: Uri? = null
         try {
-            val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().database
+            val db: SQLiteDatabase? = myContextHolder.getNow().database
             if (db == null) {
                 MyLog.databaseIsNull { "insert" }
                 return null
@@ -136,11 +136,13 @@ class MyProvider : ContentProvider() {
      *
      * @see android.content.ContentProvider.query
      */
-    override fun query(uri: Uri, projection: Array<String>?, selectionIn: String?, selectionArgsIn: Array<String>?,
-                       sortOrderIn: String?): Cursor? {
+    override fun query(
+        uri: Uri, projection: Array<String>?, selectionIn: String?, selectionArgsIn: Array<String>?,
+        sortOrderIn: String?
+    ): Cursor? {
         if (projection == null) return null
 
-        val db: SQLiteDatabase = MyContextHolder.myContextHolder.getNow().database ?: kotlin.run {
+        val db: SQLiteDatabase = myContextHolder.getNow().database ?: kotlin.run {
             MyLog.databaseIsNull {}
             return null
         }
@@ -169,7 +171,7 @@ class MyProvider : ContentProvider() {
                 qb.setProjectionMap(ProjectionMap.TIMELINE)
                 selection = selectionIn
                 where = (ProjectionMap.ACTIVITY_TABLE_ALIAS + "."
-                        + ActivityTable.NOTE_ID + "=" + uriParser.getNoteId())
+                    + ActivityTable.NOTE_ID + "=" + uriParser.getNoteId())
             }
             MatchedUri.TIMELINE_SEARCH -> {
                 tables = TimelineSql.tablesForTimeline(uri, projection)
@@ -178,7 +180,7 @@ class MyProvider : ContentProvider() {
                 if (rawQuery.isNotEmpty()) {
                     val searchQuery = KeywordsFilter(rawQuery)
                     selection = "(" + searchQuery.getSqlSelection(NoteTable.CONTENT_TO_SEARCH) + ")" +
-                            if (!selectionIn.isNullOrEmpty()) " AND ($selectionIn)" else ""
+                        if (!selectionIn.isNullOrEmpty()) " AND ($selectionIn)" else ""
                     selectionArgs = searchQuery.prependSqlSelectionArgs(selectionArgs)
                 } else {
                     selection = selectionIn
@@ -197,13 +199,17 @@ class MyProvider : ContentProvider() {
                 val rawQuery = uriParser.searchQuery
                 val actorWhere = SqlWhere().append(selectionIn ?: "")
                 if (uriParser.getActorsScreenType() == ActorsScreenType.GROUPS_AT_ORIGIN) {
-                    actorWhere.append(ActorTable.GROUP_TYPE +
-                            SqlIds.fromIds(GroupType.GENERIC.id, GroupType.ACTOR_OWNED.id).getSql())
+                    actorWhere.append(
+                        ActorTable.GROUP_TYPE +
+                            SqlIds.fromIds(GroupType.GENERIC.id, GroupType.ACTOR_OWNED.id).getSql()
+                    )
                 }
                 if (rawQuery.isNotEmpty()) {
-                    actorWhere.append(ActorTable.WEBFINGER_ID + " LIKE ?" +
+                    actorWhere.append(
+                        ActorTable.WEBFINGER_ID + " LIKE ?" +
                             " OR " + ActorTable.REAL_NAME + " LIKE ?" +
-                            " OR " + ActorTable.USERNAME + " LIKE ?")
+                            " OR " + ActorTable.USERNAME + " LIKE ?"
+                    )
                     selectionArgs = StringUtil.addBeforeArray(selectionArgs, "%$rawQuery%")
                     selectionArgs = StringUtil.addBeforeArray(selectionArgs, "%$rawQuery%")
                     selectionArgs = StringUtil.addBeforeArray(selectionArgs, "%$rawQuery%")
@@ -245,7 +251,7 @@ class MyProvider : ContentProvider() {
             sortOrderIn
         }
         var cursor: Cursor? = null
-        if ( MyContextHolder.myContextHolder.getNow().isReady) {
+        if (myContextHolder.getNow().isReady) {
             try {
                 if (where.isNotEmpty()) {
                     qb.appendWhere(where)
@@ -278,8 +284,8 @@ class MyProvider : ContentProvider() {
                 MyLog.d(this, formatSql(sql, selectionArgs2))
                 if (built && MyLog.isVerboseEnabled()) {
                     val msg2 = ("uri=" + uri + "; projection=" + Arrays.toString(projection)
-                            + "; selection=" + selection + "; sortOrder=" + sortOrderIn
-                            + "; qb.getTables=" + qb.tables + "; orderBy=" + sortOrder)
+                        + "; selection=" + selection + "; sortOrder=" + sortOrderIn
+                        + "; qb.getTables=" + qb.tables + "; orderBy=" + sortOrder)
                     MyLog.v(this, msg2)
                 }
             }
@@ -301,7 +307,7 @@ class MyProvider : ContentProvider() {
      */
     override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<String>?): Int {
         if (values == null) return 0
-        val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().database ?: kotlin.run {
+        val db: SQLiteDatabase = myContextHolder.getNow().database ?: kotlin.run {
             MyLog.databaseIsNull { "update" }
             return 0
         }
@@ -312,18 +318,22 @@ class MyProvider : ContentProvider() {
             MatchedUri.NOTE_ITEM -> {
                 val rowId = uriParser.getNoteId()
                 if (values.size() > 0) {
-                    count = db.update(NoteTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
+                    count = db.update(
+                        NoteTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + if (!selection.isNullOrEmpty()) " AND ($selection)" else "",
-                            selectionArgs)
+                        selectionArgs
+                    )
                 }
             }
             MatchedUri.ACTOR -> count = db.update(ActorTable.TABLE_NAME, values, selection, selectionArgs)
             MatchedUri.ACTOR_ITEM -> {
                 val selectedActorId = uriParser.getActorId()
                 if (values.size() > 0) {
-                    count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedActorId
+                    count = db.update(
+                        ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedActorId
                             + if (!selection.isNullOrEmpty()) " AND ($selection)" else "",
-                            selectionArgs)
+                        selectionArgs
+                    )
                 }
             }
             else -> throw IllegalArgumentException(uriParser.toString())
@@ -337,10 +347,20 @@ class MyProvider : ContentProvider() {
         /** @return Number of deleted activities of this note
          */
         fun deleteNoteAndItsActivities(context: MyContext?, noteId: Long): Int {
-            return if (context == null || noteId == 0L) 0 else deleteActivities(context, ActivityTable.NOTE_ID + "=" + noteId, null, true)
+            return if (context == null || noteId == 0L) 0 else deleteActivities(
+                context,
+                ActivityTable.NOTE_ID + "=" + noteId,
+                null,
+                true
+            )
         }
 
-        fun deleteActivities(myContext: MyContext, selection: String?, selectionArgs: Array<String>?, inTransaction: Boolean): Int {
+        fun deleteActivities(
+            myContext: MyContext,
+            selection: String?,
+            selectionArgs: Array<String>?,
+            inTransaction: Boolean
+        ): Int {
             val db = myContext.database
             if (db == null) {
                 MyLog.databaseIsNull { "deleteActivities" }
@@ -360,16 +380,16 @@ class MyProvider : ContentProvider() {
 
                 // Notes, which don't have any activities
                 val sqlNoteIds = "SELECT msgA." + BaseColumns._ID +
-                        " FROM " + NoteTable.TABLE_NAME + " AS msgA" +
-                        " WHERE NOT EXISTS" +
-                        " (SELECT " + ActivityTable.NOTE_ID + " FROM " + ActivityTable.TABLE_NAME +
-                        " WHERE " + ActivityTable.NOTE_ID + "=msgA." + BaseColumns._ID + ")"
+                    " FROM " + NoteTable.TABLE_NAME + " AS msgA" +
+                    " WHERE NOT EXISTS" +
+                    " (SELECT " + ActivityTable.NOTE_ID + " FROM " + ActivityTable.TABLE_NAME +
+                    " WHERE " + ActivityTable.NOTE_ID + "=msgA." + BaseColumns._ID + ")"
                 val noteIds = MyQuery.getLongs(sqlNoteIds)
 
                 // Audience
                 var selectionG = " EXISTS (" + sqlNoteIds +
-                        " AND (msgA." + BaseColumns._ID +
-                        "=" + AudienceTable.TABLE_NAME + "." + AudienceTable.NOTE_ID + "))"
+                    " AND (msgA." + BaseColumns._ID +
+                    "=" + AudienceTable.TABLE_NAME + "." + AudienceTable.NOTE_ID + "))"
                 sqlDesc = selectionG + descSuffix
                 count += db.delete(AudienceTable.TABLE_NAME, selectionG, arrayOf())
                 for (noteId in noteIds) {
@@ -378,8 +398,8 @@ class MyProvider : ContentProvider() {
 
                 // Notes
                 selectionG = " EXISTS (" + sqlNoteIds +
-                        " AND (msgA." + BaseColumns._ID +
-                        "=" + NoteTable.TABLE_NAME + "." + BaseColumns._ID + "))"
+                    " AND (msgA." + BaseColumns._ID +
+                    "=" + NoteTable.TABLE_NAME + "." + BaseColumns._ID + "))"
                 sqlDesc = selectionG + descSuffix
                 count += db.delete(NoteTable.TABLE_NAME, selectionG, arrayOf())
                 if (!inTransaction) {
@@ -402,25 +422,29 @@ class MyProvider : ContentProvider() {
         private fun deleteActor(myContext: MyContext, actorId: Long, recursionLevel: Long): Long {
             if (recursionLevel < 3) {
                 MyQuery.foldLeft(myContext, "SELECT " + BaseColumns._ID + " FROM " +
-                        ActorTable.TABLE_NAME + " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + actorId,
-                        ArrayList(),
-                        { id: ArrayList<Long> ->
-                            Function { cursor: Cursor ->
-                                id.add(DbUtils.getLong(cursor, BaseColumns._ID))
-                                id
-                            }
+                    ActorTable.TABLE_NAME + " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + actorId,
+                    ArrayList(),
+                    { id: ArrayList<Long> ->
+                        Function { cursor: Cursor ->
+                            id.add(DbUtils.getLong(cursor, BaseColumns._ID))
+                            id
                         }
+                    }
                 ).forEach(Consumer { childActorId: Long -> deleteActor(myContext, childActorId, recursionLevel + 1) })
             }
-            val userId = MyQuery.idToLongColumnValue(myContext.database, ActorTable.TABLE_NAME, ActorTable.USER_ID, actorId)
+            val userId =
+                MyQuery.idToLongColumnValue(myContext.database, ActorTable.TABLE_NAME, ActorTable.USER_ID, actorId)
             delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, actorId)
             delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.GROUP_ID, actorId)
             delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.MEMBER_ID, actorId)
             DownloadData.deleteAllOfThisActor(myContext, actorId)
             delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId)
             delete(myContext, ActorTable.TABLE_NAME, BaseColumns._ID, actorId)
-            if (!MyQuery.dExists(myContext.database, "SELECT * FROM " + ActorTable.TABLE_NAME
-                            + " WHERE " + ActorTable.USER_ID + "=" + userId)) {
+            if (!MyQuery.dExists(
+                    myContext.database, "SELECT * FROM " + ActorTable.TABLE_NAME
+                        + " WHERE " + ActorTable.USER_ID + "=" + userId
+                )
+            ) {
                 delete(myContext, UserTable.TABLE_NAME, BaseColumns._ID, userId)
             }
             return 1
@@ -454,14 +478,18 @@ class MyProvider : ContentProvider() {
             if (originId == 0L) return 0
             val origin = myContext.origins.fromId(originId)
             // Was this the last activity for this note?
-            val activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
-                    BaseColumns._ID, ActivityTable.NOTE_ID + "=" + noteId +
-                    " AND " + ActivityTable.TABLE_NAME + "." + BaseColumns._ID + "!=" + activityId)
+            val activityId2 = MyQuery.conditionToLongColumnValue(
+                db, null, ActivityTable.TABLE_NAME,
+                BaseColumns._ID, ActivityTable.NOTE_ID + "=" + noteId +
+                    " AND " + ActivityTable.TABLE_NAME + "." + BaseColumns._ID + "!=" + activityId
+            )
             val count: Long
             if (noteId != 0L && activityId2 == 0L) {
                 // Delete related note if no more its activities left
-                count = deleteActivities(myContext, ActivityTable.TABLE_NAME + "." + BaseColumns._ID +
-                        "=" + activityId, arrayOf(), inTransaction).toLong()
+                count = deleteActivities(
+                    myContext, ActivityTable.TABLE_NAME + "." + BaseColumns._ID +
+                        "=" + activityId, arrayOf(), inTransaction
+                ).toLong()
             } else {
                 // Delete this activity only
                 count = db.delete(ActivityTable.TABLE_NAME, BaseColumns._ID + "=" + activityId, null).toLong()
@@ -473,53 +501,66 @@ class MyProvider : ContentProvider() {
 
         fun updateNoteReblogged(myContext: MyContext, origin: Origin, noteId: Long) {
             val reblogged: TriState = TriState.fromBoolean(
-                    myContext.users.containsMe(MyQuery.getRebloggers(myContext.database, origin, noteId))
+                myContext.users.containsMe(MyQuery.getRebloggers(myContext.database, origin, noteId))
             )
-            update(myContext, NoteTable.TABLE_NAME,
-                    NoteTable.REBLOGGED + "=" + reblogged.id,
-                    BaseColumns._ID + "=" + noteId)
+            update(
+                myContext, NoteTable.TABLE_NAME,
+                NoteTable.REBLOGGED + "=" + reblogged.id,
+                BaseColumns._ID + "=" + noteId
+            )
         }
 
         fun updateNoteDownloadStatus(myContext: MyContext, noteId: Long, downloadStatus: DownloadStatus) {
-            update(myContext, NoteTable.TABLE_NAME,
+            update(
+                myContext, NoteTable.TABLE_NAME,
                 NoteTable.NOTE_STATUS + "=" + downloadStatus.save(),
-                BaseColumns._ID + "=" + noteId)
+                BaseColumns._ID + "=" + noteId
+            )
         }
 
         fun updateNoteFavorited(myContext: MyContext, origin: Origin, noteId: Long) {
             val favorited: TriState = TriState.fromBoolean(
-                    myContext.users.containsMe(MyQuery.getStargazers(myContext.database, origin, noteId))
+                myContext.users.containsMe(MyQuery.getStargazers(myContext.database, origin, noteId))
             )
-            update(myContext, NoteTable.TABLE_NAME,
-                    NoteTable.FAVORITED + "=" + favorited.id,
-                    BaseColumns._ID + "=" + noteId)
+            update(
+                myContext, NoteTable.TABLE_NAME,
+                NoteTable.FAVORITED + "=" + favorited.id,
+                BaseColumns._ID + "=" + noteId
+            )
         }
 
         fun updateActivityOid(myContext: MyContext, activityId: Long, oid: String) {
-            update(myContext, ActivityTable.TABLE_NAME,
+            update(
+                myContext, ActivityTable.TABLE_NAME,
                 ActivityTable.ACTIVITY_OID + "=" + MyQuery.quoteIfNotQuoted(oid),
-                BaseColumns._ID + "=$activityId")
+                BaseColumns._ID + "=$activityId"
+            )
         }
 
         fun clearAllNotifications(myContext: MyContext) {
-            update(myContext, ActivityTable.TABLE_NAME,
-                    ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
-                    ActivityTable.NEW_NOTIFICATION_EVENT + "!=0")
+            update(
+                myContext, ActivityTable.TABLE_NAME,
+                ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
+                ActivityTable.NEW_NOTIFICATION_EVENT + "!=0"
+            )
         }
 
         fun clearNotification(myContext: MyContext, timeline: Timeline) {
-            update(myContext, ActivityTable.TABLE_NAME,
-                    ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
-                    if (timeline.actor.isEmpty) "" else ActivityTable.NOTIFIED_ACTOR_ID + "=" + timeline.actor.actorId
+            update(
+                myContext, ActivityTable.TABLE_NAME,
+                ActivityTable.NEW_NOTIFICATION_EVENT + "=0",
+                if (timeline.actor.isEmpty) "" else ActivityTable.NOTIFIED_ACTOR_ID + "=" + timeline.actor.actorId
             )
         }
 
         fun setUnsentActivityNotification(myContext: MyContext, activityId: Long) {
-            update(myContext, ActivityTable.TABLE_NAME,
-                    ActivityTable.NEW_NOTIFICATION_EVENT + "=" + NotificationEventType.OUTBOX.id
-                            + ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id
-                            + ", " + ActivityTable.NOTIFIED_ACTOR_ID + "=" + ActivityTable.ACTOR_ID,
-                    BaseColumns._ID + "=" + activityId)
+            update(
+                myContext, ActivityTable.TABLE_NAME,
+                ActivityTable.NEW_NOTIFICATION_EVENT + "=" + NotificationEventType.OUTBOX.id
+                    + ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id
+                    + ", " + ActivityTable.NOTIFIED_ACTOR_ID + "=" + ActivityTable.ACTOR_ID,
+                BaseColumns._ID + "=" + activityId
+            )
         }
 
         fun update(myContext: MyContext, tableName: String, set: String, where: String?) {

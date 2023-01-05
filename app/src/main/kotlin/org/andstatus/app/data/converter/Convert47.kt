@@ -23,7 +23,7 @@ import org.andstatus.app.account.AccountName
 import org.andstatus.app.account.AccountUtils
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Connection
 import org.andstatus.app.origin.Origin
@@ -31,7 +31,6 @@ import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.json.JSONException
 import org.json.JSONObject
-import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class Convert47 : ConvertOneStep() {
@@ -44,7 +43,7 @@ internal class Convert47 : ConvertOneStep() {
         val versionFrom = 16
         val accountsConverted = AtomicInteger()
         progressLogger.logProgress("$stepTitle: Converting accounts")
-        val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+        val myContext: MyContext = myContextHolder.getNow()
         myContext.origins.initialize(db)
         val am = AccountManager.get(myContext.context)
         val accountsToRemove: MutableCollection<Account> = ArrayList()
@@ -55,39 +54,52 @@ internal class Convert47 : ConvertOneStep() {
             if (versionIn >= versionTo) {
                 MyLog.i(TAG, "Account " + accountIn.name + " is already converted?!, skipping")
             } else if (versionIn == versionFrom &&
-                    !jsonIn.map { jso: JSONObject -> jso.optBoolean(MyAccount.KEY_DELETED) }.getOrElse(false)) {
+                !jsonIn.map { jso: JSONObject -> jso.optBoolean(MyAccount.KEY_DELETED) }.getOrElse(false)
+            ) {
                 MyLog.v(TAG, "Upgrading account " + accountIn.name)
                 jsonIn.flatMap { jso: JSONObject -> convertJson16(myContext, jso, true) }
-                        .flatMap { jsonOut: JSONObject ->
-                            val accountData: AccountData = AccountData.fromJson(myContext, jsonOut, false)
-                            MyLog.v(TAG, method + "; " + accountData.toJsonString())
-                            val accountName = JsonUtils.optString(jsonOut, MyAccount.KEY_ACCOUNT_NAME)
-                            (if (accountName == accountIn.name) Try.success(accountIn)
-                            else AccountUtils.addEmptyAccount(am, accountName, JsonUtils.optString(jsonOut, Connection.KEY_PASSWORD)))
-                                    .flatMap { accountOut: Account ->
-                                        accountData.saveIfChanged(accountOut)
-                                                .map { b: Boolean? -> accountOut }
-                                    }
-                        }
-                        .onSuccess { accountNew: Account ->
-                            accountsConverted.incrementAndGet()
-                            if (accountNew.name.equals(accountIn.name, ignoreCase = true)) {
-                                progressLogger.logProgress(stepTitle + ": Converted account " +
-                                        accountNew.name + " with the same name")
-                            } else {
-                                progressLogger.logProgress(stepTitle + ": Converted account " +
-                                        accountIn.name + " to " + accountNew.name + ", deleting the old one")
-                                accountsToRemove.add(accountIn)
+                    .flatMap { jsonOut: JSONObject ->
+                        val accountData: AccountData = AccountData.fromJson(myContext, jsonOut, false)
+                        MyLog.v(TAG, method + "; " + accountData.toJsonString())
+                        val accountName = JsonUtils.optString(jsonOut, MyAccount.KEY_ACCOUNT_NAME)
+                        (if (accountName == accountIn.name) Try.success(accountIn)
+                        else AccountUtils.addEmptyAccount(
+                            am,
+                            accountName,
+                            JsonUtils.optString(jsonOut, Connection.KEY_PASSWORD)
+                        ))
+                            .flatMap { accountOut: Account ->
+                                accountData.saveIfChanged(accountOut)
+                                    .map { b: Boolean? -> accountOut }
                             }
-                        }
-                        .onFailure { e: Throwable? ->
-                            progressLogger.logProgress(stepTitle + ": Failed to convert account " +
-                                    accountIn.name + ", deleting")
+                    }
+                    .onSuccess { accountNew: Account ->
+                        accountsConverted.incrementAndGet()
+                        if (accountNew.name.equals(accountIn.name, ignoreCase = true)) {
+                            progressLogger.logProgress(
+                                stepTitle + ": Converted account " +
+                                    accountNew.name + " with the same name"
+                            )
+                        } else {
+                            progressLogger.logProgress(
+                                stepTitle + ": Converted account " +
+                                    accountIn.name + " to " + accountNew.name + ", deleting the old one"
+                            )
                             accountsToRemove.add(accountIn)
                         }
+                    }
+                    .onFailure { e: Throwable? ->
+                        progressLogger.logProgress(
+                            stepTitle + ": Failed to convert account " +
+                                accountIn.name + ", deleting"
+                        )
+                        accountsToRemove.add(accountIn)
+                    }
             } else {
-                MyLog.e(TAG, "Account " + accountIn.name +
-                        " version " + versionIn + " less than " + versionFrom + " is unsupported, deleting")
+                MyLog.e(
+                    TAG, "Account " + accountIn.name +
+                        " version " + versionIn + " less than " + versionFrom + " is unsupported, deleting"
+                )
                 accountsToRemove.add(accountIn)
             }
         }

@@ -20,7 +20,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.ParcelFileDescriptor
 import androidx.documentfile.provider.DocumentFile
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.database.DatabaseCreator
 import org.andstatus.app.util.DocumentFileUtils
@@ -49,8 +49,10 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
     private var docDescriptor: DocumentFile? = null
     private var accountsCount: Long = 0
     fun setJson(jso: JSONObject) {
-        backupSchemaVersion = jso.optInt(KEY_BACKUP_SCHEMA_VERSION,
-                backupSchemaVersion)
+        backupSchemaVersion = jso.optInt(
+            KEY_BACKUP_SCHEMA_VERSION,
+            backupSchemaVersion
+        )
         createdDate = jso.optLong(KEY_CREATED_DATE, createdDate)
         saved = createdDate != 0L
         appInstanceName = JsonUtils.optString(jso, KEY_APP_INSTANCE_NAME, appInstanceName)
@@ -166,8 +168,8 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
 
     fun appVersionNameAndCode(): String {
         return "app version name:'" +
-                (if (getApplicationVersionName().isEmpty()) "???" else getApplicationVersionName()) + "'" +
-                ", version code:'" + getApplicationVersionCode() + "'"
+            (if (getApplicationVersionName().isEmpty()) "???" else getApplicationVersionName()) + "'" +
+            ", version code:'" + getApplicationVersionCode() + "'"
     }
 
     companion object {
@@ -192,8 +194,10 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
             return MyBackupDescriptor(ProgressLogger.getEmpty(""))
         }
 
-        fun fromOldParcelFileDescriptor(parcelFileDescriptor: ParcelFileDescriptor?,
-                                        progressLogger: ProgressLogger): MyBackupDescriptor {
+        fun fromOldParcelFileDescriptor(
+            parcelFileDescriptor: ParcelFileDescriptor?,
+            progressLogger: ProgressLogger
+        ): MyBackupDescriptor {
             val myBackupDescriptor = MyBackupDescriptor(progressLogger)
             if (parcelFileDescriptor != null) {
                 myBackupDescriptor.fileDescriptor = parcelFileDescriptor.fileDescriptor
@@ -203,8 +207,10 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
             return myBackupDescriptor
         }
 
-        fun fromOldDocFileDescriptor(context: Context, parcelFileDescriptor: DocumentFile?,
-                                     progressLogger: ProgressLogger): MyBackupDescriptor {
+        fun fromOldDocFileDescriptor(
+            context: Context, parcelFileDescriptor: DocumentFile?,
+            progressLogger: ProgressLogger
+        ): MyBackupDescriptor {
             val myBackupDescriptor = MyBackupDescriptor(progressLogger)
             if (parcelFileDescriptor != null) {
                 myBackupDescriptor.docDescriptor = parcelFileDescriptor
@@ -213,17 +219,21 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
             return myBackupDescriptor
         }
 
-        fun fromEmptyParcelFileDescriptor(parcelFileDescriptor: ParcelFileDescriptor,
-                                          progressLoggerIn: ProgressLogger): MyBackupDescriptor {
+        fun fromEmptyParcelFileDescriptor(
+            parcelFileDescriptor: ParcelFileDescriptor,
+            progressLoggerIn: ProgressLogger
+        ): MyBackupDescriptor {
             val myBackupDescriptor = MyBackupDescriptor(progressLoggerIn)
             myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor()
-            myBackupDescriptor.setEmptyFields( MyContextHolder.myContextHolder.getNow().baseContext)
+            myBackupDescriptor.setEmptyFields(myContextHolder.getNow().baseContext)
             myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION
             return myBackupDescriptor
         }
 
-        fun fromEmptyDocumentFile(context: Context, documentFile: DocumentFile?,
-                                  progressLoggerIn: ProgressLogger): MyBackupDescriptor {
+        fun fromEmptyDocumentFile(
+            context: Context, documentFile: DocumentFile?,
+            progressLoggerIn: ProgressLogger
+        ): MyBackupDescriptor {
             val myBackupDescriptor = MyBackupDescriptor(progressLoggerIn)
             myBackupDescriptor.docDescriptor = documentFile
             myBackupDescriptor.setEmptyFields(context)

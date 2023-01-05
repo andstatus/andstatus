@@ -21,7 +21,7 @@ import android.widget.Toast
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.os.AsyncUtil
 import org.andstatus.app.util.DialogFactory
@@ -32,7 +32,8 @@ import java.util.*
  * @author yvolk@yurivolkov.com
  * Only one "progressing" process is allowed. all previous are being marked as cancelled
  */
-class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag: String) : ProgressLogger.ProgressListener, DialogInterface.OnDismissListener {
+class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag: String) :
+    ProgressLogger.ProgressListener, DialogInterface.OnDismissListener {
     @Volatile
     private var activity: Optional<MyActivity>
     private val defaultTitle: CharSequence?
@@ -84,12 +85,12 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
                         if (progressDialog == null) {
                             progressDialog = ProgressDialog(activity, ProgressDialog.STYLE_SPINNER).also { dialog ->
                                 dialog.setOnDismissListener(this@DefaultProgressListener)
-                                dialog.setTitle(if (MyContextHolder.myContextHolder.getNow().state == MyContextState.UPGRADING) upgradingText else defaultTitle)
+                                dialog.setTitle(if (myContextHolder.getNow().state == MyContextState.UPGRADING) upgradingText else defaultTitle)
                                 dialog.setMessage(message)
                                 if (isCancelable && !isCancelled()) {
                                     dialog.setCancelable(false)
                                     dialog.setButton(DialogInterface.BUTTON_NEGATIVE, cancelText)
-                                        { dialog1: DialogInterface, which: Int -> cancel() }
+                                    { dialog1: DialogInterface, which: Int -> cancel() }
                                 }
                                 dialog.show()
                             }
@@ -116,11 +117,13 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
 
     private fun showToast(message: CharSequence?) {
         try {
-            Toast.makeText( MyContextHolder.myContextHolder.getNow().context,
+            Toast.makeText(
+                myContextHolder.getNow().context,
                 "${defaultTitle.toString()}\n$versionText" +
-                        (if ( MyContextHolder.myContextHolder.getNow().state == MyContextState.UPGRADING) "\n$upgradingText" else "") +
-                        "\n\n" + message,
-                Toast.LENGTH_LONG)
+                    (if (myContextHolder.getNow().state == MyContextState.UPGRADING) "\n$upgradingText" else "") +
+                    "\n\n" + message,
+                Toast.LENGTH_LONG
+            )
                 .show()
         } catch (e2: Exception) {
             MyLog.w(logTag, "Couldn't send toast with the text: $message", e2)
@@ -184,6 +187,6 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
         defaultTitle = activity.getText(defaultTitleId)
         upgradingText = activity.getText(R.string.label_upgrading)
         cancelText = activity.getText(android.R.string.cancel)
-        versionText =  MyContextHolder.myContextHolder.getVersionText(activity.getBaseContext())
+        versionText = myContextHolder.getVersionText(activity.getBaseContext())
     }
 }

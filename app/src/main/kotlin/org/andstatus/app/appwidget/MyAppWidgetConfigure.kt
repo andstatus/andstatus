@@ -22,7 +22,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.notification.NotificationEvents
 import org.andstatus.app.util.MyLog
 
@@ -36,7 +36,7 @@ class MyAppWidgetConfigure : Activity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-         MyContextHolder.myContextHolder.initialize(this)
+        myContextHolder.initialize(this)
 
         // Set the result to CANCELED. This will cause the widget host to cancel
         // out of the widget placement if they press the back button.
@@ -63,27 +63,31 @@ class MyAppWidgetConfigure : Activity() {
         }
     }
 
-    var mOnClickListener: View.OnClickListener? = View.OnClickListener { // When the button is clicked, save configuration settings in our prefs
-        // and return that they clicked OK.
-        appWidgetData?.nothingPref = mAppWidgetTitle?.getText().toString()
-        appWidgetData?.clearCounters()
-        appWidgetData?.save()
+    var mOnClickListener: View.OnClickListener? =
+        View.OnClickListener { // When the button is clicked, save configuration settings in our prefs
+            // and return that they clicked OK.
+            appWidgetData?.nothingPref = mAppWidgetTitle?.getText().toString()
+            appWidgetData?.clearCounters()
+            appWidgetData?.save()
 
-        // Push widget update to surface with newly set prefix
-        val appWidgetIds = intArrayOf(mAppWidgetId)
-        val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
-        intent.putExtra(
+            // Push widget update to surface with newly set prefix
+            val appWidgetIds = intArrayOf(mAppWidgetId)
+            val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+            intent.putExtra(
                 AppWidgetManager.EXTRA_APPWIDGET_IDS,
-                appWidgetIds)
-        sendBroadcast(intent)
+                appWidgetIds
+            )
+            sendBroadcast(intent)
 
-        // Make sure we pass back the original appWidgetId
-        val resultValue = Intent()
-        resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                mAppWidgetId)
-        setResult(RESULT_OK, resultValue)
-        finish()
-    }
+            // Make sure we pass back the original appWidgetId
+            val resultValue = Intent()
+            resultValue.putExtra(
+                AppWidgetManager.EXTRA_APPWIDGET_ID,
+                mAppWidgetId
+            )
+            setResult(RESULT_OK, resultValue)
+            finish()
+        }
 
     companion object {
         val TAG: String = MyAppWidgetConfigure::class.simpleName!!

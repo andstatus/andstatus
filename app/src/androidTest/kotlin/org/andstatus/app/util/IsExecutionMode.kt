@@ -17,6 +17,7 @@ package org.andstatus.app.util
 
 import org.andstatus.app.context.ExecutionMode
 import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.apache.geode.test.junit.IgnoreCondition
 import org.junit.runner.Description
@@ -27,8 +28,8 @@ import org.junit.runner.Description
 open class IsExecutionMode(private val executionMode: ExecutionMode) : IgnoreCondition {
     override fun evaluate(testCaseDescription: Description?): Boolean {
         TestSuite.initialize(this)
-        MyLog.i(this, "Execution mode: " + MyContextHolder.myContextHolder.executionMode)
-        return true // MyContextHolder.myContextHolder.executionMode == executionMode
+        MyLog.i(this, "Execution mode: " + myContextHolder.executionMode)
+        return true // myContextHolder.executionMode == executionMode
     }
 }
 

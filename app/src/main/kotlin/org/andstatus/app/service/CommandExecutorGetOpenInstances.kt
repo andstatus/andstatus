@@ -16,7 +16,7 @@
 package org.andstatus.app.service
 
 import io.vavr.control.Try
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.net.social.ConnectionFactory
 import org.andstatus.app.net.social.Server
 import org.andstatus.app.origin.DiscoveredOrigins
@@ -41,8 +41,7 @@ class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext) : Co
                 .setHostOrUrl(mbOrigin.urlString)
                 .build()
             if (origin.isValid
-                && !MyContextHolder.myContextHolder.getNow().origins.fromName(origin.name)
-                    .isValid
+                && !myContextHolder.getNow().origins.fromName(origin.name).isValid
                 && !haveOriginsWithThisHostName(origin.url)
             ) {
                 newOrigins.add(origin)
@@ -58,7 +57,7 @@ class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext) : Co
         if (url == null) {
             return true
         }
-        for (origin in MyContextHolder.myContextHolder.getNow().origins.collection()) {
+        for (origin in myContextHolder.getNow().origins.collection()) {
             origin.url?.let {
                 if (it.host == url.host) return true
             }

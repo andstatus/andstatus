@@ -19,7 +19,7 @@ import android.content.Intent
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.origin.Origin
@@ -61,17 +61,23 @@ class TimeLineActivityLayoutToggleTest : TimelineActivityTest<ActivityViewItem>(
         logStartStop("setUp started")
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+        myContextHolder.getNow().accounts.setCurrentAccount(ma)
         logStartStop("setUp ended")
-        return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor,
-                 Origin.EMPTY).getUri())
+        return Intent(
+            Intent.ACTION_VIEW, myContextHolder.getNow().timelines.get(
+                TimelineType.HOME, ma.actor,
+                Origin.EMPTY
+            ).getUri()
+        )
     }
 
     private fun logStartStop(text: String?) {
-        MyLog.i(this, text + ";"
+        MyLog.i(
+            this, text + ";"
                 + " iteration " + iteration.get()
                 + (if (showAvatars) " avatars;" else "")
-                + if (showAttachedImages) " attached images;" else "")
+                + if (showAttachedImages) " attached images;" else ""
+        )
     }
 
     @Test

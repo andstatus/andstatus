@@ -19,7 +19,7 @@ import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.database.table.NoteTable
@@ -371,7 +371,7 @@ class DemoNoteInserter(val accountActor: Actor) {
             val activity = AActivity.newPartialNote(ma.actor, ma.actor, null, status = DownloadStatus.SENDING)
             activity.audience().addVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS)
             activity.getNote().setContent(content, TextMediaType.PLAIN)
-            val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
+            val myContext: MyContext = myContextHolder.getNow()
             val executionContext = CommandExecutionContext(
                 myContext, CommandData.newItemCommand(CommandEnum.UPDATE_NOTE, ma, activity.id)
             )

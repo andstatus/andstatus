@@ -18,11 +18,10 @@ package org.andstatus.app.service
 import android.content.SyncResult
 import org.andstatus.app.account.DemoAccountInserter
 import org.andstatus.app.account.MyAccount
-import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.DemoData.Companion.DISK_IO_EXCEPTION_PREFIX
 import org.andstatus.app.context.DemoData.Companion.demoData
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
@@ -94,7 +93,7 @@ class MyServiceTests : IgnoredInTravis2() {
     fun setUp() {
         MyLog.i(this, "setUp started")
         EspressoUtils.waitForIdleSync()
-        ma = MyContextHolder.myContextHolder.getNow().accounts.getFirstSucceeded().also { myAccount ->
+        ma = myContextHolder.getNow().accounts.getFirstSucceeded().also { myAccount ->
             assertTrue("No successfully verified accounts", myAccount.isValidAndSucceeded())
         }
         MyLog.i(this, "setUp ended")
@@ -114,9 +113,9 @@ class MyServiceTests : IgnoredInTravis2() {
     fun testAccountSync() {
         val method = "testAccountSync"
         MyLog.i(this, "$method started")
-        val myAccount: MyAccount = MyContextHolder.myContextHolder.getNow().accounts.getFirstSucceeded()
+        val myAccount: MyAccount = myContextHolder.getNow().accounts.getFirstSucceeded()
         assertTrue("No successful account", myAccount.isValidAndSucceeded())
-        val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
+        val myContext: MyContext = myContextHolder.getNow()
         myContext.timelines.filter(
             false, TriState.FALSE,
             TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY
@@ -134,7 +133,7 @@ class MyServiceTests : IgnoredInTravis2() {
             0, mService.getHttp().getRequestsCounter()
         )
 
-        val myContext2: MyContext = MyContextHolder.myContextHolder.getNow()
+        val myContext2: MyContext = myContextHolder.getNow()
         val timelineToSync: Timeline = DemoAccountInserter.getAutomaticallySyncableTimeline(myContext2, myAccount)
         timelineToSync.setSyncSucceededDate(0)
         runner = MyServiceCommandsRunner(myContext2)
@@ -175,7 +174,7 @@ class MyServiceTests : IgnoredInTravis2() {
         val cd1Home: CommandCounter = mService.sendCommand(
             CommandData.newTimelineCommand(
                 CommandEnum.GET_TIMELINE,
-                DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
+                demoData.getMyAccount(demoData.twitterTestAccountName),
                 TimelineType.HOME
             )
         ) { "$method Sending first command $it" }
@@ -190,7 +189,7 @@ class MyServiceTests : IgnoredInTravis2() {
         val cd2Interactions = mService.sendCommand(
             CommandData.Companion.newTimelineCommand(
                 CommandEnum.GET_TIMELINE,
-                DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
+                demoData.getMyAccount(demoData.twitterTestAccountName),
                 TimelineType.INTERACTIONS
             )
         ) { "$method Sending second command $it" }
@@ -202,7 +201,7 @@ class MyServiceTests : IgnoredInTravis2() {
             "No new data should be posted while in foreground",
             1, mService.getHttp().getRequestsCounter()
         )
-        val queues: CommandQueue = MyContextHolder.myContextHolder.getBlocking().queues
+        val queues: CommandQueue = myContextHolder.getBlocking().queues
         MyLog.i(this, "$method; Queues1:$queues")
         assertEquals("First command should be in error queue $queues",
             Optional.of(QueueType.ERROR),
@@ -222,7 +221,7 @@ class MyServiceTests : IgnoredInTravis2() {
         val cd3PublicForeground = mService.sendCommand(
             CommandData.Companion.newTimelineCommand(
                 CommandEnum.GET_TIMELINE,
-                DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
+                demoData.getMyAccount(demoData.twitterTestAccountName),
                 TimelineType.PUBLIC
             ).setInForeground(true)
         ) { "$method Sending third command $it" }
@@ -258,7 +257,7 @@ class MyServiceTests : IgnoredInTravis2() {
         val counter1 = mService.sendCommand(
             CommandData.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                DemoData.demoData.getGnuSocialAccount()
+                demoData.getGnuSocialAccount()
             )
         ) { "$method Sending first command $it" }
         mService.waitForCommandStart("First command", counter1, TriState.TRUE)

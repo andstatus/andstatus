@@ -18,7 +18,7 @@ package org.andstatus.app.net.social
 import org.andstatus.app.account.AccountConnectionData
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionOAuthStub
@@ -43,7 +43,7 @@ class ConnectionStub private constructor(val connection: Connection) {
 
         private fun getHttpStub(http: HttpConnection): HttpConnectionOAuthStub {
             if (http is HttpConnectionOAuthStub) return http
-            val myContext = MyContextHolder.myContextHolder.getNow()
+            val myContext = myContextHolder.getNow()
             myContext.httpConnectionStub
             throw IllegalStateException("getHttpStub: http is " + http::class.qualifiedName + ", " + myContext)
         }

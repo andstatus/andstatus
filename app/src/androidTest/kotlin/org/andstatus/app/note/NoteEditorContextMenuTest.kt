@@ -24,7 +24,7 @@ import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.ActivityTable
@@ -53,8 +53,9 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initialize(this)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor,  Origin.EMPTY)
+        myContextHolder.getNow().accounts.setCurrentAccount(ma)
+        val timeline: Timeline =
+            myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor, Origin.EMPTY)
         MyLog.i(this, "setUp ended, $timeline")
         return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
@@ -81,7 +82,10 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         val helper = ListActivityTestHelper<TimelineActivity<*>>(activity, ConversationActivity::class.java)
         val listItemId = helper.getListItemIdOfLoadedReply()
         var logMsg = "listItemId=$listItemId"
-        val noteId = if (TimelineType.HOME.showsActivities()) MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId) else listItemId
+        val noteId = if (TimelineType.HOME.showsActivities()) MyQuery.activityIdToLongColumnValue(
+            ActivityTable.NOTE_ID,
+            listItemId
+        ) else listItemId
         logMsg += ", noteId=$noteId"
         val content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId)
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_TEXT, R.id.note_wrapper)
@@ -97,7 +101,12 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         val helper = ListActivityTestHelper<TimelineActivity<*>>(activity, ConversationActivity::class.java)
         val listItemId = helper.getListItemIdOfLoadedReply()
         val logMsg = "listItemId=$listItemId"
-        helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_AUTHOR, R.id.note_wrapper)
+        helper.invokeContextMenuAction4ListItemId(
+            method,
+            listItemId,
+            NoteContextMenuItem.COPY_AUTHOR,
+            R.id.note_wrapper
+        )
         val text = getClipboardText(method)
         MatcherAssert.assertThat(text, CoreMatchers.startsWith("@"))
         Assert.assertTrue("$logMsg; Text: '$text'", text.startsWith("@") && text.lastIndexOf("@") > 1)
@@ -129,8 +138,8 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         var clip: ClipData? = null
         override fun run() {
             // http://developer.android.com/guide/topics/text/copy-paste.html
-            val clipboard =  MyContextHolder.myContextHolder.getNow().context
-                    .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipboard = myContextHolder.getNow().context
+                .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             clip = clipboard.primaryClip
         }
     }

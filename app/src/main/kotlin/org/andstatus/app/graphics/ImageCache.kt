@@ -33,7 +33,7 @@ import android.net.Uri
 import android.os.Build
 import android.util.DisplayMetrics
 import android.util.LruCache
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.MediaFile
@@ -49,7 +49,8 @@ import java.util.concurrent.atomic.AtomicLong
  * @author yvolk@yurivolkov.com
  * On LruCache usage read http://developer.android.com/reference/android/util/LruCache.html
  */
-class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int, requestedCacheSizeIn: Int) : LruCache<String, CachedImage>(requestedCacheSizeIn) {
+class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int, requestedCacheSizeIn: Int) :
+    LruCache<String, CachedImage>(requestedCacheSizeIn) {
     val name: CacheName
 
     private val requestedCacheSize: Int
@@ -74,8 +75,10 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
     }
 
     private fun newBlankBitmap(): Bitmap? {
-        return Bitmap.createBitmap(displayMetrics, maxBitmapWidth,
-                maxBitmapHeight, CachedImage.BITMAP_CONFIG)
+        return Bitmap.createBitmap(
+            displayMetrics, maxBitmapWidth,
+            maxBitmapHeight, CachedImage.BITMAP_CONFIG
+        )
     }
 
     fun getCachedImage(mediaFile: MediaFile): CachedImage? {
@@ -145,8 +148,10 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
         var background = recycledBitmaps.poll()
         var foreignBitmap: Boolean = background == null
         if (background == null) {
-            MyLog.w(mediaFile, "ForeignBitmap: No bitmap to cache id:${mediaFile.id}" +
-                    " ${srcRect.width()}x${srcRect.height()} '${mediaFile.getPath()}'")
+            MyLog.w(
+                mediaFile, "ForeignBitmap: No bitmap to cache id:${mediaFile.id}" +
+                    " ${srcRect.width()}x${srcRect.height()} '${mediaFile.getPath()}'"
+            )
             background = bitmap
         } else {
             val canvas = Canvas(background)
@@ -201,7 +206,7 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
             MyLog.v(mediaFile) {
                 (if (bitmap == null) "Failed to load $name's bitmap"
                 else "Loaded " + name + "'s bitmap " + bitmap.width + "x" + bitmap.height) +
-                        " id:${mediaFile.id} '" + mediaFile.getPath() + "' inSampleSize:" + options.inSampleSize
+                    " id:${mediaFile.id} '" + mediaFile.getPath() + "' inSampleSize:" + options.inSampleSize
             }
             bitmap
         } catch (e: Exception) {
@@ -214,15 +219,17 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
         var retriever: MediaMetadataRetriever? = null
         return try {
             retriever = MediaMetadataRetriever()
-            retriever.setDataSource( MyContextHolder.myContextHolder.getNow().context, Uri.parse(mediaFile.getPath()))
+            retriever.setDataSource(myContextHolder.getNow().context, Uri.parse(mediaFile.getPath()))
             val source = retriever.frameAtTime ?: return null
             val options = calculateScaling(mediaFile, mediaFile.getSize())
-            val bitmap = ThumbnailUtils.extractThumbnail(source, mediaFile.getSize().x / options.inSampleSize,
-                    mediaFile.getSize().y / options.inSampleSize)
+            val bitmap = ThumbnailUtils.extractThumbnail(
+                source, mediaFile.getSize().x / options.inSampleSize,
+                mediaFile.getSize().y / options.inSampleSize
+            )
             source.recycle()
             MyLog.v(mediaFile) {
                 (if (bitmap == null) "Failed to load $name's bitmap" else "Loaded " + name + "'s bitmap " + bitmap.width
-                        + "x" + bitmap.height) + " '" + mediaFile.getPath() + "'"
+                    + "x" + bitmap.height) + " '" + mediaFile.getPath() + "'"
             }
             bitmap
         } catch (e: Exception) {
@@ -244,16 +251,20 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
             y *= 2
         }
         if (options.inSampleSize > 1 && MyLog.isVerboseEnabled()) {
-            MyLog.v(anyTag, "Large bitmap " + imageSize.x + "x" + imageSize.y
-                    + " scaling by " + options.inSampleSize + " times")
+            MyLog.v(
+                anyTag, "Large bitmap " + imageSize.x + "x" + imageSize.y
+                    + " scaling by " + options.inSampleSize + " times"
+            )
         }
         return options
     }
 
     fun getInfo(): String {
         val builder = StringBuilder(name.title)
-        builder.append(": " + maxBitmapWidth + "x" + maxBitmapHeight + ", "
-                + size() + " of " + currentCacheSize)
+        builder.append(
+            ": " + maxBitmapWidth + "x" + maxBitmapHeight + ", "
+                + size() + " of " + currentCacheSize
+        )
         if (requestedCacheSize != currentCacheSize) {
             builder.append(" (initially capacity was $requestedCacheSize)")
         }
@@ -262,8 +273,10 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
             builder.append(", broken: " + brokenBitmaps.size)
         }
         val accesses = hits.get() + misses.get()
-        builder.append(", hits:" + hits.get() + ", misses:" + misses.get()
-                + if (accesses == 0L) "" else ", hitRate:" + hits.get() * 100 / accesses + "%")
+        builder.append(
+            ", hits:" + hits.get() + ", misses:" + misses.get()
+                + if (accesses == 0L) "" else ", hitRate:" + hits.get() * 100 / accesses + "%"
+        )
         return builder.toString()
     }
 

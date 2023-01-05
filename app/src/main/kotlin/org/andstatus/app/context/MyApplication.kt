@@ -28,15 +28,17 @@ import org.acra.annotation.AcraCore
 import org.acra.annotation.AcraDialog
 import org.acra.annotation.AcraMailSender
 import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TamperingDetector
 import java.io.File
 
 @AcraMailSender(mailTo = "andstatus@gmail.com")
 @AcraDialog(
-        resIcon = R.drawable.icon,
-        resText = R.string.crash_dialog_text,
-        resCommentPrompt = R.string.crash_dialog_comment_prompt)
+    resIcon = R.drawable.icon,
+    resText = R.string.crash_dialog_text,
+    resCommentPrompt = R.string.crash_dialog_comment_prompt
+)
 @AcraCore(alsoReportToAndroidFramework = true)
 class MyApplication : Application() {
     @Volatile
@@ -45,17 +47,19 @@ class MyApplication : Application() {
         super.onCreate()
         val processName = getCurrentProcessName(this)
         isAcraProcess = processName.endsWith(":acra")
-        MyLog.i(this, "onCreate "
-                + (if (isAcraProcess) "ACRA" else "'$processName'") + " process")
+        MyLog.i(
+            this, "onCreate "
+                + (if (isAcraProcess) "ACRA" else "'$processName'") + " process"
+        )
         if (!isAcraProcess) {
-             MyContextHolder.myContextHolder.storeContextIfNotPresent(this, this)
+            myContextHolder.storeContextIfNotPresent(this, this)
             MyLocale.setLocale(this)
         }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) = super.onConfigurationChanged(
-            if (isAcraProcess) newConfig
-            else MyLocale.onConfigurationChanged(this, newConfig)
+        if (isAcraProcess) newConfig
+        else MyLocale.onConfigurationChanged(this, newConfig)
     )
 
     override fun getDatabasePath(name: String?): File? {
@@ -76,15 +80,18 @@ class MyApplication : Application() {
         val db: SQLiteDatabase?
         val dbAbsolutePath = getDatabasePath(name)
         db = if (dbAbsolutePath != null) {
-            SQLiteDatabase.openDatabase(dbAbsolutePath.path, factory,
-                    SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE)
+            SQLiteDatabase.openDatabase(
+                dbAbsolutePath.path, factory,
+                SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE
+            )
         } else {
             null
         }
-        MyLog.v(this
+        MyLog.v(
+            this
         ) {
             ("openOrCreateDatabase, name:" + name
-                    + if (db == null) " NOT opened" else " opened '" + db.path + "'")
+                + if (db == null) " NOT opened" else " opened '" + db.path + "'")
         }
         return db
     }
@@ -93,8 +100,10 @@ class MyApplication : Application() {
      * Since: API Level 11
      * Simplified implementation
      */
-    override fun openOrCreateDatabase(name: String?, mode: Int, factory: CursorFactory?,
-                                      errorHandler: DatabaseErrorHandler?): SQLiteDatabase? {
+    override fun openOrCreateDatabase(
+        name: String?, mode: Int, factory: CursorFactory?,
+        errorHandler: DatabaseErrorHandler?
+    ): SQLiteDatabase? {
         return if (isAcraProcess) {
             super.openOrCreateDatabase(name, mode, factory, errorHandler)
         } else openOrCreateDatabase(name, mode, factory)

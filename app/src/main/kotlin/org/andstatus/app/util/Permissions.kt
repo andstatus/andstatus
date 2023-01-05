@@ -22,7 +22,7 @@ import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 
 /**
  * @author yvolk@yurivolkov.com
@@ -38,21 +38,25 @@ object Permissions {
     /**
      * See http://stackoverflow.com/questions/30719047/android-m-check-runtime-permission-how-to-determine-if-the-user-checked-nev
      */
-    fun checkPermissionAndRequestIt(activity: Activity,
-                                    permissionType: PermissionType) {
+    fun checkPermissionAndRequestIt(
+        activity: Activity,
+        permissionType: PermissionType
+    ) {
         if (checkPermission(activity, permissionType)) {
             return
         }
         require(OnRequestPermissionsResultCallback::class.java.isAssignableFrom(activity.javaClass)) {
             "The activity " + activity.javaClass.name +
-                    " should implement OnRequestPermissionsResultCallback"
+                " should implement OnRequestPermissionsResultCallback"
         }
-        if (MyContextHolder.myContextHolder.getNow().isTestRun) {
+        if (myContextHolder.getNow().isTestRun) {
             MyLog.i(activity, "Skipped requesting permission during a Test run: $permissionType")
         } else {
             MyLog.i(activity, "Requesting permission: $permissionType")
-            ActivityCompat.requestPermissions(activity, arrayOf(permissionType.manifestPermission),
-                    permissionType.ordinal)
+            ActivityCompat.requestPermissions(
+                activity, arrayOf(permissionType.manifestPermission),
+                permissionType.ordinal
+            )
         }
     }
 
@@ -61,8 +65,10 @@ object Permissions {
      * to read accounts of this application
      */
     fun checkPermission(context: Context, permissionType: PermissionType): Boolean {
-        return allGranted || permissionType == PermissionType.GET_ACCOUNTS || ContextCompat.checkSelfPermission(context,
-                permissionType.manifestPermission) == PackageManager.PERMISSION_GRANTED
+        return allGranted || permissionType == PermissionType.GET_ACCOUNTS || ContextCompat.checkSelfPermission(
+            context,
+            permissionType.manifestPermission
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     enum class PermissionType(val manifestPermission: String) {

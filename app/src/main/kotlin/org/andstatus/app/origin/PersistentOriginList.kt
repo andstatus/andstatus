@@ -21,12 +21,12 @@ import android.view.MenuItem
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.util.MyLog
 
 class PersistentOriginList : OriginList(PersistentOriginList::class) {
     override fun getOrigins(): Iterable<Origin> {
-        return  MyContextHolder.myContextHolder.getNow().origins.collection()
+        return myContextHolder.getNow().origins.collection()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {

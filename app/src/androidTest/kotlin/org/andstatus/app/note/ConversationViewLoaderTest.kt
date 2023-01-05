@@ -1,7 +1,7 @@
 package org.andstatus.app.note
 
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
@@ -13,7 +13,7 @@ import org.junit.Before
 import org.junit.Test
 
 class ConversationViewLoaderTest : ProgressPublisher {
-    private var origin: Origin =  Origin.EMPTY
+    private var origin: Origin = Origin.EMPTY
     private var selectedNoteId: Long = 0
     private var progressCounter: Long = 0
 
@@ -31,7 +31,8 @@ class ConversationViewLoaderTest : ProgressPublisher {
     @Test
     fun testLoad() {
         val loader = ConversationLoader.newLoader(
-                ConversationViewItem.Companion.EMPTY,  MyContextHolder.myContextHolder.getNow(), origin, selectedNoteId, false)
+            ConversationViewItem.Companion.EMPTY, myContextHolder.getNow(), origin, selectedNoteId, false
+        )
         progressCounter = 0
         loader.load(this)
         val list = loader.getList()

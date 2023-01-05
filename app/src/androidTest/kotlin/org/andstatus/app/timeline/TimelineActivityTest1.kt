@@ -25,7 +25,7 @@ import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
@@ -60,10 +60,12 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initializeWithData(this)
         ma = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+        myContextHolder.getNow().accounts.setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
-        return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines
-                .get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
+        return Intent(
+            Intent.ACTION_VIEW, myContextHolder.getNow().timelines
+                .get(TimelineType.HOME, ma.actor, Origin.EMPTY).getUri()
+        )
     }
 
     @Test
@@ -71,18 +73,25 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         val method = "testOpeningConversationActivity"
         TestSuite.waitForListLoaded(activity, 7)
         Assert.assertTrue("MyService is available", MyServiceManager.Companion.isServiceAvailable())
-        val helper = ListActivityTestHelper<TimelineActivity<*>>(activity,
-                ConversationActivity::class.java)
+        val helper = ListActivityTestHelper<TimelineActivity<*>>(
+            activity,
+            ConversationActivity::class.java
+        )
         val noteId = helper.getListItemIdOfLoadedReply()
         helper.selectListPosition(method, helper.getPositionOfListItemId(noteId))
-        helper.invokeContextMenuAction4ListItemId(method, noteId, NoteContextMenuItem.OPEN_CONVERSATION, R.id.note_wrapper)
+        helper.invokeContextMenuAction4ListItemId(
+            method,
+            noteId,
+            NoteContextMenuItem.OPEN_CONVERSATION,
+            R.id.note_wrapper
+        )
         val nextActivity = helper.waitForNextActivity(method, 40000)
         DbUtils.waitMs(method, 500)
         nextActivity?.finish()
     }
 
     private fun getListView(): ListView? {
-        return activity.findViewById<View?>(android.R.id.list) as ListView ?
+        return activity.findViewById<View?>(android.R.id.list) as ListView?
     }
 
     /** It really makes difference if we are near the end of the list or not
@@ -109,7 +118,10 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
             Assert.assertEquals("Origin of the Item $ind $item", ma.origin, item.origin)
         }
         val collapseDuplicates = MyPreferences.isCollapseDuplicates()
-        Assert.assertEquals(collapseDuplicates, (activity.findViewById<View?>(R.id.collapseDuplicatesToggle) as CheckBox).isChecked)
+        Assert.assertEquals(
+            collapseDuplicates,
+            (activity.findViewById<View?>(R.id.collapseDuplicatesToggle) as CheckBox).isChecked
+        )
         Assert.assertEquals(collapseDuplicates, activity.getListData().isCollapseDuplicates())
         getCurrentListPosition().logV("$method; before selecting position $position0")
         ListActivityTestHelper(activity).selectListPosition(method, position0)
@@ -148,12 +160,15 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
             attempt++
         }
         val logText = (method + " The item id=" + pos1.itemId + " was " + (if (found) "" else " not") + " found. "
-                + "pos1=" + pos1 + "; pos2=" + pos2
-                + (if (positionOfItem >= 0) " foundAt=$positionOfItem" else "")
-                + ", updated in " + (updatedAt2 - updatedAt1) + "ms")
+            + "pos1=" + pos1 + "; pos2=" + pos2
+            + (if (positionOfItem >= 0) " foundAt=$positionOfItem" else "")
+            + ", updated in " + (updatedAt2 - updatedAt1) + "ms")
         MyLog.v(this, logText)
         Assert.assertTrue(logText, found)
-        Assert.assertEquals(collapseDuplicates, (activity.findViewById<View?>(R.id.collapseDuplicatesToggle) as CheckBox).isChecked)
+        Assert.assertEquals(
+            collapseDuplicates,
+            (activity.findViewById<View?>(R.id.collapseDuplicatesToggle) as CheckBox).isChecked
+        )
         Assert.assertEquals(collapseDuplicates, activity.getListData().isCollapseDuplicates())
         if (collapseDuplicates) {
             found = false
@@ -173,18 +188,24 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     }
 
     private fun broadcastCommandExecuted() {
-        val commandData: CommandData = CommandData.Companion.newAccountCommand(CommandEnum.LIKE,
-                DemoData.demoData.getPumpioConversationAccount())
-        MyServiceEventsBroadcaster.Companion.newInstance( MyContextHolder.myContextHolder.getNow(), MyServiceState.RUNNING)
-                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
-                .broadcast()
+        val commandData: CommandData = CommandData.Companion.newAccountCommand(
+            CommandEnum.LIKE,
+            DemoData.demoData.getPumpioConversationAccount()
+        )
+        MyServiceEventsBroadcaster.Companion.newInstance(myContextHolder.getNow(), MyServiceState.RUNNING)
+            .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
+            .broadcast()
     }
 
     @Test
     fun testOpeningAccountSelector() {
         val method = "testOpeningAccountSelector"
         TestSuite.waitForListLoaded(activity, 7)
-        val helper: ListActivityTestHelper<TimelineActivity<*>> = ListActivityTestHelper.newForSelectorDialog<TimelineActivity<*>>(activity, SelectorDialog.Companion.dialogTag)
+        val helper: ListActivityTestHelper<TimelineActivity<*>> =
+            ListActivityTestHelper.newForSelectorDialog<TimelineActivity<*>>(
+                activity,
+                SelectorDialog.Companion.dialogTag
+            )
         helper.clickView(method, R.id.selectAccountButton)
         val selectorDialog = helper.waitForSelectorDialog(method, 15000)
         DbUtils.waitMs(method, 500)
@@ -195,20 +216,28 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     fun testActAs() {
         val method = "testActAs"
         TestSuite.waitForListLoaded(activity, 2)
-        val helper: ListActivityTestHelper<TimelineActivity<*>> = ListActivityTestHelper.newForSelectorDialog<TimelineActivity<*>>(activity, SelectorDialog.Companion.dialogTag)
+        val helper: ListActivityTestHelper<TimelineActivity<*>> =
+            ListActivityTestHelper.newForSelectorDialog<TimelineActivity<*>>(
+                activity,
+                SelectorDialog.Companion.dialogTag
+            )
         val listItemId = helper.getListItemIdOfLoadedReply()
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)
-        val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+        val myContext: MyContext = myContextHolder.getNow()
         val origin = myContext.origins.fromId(MyQuery.noteIdToOriginId(noteId))
         val accounts = myContext.accounts.succeededForSameOrigin(origin)
         var logMsg = ("itemId=" + listItemId + ", noteId=" + noteId
-                + ", origin=" + origin.name
-                + ", text='" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'"
-                + ", " + accounts.size + " accounts found: " + accounts)
+            + ", origin=" + origin.name
+            + ", text='" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'"
+            + ", " + accounts.size + " accounts found: " + accounts)
 
         // This context menu item doesn't exist
-        Assert.assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, listItemId,
-                NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper))
+        Assert.assertTrue(
+            logMsg, helper.invokeContextMenuAction4ListItemId(
+                method, listItemId,
+                NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper
+            )
+        )
         val account1 = activity.getContextMenu()?.getActingAccount() ?: MyAccount.EMPTY
         logMsg = "\nActing account 1: $account1, $logMsg"
         Assert.assertTrue(logMsg, accounts.contains(account1))

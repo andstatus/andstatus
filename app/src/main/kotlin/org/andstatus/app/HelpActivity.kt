@@ -36,7 +36,7 @@ import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.backup.RestoreActivity
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.ExecutionMode
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsActivity
@@ -72,13 +72,13 @@ class HelpActivity : MyActivity(HelpActivity::class) {
         if (intent.hasExtra(EXTRA_IS_FIRST_ACTIVITY)) {
             mIsFirstActivity = intent.getBooleanExtra(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity)
         }
-        if (MyContextHolder.myContextHolder.getBlocking().accounts.currentAccount.nonValid
-            && MyContextHolder.myContextHolder.executionMode == ExecutionMode.ROBO_TEST && !generatingDemoData
+        if (myContextHolder.getBlocking().accounts.currentAccount.nonValid
+            && myContextHolder.executionMode == ExecutionMode.ROBO_TEST && !generatingDemoData
         ) {
             progressListener.cancel()
             generatingDemoData = true
             progressListener = DefaultProgressListener(this, R.string.app_name, "GenerateDemoData")
-            DemoData.demoData.addAsync(MyContextHolder.myContextHolder.getBlocking(), progressListener)
+            DemoData.demoData.addAsync(myContextHolder.getBlocking(), progressListener)
         }
         showRestoreButton()
         showGetStartedButton()
@@ -104,7 +104,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
     private fun showRestoreButton() {
         val restoreButton = findViewById<Button?>(R.id.button_restore)
         if (!generatingDemoData
-            && MyContextHolder.myContextHolder.getNow().isReady && MyContextHolder.myContextHolder.getNow().accounts.isEmpty
+            && myContextHolder.getNow().isReady && myContextHolder.getNow().accounts.isEmpty
         ) {
             restoreButton.setOnClickListener { v: View? ->
                 startActivity(Intent(this@HelpActivity, RestoreActivity::class.java))
@@ -120,14 +120,14 @@ class HelpActivity : MyActivity(HelpActivity::class) {
         val getStarted = findViewById<Button?>(R.id.button_help_get_started)
         getStarted.visibility = if (generatingDemoData) View.GONE else View.VISIBLE
         getStarted.setOnClickListener { v: View? ->
-            if (MyContextHolder.myContextHolder.getFuture().isCompletedExceptionally) {
-                MyContextHolder.myContextHolder.initialize(this).thenStartApp()
+            if (myContextHolder.getFuture().isCompletedExceptionally) {
+                myContextHolder.initialize(this).thenStartApp()
                 return@setOnClickListener
             }
-            when (MyContextHolder.myContextHolder.getNow().state) {
+            when (myContextHolder.getNow().state) {
                 MyContextState.READY -> {
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(this@HelpActivity, true)
-                    if (MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
+                    if (myContextHolder.getNow().accounts.currentAccount.isValid) {
                         startActivity(Intent(this@HelpActivity, TimelineActivity::class.java))
                     } else {
                         startActivity(Intent(this@HelpActivity, AccountSettingsActivity::class.java))
@@ -153,7 +153,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
                 )
             }
         }
-        if (MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
+        if (myContextHolder.getNow().accounts.currentAccount.isValid) {
             getStarted.setText(R.string.button_skip)
         }
     }
@@ -167,12 +167,12 @@ class HelpActivity : MyActivity(HelpActivity::class) {
             showVersionText(inflater.context, view)
             ViewUtils.showView(
                 view, R.id.system_info_section, MyPreferences.isShowDebuggingInfoInUi()
-                        || MyContextHolder.myContextHolder.executionMode != ExecutionMode.DEVICE
+                    || myContextHolder.executionMode != ExecutionMode.DEVICE
             )
             if (MyPreferences.isShowDebuggingInfoInUi()) {
                 MyUrlSpan.showText(
                     view, R.id.system_info,
-                    MyContextHolder.myContextHolder.getSystemInfo(inflater.context, false),
+                    myContextHolder.getSystemInfo(inflater.context, false),
                     false, false
                 )
             }
@@ -181,12 +181,12 @@ class HelpActivity : MyActivity(HelpActivity::class) {
 
         private fun showVersionText(context: Context?, parentView: View) {
             val versionText = parentView.findViewById<TextView?>(R.id.splash_application_version)
-            val text: MyStringBuilder = MyStringBuilder.of(MyContextHolder.myContextHolder.getVersionText(context))
-            if (!MyContextHolder.myContextHolder.getNow().isReady) {
-                text.withSpace(MyContextHolder.myContextHolder.getNow().state.toString())
-                text.withSpace(MyContextHolder.myContextHolder.getNow().lastDatabaseError)
+            val text: MyStringBuilder = MyStringBuilder.of(myContextHolder.getVersionText(context))
+            if (!myContextHolder.getNow().isReady) {
+                text.withSpace(myContextHolder.getNow().state.toString())
+                text.withSpace(myContextHolder.getNow().lastDatabaseError)
             }
-            MyContextHolder.myContextHolder.tryNow().onFailure { e: Throwable ->
+            myContextHolder.tryNow().onFailure { e: Throwable ->
                 text.append(" ${e.message} \n${MyLog.getStackTrace(e)}")
             }
             versionText.text = text.toString()
@@ -214,7 +214,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
                 }
             }
         })
-        if (ViewUtils.showView(this, R.id.button_help_learn_more, MyContextHolder.myContextHolder.getNow().isReady)) {
+        if (ViewUtils.showView(this, R.id.button_help_learn_more, myContextHolder.getNow().isReady)) {
             val learnMore = findViewById<Button?>(R.id.button_help_learn_more)
             learnMore.setOnClickListener { v: View? ->
                 val adapter = flipper.getAdapter()
@@ -257,9 +257,9 @@ class HelpActivity : MyActivity(HelpActivity::class) {
 
     override fun onResume() {
         super.onResume()
-        MyContextHolder.myContextHolder.upgradeIfNeeded(this)
+        myContextHolder.upgradeIfNeeded(this)
         if (wasPaused && mIsFirstActivity
-            && MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid
+            && myContextHolder.getNow().accounts.currentAccount.isValid
         ) {
             // We assume that user pressed back after adding first account
             val intent = Intent(this, TimelineActivity::class.java)
@@ -274,7 +274,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String?>, grantResults: IntArray) {
-        MyContextHolder.myContextHolder.getNow().setExpired { "onRequestPermissionsResult" }
+        myContextHolder.getNow().setExpired { "onRequestPermissionsResult" }
         recreate()
     }
 

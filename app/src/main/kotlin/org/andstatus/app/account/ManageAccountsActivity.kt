@@ -29,7 +29,7 @@ import org.andstatus.app.FirstActivity
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.util.MyUrlSpan
 import java.util.concurrent.CopyOnWriteArrayList
@@ -41,12 +41,16 @@ import java.util.concurrent.CopyOnWriteArrayList
 class ManageAccountsActivity : MyActivity(ManageAccountsActivity::class) {
 
     private val itemTouchHelper by lazy {
-        val simpleItemTouchCallback = object : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP
-                or ItemTouchHelper.DOWN or ItemTouchHelper.START or ItemTouchHelper.END, 0) {
+        val simpleItemTouchCallback = object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP
+                or ItemTouchHelper.DOWN or ItemTouchHelper.START or ItemTouchHelper.END, 0
+        ) {
 
-            override fun onMove(recyclerView: RecyclerView,
-                                viewHolder: RecyclerView.ViewHolder,
-                                target: RecyclerView.ViewHolder): Boolean {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
                 val adapter = recyclerView.adapter as MyRecyclerViewAdapter
                 val from = viewHolder.adapterPosition
                 val to = target.adapterPosition
@@ -92,9 +96,9 @@ class ManageAccountsActivity : MyActivity(ManageAccountsActivity::class) {
 
     override fun onResume() {
         super.onResume()
-        if ( MyContextHolder.myContextHolder.needToRestartActivity()) {
+        if (myContextHolder.needToRestartActivity()) {
             FirstActivity.closeAllActivities(this)
-             MyContextHolder.myContextHolder.initialize(this).thenStartActivity(intent)
+            myContextHolder.initialize(this).thenStartActivity(intent)
         }
     }
 
@@ -106,7 +110,7 @@ class ManageAccountsActivity : MyActivity(ManageAccountsActivity::class) {
     fun reorderAccounts() {
         findViewById<RecyclerView>(android.R.id.list)?.let { recyclerView ->
             val adapter = recyclerView.adapter as MyRecyclerViewAdapter
-            MyContextHolder.myContextHolder.getNow().accounts.reorderAccounts(adapter.accounts)
+            myContextHolder.getNow().accounts.reorderAccounts(adapter.accounts)
         }
     }
 
@@ -124,10 +128,10 @@ class ManageAccountsActivity : MyActivity(ManageAccountsActivity::class) {
 
 }
 
-private class MyRecyclerViewAdapter(val activity: ManageAccountsActivity):
-        RecyclerView.Adapter<MyRecyclerViewAdapter.MyRecyclerViewHolder>() {
-    val accounts = CopyOnWriteArrayList(MyContextHolder.myContextHolder.getNow().accounts.get())
-            .toMutableList()
+private class MyRecyclerViewAdapter(val activity: ManageAccountsActivity) :
+    RecyclerView.Adapter<MyRecyclerViewAdapter.MyRecyclerViewHolder>() {
+    val accounts = CopyOnWriteArrayList(myContextHolder.getNow().accounts.get())
+        .toMutableList()
     val syncedText = activity.getText(R.string.synced_abbreviated).toString()
 
     fun moveItem(from: Int, to: Int) {
@@ -159,21 +163,23 @@ private class MyRecyclerViewAdapter(val activity: ManageAccountsActivity):
         return viewHolder
     }
 
-    class MyRecyclerViewHolder(itemView: View): RecyclerView.ViewHolder(itemView) {
+    class MyRecyclerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(activity: ManageAccountsActivity, ma: MyAccount, syncedText: String) {
-            val visibleName = ma.getAccountName().let { if(ma.isValidAndSucceeded()) it else "($it)" }
+            val visibleName = ma.getAccountName().let { if (ma.isValidAndSucceeded()) it else "($it)" }
             MyUrlSpan.showText(itemView, R.id.visible_name, visibleName, false, true)
-                    ?.setOnClickListener {
-                        activity.reorderAccounts()
-                        if (ma.myContext.isPreferencesChanged) {
-                            activity.finish()
-                        }
-                        val intent = Intent(activity, AccountSettingsActivity::class.java)
-                        intent.putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
-                        activity.startActivity(intent)
+                ?.setOnClickListener {
+                    activity.reorderAccounts()
+                    if (ma.myContext.isPreferencesChanged) {
+                        activity.finish()
                     }
-            MyUrlSpan.showText(itemView, R.id.sync_auto, if (ma.isSyncedAutomatically) syncedText else "",
-                    false, true)
+                    val intent = Intent(activity, AccountSettingsActivity::class.java)
+                    intent.putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
+                    activity.startActivity(intent)
+                }
+            MyUrlSpan.showText(
+                itemView, R.id.sync_auto, if (ma.isSyncedAutomatically) syncedText else "",
+                false, true
+            )
             itemView.tag = visibleName
         }
     }

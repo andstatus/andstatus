@@ -30,7 +30,7 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.ParsedUri
 import org.andstatus.app.list.MyBaseListActivity
 import org.andstatus.app.list.SyncLoader
@@ -68,6 +68,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
     private var onRefreshHandled = false
     var parsedUri: ParsedUri = ParsedUri.fromUri(Uri.EMPTY)
         private set
+
     @Volatile
     var myContext: MyContext = MyContextEmpty.EMPTY
     private var configChangeTime: Long = 0
@@ -169,7 +170,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
     }
 
     protected fun isContextNeedsUpdate(): Boolean {
-        val myContextNew: MyContext = MyContextHolder.myContextHolder.getNow()
+        val myContextNew: MyContext = myContextHolder.getNow()
         return !myContext.isReady || myContext !== myContextNew || configChangeTime != myContextNew.preferencesChangeTime
     }
 
@@ -372,7 +373,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
     override fun onPause() {
         super.onPause()
         myServiceReceiver?.unregisterReceiver(this)
-        MyContextHolder.myContextHolder.getNow().isInForeground = false
+        myContextHolder.getNow().isInForeground = false
         getListAdapter().setPositionRestored(false)
     }
 
@@ -382,7 +383,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
                 showSyncing(commandData)
             }
             MyServiceEvent.PROGRESS_EXECUTING_COMMAND -> if (isCommandToShowInSyncIndicator(commandData)) {
-                showSyncing("Show Progress", commandData.toCommandProgress(MyContextHolder.myContextHolder.getNow()))
+                showSyncing("Show Progress", commandData.toCommandProgress(myContextHolder.getNow()))
             }
             MyServiceEvent.AFTER_EXECUTING_COMMAND -> onReceiveAfterExecutingCommand(commandData)
             MyServiceEvent.ON_STOP -> hideSyncing("onReceive STOP")

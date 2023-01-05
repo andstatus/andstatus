@@ -19,7 +19,7 @@ package org.andstatus.app.syncadapter
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.util.MyLog
 
 /**
@@ -44,7 +44,7 @@ class SyncService : Service() {
 
     private object ResourceHolder {
         // TODO: Fix the leak!
-        var syncAdapter: SyncAdapter = SyncAdapter( MyContextHolder.myContextHolder.getNow().context, true)
+        var syncAdapter: SyncAdapter = SyncAdapter(myContextHolder.getNow().context, true)
     }
 
     override fun onDestroy() {

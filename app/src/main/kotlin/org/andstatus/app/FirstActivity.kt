@@ -24,7 +24,7 @@ import android.os.Bundle
 import android.util.AndroidRuntimeException
 import androidx.appcompat.app.AppCompatActivity
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyPreferences
@@ -74,44 +74,46 @@ class FirstActivity(
 
     private fun parseNewIntent(intent: Intent?) {
         when (MyAction.fromIntent(intent)) {
-            MyAction.INITIALIZE_APP ->  MyContextHolder.myContextHolder.initialize(this)
-                    .whenSuccessAsync({ myContext: MyContext? -> finish() }, UiThreadExecutor.INSTANCE)
+            MyAction.INITIALIZE_APP -> myContextHolder.initialize(this)
+                .whenSuccessAsync({ myContext: MyContext? -> finish() }, UiThreadExecutor.INSTANCE)
             MyAction.SET_DEFAULT_VALUES -> {
                 setDefaultValuesOnUiThread(this)
                 finish()
             }
             MyAction.CLOSE_ALL_ACTIVITIES -> finish()
-            else -> if ( MyContextHolder.myContextHolder.getFuture().isReady ||  MyContextHolder.myContextHolder.getNow().state == MyContextState.UPGRADING) {
-                startNextActivitySync( MyContextHolder.myContextHolder.getNow(), intent)
+            else -> if (myContextHolder.getFuture().isReady || myContextHolder.getNow().state == MyContextState.UPGRADING) {
+                startNextActivitySync(myContextHolder.getNow(), intent)
                 finish()
             } else {
-                 MyContextHolder.myContextHolder.initialize(this)
-                        .with { future: CompletableFuture<MyContext> ->
-                            future.whenCompleteAsync(startNextActivity, UiThreadExecutor.INSTANCE)
-                        }
+                myContextHolder.initialize(this)
+                    .with { future: CompletableFuture<MyContext> ->
+                        future.whenCompleteAsync(startNextActivity, UiThreadExecutor.INSTANCE)
+                    }
             }
         }
     }
 
-    private val startNextActivity: BiConsumer<MyContext?, Throwable?> = BiConsumer { myContext: MyContext?, throwable: Throwable? ->
-        var launched = false
-        if (myContext != null && myContext.isReady && !myContext.isExpired) {
-            try {
-                startNextActivitySync(myContext, intent)
-                launched = true
-            } catch (e: AndroidRuntimeException) {
-                MyLog.w(instanceTag, "Launching next activity from firstActivity", e)
-            } catch (e: SecurityException) {
-                MyLog.d(instanceTag, "Launching activity", e)
+    private val startNextActivity: BiConsumer<MyContext?, Throwable?> =
+        BiConsumer { myContext: MyContext?, throwable: Throwable? ->
+            var launched = false
+            if (myContext != null && myContext.isReady && !myContext.isExpired) {
+                try {
+                    startNextActivitySync(myContext, intent)
+                    launched = true
+                } catch (e: AndroidRuntimeException) {
+                    MyLog.w(instanceTag, "Launching next activity from firstActivity", e)
+                } catch (e: SecurityException) {
+                    MyLog.d(instanceTag, "Launching activity", e)
+                }
             }
+            if (!launched) {
+                HelpActivity.startMe(
+                    if (myContext == null) myContextHolder.getNow().context else myContext.context,
+                    true, HelpActivity.PAGE_LOGO
+                )
+            }
+            finish()
         }
-        if (!launched) {
-            HelpActivity.startMe(
-                    if (myContext == null)  MyContextHolder.myContextHolder.getNow().context else myContext.context,
-                    true, HelpActivity.PAGE_LOGO)
-        }
-        finish()
-    }
 
     private fun startNextActivitySync(myContext: MyContext, myIntent: Intent?) {
         when (needToStartNext(this, myContext)) {
@@ -147,7 +149,8 @@ class FirstActivity(
          * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
          */
         fun closeAllActivities(context: Context) {
-            context.startActivity(MyAction.CLOSE_ALL_ACTIVITIES.newIntent()
+            context.startActivity(
+                MyAction.CLOSE_ALL_ACTIVITIES.newIntent()
                     .setClass(context, FirstActivity::class.java)
                     .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK)
             )
@@ -155,11 +158,11 @@ class FirstActivity(
 
         fun goHome(activity: MyActivity) {
             try {
-                MyLog.v(activity.instanceTag) { "goHome"}
+                MyLog.v(activity.instanceTag) { "goHome" }
                 startApp(activity)
             } catch (e: Exception) {
                 MyLog.v(activity.instanceTag, "goHome", e)
-                 MyContextHolder.myContextHolder.thenStartApp()
+                myContextHolder.thenStartApp()
             }
         }
 
@@ -201,14 +204,15 @@ class FirstActivity(
                 if (versionCodeLast < versionCode) {
                     // Even if the Actor will see only the first page of the Help activity,
                     // count this as showing the Change Log
-                    MyLog.v(FirstActivity::class
+                    MyLog.v(
+                        FirstActivity::class
                     ) {
                         ("Last opened version=" + versionCodeLast
-                                + ", current is " + versionCode
-                                + if (update) ", updating" else "")
+                            + ", current is " + versionCode
+                            + if (update) ", updating" else "")
                     }
                     changed = true
-                    if (update &&  MyContextHolder.myContextHolder.getNow().isReady) {
+                    if (update && myContextHolder.getNow().isReady) {
                         SharedPreferencesUtil.putLong(MyPreferences.KEY_VERSION_CODE_LAST, versionCode.toLong())
                     }
                 }

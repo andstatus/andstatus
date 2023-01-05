@@ -15,13 +15,14 @@
  */
 package org.andstatus.app.service
 
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.timeline.ViewItem
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class QueueData protected constructor(val queueType: QueueType, val commandData: CommandData) : ViewItem<QueueData>(false, commandData.getCreatedDate()), Comparable<QueueData> {
+class QueueData constructor(val queueType: QueueType, val commandData: CommandData) :
+    ViewItem<QueueData>(false, commandData.getCreatedDate()), Comparable<QueueData> {
 
     override fun getId(): Long {
         return commandData.hashCode().toLong()
@@ -33,16 +34,15 @@ class QueueData protected constructor(val queueType: QueueType, val commandData:
 
     fun toSharedSubject(): String {
         return (queueType.acronym + "; "
-                + commandData.toCommandSummary( MyContextHolder.myContextHolder.getNow()))
+            + commandData.toCommandSummary(myContextHolder.getNow()))
     }
 
     fun toSharedText(): String {
-        return (queueType.acronym + "; "
-                + commandData.share( MyContextHolder.myContextHolder.getNow()))
+        return queueType.acronym + "; " + commandData.share(myContextHolder.getNow())
     }
 
     override operator fun compareTo(other: QueueData): Int {
-        return -longCompare(getDate(), other.getDate())
+        return -getDate().compareTo(other.getDate())
     }
 
     override fun equals(other: Any?): Boolean {
@@ -65,9 +65,5 @@ class QueueData protected constructor(val queueType: QueueType, val commandData:
             return QueueData(queueType, commandData)
         }
 
-        // TODO: Replace with Long.compare for API >= 19
-        private fun longCompare(lhs: Long, rhs: Long): Int {
-            return if (lhs < rhs) -1 else if (lhs == rhs) 0 else 1
-        }
     }
 }

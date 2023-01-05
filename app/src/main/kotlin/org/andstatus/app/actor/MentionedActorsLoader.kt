@@ -16,7 +16,7 @@
 package org.andstatus.app.actor
 
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Audience.Companion.fromNoteId
@@ -26,16 +26,17 @@ import org.andstatus.app.origin.Origin
  * @author yvolk@yurivolkov.com
  */
 class MentionedActorsLoader(myContext: MyContext, origin: Origin, private val selectedNoteId: Long) :
-        ActorsLoader(myContext, ActorsScreenType.ACTORS_OF_NOTE, origin, 0, "") {
+    ActorsLoader(myContext, ActorsScreenType.ACTORS_OF_NOTE, origin, 0, "") {
     private val originOfSelectedNote: Origin
     override fun loadInternal() {
         fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors()
-                .forEach { actor: Actor -> addActorToList(actor) }
+            .forEach { actor: Actor -> addActorToList(actor) }
         if (!items.isEmpty()) super.loadInternal()
     }
 
     init {
-        originOfSelectedNote =  MyContextHolder.myContextHolder.getNow().origins.fromId(
-                MyQuery.noteIdToOriginId(selectedNoteId))
+        originOfSelectedNote = myContextHolder.getNow().origins.fromId(
+            MyQuery.noteIdToOriginId(selectedNoteId)
+        )
     }
 }

@@ -6,7 +6,7 @@ import org.andstatus.app.backup.MyBackupDataInput
 import org.andstatus.app.backup.MyBackupDataOutput
 import org.andstatus.app.backup.MyBackupDescriptor
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.SqlIds
 import org.andstatus.app.data.converter.AccountConverter
@@ -535,11 +535,11 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
 
         fun myAccountIds(): SqlIds {
             return SqlIds.fromIds(
-                AccountUtils.getCurrentAccounts(MyContextHolder.myContextHolder.getNow().context).stream()
-                    .map({ account: Account ->
-                        AccountData.fromAndroidAccount(MyContextHolder.myContextHolder.getNow(), account)
+                AccountUtils.getCurrentAccounts(myContextHolder.getNow().context).stream()
+                    .map { account: Account ->
+                        AccountData.fromAndroidAccount(myContextHolder.getNow(), account)
                             .getDataLong(MyAccount.KEY_ACTOR_ID, 0)
-                    })
+                    }
                     .filter { id: Long -> id > 0 }
                     .collect(Collectors.toList())
             )

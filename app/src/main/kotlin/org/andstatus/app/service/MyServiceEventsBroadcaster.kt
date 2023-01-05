@@ -18,10 +18,13 @@ package org.andstatus.app.service
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.util.MyLog
 
-class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyContext, private val mState: MyServiceState) {
+class MyServiceEventsBroadcaster private constructor(
+    private val mMyContext: MyContext,
+    private val mState: MyServiceState
+) {
     private var mCommandData: CommandData = CommandData.EMPTY
     private var mEvent: MyServiceEvent = MyServiceEvent.UNKNOWN
     private var progress: String = ""
@@ -47,8 +50,8 @@ class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyC
         }
         MyLog.v(this) {
             "state:" + mState + ", event:" + mEvent +
-                    ", " + mCommandData.toCommandSummary(MyContextHolder.myContextHolder.getNow()) +
-                    if (progress.isEmpty()) "" else ", progress:$progress"
+                ", " + mCommandData.toCommandSummary(myContextHolder.getNow()) +
+                if (progress.isEmpty()) "" else ", progress:$progress"
         }
         MyAction.SERVICE_STATE.newIntent()
             .apply(mCommandData::toIntent)

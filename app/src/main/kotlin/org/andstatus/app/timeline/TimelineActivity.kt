@@ -50,7 +50,7 @@ import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.actor.ActorProfileViewer
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.data.MatchedUri
@@ -1142,7 +1142,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             MyLog.v(this) { "switchTimelineActivity; $timeline" }
             if (isFinishing) {
                 val intent = getIntentForTimeline(myContext, timeline, false)
-                MyContextHolder.myContextHolder.initialize(this).thenStartActivity(intent)
+                myContextHolder.initialize(this).thenStartActivity(intent)
             } else {
                 startForTimeline(myContext, this, timeline)
             }

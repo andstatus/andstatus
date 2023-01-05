@@ -20,7 +20,7 @@ import android.accounts.AuthenticatorException
 import android.accounts.OperationCanceledException
 import android.content.Context
 import org.andstatus.app.account.AccountUtils
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyStorage
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.service.MyServiceManager
@@ -38,8 +38,8 @@ object ApplicationDataUtil {
     fun deleteApplicationData() {
         MyServiceManager.setServiceUnavailable()
         deleteAccounts()
-        val context: Context =  MyContextHolder.myContextHolder.getNow().context
-        MyContextHolder.myContextHolder.release { "deleteApplicationData" }
+        val context: Context = myContextHolder.getNow().context
+        myContextHolder.release { "deleteApplicationData" }
         deleteFiles(context, false)
         deleteFiles(context, true)
         SharedPreferencesUtil.resetHasSetDefaultValues()
@@ -48,8 +48,8 @@ object ApplicationDataUtil {
     }
 
     private fun deleteAccounts() {
-        val am = AccountManager.get(MyContextHolder.myContextHolder.getNow().context)
-        val aa = AccountUtils.getCurrentAccounts(MyContextHolder.myContextHolder.getNow().context)
+        val am = AccountManager.get(myContextHolder.getNow().context)
+        val aa = AccountUtils.getCurrentAccounts(myContextHolder.getNow().context)
         for (androidAccount in aa) {
             val logMsg = "Removing old account: " + androidAccount.name
             MyLog.i(this, logMsg)
@@ -65,8 +65,18 @@ object ApplicationDataUtil {
     }
 
     private fun deleteFiles(context: Context, useExternalStorage: Boolean) {
-        FileUtils.deleteFilesRecursively(MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS, TriState.Companion.fromBoolean(useExternalStorage)))
-        FileUtils.deleteFilesRecursively(MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DATABASES, TriState.Companion.fromBoolean(useExternalStorage)))
+        FileUtils.deleteFilesRecursively(
+            MyStorage.getDataFilesDir(
+                MyStorage.DIRECTORY_DOWNLOADS,
+                TriState.Companion.fromBoolean(useExternalStorage)
+            )
+        )
+        FileUtils.deleteFilesRecursively(
+            MyStorage.getDataFilesDir(
+                MyStorage.DIRECTORY_DATABASES,
+                TriState.Companion.fromBoolean(useExternalStorage)
+            )
+        )
         FileUtils.deleteFilesRecursively(SharedPreferencesUtil.prefsDirectory(context))
     }
 

@@ -24,7 +24,7 @@ import android.os.Parcelable
 import io.vavr.control.Try
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.MatchedUri
 import org.andstatus.app.origin.Origin
@@ -51,7 +51,8 @@ class AccountData : Parcelable, AccountDataWriter, Identifiable {
         this.myContextIn = myContext
         data = jso
         this.persistent = persistent
-        val origin = if (myContext.isEmpty) Origin.EMPTY else myContext.origins.fromName(getDataString(Origin.KEY_ORIGIN_NAME))
+        val origin =
+            if (myContext.isEmpty) Origin.EMPTY else myContext.origins.fromName(getDataString(Origin.KEY_ORIGIN_NAME))
         accountName = AccountName.fromOriginAndUniqueName(origin, getDataString(MyAccount.KEY_UNIQUE_NAME))
         logMe("new " + accountName.name + " from jso")
     }
@@ -92,8 +93,9 @@ class AccountData : Parcelable, AccountDataWriter, Identifiable {
         setDataString(Origin.KEY_ORIGIN_NAME, accountName.getOriginName())
     }
 
-    val myContext: MyContext get() = myContextIn.takeIf { it.nonEmpty && !it.isExpired }
-                ?: accountName.origin.myContext
+    val myContext: MyContext
+        get() = myContextIn.takeIf { it.nonEmpty && !it.isExpired }
+            ?: accountName.origin.myContext
 
     fun isPersistent(): Boolean {
         return persistent
@@ -271,17 +273,21 @@ class AccountData : Parcelable, AccountDataWriter, Identifiable {
             val am = AccountManager.get(myContext.context)
             val jsonString: String = am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT) ?: ""
             val accountData = fromJsonString(myContext, jsonString, true)
-            accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
-                    ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0)
-            accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY,
-                    ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY))
+            accountData.setDataBoolean(
+                MyAccount.KEY_IS_SYNCABLE,
+                ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0
+            )
+            accountData.setDataBoolean(
+                MyAccount.KEY_IS_SYNCED_AUTOMATICALLY,
+                ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY)
+            )
             accountData.logMe("Loaded from account " + androidAccount.name)
             return accountData
         }
 
         private fun fromJsonString(myContext: MyContext, userData: String, persistent: Boolean): AccountData {
             return JsonUtils.toJsonObject(userData).map { jso: JSONObject -> fromJson(myContext, jso, persistent) }
-                    .getOrElse(EMPTY)
+                .getOrElse(EMPTY)
         }
 
         fun fromJson(myContext: MyContext, jso: JSONObject, persistent: Boolean): AccountData {
@@ -295,7 +301,7 @@ class AccountData : Parcelable, AccountDataWriter, Identifiable {
         @JvmField
         val CREATOR: Parcelable.Creator<AccountData> = object : Parcelable.Creator<AccountData> {
             override fun createFromParcel(source: Parcel): AccountData {
-                return fromBundle( MyContextHolder.myContextHolder.getNow(), source.readBundle())
+                return fromBundle(myContextHolder.getNow(), source.readBundle())
             }
 
             override fun newArray(size: Int): Array<AccountData?> {

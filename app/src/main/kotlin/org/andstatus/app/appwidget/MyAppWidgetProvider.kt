@@ -19,7 +19,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.notification.NotificationEvents
 import org.andstatus.app.util.MyLog
 
@@ -33,7 +33,7 @@ class MyAppWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         MyLog.i(TAG, "onReceive; action=" + intent.action)
-        MyContextHolder.myContextHolder.initialize(context, TAG).getBlocking()
+        myContextHolder.initialize(context, TAG).getBlocking()
         super.onReceive(context, intent)
     }
 
@@ -59,8 +59,8 @@ class MyAppWidgetProvider : AppWidgetProvider() {
     companion object {
         private val TAG: String = MyAppWidgetProvider::class.simpleName!!
 
-        private fun createFilter(appWidgetIds: IntArray): (MyAppWidgetData) -> Boolean = {
-            data -> appWidgetIds.contains(data.appWidgetId)
+        private fun createFilter(appWidgetIds: IntArray): (MyAppWidgetData) -> Boolean = { data ->
+            appWidgetIds.contains(data.appWidgetId)
         }
     }
 }

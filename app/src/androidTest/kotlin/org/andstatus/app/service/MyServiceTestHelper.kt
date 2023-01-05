@@ -17,7 +17,7 @@ package org.andstatus.app.service
 
 import org.andstatus.app.account.MyAccountTest
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
@@ -43,7 +43,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
 
     @Volatile
     var serviceStopped = false
-    private var myContext: MyContext = MyContextHolder.myContextHolder.getNow()
+    private var myContext: MyContext = myContextHolder.getNow()
 
     fun setUp(accountName: String?) {
         MyLog.i(this, "setUp started")
@@ -55,14 +55,14 @@ class MyServiceTestHelper : MyServiceEventsListener {
             if (isSingleStubbedInstance) {
                 httpConnectionStub = HttpConnectionOAuthStub()
                 TestSuite.setHttpConnectionStubInstance(httpConnectionStub)
-                MyContextHolder.myContextHolder.getBlocking().setExpired { this::class.simpleName + " setUp" }
+                myContextHolder.getBlocking().setExpired { this::class.simpleName + " setUp" }
             }
-            myContext = MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
+            myContext = myContextHolder.initialize(myContext.context, this).getBlocking()
             if (!myContext.isReady) {
                 val msg = "Context is not ready after the initialization, repeating... $myContext"
                 MyLog.w(this, msg)
                 myContext.setExpired { this::class.simpleName + msg }
-                myContext = MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
+                myContext = myContextHolder.initialize(myContext.context, this).getBlocking()
                 Assert.assertEquals("Context should be ready", true, myContext.isReady)
             }
             MyServiceManager.setServiceUnavailable()
@@ -105,7 +105,10 @@ class MyServiceTestHelper : MyServiceEventsListener {
             "check for no new execution, count0 = ${count0.startCount}",
             "just waiting, count0 = ${count0.startCount}"
         )
-        MyLog.v(this, "$method; started. $logMsg count=${commandMonitor.startCount}, $criteria, ${commandMonitor.command}")
+        MyLog.v(
+            this,
+            "$method; started. $logMsg count=${commandMonitor.startCount}, $criteria, ${commandMonitor.command}"
+        )
         var found = false
         var locEvent = "none"
         for (pass in 0..999) {
@@ -209,8 +212,10 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 }
             }
         } while (stopWatch.notPassedSeconds(130)) // TODO: fix org.andstatus.app.net.http.MyHttpClientFactory to decrease this
-        MyLog.v(this, method + " ended, " + (if (stopped) "stopped" else "didn't stop") +
-                ", ${stopWatch.time} ms")
+        MyLog.v(
+            this, method + " ended, " + (if (stopped) "stopped" else "didn't stop") +
+                ", ${stopWatch.time} ms"
+        )
         return stopped
     }
 
@@ -235,8 +240,8 @@ class MyServiceTestHelper : MyServiceEventsListener {
         serviceConnector?.unregisterReceiver(myContext.context)
         TestSuite.clearHttpStubs()
         TestSuite.getMyContextForTest().connectionState = ConnectionState.UNKNOWN
-        MyContextHolder.myContextHolder.getBlocking().accounts.initialize()
-        MyContextHolder.myContextHolder.getBlocking().timelines.initialize()
+        myContextHolder.getBlocking().accounts.initialize()
+        myContextHolder.getBlocking().timelines.initialize()
         MyServiceManager.Companion.setServiceAvailable()
         MyLog.v(this, "tearDown ended")
     }

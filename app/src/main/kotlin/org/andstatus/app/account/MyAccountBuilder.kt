@@ -19,7 +19,7 @@ import android.accounts.Account
 import io.vavr.control.Try
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.data.converter.DatabaseConverterController
@@ -53,7 +53,7 @@ class MyAccountBuilder private constructor(
             assignActorId()
             MyLog.i(
                 this, "MyAccount '" + myAccount.getAccountName()
-                        + "' was not connected to the Actor table. actorId=" + myAccount.actor.actorId
+                    + "' was not connected to the Actor table. actorId=" + myAccount.actor.actorId
             )
         }
         if (!myAccount.getCredentialsPresent()
@@ -164,7 +164,7 @@ class MyAccountBuilder private constructor(
                 .onSuccess { result1: Boolean ->
                     MyLog.v(this) {
                         (if (result1) " Saved " else " Didn't change ") +
-                                this.toString()
+                            this.toString()
                     }
                     myAccount.myContext.accounts.addIfAbsent(myAccount)
                     if (myAccount.myContext.isReady && !myAccount.hasAnyTimelines()) {
@@ -174,7 +174,7 @@ class MyAccountBuilder private constructor(
                 .onFailure { e: Throwable ->
                     MyLog.v(this) {
                         "Failed to save " + this.toString() +
-                                "; Error: " + e.message
+                            "; Error: " + e.message
                     }
                 }
         } else {
@@ -226,7 +226,7 @@ class MyAccountBuilder private constructor(
                 if (!sameName) {
                     MyLog.i(
                         this, "name changed from " + myAccount.data.accountName.getUniqueName() +
-                                " to " + actor.uniqueName
+                            " to " + actor.uniqueName
                     )
                     myAccount.data.updateFrom(myAccount)
                     val newData = myAccount.data.withAccountName(
@@ -244,9 +244,9 @@ class MyAccountBuilder private constructor(
         if (credentialsOfOtherAccount) {
             MyLog.w(
                 this, myAccount.myContext.context.getText(R.string.error_credentials_of_other_user).toString() + ": " +
-                        actor.getUniqueNameWithOrigin() +
-                        " account name: " + myAccount.getAccountName() +
-                        " vs username: " + actor.getUsername()
+                    actor.getUniqueNameWithOrigin() +
+                    " account name: " + myAccount.getAccountName() +
+                    " vs username: " + actor.getUsername()
             )
             return Try.failure(
                 ConnectionException(
@@ -276,8 +276,10 @@ class MyAccountBuilder private constructor(
     }
 
     fun registerClient(): Try<Unit> {
-        MyLog.v(this) { "Registering client application for user: '${myAccount.username}'," +
-                " url: '${myAccount.origin.url}'" }
+        MyLog.v(this) {
+            "Registering client application for user: '${myAccount.username}'," +
+                " url: '${myAccount.origin.url}'"
+        }
         myAccount.setConnection()
         return getConnection().registerClientForAccount()
     }
@@ -356,7 +358,7 @@ class MyAccountBuilder private constructor(
         fun loadFromAccountData(accountData: AccountData, method: String?): MyAccountBuilder {
             val myAccount = MyAccount(accountData)
             val builder = fromMyAccount(myAccount)
-            if (!MyContextHolder.myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently()
+            if (!myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently()
             builder.logLoadResult(method)
             return builder
         }

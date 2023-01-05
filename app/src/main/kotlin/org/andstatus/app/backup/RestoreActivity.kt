@@ -27,7 +27,7 @@ import io.vavr.control.Try
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.os.AsyncEffects
 import org.andstatus.app.os.AsyncEnum.DEFAULT_POOL
 import org.andstatus.app.util.TryUtils
@@ -102,8 +102,8 @@ class RestoreActivity : MyActivity(RestoreActivity::class), ProgressLogger.Progr
         if (descriptorFile.isFailure) {
             addProgressMessage(
                 "This is not an AndStatus backup folder." +
-                        " Descriptor file " + MyBackupManager.DESCRIPTOR_FILE_NAME +
-                        " doesn't exist in: '" + selectedFolder.uri.path + "'"
+                    " Descriptor file " + MyBackupManager.DESCRIPTOR_FILE_NAME +
+                    " doesn't exist in: '" + selectedFolder.uri.path + "'"
             )
             return
         }
@@ -130,18 +130,18 @@ class RestoreActivity : MyActivity(RestoreActivity::class), ProgressLogger.Progr
         progressCounter++
         val progressLog = findViewById<TextView?>(R.id.progress_log)
         val log = "${Integer.toString(progressCounter)}. $message" +
-                "\n${progressLog.text}"
+            "\n${progressLog.text}"
         progressLog.text = log
     }
 
     override fun onResume() {
-        MyContextHolder.myContextHolder.getNow().isInForeground = true
+        myContextHolder.getNow().isInForeground = true
         super.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        MyContextHolder.myContextHolder.getNow().isInForeground = false
+        myContextHolder.getNow().isInForeground = false
     }
 
     override fun onProgressMessage(message: CharSequence) {

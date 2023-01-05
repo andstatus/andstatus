@@ -24,7 +24,7 @@ import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.ActorViewItem
 import org.andstatus.app.actor.ActorsLoader
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.AttachedImageFiles
 import org.andstatus.app.data.DbUtils
@@ -48,16 +48,15 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
-    var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+    var myContext: MyContext = myContextHolder.getNow()
     var activityUpdatedDate: Long = 0
     var noteStatus: DownloadStatus = DownloadStatus.UNKNOWN
     private var activityId: Long = 0
     private var noteId: Long = 0
-    private var origin: Origin =  Origin.EMPTY
+    private var origin: Origin = Origin.EMPTY
     var author: ActorViewItem = ActorViewItem.EMPTY
         protected set
     var visibility: Visibility = Visibility.UNKNOWN
@@ -89,7 +88,10 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
         attachedImageFiles = AttachedImageFiles.EMPTY
     }
 
-    internal constructor(myContext: MyContext, cursor: Cursor?) : super(false, DbUtils.getLong(cursor, NoteTable.UPDATED_DATE)) {
+    internal constructor(myContext: MyContext, cursor: Cursor?) : super(
+        false,
+        DbUtils.getLong(cursor, NoteTable.UPDATED_DATE)
+    ) {
         activityId = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID)
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID))
         setOrigin(myContext.origins.fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)))
@@ -100,7 +102,8 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
         this.myContext = myContext
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             attachmentsCount = DbUtils.getLong(cursor, NoteTable.ATTACHMENTS_COUNT)
-            attachedImageFiles = if (attachmentsCount == 0L) AttachedImageFiles.EMPTY else AttachedImageFiles.load(myContext, noteId)
+            attachedImageFiles =
+                if (attachmentsCount == 0L) AttachedImageFiles.EMPTY else AttachedImageFiles.load(myContext, noteId)
         } else {
             attachmentsCount = 0
             attachedImageFiles = AttachedImageFiles.EMPTY
@@ -122,7 +125,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
         if (!via.isEmpty()) {
             noteSource = Html.fromHtml(via).toString().trim { it <= ' ' }
         }
-        for (actor in MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().database, getOrigin(), getNoteId())) {
+        for (actor in MyQuery.getRebloggers(myContextHolder.getNow().database, getOrigin(), getNoteId())) {
             rebloggers[actor.actorId] = actor.getWebFingerId()
         }
     }
@@ -161,7 +164,10 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
 
     override fun duplicates(timeline: Timeline, preferredOrigin: Origin, other: T): DuplicationLink {
         if (isEmpty || other.isEmpty) return DuplicationLink.NONE
-        return if (getNoteId() == other.getNoteId()) duplicatesByFavoritedAndReblogged(preferredOrigin, other) else duplicatesByOther(preferredOrigin, other)
+        return if (getNoteId() == other.getNoteId()) duplicatesByFavoritedAndReblogged(
+            preferredOrigin,
+            other
+        ) else duplicatesByOther(preferredOrigin, other)
     }
 
     private fun duplicatesByFavoritedAndReblogged(preferredOrigin: Origin, other: T): DuplicationLink {
@@ -171,7 +177,8 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
             return if (reblogged) DuplicationLink.IS_DUPLICATED else DuplicationLink.DUPLICATES
         }
         if (preferredOrigin.nonEmpty
-                && author.actor.origin != other.author.actor.origin) {
+            && author.actor.origin != other.author.actor.origin
+        ) {
             if (preferredOrigin == author.actor.origin) return DuplicationLink.IS_DUPLICATED
             if (preferredOrigin == other.author.actor.origin) return DuplicationLink.DUPLICATES
         }
@@ -182,8 +189,11 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
     }
 
     private fun duplicatesByOther(preferredOrigin: Origin, other: T): DuplicationLink {
-        if (updatedDate > RelativeTime.SOME_TIME_AGO && other.updatedDate > RelativeTime.SOME_TIME_AGO && Math.abs(updatedDate - other.updatedDate) >= TimeUnit.HOURS.toMillis(24) || isTooShortToCompare()
-                || other.isTooShortToCompare()) return DuplicationLink.NONE
+        if (updatedDate > RelativeTime.SOME_TIME_AGO && other.updatedDate > RelativeTime.SOME_TIME_AGO && Math.abs(
+                updatedDate - other.updatedDate
+            ) >= TimeUnit.HOURS.toMillis(24) || isTooShortToCompare()
+            || other.isTooShortToCompare()
+        ) return DuplicationLink.NONE
         if (contentToSearch == other.contentToSearch) {
             return if (updatedDate == other.updatedDate) {
                 duplicatesByFavoritedAndReblogged(preferredOrigin, other)
@@ -228,7 +238,8 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
 
     private fun setNoteSource(context: Context, noteDetails: MyStringBuilder) {
         if (!SharedPreferencesUtil.isEmpty(noteSource) && "ostatus" != noteSource
-                && "unknown" != noteSource) {
+            && "unknown" != noteSource
+        ) {
             noteDetails.withSpace(StringUtil.format(context, R.string.message_source_from, noteSource))
         }
     }
@@ -290,12 +301,13 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
             if (filter.searchQuery.nonEmpty && !filter.searchQuery.matchedAll(contentToSearch)) return false
         }
         return (!filter.hideRepliesNotToMeOrFriends
-                || inReplyToActor.isEmpty
-                ||  MyContextHolder.myContextHolder.getNow().users.isMeOrMyFriend(inReplyToActor.actor))
+            || inReplyToActor.isEmpty
+            || myContextHolder.getNow().users.isMeOrMyFriend(inReplyToActor.actor))
     }
 
     override fun toString(): String {
-        return MyStringBuilder.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40).toString() + ", "
+        return MyStringBuilder.formatKeyValue(
+            this, I18n.trimTextAt(getContent().toString(), 40).toString() + ", "
                 + getDetails(myContext.context, false)
                 + "', authorId:" + author.getActorId() + ", " + noteStatus
         )

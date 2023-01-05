@@ -19,7 +19,7 @@ import android.database.Cursor
 import android.provider.BaseColumns
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyQuery
@@ -340,7 +340,7 @@ class Note : AObject {
             TriState.UNKNOWN
         } else {
             val favAndType = MyQuery.noteIdToLastFavoriting(
-                MyContextHolder.myContextHolder.getNow().database,
+                myContextHolder.getNow().database,
                 noteId, accountActor.actorId
             )
             when (favAndType.second) {

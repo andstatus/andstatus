@@ -19,7 +19,7 @@ import android.content.Intent
 import io.vavr.control.Try
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyQuery
@@ -43,11 +43,15 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        noteId = MyQuery.oidToId(OidEnum.NOTE_OID, DemoData.demoData.getPumpioConversationOrigin().id,
-                DemoData.demoData.conversationMentionsNoteOid)
+        noteId = MyQuery.oidToId(
+            OidEnum.NOTE_OID, DemoData.demoData.getPumpioConversationOrigin().id,
+            DemoData.demoData.conversationMentionsNoteOid
+        )
         Assert.assertNotEquals("No note with oid " + DemoData.demoData.conversationMentionsNoteOid, 0, noteId)
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.EVERYTHING,
-                Actor.EMPTY,  Origin.EMPTY)
+        val timeline: Timeline = myContextHolder.getNow().timelines.get(
+            TimelineType.EVERYTHING,
+            Actor.EMPTY, Origin.EMPTY
+        )
         val updatedDate = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, noteId)
         timeline.setVisibleItemId(noteId)
         timeline.setVisibleOldestDate(updatedDate)
@@ -63,7 +67,8 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
         val helper = ListActivityTestHelper<TimelineActivity<*>>(activity, ActorsScreen::class.java)
         val content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId)
         val logMsg = MyQuery.noteInfoForLog(activity.myContext, noteId)
-        val actors: List<Actor> = Actor.Companion.newUnknown(DemoData.demoData.getPumpioConversationAccount().origin, GroupType.UNKNOWN)
+        val actors: List<Actor> =
+            Actor.Companion.newUnknown(DemoData.demoData.getPumpioConversationAccount().origin, GroupType.UNKNOWN)
                 .extractActorsFromContent(content, Actor.EMPTY)
         Assert.assertEquals(logMsg, 3, actors.size.toLong())
         Assert.assertEquals(logMsg, "unknownUser", actors[2].getUsername())
@@ -74,20 +79,32 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
             .getOrElseThrow { it }
         val listItems = actorsScreen.getListLoader().getList()
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
-        val actorE: Actor =  MyContextHolder.myContextHolder.getNow().users.actors.values.stream()
-                .filter { actor: Actor -> actor.oid == DemoData.demoData.conversationAuthorThirdActorOid }
-                .findAny().orElse(Actor.EMPTY)
-        Assert.assertTrue("Found " + DemoData.demoData.conversationAuthorThirdActorOid
-                + " cached " +  MyContextHolder.myContextHolder.getNow().users.actors, actorE.nonEmpty)
+        val actorE: Actor = myContextHolder.getNow().users.actors.values.stream()
+            .filter { actor: Actor -> actor.oid == DemoData.demoData.conversationAuthorThirdActorOid }
+            .findAny().orElse(Actor.EMPTY)
+        Assert.assertTrue(
+            "Found " + DemoData.demoData.conversationAuthorThirdActorOid
+                + " cached " + myContextHolder.getNow().users.actors, actorE.nonEmpty
+        )
         val actorA: Actor = listItems.actorByOid(DemoData.demoData.conversationAuthorThirdActorOid)
-        Assert.assertTrue("Not found " + DemoData.demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty)
+        Assert.assertTrue(
+            "Not found " + DemoData.demoData.conversationAuthorThirdActorOid + ", " + logMsg,
+            actorA.nonEmpty
+        )
         compareAttributes(actorE, actorA, false)
         val actorsScreenHelper = ListActivityTestHelper(actorsScreen)
-        actorsScreenHelper.clickListAtPosition(method, actorsScreenHelper.getPositionOfListItemId(listItems[if (listItems.size > 2) 2 else 0].getActorId()))
+        actorsScreenHelper.clickListAtPosition(
+            method,
+            actorsScreenHelper.getPositionOfListItemId(listItems[if (listItems.size > 2) 2 else 0].getActorId())
+        )
         DbUtils.waitMs(method, 500)
     }
 
-    private fun tryToOpenActorsScreen(method: String, helper: ListActivityTestHelper<TimelineActivity<*>>, logMsg: String): ActorsScreen {
+    private fun tryToOpenActorsScreen(
+        method: String,
+        helper: ListActivityTestHelper<TimelineActivity<*>>,
+        logMsg: String
+    ): ActorsScreen {
         var item: ActivityViewItem = ActivityViewItem.Companion.EMPTY
         val timelineData = activity.getListData()
         for (position in 0 until timelineData.size()) {
@@ -97,9 +114,16 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
                 break
             }
         }
-        Assert.assertTrue("$method; No view item. $logMsg\nThe note was not found in the timeline $timelineData", item.nonEmpty)
-        Assert.assertTrue("$method; Invoked Context menu for $logMsg", helper.invokeContextMenuAction4ListItemId(method,
-                item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, org.andstatus.app.R.id.note_wrapper))
+        Assert.assertTrue(
+            "$method; No view item. $logMsg\nThe note was not found in the timeline $timelineData",
+            item.nonEmpty
+        )
+        Assert.assertTrue(
+            "$method; Invoked Context menu for $logMsg", helper.invokeContextMenuAction4ListItemId(
+                method,
+                item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, org.andstatus.app.R.id.note_wrapper
+            )
+        )
         val actorsScreen = helper.waitForNextActivity(method, 25000) as ActorsScreen
         TestSuite.waitForListLoaded(actorsScreen, 1)
         return actorsScreen
@@ -123,13 +147,15 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals("Following (friends) count", expected.followingCount, actual.followingCount)
         Assert.assertEquals("Followers count", expected.followersCount, actual.followersCount)
         Assert.assertEquals("Created at", expected.getCreatedDate(), actual.getCreatedDate())
-        Assert.assertEquals("Updated at",
-                if (expected.getUpdatedDate() == RelativeTime.DATETIME_MILLIS_NEVER) RelativeTime.SOME_TIME_AGO else expected.getUpdatedDate(),
-                actual.getUpdatedDate())
+        Assert.assertEquals(
+            "Updated at",
+            if (expected.getUpdatedDate() == RelativeTime.DATETIME_MILLIS_NEVER) RelativeTime.SOME_TIME_AGO else expected.getUpdatedDate(),
+            actual.getUpdatedDate()
+        )
     }
 
     companion object {
         fun List<ActorViewItem>.actorByOid(oid: String?): Actor = map(ActorViewItem::actor)
-            .find{ oid.equals(it.oid)} ?: Actor.EMPTY
+            .find { oid.equals(it.oid) } ?: Actor.EMPTY
     }
 }

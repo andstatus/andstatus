@@ -32,7 +32,7 @@ import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
@@ -79,11 +79,11 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             MyPreferences.setBeingEditedNoteId(0)
         }
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
-        Assert.assertTrue(ma.isValid)
-        MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+        assertTrue(ma.isValid)
+        myContextHolder.getNow().accounts.setCurrentAccount(ma)
         data = getStaticData(ma)
         val timeline: Timeline =
-            MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor, Origin.EMPTY)
+            myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor, Origin.EMPTY)
         MyLog.i(this, "setUp ended, $timeline")
         return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
@@ -107,7 +107,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
 
     @Test
     fun testEditing1() {
-        Assert.assertTrue("MyService is available", MyServiceManager.Companion.isServiceAvailable())
+        assertTrue("MyService is available", MyServiceManager.Companion.isServiceAvailable())
         editingTester()
     }
 
@@ -198,7 +198,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             NoteContextMenuItem.EDIT, R.id.note_wrapper
         )
         logMsg += ";" + if (invoked) "" else " failed to invoke Edit menu item,"
-        Assert.assertTrue(logMsg, invoked)
+        assertTrue(logMsg, invoked)
         ActivityTestHelper.closeContextMenu(activity)
         val editorView = activity.findViewById<View?>(R.id.note_editor)
         ActivityTestHelper.waitViewVisible("$method $logMsg", editorView)
@@ -254,7 +254,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             NoteContextMenuItem.REPLY, R.id.note_wrapper
         )
         logMsg += ";" + if (invoked) "" else " failed to invoke Reply menu item,"
-        Assert.assertTrue(logMsg, invoked)
+        assertTrue(logMsg, invoked)
         ActivityTestHelper.closeContextMenu(activity)
         ActivityTestHelper.waitViewVisible("$method $logMsg", editorView)
         onView(ViewMatchers.withId(R.id.noteBodyEditText))
@@ -278,7 +278,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, draftNoteId)
         )
         val audience: Audience = fromNoteId(data.getMyAccount().origin, draftNoteId)
-        Assert.assertTrue(
+        assertTrue(
             "Audience of a reply to $viewItem\n $audience",
             audience.findSame(viewItem.noteViewItem.author.actor).isSuccess
         )
@@ -381,7 +381,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
                 }
             }
             EspressoUtils.waitForEditorUnlocked()
-            Assert.assertTrue(
+            assertTrue(
                 "Image attached", editor.getData().getAttachedImageFiles()
                     .forUri(imageUri).isPresent
             )
@@ -389,8 +389,9 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
 
         private fun assertTextCleared(test: TimelineActivityTest<ActivityViewItem>) {
             val editor = test.activity.getNoteEditor()
-            Assert.assertTrue("Editor is not null", editor != null)
-            Assert.assertEquals("Editor data should be cleared",
+            assertTrue("Editor is not null", editor != null)
+            Assert.assertEquals(
+                "Editor data should be cleared",
                 NoteEditorData.Companion.newEmpty(
                     test.activity.myContext.accounts.currentAccount
                 ).toTestSummary(),

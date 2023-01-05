@@ -19,7 +19,7 @@ import android.app.Dialog
 import androidx.annotation.MainThread
 import org.acra.ACRA
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.util.DialogFactory
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StringUtil
@@ -47,7 +47,7 @@ object ExceptionsCounter {
     }
 
     fun logSystemInfo(throwable: Throwable?) {
-        val systemInfo: String = MyContextHolder.myContextHolder.getSystemInfo(MyContextHolder.myContextHolder.getNow().context, true)
+        val systemInfo: String = myContextHolder.getSystemInfo(myContextHolder.getNow().context, true)
         ACRA.errorReporter.putCustomData("systemInfo", systemInfo)
         logError(systemInfo, throwable)
     }
@@ -71,9 +71,13 @@ object ExceptionsCounter {
         if (diskIoExceptionsCountShown.get() == diskIoExceptionsCount.get()) return
         diskIoExceptionsCountShown.set(diskIoExceptionsCount.get())
         DialogFactory.dismissSafely(diskIoDialog)
-        val text: String = StringUtil.format( MyContextHolder.myContextHolder.getNow().context, R.string.database_disk_io_error,
-                diskIoExceptionsCount.get())
-        diskIoDialog = DialogFactory.showOkAlertDialog(ExceptionsCounter::class,  MyContextHolder.myContextHolder.getNow().context,
-                R.string.app_name, text)
+        val text: String = StringUtil.format(
+            myContextHolder.getNow().context, R.string.database_disk_io_error,
+            diskIoExceptionsCount.get()
+        )
+        diskIoDialog = DialogFactory.showOkAlertDialog(
+            ExceptionsCounter::class, myContextHolder.getNow().context,
+            R.string.app_name, text
+        )
     }
 }

@@ -21,7 +21,7 @@ import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.OidEnum
@@ -38,14 +38,17 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem>() {
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initialize(this)
-        val myContext: MyContext =  MyContextHolder.myContextHolder.getBlocking()
+        val myContext: MyContext = myContextHolder.getBlocking()
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
         myContext.accounts.setCurrentAccount(ma)
-        val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.originId, DemoData.demoData.conversationAuthorSecondActorOid)
+        val actorId =
+            MyQuery.oidToId(OidEnum.ACTOR_OID, ma.originId, DemoData.demoData.conversationAuthorSecondActorOid)
         val actor: Actor = Actor.Companion.fromId(ma.origin, actorId)
-        Assert.assertNotEquals("Actor " + DemoData.demoData.conversationAuthorSecondActorOid + " id=" + actorId + " -> "
-                + actor, 0, actor.actorId)
+        Assert.assertNotEquals(
+            "Actor " + DemoData.demoData.conversationAuthorSecondActorOid + " id=" + actorId + " -> "
+                + actor, 0, actor.actorId
+        )
         val timeline = myContext.timelines[TimelineType.SENT, actor, ma.origin]
         Assert.assertFalse("Timeline $timeline", timeline.isCombined)
         timeline.forgetPositionsAndDates()
@@ -67,8 +70,9 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertFalse("Timeline $timeline", timeline.isCombined)
         if (findInTimeline()) return
 
-        fail("No follow action by " + DemoData.demoData.conversationAuthorSecondActorOid +
-            " in " + activity.getListData()
+        fail(
+            "No follow action by " + DemoData.demoData.conversationAuthorSecondActorOid +
+                " in " + activity.getListData()
         )
     }
 

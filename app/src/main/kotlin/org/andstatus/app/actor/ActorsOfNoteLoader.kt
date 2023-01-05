@@ -16,7 +16,7 @@
 package org.andstatus.app.actor
 
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.NoteTable
@@ -27,8 +27,10 @@ import org.andstatus.app.origin.Origin
 /**
  * @author yvolk@yurivolkov.com
  */
-class ActorsOfNoteLoader(myContext: MyContext, actorsScreenType: ActorsScreenType, origin: Origin, private val selectedNoteId: Long,
-                         searchQuery: String) : ActorsLoader(myContext, actorsScreenType, origin, 0, searchQuery) {
+class ActorsOfNoteLoader(
+    myContext: MyContext, actorsScreenType: ActorsScreenType, origin: Origin, private val selectedNoteId: Long,
+    searchQuery: String
+) : ActorsLoader(myContext, actorsScreenType, origin, 0, searchQuery) {
     private val originOfSelectedNote: Origin
     val noteContent: String?
     override fun loadInternal() {
@@ -40,9 +42,9 @@ class ActorsOfNoteLoader(myContext: MyContext, actorsScreenType: ActorsScreenTyp
         addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedNoteId))
         addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId))
         fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors()
-                .forEach { actor: Actor -> addActorToList(actor) }
-        MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().database, origin, selectedNoteId)
-                .forEach { actor: Actor -> addActorToList(actor) }
+            .forEach { actor: Actor -> addActorToList(actor) }
+        MyQuery.getRebloggers(myContextHolder.getNow().database, origin, selectedNoteId)
+            .forEach { actor: Actor -> addActorToList(actor) }
     }
 
     override fun getSubtitle(): String? {
@@ -51,7 +53,8 @@ class ActorsOfNoteLoader(myContext: MyContext, actorsScreenType: ActorsScreenTyp
 
     init {
         noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId)
-        originOfSelectedNote =  MyContextHolder.myContextHolder.getNow().origins.fromId(
-                MyQuery.noteIdToOriginId(selectedNoteId))
+        originOfSelectedNote = myContextHolder.getNow().origins.fromId(
+            MyQuery.noteIdToOriginId(selectedNoteId)
+        )
     }
 }

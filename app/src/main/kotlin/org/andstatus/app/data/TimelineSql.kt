@@ -19,7 +19,7 @@ import android.database.sqlite.SQLiteQueryBuilder
 import android.net.Uri
 import android.provider.BaseColumns
 import org.andstatus.app.actor.GroupType
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
@@ -35,7 +35,7 @@ import java.util.*
 
 object TimelineSql {
     private fun tablesForTimeline(uri: Uri, projection: Array<String>, subQueryIndex: Int): String {
-        val timeline: Timeline = Timeline.fromParsedUri( MyContextHolder.myContextHolder.getNow(), ParsedUri.fromUri(uri), "")
+        val timeline: Timeline = Timeline.fromParsedUri(myContextHolder.getNow(), ParsedUri.fromUri(uri), "")
         val actWhere = SqlWhere().append(ActivityTable.UPDATED_DATE, ">0")
         val noteWhere = SqlWhere()
         val audienceWhere = SqlWhere()
@@ -43,49 +43,71 @@ object TimelineSql {
             TimelineType.FOLLOWERS, TimelineType.FRIENDS -> {
                 // Select only the latest note from each Friend's timeline
                 val activityIds = ("SELECT " + ActorTable.ACTOR_ACTIVITY_ID
-                        + " FROM " + ActorTable.TABLE_NAME + " AS u1"
-                        + " INNER JOIN (" + GroupMembership.selectSingleGroupMemberIds(SqlIds.actorIdsOfTimelineActor(timeline),
-                        if (timeline.timelineType == TimelineType.FOLLOWERS) GroupType.FOLLOWERS else GroupType.FRIENDS,
-                        false) + ") AS activity_ids" +
-                        " ON activity_ids." + GroupMembersTable.MEMBER_ID + "=u1." + BaseColumns._ID)
+                    + " FROM " + ActorTable.TABLE_NAME + " AS u1"
+                    + " INNER JOIN (" + GroupMembership.selectSingleGroupMemberIds(
+                    SqlIds.actorIdsOfTimelineActor(timeline),
+                    if (timeline.timelineType == TimelineType.FOLLOWERS) GroupType.FOLLOWERS else GroupType.FRIENDS,
+                    false
+                ) + ") AS activity_ids" +
+                    " ON activity_ids." + GroupMembersTable.MEMBER_ID + "=u1." + BaseColumns._ID)
                 actWhere.append(BaseColumns._ID + " IN (" + activityIds + ")")
             }
             TimelineType.HOME -> {
                 actWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id)
-                        .append(ActivityTable.ACCOUNT_ID, SqlIds.actorIdsOfTimelineAccount(timeline))
-                noteWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY, "!=" + Visibility.PRIVATE.id)
+                    .append(ActivityTable.ACCOUNT_ID, SqlIds.actorIdsOfTimelineAccount(timeline))
+                noteWhere.append(
+                    ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY,
+                    "!=" + Visibility.PRIVATE.id
+                )
             }
             TimelineType.PRIVATE -> {
                 actWhere.append(ActivityTable.ACCOUNT_ID, SqlIds.actorIdsOfTimelineAccount(timeline))
-                noteWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY, "=" + Visibility.PRIVATE.id)
+                noteWhere.append(
+                    ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY,
+                    "=" + Visibility.PRIVATE.id
+                )
             }
             TimelineType.FAVORITES -> {
                 actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline))
                 noteWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.FAVORITED, "=" + TriState.TRUE.id)
             }
             TimelineType.INTERACTIONS -> actWhere.append(ActivityTable.INTERACTED, "=" + TriState.TRUE.id)
-                    .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline))
-            TimelineType.PUBLIC -> noteWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY, "<" + Visibility.PRIVATE.id)
+                .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline))
+            TimelineType.PUBLIC -> noteWhere.append(
+                ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY,
+                "<" + Visibility.PRIVATE.id
+            )
             TimelineType.DRAFTS -> {
                 actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline))
-                noteWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS, "=" + DownloadStatus.DRAFT.save())
+                noteWhere.append(
+                    ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS,
+                    "=" + DownloadStatus.DRAFT.save()
+                )
             }
             TimelineType.OUTBOX -> {
                 actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline))
-                noteWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS, "=" + DownloadStatus.SENDING.save())
+                noteWhere.append(
+                    ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.NOTE_STATUS,
+                    "=" + DownloadStatus.SENDING.save()
+                )
             }
             TimelineType.SENT -> if (subQueryIndex == 0) {
                 actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline))
             } else {
-                noteWhere.append(ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID, SqlIds.actorIdsOfTimelineActor(timeline))
+                noteWhere.append(
+                    ProjectionMap.NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID,
+                    SqlIds.actorIdsOfTimelineActor(timeline)
+                )
             }
-            TimelineType.GROUP -> audienceWhere.append(AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID,
-                    SqlIds.actorIdsOfTimelineActor(timeline))
+            TimelineType.GROUP -> audienceWhere.append(
+                AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID,
+                SqlIds.actorIdsOfTimelineActor(timeline)
+            )
             TimelineType.UNREAD_NOTIFICATIONS -> actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
-                    .append(ActivityTable.NEW_NOTIFICATION_EVENT, "!=0")
-                    .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline))
+                .append(ActivityTable.NEW_NOTIFICATION_EVENT, "!=0")
+                .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline))
             TimelineType.NOTIFICATIONS -> actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
-                    .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline))
+                .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline))
             else -> {
             }
         }
@@ -93,17 +115,17 @@ object TimelineSql {
             actWhere.append(ActivityTable.ORIGIN_ID, "=" + timeline.getOrigin().id)
         }
         var tables = ("(SELECT * FROM " + ActivityTable.TABLE_NAME + actWhere.getWhere()
-                + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS
-                + (if (noteWhere.isEmpty) " LEFT" else " INNER") + " JOIN "
-                + NoteTable.TABLE_NAME + " AS " + ProjectionMap.NOTE_TABLE_ALIAS
-                + " ON (" + ProjectionMap.NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "="
-                + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID
-                + noteWhere.getAndWhere() + ")")
+            + ") AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS
+            + (if (noteWhere.isEmpty) " LEFT" else " INNER") + " JOIN "
+            + NoteTable.TABLE_NAME + " AS " + ProjectionMap.NOTE_TABLE_ALIAS
+            + " ON (" + ProjectionMap.NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "="
+            + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID
+            + noteWhere.getAndWhere() + ")")
         if (audienceWhere.nonEmpty) {
             tables = (tables + " INNER JOIN " + AudienceTable.TABLE_NAME + " ON (" +
-                    ProjectionMap.NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "=" +
-                    AudienceTable.TABLE_NAME + "." + AudienceTable.NOTE_ID
-                    + audienceWhere.getAndWhere() + ")")
+                ProjectionMap.NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "=" +
+                AudienceTable.TABLE_NAME + "." + AudienceTable.NOTE_ID
+                + audienceWhere.getAndWhere() + ")")
         }
         return tables
     }
@@ -115,12 +137,14 @@ object TimelineSql {
      * @return Strings for [SQLiteQueryBuilder.setTables], more than one for a union query
      */
     fun tablesForTimeline(uri: Uri, projection: Array<String>): MutableList<String> {
-        val timeline: Timeline = Timeline.fromParsedUri( MyContextHolder.myContextHolder.getNow(),
-                ParsedUri.fromUri(uri), "")
+        val timeline: Timeline = Timeline.fromParsedUri(
+            myContextHolder.getNow(),
+            ParsedUri.fromUri(uri), ""
+        )
         return when (timeline.timelineType) {
             TimelineType.SENT -> Arrays.asList(
-                    tablesForTimeline(uri, projection, 0),
-                    tablesForTimeline(uri, projection, 1)
+                tablesForTimeline(uri, projection, 0),
+                tablesForTimeline(uri, projection, 1)
             )
             else -> mutableListOf(tablesForTimeline(uri, projection, 0))
         }
@@ -169,8 +193,10 @@ object TimelineSql {
             columnNames.add(NoteTable.ATTACHMENTS_COUNT)
         }
         if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MARK_REPLIES_TO_ME_IN_TIMELINE, true)
-                || SharedPreferencesUtil.getBoolean(
-                        MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false)) {
+            || SharedPreferencesUtil.getBoolean(
+                MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false
+            )
+        ) {
             columnNames.add(NoteTable.IN_REPLY_TO_ACTOR_ID)
         }
         return columnNames

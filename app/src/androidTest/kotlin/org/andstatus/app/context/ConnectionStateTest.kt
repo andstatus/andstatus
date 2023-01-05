@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.context
 
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.service.ConnectionRequired
 import org.andstatus.app.service.ConnectionState
 import org.junit.Assert
@@ -33,13 +34,13 @@ class ConnectionStateTest {
     @Test
     fun testIsConnectionStateOkFor() {
         TestSuite.getMyContextForTest().connectionState = ConnectionState.OFFLINE
-        Assert.assertEquals(ConnectionState.OFFLINE, MyContextHolder.myContextHolder.getNow().connectionState)
+        Assert.assertEquals(ConnectionState.OFFLINE, myContextHolder.getNow().connectionState)
         assertTrueFor(ConnectionRequired.OFFLINE)
         assertTrueFor(ConnectionRequired.ANY)
         assertFalseFor(ConnectionRequired.SYNC)
         assertFalseFor(ConnectionRequired.DOWNLOAD_ATTACHMENT)
         TestSuite.getMyContextForTest().connectionState = ConnectionState.ONLINE
-        Assert.assertEquals(ConnectionState.ONLINE, MyContextHolder.myContextHolder.getNow().connectionState)
+        Assert.assertEquals(ConnectionState.ONLINE, myContextHolder.getNow().connectionState)
         assertFalseFor(ConnectionRequired.OFFLINE)
         assertTrueFor(ConnectionRequired.ANY)
         MyPreferences.setDownloadAttachmentsOverWiFiOnly(false)
@@ -68,6 +69,6 @@ class ConnectionStateTest {
     }
 
     private fun isConnectionStateOkFor(connectionRequired: ConnectionRequired): Boolean {
-        return connectionRequired.isConnectionStateOk(MyContextHolder.myContextHolder.getNow().connectionState)
+        return connectionRequired.isConnectionStateOk(myContextHolder.getNow().connectionState)
     }
 }

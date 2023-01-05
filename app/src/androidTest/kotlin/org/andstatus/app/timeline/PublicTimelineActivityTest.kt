@@ -26,7 +26,7 @@ import org.andstatus.app.ActivityTestHelper
 import org.andstatus.app.R
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.social.Actor
@@ -48,13 +48,13 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        val myContext = MyContextHolder.myContextHolder.getBlocking()
-        val origin: Origin =  myContext.origins.fromName(DemoData.demoData.gnusocialTestOriginName)
+        val myContext = myContextHolder.getBlocking()
+        val origin: Origin = myContext.origins.fromName(DemoData.demoData.gnusocialTestOriginName)
         Assert.assertTrue(origin.toString(), origin.isValid)
         MyLog.i(this, "setUp ended")
         val timeline = myContext.timelines.get(TimelineType.PUBLIC, Actor.EMPTY, origin)
         timeline.save(myContext)
-        return Intent(Intent.ACTION_VIEW,  timeline.getUri())
+        return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
 
     @Test
@@ -73,11 +73,14 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.waitForListLoaded(activity, 2)
         Assert.assertEquals(TimelineType.PUBLIC, activity.getTimeline().timelineType)
         Assert.assertFalse("Screen is locked", TestSuite.isScreenLocked(activity))
-        val helper = ActivityTestHelper<TimelineActivity<*>>(activity,
-                TimelineActivity::class.java)
+        val helper = ActivityTestHelper<TimelineActivity<*>>(
+            activity,
+            TimelineActivity::class.java
+        )
         helper.clickMenuItem(method, menu_id)
         Espresso.onView(ViewMatchers.withId(R.id.internet_search)).perform(EspressoUtils.setChecked(internetSearch))
-        Espresso.onView(ViewMatchers.withResourceName("search_text")).perform(ReplaceTextAction(noteText), ViewActions.pressImeActionButton())
+        Espresso.onView(ViewMatchers.withResourceName("search_text"))
+            .perform(ReplaceTextAction(noteText), ViewActions.pressImeActionButton())
         val nextActivity = helper.waitForNextActivity(method, 40000) as TimelineActivity<*>
         waitForButtonClickedEvidence(nextActivity, method, noteText)
         assertNotesArePublic(nextActivity, noteText)
@@ -86,8 +89,10 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
 
     @Volatile
     private var stringFound: String = ""
-    private fun waitForButtonClickedEvidence(timelineActivity: TimelineActivity<*>, caption: String?,
-                                             queryString: String) {
+    private fun waitForButtonClickedEvidence(
+        timelineActivity: TimelineActivity<*>, caption: String?,
+        queryString: String
+    ) {
         val method = "waitForButtonClickedEvidence"
         var found = false
         Assert.assertNotNull("Timeline activity is null", timelineActivity)
@@ -106,8 +111,10 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
             }
             DbUtils.waitMs(method, 1000 * (attempt + 1))
         }
-        Assert.assertTrue(caption + ", query:'" + queryString
-                + "', found:'" + stringFound + "'", found)
+        Assert.assertTrue(
+            caption + ", query:'" + queryString
+                + "', found:'" + stringFound + "'", found
+        )
     }
 
     private fun assertNotesArePublic(timelineActivity: TimelineActivity<*>, publicNoteText: String) {
@@ -130,14 +137,19 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
             val noteView = list.getChildAt(index)
             val bodyView = noteView.findViewById<TextView?>(R.id.note_body)
             val viewItem: BaseNoteViewItem<*> = ListActivityTestHelper.toBaseNoteViewItem(
-                    timelineActivity.getListAdapter().getItem(noteView))
+                timelineActivity.getListAdapter().getItem(noteView)
+            )
             if (bodyView != null) {
-                Assert.assertTrue("""Note #${viewItem.getId()} '${viewItem.getContent()}' contains '$publicNoteText'
+                Assert.assertTrue(
+                    """Note #${viewItem.getId()} '${viewItem.getContent()}' contains '$publicNoteText'
 $viewItem""",
-                        viewItem.getContent().toString().contains(publicNoteText))
-                Assert.assertNotEquals("""Note #${viewItem.getId()} '${viewItem.getContent()}' is private
+                    viewItem.getContent().toString().contains(publicNoteText)
+                )
+                Assert.assertNotEquals(
+                    """Note #${viewItem.getId()} '${viewItem.getContent()}' is private
 $viewItem""", Visibility.PRIVATE,
-                        Visibility.Companion.fromNoteId(viewItem.getId()))
+                    Visibility.Companion.fromNoteId(viewItem.getId())
+                )
                 msgCount++
             }
         }

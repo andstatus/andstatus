@@ -24,7 +24,7 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import java.io.File
 import java.text.MessageFormat
 import java.util.concurrent.ConcurrentHashMap
@@ -38,8 +38,10 @@ object SharedPreferencesUtil {
     }
 
     fun defaultSharedPreferencesPath(context: Context): File {
-        return File(prefsDirectory(context),
-                context.getPackageName() + "_preferences" + FILE_EXTENSION)
+        return File(
+            prefsDirectory(context),
+            context.getPackageName() + "_preferences" + FILE_EXTENSION
+        )
     }
 
     /**
@@ -67,7 +69,7 @@ object SharedPreferencesUtil {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG) {
                     ("The prefs file '" + prefFile.absolutePath + "' was "
-                            + (if (isDeleted) "" else "not ") + " deleted")
+                        + (if (isDeleted) "" else "not ") + " deleted")
                 }
             }
         } else {
@@ -86,18 +88,24 @@ object SharedPreferencesUtil {
      * @param entriesR Almost like android:entries but to show in the summary (may be the same as android:entries)
      * @param summaryR If 0 then the selected entry will be put into the summary as is.
      */
-    fun showListPreference(fragment: PreferenceFragmentCompat, preferenceKey: String,
-                           valuesR: Int, entriesR: Int, summaryR: Int) {
+    fun showListPreference(
+        fragment: PreferenceFragmentCompat, preferenceKey: String,
+        valuesR: Int, entriesR: Int, summaryR: Int
+    ) {
         val listPref = fragment.findPreference<Preference?>(preferenceKey) as ListPreference?
         val context = fragment.getActivity()
         if (listPref != null && context != null) {
-            listPref.summary = getSummaryForListPreference(context,
-                    listPref.value, valuesR, entriesR, summaryR)
+            listPref.summary = getSummaryForListPreference(
+                context,
+                listPref.value, valuesR, entriesR, summaryR
+            )
         }
     }
 
-    fun getSummaryForListPreference(context: Context, listValue: String?,
-                                    valuesR: Int, entriesR: Int, summaryR: Int): String {
+    fun getSummaryForListPreference(
+        context: Context, listValue: String?,
+        valuesR: Int, entriesR: Int, summaryR: Int
+    ): String {
         val values = context.getResources().getStringArray(valuesR)
         val entries = context.getResources().getStringArray(entriesR)
         var summary = entries[0]
@@ -166,8 +174,10 @@ object SharedPreferencesUtil {
             } else if (String::class.java.isInstance(value)) {
                 editor.putString(key, value.toString())
             } else {
-                MyLog.e(TAG, "Unknown type of shared preference: "
-                        + value?.javaClass + ", value: " + value.toString())
+                MyLog.e(
+                    TAG, "Unknown type of shared preference: "
+                        + value?.javaClass + ", value: " + value.toString()
+                )
                 entryCounter--
             }
             entryCounter++
@@ -193,13 +203,13 @@ object SharedPreferencesUtil {
     }
 
     fun getDefaultSharedPreferences(): SharedPreferences? {
-        MyContextHolder.myContextHolder.getNow().let {
+        myContextHolder.getNow().let {
             return if (it.isEmpty) null else PreferenceManager.getDefaultSharedPreferences(it.context)
         }
     }
 
     fun getSharedPreferences(name: String?): SharedPreferences? {
-        val myContext = MyContextHolder.myContextHolder.getNow()
+        val myContext = myContextHolder.getNow()
         return if (myContext.isEmpty) {
             MyLog.e(TAG, "getSharedPreferences for $name - were not initialized yet")
             for (element in Thread.currentThread().stackTrace) {

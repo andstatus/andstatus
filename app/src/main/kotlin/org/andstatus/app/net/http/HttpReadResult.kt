@@ -17,7 +17,7 @@ import android.text.TextUtils
 import android.text.format.Formatter
 import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.net.http.ConnectionException.Companion.loggedJsonException
 import org.andstatus.app.net.social.ApiRoutineEnum
@@ -294,7 +294,7 @@ class HttpReadResult(val request: HttpRequest) {
                     ConnectionException.hardConnectionException(
                         "File, downloaded from '$url', is too large: "
                             + Formatter.formatShortFileSize(
-                            MyContextHolder.myContextHolder.getNow().context,
+                            myContextHolder.getNow().context,
                             request.fileResult?.length() ?: 0
                         ),
                         null
@@ -325,7 +325,8 @@ class HttpReadResult(val request: HttpRequest) {
     fun logResponse(): HttpReadResult {
         if (MyPreferences.isLogNetworkLevelMessages()) {
             val anyTag: Any = "response"
-            MyLog.logNetworkLevelMessage(anyTag, request.getLogName(), strResponse,
+            MyLog.logNetworkLevelMessage(
+                anyTag, request.getLogName(), strResponse,
                 MyStringBuilder.of("")
                     .atNewLine("logger-URL", url.toString())
                     .atNewLine("logger-account", request.connectionData().getAccountName().name)

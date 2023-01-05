@@ -22,7 +22,7 @@ import android.graphics.Point
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import io.vavr.control.Try
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.MyContentType
@@ -63,13 +63,14 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
 
     fun toDetails(): String {
         return if (nonEmpty) width.toString() + "x" + height +
-                (if (duration == 0L) "" else " " + formatDuration())
+            (if (duration == 0L) "" else " " + formatDuration())
         else ""
     }
 
     fun formatDuration(): String {
-        return DurationFormatUtils.formatDuration(duration,
-                (if (duration >= TimeUnit.HOURS.toMillis(1)) "HH:" else "") + "mm:ss"
+        return DurationFormatUtils.formatDuration(
+            duration,
+            (if (duration >= TimeUnit.HOURS.toMillis(1)) "HH:" else "") + "mm:ss"
         )
     }
 
@@ -85,11 +86,15 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
                     var retriever: MediaMetadataRetriever? = null
                     return try {
                         retriever = MediaMetadataRetriever()
-                        retriever.setDataSource( MyContextHolder.myContextHolder.getNow().context, Uri.parse(path))
+                        retriever.setDataSource(myContextHolder.getNow().context, Uri.parse(path))
                         Try.success(
-                            MediaMetadata(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toInt() ?: 0,
-                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toInt() ?: 0,
-                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0)
+                            MediaMetadata(
+                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)?.toInt()
+                                    ?: 0,
+                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)?.toInt()
+                                    ?: 0,
+                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLong() ?: 0
+                            )
                         )
                     } finally {
                         closeSilently(retriever)
@@ -106,9 +111,9 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
 
         fun fromCursor(cursor: Cursor?): MediaMetadata {
             return MediaMetadata(
-                    DbUtils.getInt(cursor, DownloadTable.WIDTH),
-                    DbUtils.getInt(cursor, DownloadTable.HEIGHT),
-                    DbUtils.getLong(cursor, DownloadTable.DURATION)
+                DbUtils.getInt(cursor, DownloadTable.WIDTH),
+                DbUtils.getInt(cursor, DownloadTable.HEIGHT),
+                DbUtils.getLong(cursor, DownloadTable.DURATION)
             )
         }
     }

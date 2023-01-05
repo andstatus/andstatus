@@ -24,21 +24,25 @@ import android.content.Context
 import android.content.SyncResult
 import android.os.Bundle
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.service.MyServiceCommandsRunner
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 
-class SyncAdapter(private val mContext: Context, autoInitialize: Boolean) : AbstractThreadedSyncAdapter(mContext, autoInitialize) {
-    override fun onPerformSync(account: Account, extras: Bundle?, authority: String?,
-                               provider: ContentProviderClient?, syncResult: SyncResult) {
+class SyncAdapter(private val mContext: Context, autoInitialize: Boolean) :
+    AbstractThreadedSyncAdapter(mContext, autoInitialize) {
+    override fun onPerformSync(
+        account: Account, extras: Bundle?, authority: String?,
+        provider: ContentProviderClient?, syncResult: SyncResult
+    ) {
         if (!MyServiceManager.isServiceAvailable()) {
             MyLog.d(this, account.name + " Service unavailable")
             return
         }
-        val myContext: MyContext =  MyContextHolder.myContextHolder.initialize(mContext, this).getBlocking()
+        val myContext: MyContext = myContextHolder.initialize(mContext, this).getBlocking()
         MyServiceCommandsRunner(myContext).autoSyncAccount(
-                myContext.accounts.fromAccountName(account.name), syncResult)
+            myContext.accounts.fromAccountName(account.name), syncResult
+        )
     }
 
     init {

@@ -16,7 +16,7 @@
 package org.andstatus.app.note
 
 import io.vavr.control.Try
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.MyProvider
@@ -53,7 +53,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
         saveCurrentData()
         return Try.success(
             if (command.showAfterSave)
-                NoteEditorData.load(MyContextHolder.myContextHolder.getNow(), command.currentData?.getNoteId() ?: 0)
+                NoteEditorData.load(myContextHolder.getNow(), command.currentData?.getNoteId() ?: 0)
             else NoteEditorData.EMPTY
         )
     }
@@ -71,7 +71,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
 
         MyLog.v(command.currentData) { "Saving current data: $currentData" }
         if (currentData.activity.getNote().getStatus() == DownloadStatus.DELETED) {
-            MyProvider.deleteNoteAndItsActivities( MyContextHolder.myContextHolder.getNow(), currentData.getNoteId())
+            MyProvider.deleteNoteAndItsActivities(myContextHolder.getNow(), currentData.getNoteId())
         } else {
             if (command.hasMedia()) {
                 currentData.addAttachment(command.getMediaUri(), command.getMediaType())
@@ -82,8 +82,9 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
             }
             if (currentData.activity.getNote().getStatus() == DownloadStatus.SENDING) {
                 val commandData: CommandData = CommandData.newUpdateStatus(
-                        currentData.getMyAccount(),
-                        currentData.activity.id, currentData.getNoteId())
+                    currentData.getMyAccount(),
+                    currentData.activity.id, currentData.getNoteId()
+                )
                 MyServiceManager.sendManualForegroundCommand(commandData)
             }
         }
@@ -97,8 +98,8 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
         val commandData: CommandData = if (data.activity.getNote().getStatus() == DownloadStatus.DELETED)
             CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId())
         else CommandData.newUpdateStatus(data.getMyAccount(), data.activity.id, data.getNoteId())
-        MyServiceEventsBroadcaster.newInstance( MyContextHolder.myContextHolder.getNow(), MyServiceState.UNKNOWN)
-                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
+        MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.UNKNOWN)
+            .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 
     override suspend fun onPostExecute(result: Try<NoteEditorData>) {

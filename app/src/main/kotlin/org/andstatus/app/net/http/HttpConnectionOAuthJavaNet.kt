@@ -21,7 +21,7 @@ import oauth.signpost.OAuthConsumer
 import oauth.signpost.OAuthProvider
 import oauth.signpost.basic.DefaultOAuthConsumer
 import oauth.signpost.basic.DefaultOAuthProvider
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
@@ -152,7 +152,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
 
     /** This method is not legacy HTTP  */
     private fun writeMedia(conn: HttpURLConnection, request: HttpRequest) {
-        val contentResolver: ContentResolver = MyContextHolder.myContextHolder.getNow().context.contentResolver
+        val contentResolver: ContentResolver = myContextHolder.getNow().context.contentResolver
         val mediaUri = request.mediaUri.get()
         conn.setChunkedStreamingMode(0)
         conn.setRequestProperty("Content-Type", uri2MimeType(contentResolver, mediaUri))
@@ -250,7 +250,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                     conn.setRequestProperty("token", userToken)
                     MyLog.v(this) {
                         ("Dialback authorization at " + originUrl
-                                + "; urlForUserToken=" + tokenUrl + "; token=" + userToken)
+                            + "; urlForUserToken=" + tokenUrl + "; token=" + userToken)
                     }
                     consumer.sign(conn)
                 }

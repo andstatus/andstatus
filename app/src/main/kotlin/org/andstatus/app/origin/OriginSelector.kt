@@ -26,7 +26,7 @@ import androidx.fragment.app.FragmentActivity
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.view.MyContextMenu
 import org.andstatus.app.view.MySimpleAdapter
@@ -42,17 +42,18 @@ class OriginSelector : SelectorDialog() {
         setTitle(R.string.select_social_network)
         val listData = newListData()
         if (listData.isEmpty()) {
-            returnSelectedItem( Origin.EMPTY)
+            returnSelectedItem(Origin.EMPTY)
             return
         } else if (listData.size == 1) {
             returnSelectedItem(listData[0])
             return
         }
         setListAdapter(newListAdapter(listData))
-        listView?.onItemClickListener = OnItemClickListener { parent: AdapterView<*>, view: View, position: Int, id: Long ->
-            val selectedId = (view.findViewById<View>(R.id.id) as TextView).text.toString().toLong()
-            returnSelectedItem( MyContextHolder.myContextHolder.getNow().origins.fromId(selectedId))
-        }
+        listView?.onItemClickListener =
+            OnItemClickListener { parent: AdapterView<*>, view: View, position: Int, id: Long ->
+                val selectedId = (view.findViewById<View>(R.id.id) as TextView).text.toString().toLong()
+                returnSelectedItem(myContextHolder.getNow().origins.fromId(selectedId))
+            }
     }
 
     private fun newListData(): MutableList<Origin> {
@@ -61,8 +62,8 @@ class OriginSelector : SelectorDialog() {
 
     private fun getOriginsForActor(): MutableList<Origin> {
         val actorId = Optional.ofNullable(arguments)
-                .map { bundle: Bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
-        return Actor.load( MyContextHolder.myContextHolder.getNow(), actorId).user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
+            .map { bundle: Bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
+        return Actor.load(myContextHolder.getNow(), actorId).user.knownInOrigins(myContextHolder.getNow())
     }
 
     private fun newListAdapter(listData: MutableList<Origin>): MySimpleAdapter {
@@ -77,24 +78,34 @@ class OriginSelector : SelectorDialog() {
             map[BaseColumns._ID] = item.id.toString()
             list.add(map)
         }
-        return MySimpleAdapter(activity ?: throw IllegalStateException("No activity"),
-                list,
-                R.layout.accountlist_item, arrayOf(KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID), intArrayOf(R.id.visible_name, R.id.sync_auto, R.id.id), true)
+        return MySimpleAdapter(
+            activity ?: throw IllegalStateException("No activity"),
+            list,
+            R.layout.accountlist_item,
+            arrayOf(KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID),
+            intArrayOf(R.id.visible_name, R.id.sync_auto, R.id.id),
+            true
+        )
     }
 
     private fun returnSelectedItem(item: Origin) {
-        returnSelected(Intent()
+        returnSelected(
+            Intent()
                 .putExtra(IntentExtra.ORIGIN_NAME.key, item.name)
-                .putExtra(IntentExtra.MENU_GROUP.key,
-                        myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE))
+                .putExtra(
+                    IntentExtra.MENU_GROUP.key,
+                    myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE)
+                )
         )
     }
 
     companion object {
         private val KEY_VISIBLE_NAME: String = "visible_name"
         private val KEY_SYNC_AUTO: String = "sync_auto"
-        fun selectOriginForActor(activity: FragmentActivity, menuGroup: Int,
-                                 requestCode: ActivityRequestCode, actor: Actor) {
+        fun selectOriginForActor(
+            activity: FragmentActivity, menuGroup: Int,
+            requestCode: ActivityRequestCode, actor: Actor
+        ) {
             val selector: SelectorDialog = OriginSelector()
             selector.setRequestCode(requestCode).putLong(IntentExtra.ACTOR_ID.key, actor.actorId)
             selector.myGetArguments().putInt(IntentExtra.MENU_GROUP.key, menuGroup)

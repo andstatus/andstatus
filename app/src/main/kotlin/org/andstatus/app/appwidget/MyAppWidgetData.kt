@@ -16,7 +16,7 @@
 package org.andstatus.app.appwidget
 
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.notification.NotificationEvents
 import org.andstatus.app.util.MyLog
@@ -94,12 +94,12 @@ class MyAppWidgetData private constructor(val events: NotificationEvents, val ap
 
     override fun toString(): String {
         return "MyAppWidgetData:{" +
-                "id:" + appWidgetId +
-                (if (events.isEmpty()) "" else ", notifications:$events") +
-                (if (dateLastChecked > 0) ", checked:$dateLastChecked" else "") +
-                (if (dateSince > 0) ", since:$dateSince" else "") +
-                (if (nothingPref.isNullOrEmpty()) "" else ", nothing:$nothingPref") +
-                "}"
+            "id:" + appWidgetId +
+            (if (events.isEmpty()) "" else ", notifications:$events") +
+            (if (dateLastChecked > 0) ", checked:$dateLastChecked" else "") +
+            (if (dateSince > 0) ", since:$dateSince" else "") +
+            (if (nothingPref.isNullOrEmpty()) "" else ", nothing:$nothingPref") +
+            "}"
     }
 
     fun update() {
@@ -121,7 +121,7 @@ class MyAppWidgetData private constructor(val events: NotificationEvents, val ap
 
         fun newInstance(events: NotificationEvents, appWidgetId: Int): MyAppWidgetData {
             val data = MyAppWidgetData(events, appWidgetId)
-            if (MyContextHolder.myContextHolder.getNow().isReady) {
+            if (myContextHolder.getNow().isReady) {
                 data.load()
             }
             return data

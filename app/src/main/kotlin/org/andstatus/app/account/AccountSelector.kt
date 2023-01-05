@@ -26,7 +26,7 @@ import androidx.fragment.app.FragmentActivity
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.view.MyContextMenu
@@ -54,27 +54,27 @@ class AccountSelector : SelectorDialog() {
         setListAdapter(newListAdapter(listData))
         listView?.onItemClickListener = OnItemClickListener { _: AdapterView<*>?, view: View, _: Int, _: Long ->
             val actorId = (view.findViewById<View?>(R.id.id) as TextView).text.toString().toLong()
-            returnSelectedAccount( MyContextHolder.myContextHolder.getNow().accounts.fromActorId(actorId))
+            returnSelectedAccount(myContextHolder.getNow().accounts.fromActorId(actorId))
         }
     }
 
     private fun newListData(): MutableList<MyAccount> {
         val originId = Optional.ofNullable(arguments)
-                .map { bundle: Bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key) }.orElse(0L)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromId(originId)
+            .map { bundle: Bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key) }.orElse(0L)
+        val origin: Origin = myContextHolder.getNow().origins.fromId(originId)
         val origins: MutableList<Origin> = if (origin.isValid) mutableListOf(origin) else getOriginsForActor()
         val predicate = if (origins.isEmpty()) Predicate { true } else
             Predicate { ma: MyAccount -> origins.contains(ma.origin) }
-        return  MyContextHolder.myContextHolder.getNow().accounts.get().stream()
-                .filter(predicate)
-                .collect(Collectors.toList())
+        return myContextHolder.getNow().accounts.get().stream()
+            .filter(predicate)
+            .collect(Collectors.toList())
     }
 
     private fun getOriginsForActor(): MutableList<Origin> {
         val actorId = Optional.ofNullable(arguments)
-                .map { bundle: Bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
-        return Actor.load( MyContextHolder.myContextHolder.getNow(), actorId)
-                .user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
+            .map { bundle: Bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
+        return Actor.load(myContextHolder.getNow(), actorId)
+            .user.knownInOrigins(myContextHolder.getNow())
     }
 
     private fun newListAdapter(listData: MutableList<MyAccount>): MySimpleAdapter {
@@ -91,17 +91,22 @@ class AccountSelector : SelectorDialog() {
             map[BaseColumns._ID] = ma.actorId.toString()
             list.add(map)
         }
-        return MySimpleAdapter(activity ?: throw IllegalStateException("No activity"),
-                list,
-                R.layout.accountlist_item, arrayOf(KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID),
-                intArrayOf(R.id.visible_name, R.id.sync_auto, R.id.id), true)
+        return MySimpleAdapter(
+            activity ?: throw IllegalStateException("No activity"),
+            list,
+            R.layout.accountlist_item, arrayOf(KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID),
+            intArrayOf(R.id.visible_name, R.id.sync_auto, R.id.id), true
+        )
     }
 
     private fun returnSelectedAccount(ma: MyAccount) {
-        returnSelected(Intent()
+        returnSelected(
+            Intent()
                 .putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
-                .putExtra(IntentExtra.MENU_GROUP.key,
-                        myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE))
+                .putExtra(
+                    IntentExtra.MENU_GROUP.key,
+                    myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE)
+                )
         )
     }
 
@@ -114,8 +119,10 @@ class AccountSelector : SelectorDialog() {
             selector.show(activity)
         }
 
-        fun selectAccountForActor(activity: FragmentActivity, menuGroup: Int,
-                                  requestCode: ActivityRequestCode, actor: Actor) {
+        fun selectAccountForActor(
+            activity: FragmentActivity, menuGroup: Int,
+            requestCode: ActivityRequestCode, actor: Actor
+        ) {
             val selector: SelectorDialog = AccountSelector()
             selector.setRequestCode(requestCode).putLong(IntentExtra.ACTOR_ID.key, actor.actorId)
             selector.myGetArguments().putInt(IntentExtra.MENU_GROUP.key, menuGroup)

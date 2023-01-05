@@ -9,7 +9,7 @@ import android.provider.BaseColumns
 import android.webkit.MimeTypeMap
 import io.vavr.control.Try
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
 import org.andstatus.app.database.table.DownloadTable
 import org.andstatus.app.graphics.MediaMetadata
@@ -26,7 +26,6 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
-import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
 
@@ -67,7 +66,7 @@ open class DownloadData protected constructor(
     private fun loadOtherFields() {
         if (checkHardErrorBeforeLoad()) return
         val sql = "SELECT * FROM " + DownloadTable.TABLE_NAME + getWhere().getWhere()
-        val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().database
+        val db: SQLiteDatabase? = myContextHolder.getNow().database
         if (db == null) {
             MyLog.databaseIsNull { this }
             softError = true
@@ -78,11 +77,13 @@ open class DownloadData protected constructor(
             if (cursor.moveToNext()) {
                 loadFromCursor(cursor)
             } else if (actorId != 0L) {
-                downloadNumber = MyQuery.getLongs("SELECT MAX(" + DownloadTable.DOWNLOAD_NUMBER + ")" +
+                downloadNumber = MyQuery.getLongs(
+                    "SELECT MAX(" + DownloadTable.DOWNLOAD_NUMBER + ")" +
                         " FROM " + DownloadTable.TABLE_NAME +
                         " WHERE " + DownloadTable.ACTOR_ID + "=" + actorId + " AND " +
-                        DownloadTable.DOWNLOAD_TYPE + "=" + downloadType.save())
-                        .stream().findAny().orElse(-1L) + 1
+                        DownloadTable.DOWNLOAD_TYPE + "=" + downloadType.save()
+                )
+                    .stream().findAny().orElse(-1L) + 1
             }
         }
     }
@@ -98,7 +99,7 @@ open class DownloadData protected constructor(
         }
         if (mimeType.isEmpty()) {
             mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE)
-                { uri2MimeType(null, Uri.parse(fileStored.getFilename())) }
+            { uri2MimeType(null, Uri.parse(fileStored.getFilename())) }
         }
         if (actorId == 0L) {
             actorId = DbUtils.getLong(cursor, DownloadTable.ACTOR_ID)
@@ -128,8 +129,9 @@ open class DownloadData protected constructor(
             hardError = true
         }
         if (actorId != 0L && noteId != 0L
-                || actorId == 0L && noteId == 0L && downloadId == 0L
-                || actorId != 0L && downloadType != DownloadType.AVATAR) {
+            || actorId == 0L && noteId == 0L && downloadId == 0L
+            || actorId != 0L && downloadType != DownloadType.AVATAR
+        ) {
             hardError = true
         }
         return hardError
@@ -170,8 +172,10 @@ open class DownloadData protected constructor(
             hardError = true
         }
         if (contentType == MyContentType.UNKNOWN) {
-            contentType = MyContentType.fromUri(DownloadType.ATTACHMENT,
-                     MyContextHolder.myContextHolder.getNow().context.getContentResolver(), uri, mimeType)
+            contentType = MyContentType.fromUri(
+                DownloadType.ATTACHMENT,
+                myContextHolder.getNow().context.getContentResolver(), uri, mimeType
+            )
         }
     }
 
@@ -179,9 +183,11 @@ open class DownloadData protected constructor(
         softError = false
         hardError = false
         if (downloadId == 0L) saveToDatabase()
-        fileNew = DownloadFile(downloadType.filePrefix + "_" + java.lang.Long.toString(downloadId)
+        fileNew = DownloadFile(
+            downloadType.filePrefix + "_" + java.lang.Long.toString(downloadId)
                 + "_" + downloadNumber
-                + "." + getExtension())
+                + "." + getExtension()
+        )
         return TryUtils.TRUE
     }
 
@@ -194,9 +200,9 @@ open class DownloadData protected constructor(
             MediaMetadata.fromFilePath(fileNew.getFilePath()).onSuccess {
                 mediaMetadata = it
                 downloadedDate = System.currentTimeMillis()
-            } .mapFailure {
+            }.mapFailure {
                 ConnectionException.of(it, "Failed to load metadata for $this")
-            } .map { true }
+            }.map { true }
         }
     }
 
@@ -260,24 +266,24 @@ open class DownloadData protected constructor(
 
     private fun addNew() {
         val values = toContentValues()
-        DbUtils.addRowWithRetry( MyContextHolder.myContextHolder.getNow(), DownloadTable.TABLE_NAME, values, 3)
-                .onSuccess { idAdded: Long ->
-                    downloadId = idAdded
-                    MyLog.v(this) { "Added " + actorNoteUriToString() }
-                }
-                .onFailure { e: Throwable? ->
-                    softError = true
-                    MyLog.w(this, "Failed to add " + actorNoteUriToString())
-                }
+        DbUtils.addRowWithRetry(myContextHolder.getNow(), DownloadTable.TABLE_NAME, values, 3)
+            .onSuccess { idAdded: Long ->
+                downloadId = idAdded
+                MyLog.v(this) { "Added " + actorNoteUriToString() }
+            }
+            .onFailure { e: Throwable? ->
+                softError = true
+                MyLog.w(this, "Failed to add " + actorNoteUriToString())
+            }
     }
 
     private fun update() {
         val values = toContentValues()
-        DbUtils.updateRowWithRetry( MyContextHolder.myContextHolder.getNow(), DownloadTable.TABLE_NAME, downloadId, values, 3)
-                .onSuccess { _ -> MyLog.v(this) { "Updated " + actorNoteUriToString() } }
-                .onFailure { _ -> softError = true }
+        DbUtils.updateRowWithRetry(myContextHolder.getNow(), DownloadTable.TABLE_NAME, downloadId, values, 3)
+            .onSuccess { _ -> MyLog.v(this) { "Updated " + actorNoteUriToString() } }
+            .onFailure { _ -> softError = true }
         val filenameChanged = (!isError() && fileNew.existsNow()
-                && fileStored.getFilename() != fileNew.getFilename())
+            && fileStored.getFilename() != fileNew.getFilename())
         if (filenameChanged) {
             fileStored.delete()
         }
@@ -380,9 +386,11 @@ open class DownloadData protected constructor(
             saveToDatabase()
         }
         if ((DownloadStatus.LOADED != status || !fileStored.existed) && !hardError && uri !== Uri.EMPTY) {
-            MyServiceManager.sendCommand(if (actorId != 0L)
-                CommandData.newActorCommand(CommandEnum.GET_AVATAR, Actor.load(myContext, actorId), "")
-            else CommandData.newFetchAttachment(noteId, downloadId))
+            MyServiceManager.sendCommand(
+                if (actorId != 0L)
+                    CommandData.newActorCommand(CommandEnum.GET_AVATAR, Actor.load(myContext, actorId), "")
+                else CommandData.newFetchAttachment(noteId, downloadId)
+            )
         }
     }
 
@@ -436,38 +444,48 @@ open class DownloadData protected constructor(
 
     companion object {
         private val TAG: String = DownloadData::class.simpleName!!
-        val EMPTY: DownloadData = DownloadData(null, 0, 0, 0, MyContentType.UNKNOWN, "",
-                DownloadType.UNKNOWN, Uri.EMPTY)
+        val EMPTY: DownloadData = DownloadData(
+            null, 0, 0, 0, MyContentType.UNKNOWN, "",
+            DownloadType.UNKNOWN, Uri.EMPTY
+        )
 
         fun fromCursor(cursor: Cursor): DownloadData {
-            return DownloadData(cursor, 0, 0, 0, MyContentType.UNKNOWN, "",
-                    DownloadType.UNKNOWN, Uri.EMPTY)
+            return DownloadData(
+                cursor, 0, 0, 0, MyContentType.UNKNOWN, "",
+                DownloadType.UNKNOWN, Uri.EMPTY
+            )
         }
 
         fun fromId(downloadId: Long): DownloadData {
-            return DownloadData(null, downloadId, 0, 0, MyContentType.UNKNOWN, "",
-                    DownloadType.UNKNOWN, Uri.EMPTY)
+            return DownloadData(
+                null, downloadId, 0, 0, MyContentType.UNKNOWN, "",
+                DownloadType.UNKNOWN, Uri.EMPTY
+            )
         }
 
         /**
          * Currently we assume that there is no more than one attachment of a message
          */
         fun getSingleAttachment(noteId: Long): DownloadData {
-            return DownloadData(null, 0, 0, noteId, MyContentType.UNKNOWN, "",
-                    DownloadType.ATTACHMENT, Uri.EMPTY)
+            return DownloadData(
+                null, 0, 0, noteId, MyContentType.UNKNOWN, "",
+                DownloadType.ATTACHMENT, Uri.EMPTY
+            )
         }
 
         fun fromAttachment(noteId: Long, attachment: Attachment): DownloadData {
-            return DownloadData(null, attachment.getDownloadId(), 0, noteId,
-                    attachment.contentType, attachment.mimeType, DownloadType.ATTACHMENT, attachment.uri)
+            return DownloadData(
+                null, attachment.getDownloadId(), 0, noteId,
+                attachment.contentType, attachment.mimeType, DownloadType.ATTACHMENT, attachment.uri
+            )
         }
 
         fun fromNoteId(myContext: MyContext, noteId: Long): List<DownloadData> {
             if (myContext.isEmptyOrExpired || noteId == 0L) return emptyList()
             val sql = ("SELECT *"
-                    + " FROM " + DownloadTable.TABLE_NAME
-                    + " WHERE " + DownloadTable.NOTE_ID + "=" + noteId
-                    + " ORDER BY " + DownloadTable.DOWNLOAD_NUMBER)
+                + " FROM " + DownloadTable.TABLE_NAME
+                + " WHERE " + DownloadTable.NOTE_ID + "=" + noteId
+                + " ORDER BY " + DownloadTable.DOWNLOAD_NUMBER)
             return MyQuery.foldLeft(myContext, sql, ArrayList(), { list: ArrayList<DownloadData> ->
                 Function { cursor: Cursor ->
                     list.add(fromCursor(cursor))
@@ -484,14 +502,14 @@ open class DownloadData protected constructor(
             if (actorId == 0L) return
             val method = "deleteOtherOfThisActor actorId=" + actorId + if (rowId != 0L) ", downloadId=$rowId" else ""
             val where = (DownloadTable.ACTOR_ID + "=" + actorId
-                    + if (rowId == 0L) "" else " AND " + BaseColumns._ID + "<>" + rowId)
+                + if (rowId == 0L) "" else " AND " + BaseColumns._ID + "<>" + rowId)
             deleteSelected(method, myContext.database, where)
         }
 
         private fun deleteSelected(method: String?, db: SQLiteDatabase?, where: String?) {
             val sql = ("SELECT " + BaseColumns._ID + ", " + DownloadTable.FILE_NAME
-                    + " FROM " + DownloadTable.TABLE_NAME
-                    + " WHERE " + where)
+                + " FROM " + DownloadTable.TABLE_NAME
+                + " WHERE " + where)
             var rowsDeleted = 0
             var done = false
             for (pass in 0..2) {
@@ -504,8 +522,10 @@ open class DownloadData protected constructor(
                         while (cursor.moveToNext()) {
                             val rowIdOld = DbUtils.getLong(cursor, BaseColumns._ID)
                             DownloadFile(DbUtils.getString(cursor, DownloadTable.FILE_NAME)).delete()
-                            rowsDeleted += db.delete(DownloadTable.TABLE_NAME, BaseColumns._ID
-                                    + "=" + rowIdOld, null)
+                            rowsDeleted += db.delete(
+                                DownloadTable.TABLE_NAME, BaseColumns._ID
+                                    + "=" + rowIdOld, null
+                            )
                         }
                         done = true
                     }
@@ -516,8 +536,10 @@ open class DownloadData protected constructor(
                 DbUtils.waitMs(method, 500)
             }
             if (MyLog.isVerboseEnabled() && (!done || rowsDeleted > 0)) {
-                MyLog.v(DownloadData::class.java, method + (if (done) " succeeded" else " failed")
-                        + "; deleted " + rowsDeleted + " rows")
+                MyLog.v(
+                    DownloadData::class.java, method + (if (done) " succeeded" else " failed")
+                        + "; deleted " + rowsDeleted + " rows"
+                )
             }
         }
 
@@ -531,7 +553,7 @@ open class DownloadData protected constructor(
             if (noteId == 0L || downloadIds.isEmpty()) return
             val method = "deleteOtherOfThisNote noteId=" + noteId + ", rowIds:" + toSqlList(downloadIds)
             val where = (DownloadTable.NOTE_ID + "=" + noteId
-                    + " AND " + BaseColumns._ID + " NOT IN(" + toSqlList(downloadIds) + ")")
+                + " AND " + BaseColumns._ID + " NOT IN(" + toSqlList(downloadIds) + ")")
             deleteSelected(method, myContext.database, where)
         }
 
@@ -553,30 +575,32 @@ open class DownloadData protected constructor(
             return consumeOldest(myContext, downloadType, bytesToKeep) { obj: DownloadData -> obj.deleteFile() }
         }
 
-        private fun consumeOldest(myContext: MyContext, downloadType: DownloadType, totalSizeToSkip: Long,
-                                  consumer: Consumer<DownloadData>): ConsumedSummary {
+        private fun consumeOldest(
+            myContext: MyContext, downloadType: DownloadType, totalSizeToSkip: Long,
+            consumer: Consumer<DownloadData>
+        ): ConsumedSummary {
             val sql = ("SELECT *"
-                    + " FROM " + DownloadTable.TABLE_NAME
-                    + " WHERE " + DownloadTable.DOWNLOAD_TYPE + "='" + downloadType.save() + "'"
-                    + " AND " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.LOADED.save()
-                    + " ORDER BY " + DownloadTable.DOWNLOADED_DATE + " DESC")
+                + " FROM " + DownloadTable.TABLE_NAME
+                + " WHERE " + DownloadTable.DOWNLOAD_TYPE + "='" + downloadType.save() + "'"
+                + " AND " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.LOADED.save()
+                + " ORDER BY " + DownloadTable.DOWNLOADED_DATE + " DESC")
             return MyQuery.foldLeft(myContext, sql,
-                    ConsumedSummary(),
-                    { summary: ConsumedSummary ->
-                        Function { cursor: Cursor ->
-                            val data = fromCursor(cursor)
-                            if (data.fileStored.existed) {
-                                if (summary.skippedSize < totalSizeToSkip) {
-                                    summary.skippedSize += data.fileSize
-                                } else {
-                                    summary.consumedCount += 1
-                                    summary.consumedSize += data.fileSize
-                                    consumer.accept(data)
-                                }
+                ConsumedSummary(),
+                { summary: ConsumedSummary ->
+                    Function { cursor: Cursor ->
+                        val data = fromCursor(cursor)
+                        if (data.fileStored.existed) {
+                            if (summary.skippedSize < totalSizeToSkip) {
+                                summary.skippedSize += data.fileSize
+                            } else {
+                                summary.consumedCount += 1
+                                summary.consumedSize += data.fileSize
+                                consumer.accept(data)
                             }
-                            summary
                         }
+                        summary
                     }
+                }
             )
         }
     }

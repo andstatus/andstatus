@@ -25,7 +25,7 @@ import android.os.PowerManager
 import android.os.SystemClock
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.service.ConnectionRequired
 import org.andstatus.app.service.MyServiceManager
@@ -41,20 +41,20 @@ import java.util.concurrent.TimeUnit
 class SyncInitiator : BroadcastReceiver() {
     // Testing Doze: https://developer.android.com/training/monitoring-device-state/doze-standby.html#testing_doze
     override fun onReceive(context: Context, intent: Intent?) {
-        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager ?
-        MyLog.v(this
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager?
+        MyLog.v(
+            this
         ) {
             ("onReceive "
-                    + if (pm == null || pm.isDeviceIdleMode) " idle" else " " + UriUtils.getConnectionState(context))
+                + if (pm == null || pm.isDeviceIdleMode) " idle" else " " + UriUtils.getConnectionState(context))
         }
         if (pm == null || pm.isDeviceIdleMode) return
         initializeApp(context)
     }
 
     private fun initializeApp(context: Context) {
-         MyContextHolder.myContextHolder
-                .initialize(context, this)
-                .whenSuccessAsync({ myContext: MyContext -> checkConnectionState(myContext) }, NonUiThreadExecutor.INSTANCE)
+        myContextHolder.initialize(context, this)
+            .whenSuccessAsync({ myContext: MyContext -> checkConnectionState(myContext) }, NonUiThreadExecutor.INSTANCE)
     }
 
     private fun checkConnectionState(myContext: MyContext) {
@@ -108,20 +108,25 @@ class SyncInitiator : BroadcastReceiver() {
                     return
                 }
                 val randomDelay = getRandomDelayMillis(30)
-                MyLog.d(SyncInitiator::class.java, "Scheduling repeating alarm in "
-                        + TimeUnit.MILLISECONDS.toSeconds(randomDelay) + " seconds")
-                alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                        SystemClock.elapsedRealtime() + randomDelay,
-                        minSyncIntervalMillis,
-                        PendingIntent.getBroadcast(myContext.context, 0, MyAction.SYNC.newIntent(),
-                            PendingIntent.FLAG_IMMUTABLE)
+                MyLog.d(
+                    SyncInitiator::class.java, "Scheduling repeating alarm in "
+                        + TimeUnit.MILLISECONDS.toSeconds(randomDelay) + " seconds"
+                )
+                alarmManager.setInexactRepeating(
+                    AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                    SystemClock.elapsedRealtime() + randomDelay,
+                    minSyncIntervalMillis,
+                    PendingIntent.getBroadcast(
+                        myContext.context, 0, MyAction.SYNC.newIntent(),
+                        PendingIntent.FLAG_IMMUTABLE
+                    )
                 )
             }
         }
 
         private fun registerBroadcastReceiver(myContext: MyContext?) {
             if (myContext != null && myContext.accounts.hasSyncedAutomatically()) myContext.context
-                    .registerReceiver(BROADCAST_RECEIVER, IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED))
+                .registerReceiver(BROADCAST_RECEIVER, IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED))
         }
 
         fun unregister(myContext: MyContext?) {

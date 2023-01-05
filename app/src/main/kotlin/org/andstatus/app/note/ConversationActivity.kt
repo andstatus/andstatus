@@ -29,7 +29,7 @@ import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.list.SyncLoader
 import org.andstatus.app.net.social.Actor
@@ -56,7 +56,7 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(Conver
     var mDrawerToggle: ActionBarDrawerToggle? = null
     private var showThreadsOfConversation = false
     private var oldNotesFirstInConversation = false
-    private var origin: Origin =  Origin.EMPTY
+    private var origin: Origin = Origin.EMPTY
 
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.conversation
@@ -80,10 +80,10 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(Conver
         mDrawerLayout = findViewById(R.id.drawer_layout)
         if (mDrawerLayout != null) {
             mDrawerToggle = object : ActionBarDrawerToggle(
-                    this,
-                    mDrawerLayout,
-                    R.string.drawer_open,
-                    R.string.drawer_close
+                this,
+                mDrawerLayout,
+                R.string.drawer_open,
+                R.string.drawer_close
             ) {}.also {
                 mDrawerLayout?.addDrawerListener(it)
             }
@@ -93,8 +93,9 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(Conver
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> if (resultCode == RESULT_OK) {
-                val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts.fromAccountName(
-                        data?.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
+                val myAccount: MyAccount = myContextHolder.getNow().accounts.fromAccountName(
+                    data?.getStringExtra(IntentExtra.ACCOUNT_NAME.key)
+                )
                 if (myAccount.isValid) {
                     mContextMenu?.setSelectedActingAccount(myAccount)
                     mContextMenu?.showContextMenu()
@@ -122,10 +123,14 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(Conver
 
     private fun prepareDrawer() {
         val drawerView = findViewById<View?>(R.id.navigation_drawer) ?: return
-        MyCheckBox.set(drawerView, R.id.showThreadsOfConversation,
-                showThreadsOfConversation) { v: CompoundButton?, isChecked: Boolean -> onShowThreadsOfConversationChanged(v, isChecked) }
-        MyCheckBox.set(drawerView, R.id.oldNotesFirstInConversation,
-                oldNotesFirstInConversation) { v: CompoundButton?, isChecked: Boolean -> onOldNotesFirstInConversationChanged(v, isChecked) }
+        MyCheckBox.set(
+            drawerView, R.id.showThreadsOfConversation,
+            showThreadsOfConversation
+        ) { v: CompoundButton?, isChecked: Boolean -> onShowThreadsOfConversationChanged(v, isChecked) }
+        MyCheckBox.set(
+            drawerView, R.id.oldNotesFirstInConversation,
+            oldNotesFirstInConversation
+        ) { v: CompoundButton?, isChecked: Boolean -> onOldNotesFirstInConversationChanged(v, isChecked) }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -173,14 +178,18 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(Conver
     }
 
     override fun newSyncLoader(args: Bundle?): SyncLoader<ConversationViewItem> {
-        return ConversationLoader.newLoader(ConversationViewItem.EMPTY,
-                myContext, origin, centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key))
+        return ConversationLoader.newLoader(
+            ConversationViewItem.EMPTY,
+            myContext, origin, centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key)
+        )
     }
 
     override fun newListAdapter(): BaseTimelineAdapter<ConversationViewItem> {
         return mContextMenu?.let {
-            ConversationAdapter(it, origin, centralItemId, getListLoader().getList(),
-                    showThreadsOfConversation, oldNotesFirstInConversation)
+            ConversationAdapter(
+                it, origin, centralItemId, getListLoader().getList(),
+                showThreadsOfConversation, oldNotesFirstInConversation
+            )
         } ?: throw IllegalStateException("No context menu")
     }
 

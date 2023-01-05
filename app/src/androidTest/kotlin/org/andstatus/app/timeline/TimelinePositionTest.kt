@@ -17,7 +17,7 @@ package org.andstatus.app.timeline
 
 import android.content.Intent
 import org.andstatus.app.activity.ActivityViewItem
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.social.Actor
@@ -33,8 +33,10 @@ class TimelinePositionTest : TimelineActivityTest<ActivityViewItem>() {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
         MyLog.i(this, "setUp ended")
-        return Intent(Intent.ACTION_VIEW,
-                 MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, Actor.EMPTY,  Origin.EMPTY).getUri())
+        return Intent(
+            Intent.ACTION_VIEW,
+            myContextHolder.getNow().timelines.get(TimelineType.HOME, Actor.EMPTY, Origin.EMPTY).getUri()
+        )
     }
 
     @Test
@@ -61,11 +63,13 @@ class TimelinePositionTest : TimelineActivityTest<ActivityViewItem>() {
         val item1 = listAdapter.getItem(position1)
         if (previousItem.nonEmpty) {
             val previousItemPosition = listAdapter.getPositionById(previousItem.getId())
-            Assert.assertEquals("""; previous:$previousItem
+            Assert.assertEquals(
+                """; previous:$previousItem
   ${if (previousItemPosition >= 0) "at position $previousItemPosition" else "not found now"}
 current:$item1
   at position $position1""",
-                    previousItem.getId(), item1.getId())
+                previousItem.getId(), item1.getId()
+            )
         }
         val nextPosition = if (position1 + 5 >= listAdapter.count) 0 else position1 + 5
         testHelper.selectListPosition(method, nextPosition + (activity.listView?.headerViewsCount ?: 0))

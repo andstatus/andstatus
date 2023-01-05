@@ -20,7 +20,7 @@ import android.net.Uri
 import io.vavr.control.Try
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.GroupType
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.MyProvider.Companion.updateActivityOid
 import org.andstatus.app.data.MyProvider.Companion.updateNoteDownloadStatus
@@ -61,7 +61,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
     )
 
     constructor(ma: MyAccount) : this(CommandExecutionContext(
-        ma.myContext.takeIf { !it.isEmptyOrExpired } ?: MyContextHolder.myContextHolder.getNow(),
+        ma.myContext.takeIf { !it.isEmptyOrExpired } ?: myContextHolder.getNow(),
         CommandData.newAccountCommand(CommandEnum.EMPTY, ma)
     )) {
     }
@@ -281,8 +281,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                         + if (isNewerThanInDatabase) " newer, updated at " + Date(note.updatedDate) + ";" else "")
                 }
             }
-            if (MyContextHolder.myContextHolder.getNow().isTestRun) {
-                MyContextHolder.myContextHolder.getNow().putAssertionData(MSG_ASSERTION_KEY, values)
+            if (myContextHolder.getNow().isTestRun) {
+                myContextHolder.getNow().putAssertionData(MSG_ASSERTION_KEY, values)
             }
             if (note.noteId == 0L) {
                 val msgUri = execContext.getContext().contentResolver.insert(

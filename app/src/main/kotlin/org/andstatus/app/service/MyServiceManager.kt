@@ -24,7 +24,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import org.andstatus.app.MyAction
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.os.AsyncUtil
 import org.andstatus.app.syncadapter.SyncInitiator
 import org.andstatus.app.util.Identifiable
@@ -47,12 +47,12 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
             MyAction.ACTION_SHUTDOWN -> {
                 MyLog.d(this, "onReceive $instanceId ShutDown")
                 setServiceUnavailable()
-                MyContextHolder.myContextHolder.onShutDown()
+                myContextHolder.onShutDown()
                 stopService()
             }
             else -> {
-                if (serviceAvailability.get().isAvailable() && !MyContextHolder.myContextHolder.getNow().isReady) {
-                    MyContextHolder.myContextHolder.initialize(context, this)
+                if (serviceAvailability.get().isAvailable() && !myContextHolder.getNow().isReady) {
+                    myContextHolder.initialize(context, this)
                 }
                 when (myAction) {
                     MyAction.BOOT_COMPLETED -> {
@@ -90,7 +90,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
             fun newUnavailable(): ServiceAvailability {
                 return ServiceAvailability(
                     System.currentTimeMillis() +
-                            TimeUnit.MINUTES.toMillis(15)
+                        TimeUnit.MINUTES.toMillis(15)
                 )
             }
         }
@@ -99,7 +99,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
     companion object {
         private const val MyServiceJobId: Int = 1
         private val myServiceJobInfo: JobInfo by lazy {
-            val context = MyContextHolder.myContextHolder.getBlocking().context
+            val context = myContextHolder.getBlocking().context
             JobInfo.Builder(MyServiceJobId, ComponentName(context, MyService::class.java))
                 .apply {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
@@ -149,10 +149,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                     // Imitate a soft service error
                     commandData.getResult().incrementNumIoExceptions()
                     commandData.getResult().setMessage("Service is not available")
-                    MyServiceEventsBroadcaster.newInstance(
-                        MyContextHolder.myContextHolder.getNow(),
-                        MyServiceState.STOPPED
-                    )
+                    MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.STOPPED)
                         .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
                 }
                 return
@@ -169,7 +166,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
         }
 
         fun sendCommandIgnoringServiceAvailability(commandData: CommandData) {
-            val myContext = MyContextHolder.myContextHolder.getNow()
+            val myContext = myContextHolder.getNow()
             if (myContext.isEmpty) {
                 MyLog.w(TAG, "Couldn't send command ${commandData.command} to MyService: MyContext is empty")
                 return
@@ -208,13 +205,13 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
             AtomicReference(ServiceAvailability.AVAILABLE)
 
         fun isServiceAvailable(): Boolean {
-            var myContext = MyContextHolder.myContextHolder.getNow()
+            var myContext = myContextHolder.getNow()
             if (!myContext.isReady) {
                 if (serviceAvailability.get().isAvailable()
                     && AsyncUtil.nonUiThread // Don't block on UI thread
-                    && !MyContextHolder.myContextHolder.getNow().initialized
+                    && !myContextHolder.getNow().initialized
                 ) {
-                    myContext = MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
+                    myContext = myContextHolder.initialize(null, TAG).getBlocking()
                 }
             }
             return if (myContext.isReady) {
@@ -224,8 +221,8 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                     if (!it && MyLog.isVerboseEnabled()) {
                         MyLog.v(
                             TAG, "Service will be available in "
-                                    + TimeUnit.MILLISECONDS.toSeconds(availableInMillis)
-                                    + " seconds"
+                                + TimeUnit.MILLISECONDS.toSeconds(availableInMillis)
+                                + " seconds"
                         )
                     }
                 }

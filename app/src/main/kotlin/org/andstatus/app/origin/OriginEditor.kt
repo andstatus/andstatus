@@ -29,7 +29,7 @@ import android.widget.TextView
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.lang.SelectableEnumList
 import org.andstatus.app.net.http.SslModeEnum
 import org.andstatus.app.notification.Notifier.Companion.beep
@@ -53,7 +53,8 @@ class OriginEditor : MyActivity(OriginEditor::class) {
     private var builder: Origin.Builder? = null
     private var buttonSave: Button? = null
     private var buttonDelete: Button? = null
-    private val originTypes: SelectableEnumList<OriginType> = SelectableEnumList.newInstance<OriginType>(OriginType::class.java)
+    private val originTypes: SelectableEnumList<OriginType> =
+        SelectableEnumList.newInstance<OriginType>(OriginType::class.java)
     private var spinnerOriginType: Spinner? = null
     private var editTextOriginName: EditText? = null
     private var editTextHost: EditText? = null
@@ -63,7 +64,7 @@ class OriginEditor : MyActivity(OriginEditor::class) {
     private var spinnerUseLegacyHttpProtocol: Spinner? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         MyServiceManager.setServiceUnavailable()
-        val builder = Origin.Builder( MyContextHolder.myContextHolder.getNow(), OriginType.GNUSOCIAL)
+        val builder = Origin.Builder(myContextHolder.getNow(), OriginType.GNUSOCIAL)
         this.builder = builder
         mLayoutId = R.layout.origin_editor
         super.onCreate(savedInstanceState)
@@ -73,8 +74,11 @@ class OriginEditor : MyActivity(OriginEditor::class) {
         buttonDelete = (findViewById<View?>(R.id.button_delete) as Button).also { button ->
             button.setOnClickListener({ v: View ->
                 if (builder.build().hasNotes()) {
-                    DialogFactory.showOkCancelDialog(this, String.format(getText(R.string.delete_origin_dialog_title).toString(), builder.build().name),
-                            getText(R.string.delete_origin_dialog_text)) { confirmed: Boolean -> deleteOrigin(confirmed) }
+                    DialogFactory.showOkCancelDialog(
+                        this,
+                        String.format(getText(R.string.delete_origin_dialog_title).toString(), builder.build().name),
+                        getText(R.string.delete_origin_dialog_text)
+                    ) { confirmed: Boolean -> deleteOrigin(confirmed) }
                 } else {
                     deleteOrigin(true)
                 }
@@ -95,12 +99,12 @@ class OriginEditor : MyActivity(OriginEditor::class) {
     private fun deleteOrigin(confirmed: Boolean) {
         if (!confirmed) return
         CompletableFuture.supplyAsync({ builder?.delete() }, NonUiThreadExecutor.INSTANCE)
-                .thenAcceptAsync({ ok: Boolean? ->
-                    if (ok == true) {
-                        setResult(RESULT_OK)
-                        finish()
-                    }
-                }, UiThreadExecutor.INSTANCE)
+            .thenAcceptAsync({ ok: Boolean? ->
+                if (ok == true) {
+                    setResult(RESULT_OK)
+                    finish()
+                }
+            }, UiThreadExecutor.INSTANCE)
     }
 
     private fun processNewIntent(intentNew: Intent) {
@@ -114,7 +118,7 @@ class OriginEditor : MyActivity(OriginEditor::class) {
             } else {
                 val originType: OriginType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key))
                 builder = Origin.Builder(
-                    MyContextHolder.myContextHolder.getNow(),
+                    myContextHolder.getNow(),
                     if (OriginType.UNKNOWN == originType) OriginType.GNUSOCIAL else originType
                 )
                 if (OriginType.UNKNOWN != originType) {
@@ -125,8 +129,9 @@ class OriginEditor : MyActivity(OriginEditor::class) {
             buttonSave?.setOnClickListener(SaveOrigin())
             spinnerOriginType?.setEnabled(false)
             editTextOriginName?.setEnabled(false)
-            val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(
-                    intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key))
+            val origin: Origin = myContextHolder.getNow().origins.fromName(
+                intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key)
+            )
             builder = Origin.Builder(origin)
         }
         val origin = builder?.build() ?: Origin.EMPTY
@@ -137,8 +142,10 @@ class OriginEditor : MyActivity(OriginEditor::class) {
                 spinner.setOnItemSelectedListener(object : OnItemSelectedListener {
                     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                         if (builder?.build()?.originType != originTypes[spinner.getSelectedItemPosition()]) {
-                            intentNew.putExtra(IntentExtra.ORIGIN_TYPE.key,
-                                    originTypes[spinner.getSelectedItemPosition()].getCode())
+                            intentNew.putExtra(
+                                IntentExtra.ORIGIN_TYPE.key,
+                                originTypes[spinner.getSelectedItemPosition()].getCode()
+                            )
                             processNewIntent(intentNew)
                         }
                     }
@@ -193,8 +200,10 @@ class OriginEditor : MyActivity(OriginEditor::class) {
         spinnerMentionAsWebFingerId?.setSelection(origin.getMentionAsWebFingerId().getEntriesPosition())
         spinnerUseLegacyHttpProtocol?.setSelection(origin.useLegacyHttpProtocol().getEntriesPosition())
         buttonDelete?.setVisibility(if (origin.hasAccounts()) View.GONE else View.VISIBLE)
-        MyCheckBox[this, R.id.in_combined_global_search, origin.isInCombinedGlobalSearch()] = origin.originType.isSearchTimelineSyncable()
-        MyCheckBox[this, R.id.in_combined_public_reload, origin.isInCombinedPublicReload()] = origin.originType.isPublicTimeLineSyncable()
+        MyCheckBox[this, R.id.in_combined_global_search, origin.isInCombinedGlobalSearch()] =
+            origin.originType.isSearchTimelineSyncable()
+        MyCheckBox[this, R.id.in_combined_public_reload, origin.isInCombinedPublicReload()] =
+            origin.originType.isPublicTimeLineSyncable()
         var title = getText(R.string.label_origin_system).toString()
         if (origin.isPersistent()) {
             title = origin.name + " - " + title
@@ -205,8 +214,9 @@ class OriginEditor : MyActivity(OriginEditor::class) {
     fun originNameFromHost() {
         if (TextUtils.isEmpty(editTextOriginName?.getText())) builder?.let { builder ->
             val origin = Origin.Builder(
-                    builder.getMyContext(), originTypes[spinnerOriginType?.getSelectedItemPosition() ?: -1])
-                    .setHostOrUrl(editTextHost?.getText().toString()).build()
+                builder.getMyContext(), originTypes[spinnerOriginType?.getSelectedItemPosition() ?: -1]
+            )
+                .setHostOrUrl(editTextHost?.getText().toString()).build()
             if (origin.url != null) {
                 editTextOriginName?.setText(origin.url?.host)
             }
@@ -230,8 +240,11 @@ class OriginEditor : MyActivity(OriginEditor::class) {
         override fun onClick(v: View?) {
             originNameFromHost()
             builder?.let { oldBuilder ->
-                builder = Origin.Builder(oldBuilder.getMyContext(), originTypes[spinnerOriginType?.getSelectedItemPosition() ?: -1])
-                        .setName(editTextOriginName?.getText().toString())
+                builder = Origin.Builder(
+                    oldBuilder.getMyContext(),
+                    originTypes[spinnerOriginType?.getSelectedItemPosition() ?: -1]
+                )
+                    .setName(editTextOriginName?.getText().toString())
             }
             saveOthers()
         }
@@ -245,32 +258,32 @@ class OriginEditor : MyActivity(OriginEditor::class) {
 
     private fun saveOthers() {
         (this.builder ?: return)
-        .setHostOrUrl(editTextHost?.getText().toString())
-        .setSsl(checkBoxIsSsl?.isChecked() ?: true)
-        .setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode?.getSelectedItemPosition() ?: -1))
-        .setHtmlContentAllowed(MyCheckBox.isChecked(this, R.id.allow_html, false))
-        .setMentionAsWebFingerId(
-            TriState.fromEntriesPosition(
-                spinnerMentionAsWebFingerId?.getSelectedItemPosition() ?: -1
+            .setHostOrUrl(editTextHost?.getText().toString())
+            .setSsl(checkBoxIsSsl?.isChecked() ?: true)
+            .setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode?.getSelectedItemPosition() ?: -1))
+            .setHtmlContentAllowed(MyCheckBox.isChecked(this, R.id.allow_html, false))
+            .setMentionAsWebFingerId(
+                TriState.fromEntriesPosition(
+                    spinnerMentionAsWebFingerId?.getSelectedItemPosition() ?: -1
+                )
             )
-        )
-        .setUseLegacyHttpProtocol(
-            TriState.fromEntriesPosition(
-                spinnerUseLegacyHttpProtocol?.getSelectedItemPosition() ?: -1
+            .setUseLegacyHttpProtocol(
+                TriState.fromEntriesPosition(
+                    spinnerUseLegacyHttpProtocol?.getSelectedItemPosition() ?: -1
+                )
             )
-        )
-        .setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false))
-        .setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false))
-        .save()
-        .let { builder ->
-            MyLog.v(this) { (if (builder.isSaved()) "Saved" else "Not saved") + ": " + builder.build().toString() }
-            if (builder.isSaved()) {
-                builder.getMyContext().origins.initialize()
-                setResult(RESULT_OK)
-                finish()
-            } else {
-                beep(this)
+            .setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false))
+            .setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false))
+            .save()
+            .let { builder ->
+                MyLog.v(this) { (if (builder.isSaved()) "Saved" else "Not saved") + ": " + builder.build().toString() }
+                if (builder.isSaved()) {
+                    builder.getMyContext().origins.initialize()
+                    setResult(RESULT_OK)
+                    finish()
+                } else {
+                    beep(this)
+                }
             }
-        }
     }
 }

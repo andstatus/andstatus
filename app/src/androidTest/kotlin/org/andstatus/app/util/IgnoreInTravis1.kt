@@ -17,7 +17,7 @@ package org.andstatus.app.util
 
 import android.os.Build
 import org.andstatus.app.context.ExecutionMode
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.apache.geode.test.junit.IgnoreCondition
 import org.junit.runner.Description
@@ -29,6 +29,6 @@ import org.junit.runner.Description
 class IgnoreInTravis1 : IgnoreCondition {
     override fun evaluate(testCaseDescription: Description?): Boolean {
         TestSuite.initialize(this)
-        return MyContextHolder.myContextHolder.executionMode == ExecutionMode.TRAVIS_TEST && Build.VERSION.SDK_INT < 29
+        return myContextHolder.executionMode == ExecutionMode.TRAVIS_TEST && Build.VERSION.SDK_INT < 29
     }
 }

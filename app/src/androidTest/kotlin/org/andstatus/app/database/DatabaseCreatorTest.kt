@@ -17,7 +17,7 @@ package org.andstatus.app.database
 
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.OriginTable
@@ -35,11 +35,13 @@ class DatabaseCreatorTest {
     @Test
     fun testTablesCreated() {
         MyLog.v(this, "Starting testTablesCreated")
-        val database: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().database
-                ?: throw IllegalStateException("No database")
+        val database: SQLiteDatabase = myContextHolder.getNow().database
+            ?: throw IllegalStateException("No database")
         Assert.assertEquals(true, database.isOpen)
-        val originId = MyQuery.conditionToLongColumnValue(database, "", OriginTable.TABLE_NAME,
-                BaseColumns._ID, OriginTable.ORIGIN_NAME + "='Twitter'")
+        val originId = MyQuery.conditionToLongColumnValue(
+            database, "", OriginTable.TABLE_NAME,
+            BaseColumns._ID, OriginTable.ORIGIN_NAME + "='Twitter'"
+        )
         Assert.assertNotEquals("Origin Twitter doesn't exist", 0, originId)
     }
 }

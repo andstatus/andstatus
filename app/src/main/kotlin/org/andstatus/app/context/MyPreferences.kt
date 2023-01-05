@@ -20,6 +20,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.timeline.TapOnATimelineTitleBehaviour
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.UriUtils
@@ -142,8 +143,10 @@ object MyPreferences {
 
     fun getConnectionTimeoutMs(): Int {
         return TimeUnit.SECONDS.toMillis(
-                SharedPreferencesUtil.getLongStoredAsString(
-                        KEY_CONNECTION_TIMEOUT_SECONDS, CONNECTION_TIMEOUT_DEFAULT_SECONDS)).toInt()
+            SharedPreferencesUtil.getLongStoredAsString(
+                KEY_CONNECTION_TIMEOUT_SECONDS, CONNECTION_TIMEOUT_DEFAULT_SECONDS
+            )
+        ).toInt()
     }
 
     fun setConnectionTimeoutMs(value: Int) {
@@ -155,8 +158,10 @@ object MyPreferences {
      * @return the number of seconds between two sync ("fetch"...) actions.
      */
     fun getSyncFrequencySeconds(): Long {
-        return SharedPreferencesUtil.getLongStoredAsString(KEY_SYNC_FREQUENCY_SECONDS,
-                SYNC_FREQUENCY_DEFAULT_SECONDS)
+        return SharedPreferencesUtil.getLongStoredAsString(
+            KEY_SYNC_FREQUENCY_SECONDS,
+            SYNC_FREQUENCY_DEFAULT_SECONDS
+        )
     }
 
     fun isSyncOverWiFiOnly(): Boolean {
@@ -208,7 +213,8 @@ object MyPreferences {
 
     fun getTapOnATimelineTitleBehaviour(): TapOnATimelineTitleBehaviour? {
         return TapOnATimelineTitleBehaviour.load(
-                SharedPreferencesUtil.getString(KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR, ""))
+            SharedPreferencesUtil.getString(KEY_TAP_ON_A_TIMELINE_TITLE_BEHAVIOUR, "")
+        )
     }
 
     fun getActorInTimeline(): ActorInTimeline {
@@ -221,7 +227,8 @@ object MyPreferences {
 
     fun getActionBarTextHomeIconResourceId(): Int {
         return if (SharedPreferencesUtil.getString(KEY_ACTION_BAR_TEXT_COLOR, "")
-                == "ActionBarTextBlack") R.drawable.icon_black_24dp else R.drawable.icon_white_24dp
+            == "ActionBarTextBlack"
+        ) R.drawable.icon_black_24dp else R.drawable.icon_white_24dp
     }
 
     fun isShowImageAnimations(): Boolean {
@@ -243,8 +250,8 @@ object MyPreferences {
     fun onPreferencesChanged() {
         SharedPreferencesUtil.forget()
         SharedPreferencesUtil.putLong(KEY_PREFERENCES_CHANGE_TIME, System.currentTimeMillis())
-        val context: Context? =  MyContextHolder.myContextHolder.getNow().context
-        if (context != null && SharedPreferencesUtil.getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
+        val context: Context = myContextHolder.getNow().context
+        if (SharedPreferencesUtil.getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
             BackupManager(context).dataChanged()
         }
     }
@@ -270,7 +277,7 @@ object MyPreferences {
     }
 
     fun isLogEverythingToFile(): Boolean {
-        return SharedPreferencesUtil.getBoolean(KEY_LOG_EVERYTHING_TO_FILE,  MyContextHolder.myContextHolder.getNow().isTestRun)
+        return SharedPreferencesUtil.getBoolean(KEY_LOG_EVERYTHING_TO_FILE, myContextHolder.getNow().isTestRun)
     }
 
     fun isRefreshTimelineAutomatically(): Boolean {
@@ -278,18 +285,22 @@ object MyPreferences {
     }
 
     fun getMaxDistanceBetweenDuplicates(): Int {
-        return SharedPreferencesUtil.getIntStoredAsString(KEY_MAX_DISTANCE_BETWEEN_DUPLICATES,
-                MAX_DISTANCE_BETWEEN_DUPLICATES_DEFAULT)
+        return SharedPreferencesUtil.getIntStoredAsString(
+            KEY_MAX_DISTANCE_BETWEEN_DUPLICATES,
+            MAX_DISTANCE_BETWEEN_DUPLICATES_DEFAULT
+        )
     }
 
     fun getMaximumSizeOfAttachmentBytes(): Long {
         return (Math.max(SharedPreferencesUtil.getLongStoredAsString(KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, 5), 1)
-                * BYTES_IN_MB)
+            * BYTES_IN_MB)
     }
 
-    val maximumSizeOfCachedMediaBytes: Long get() = SharedPreferencesUtil.getLongStoredAsString(
-        KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000)
-        .coerceAtLeast(1) * BYTES_IN_MB
+    val maximumSizeOfCachedMediaBytes: Long
+        get() = SharedPreferencesUtil.getLongStoredAsString(
+            KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, 1000
+        )
+            .coerceAtLeast(1) * BYTES_IN_MB
 
     fun isBackupDownloads(): Boolean {
         return SharedPreferencesUtil.getBoolean(KEY_BACKUP_DOWNLOADS, false)
@@ -316,12 +327,19 @@ object MyPreferences {
     }
 
     fun setLastBackupUri(backupUri: Uri?) {
-        SharedPreferencesUtil.putString(KEY_LAST_BACKUP_URI, if (UriUtils.isEmpty(backupUri)) "" else backupUri.toString())
+        SharedPreferencesUtil.putString(
+            KEY_LAST_BACKUP_URI,
+            if (UriUtils.isEmpty(backupUri)) "" else backupUri.toString()
+        )
     }
 
     fun getLastBackupUri(): Uri {
-        return UriUtils.fromString(SharedPreferencesUtil.getString(KEY_LAST_BACKUP_URI,
-                "content://com.android.externalstorage.documents/tree/primary%3Abackups%2FAndStatus"))
+        return UriUtils.fromString(
+            SharedPreferencesUtil.getString(
+                KEY_LAST_BACKUP_URI,
+                "content://com.android.externalstorage.documents/tree/primary%3Abackups%2FAndStatus"
+            )
+        )
     }
 
     fun getDeviceBrandModelString(): String {

@@ -18,7 +18,7 @@ package org.andstatus.app.activity
 import android.content.Intent
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.timeline.TimelineActivityTest
 import org.andstatus.app.timeline.meta.TimelineType
@@ -33,10 +33,12 @@ class NotificationsTimelineTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initializeWithData(this)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+        myContextHolder.getNow().accounts.setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
-        return Intent(Intent.ACTION_VIEW,
-                 MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.NOTIFICATIONS, ma.actor, ma.origin).getUri())
+        return Intent(
+            Intent.ACTION_VIEW,
+            myContextHolder.getNow().timelines.get(TimelineType.NOTIFICATIONS, ma.actor, ma.origin).getUri()
+        )
     }
 
     @Test

@@ -19,7 +19,7 @@ import io.vavr.control.Try
 import kotlinx.coroutines.delay
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.os.AsyncEnum.DEFAULT_POOL
 import org.andstatus.app.os.AsyncRunnable
@@ -71,8 +71,10 @@ abstract class DataChecker {
         val stopWatch: StopWatch = StopWatch.createStarted()
         logger.logProgress(checkerName() + " checker started")
         val changedCount = fixInternal()
-        logger.logProgress(checkerName() + " checker ended in " + stopWatch.getTime(TimeUnit.SECONDS) + " sec, " +
-                if (changedCount > 0) (if (countOnly) "need to change " else "changed ") + changedCount + " items" else " no changes were needed")
+        logger.logProgress(
+            checkerName() + " checker ended in " + stopWatch.getTime(TimeUnit.SECONDS) + " sec, " +
+                if (changedCount > 0) (if (countOnly) "need to change " else "changed ") + changedCount + " items" else " no changes were needed"
+        )
         pauseToShowCount(checkerName(), changedCount)
         return changedCount
     }
@@ -94,7 +96,7 @@ abstract class DataChecker {
         private val TAG: String = DataChecker::class.simpleName!!
         fun getSomeOfTotal(some: Long, total: Long): String {
             return ((if (some == 0L) "none" else if (some == total) "all" else some.toString())
-                    + " of " + total)
+                + " of " + total)
         }
 
         fun fixDataAsync(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean) {
@@ -103,8 +105,8 @@ abstract class DataChecker {
                 override suspend fun doInBackground(params: Unit): Try<Unit> {
                     fixData(logger, includeLong, countOnly)
                     delay(3000)
-                    MyContextHolder.myContextHolder.release { "fixDataAsync" }
-                    MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
+                    myContextHolder.release { "fixDataAsync" }
+                    myContextHolder.initialize(null, TAG).getBlocking()
                     return TryUtils.SUCCESS
                 }
 
@@ -120,7 +122,7 @@ abstract class DataChecker {
 
         fun fixData(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean): Long {
             var counter: Long = 0
-            val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
+            val myContext: MyContext = myContextHolder.getNow()
             if (!myContext.isReady) {
                 MyLog.w(TAG, "fixData skipped: context is not ready $myContext")
                 return counter
@@ -129,26 +131,29 @@ abstract class DataChecker {
             try {
                 MyLog.i(TAG, "fixData started" + if (includeLong) ", including long tasks" else "")
                 val allCheckers = listOf(
-                        CheckTimelines(),
-                        CheckDownloads(),
-                        MergeActors(),
-                        CheckUsers(),
-                        CheckConversations(),
-                        CheckAudience(),
-                        SearchIndexUpdate())
+                    CheckTimelines(),
+                    CheckDownloads(),
+                    MergeActors(),
+                    CheckUsers(),
+                    CheckConversations(),
+                    CheckAudience(),
+                    SearchIndexUpdate()
+                )
 
                 // TODO: define scope in parameters
                 val scope = "All"
                 val selectedCheckers = allCheckers.stream()
-                        .filter { c: DataChecker -> scope.contains("All") ||
-                            scope.contains(c::class.simpleName!!) }
-                        .collect(Collectors.toList())
+                    .filter { c: DataChecker ->
+                        scope.contains("All") ||
+                            scope.contains(c::class.simpleName!!)
+                    }
+                    .collect(Collectors.toList())
                 for (checker in selectedCheckers) {
                     if (logger.isCancelled) break
                     MyServiceManager.setServiceUnavailable()
                     counter += checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger)
-                            .setCountOnly(countOnly)
-                            .fix()
+                        .setCountOnly(countOnly)
+                        .fix()
                 }
             } finally {
                 MyServiceManager.setServiceAvailable()

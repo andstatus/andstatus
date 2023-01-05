@@ -16,7 +16,7 @@
 package org.andstatus.app.util
 
 import android.preference.PreferenceManager
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.junit.Assert
 import org.junit.Before
@@ -34,10 +34,14 @@ class SharedPreferencesUtilTest {
 
     @Test
     fun testPrefsDirectory() {
-        val prefsDir = SharedPreferencesUtil.prefsDirectory( MyContextHolder.myContextHolder.getNow().context)
+        val prefsDir = SharedPreferencesUtil.prefsDirectory(myContextHolder.getNow().context)
         Assert.assertTrue("Prefs dir: " + prefsDir.absolutePath, prefsDir.exists())
-        val defaultSharedPreferencesFile = SharedPreferencesUtil.defaultSharedPreferencesPath( MyContextHolder.myContextHolder.getNow().context)
-        Assert.assertTrue("defaultSharedPreferencesFile: " + defaultSharedPreferencesFile.absolutePath, defaultSharedPreferencesFile.exists())
+        val defaultSharedPreferencesFile =
+            SharedPreferencesUtil.defaultSharedPreferencesPath(myContextHolder.getNow().context)
+        Assert.assertTrue(
+            "defaultSharedPreferencesFile: " + defaultSharedPreferencesFile.absolutePath,
+            defaultSharedPreferencesFile.exists()
+        )
     }
 
     @Test
@@ -46,7 +50,7 @@ class SharedPreferencesUtilTest {
         SharedPreferencesUtil.resetHasSetDefaultValues()
         Assert.assertEquals(TriState.FALSE, SharedPreferencesUtil.areDefaultPreferenceValuesSet())
         val sp = SharedPreferencesUtil.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES)
-                ?: throw IllegalStateException("No Shared preferences")
+            ?: throw IllegalStateException("No Shared preferences")
         sp.edit().putBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, true).commit()
         Assert.assertEquals(TriState.TRUE, SharedPreferencesUtil.areDefaultPreferenceValuesSet())
     }

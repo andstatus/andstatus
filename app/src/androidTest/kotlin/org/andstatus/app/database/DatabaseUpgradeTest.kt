@@ -3,7 +3,7 @@ package org.andstatus.app.database
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyStorage
 import org.andstatus.app.data.ApplicationDataUtil.deleteApplicationData
@@ -17,7 +17,7 @@ import java.io.IOException
 
 fun databaseUpgradeTest() {
     try {
-        val context = MyContextHolder.myContextHolder.getNow().context
+        val context = myContextHolder.getNow().context
         deleteApplicationData()
 
         FirstActivity.setDefaultValues(context)
@@ -28,11 +28,11 @@ fun databaseUpgradeTest() {
                 fail("Failed to create database. " + it.message)
             }.onSuccess { dbFile ->
                 assertEquals("Created ${dbFile.absolutePath}", 147456, dbFile.length())
-                FirstActivity.startApp(MyContextHolder.myContextHolder.initialize(context).getBlocking())
+                FirstActivity.startApp(myContextHolder.initialize(context).getBlocking())
                 runBlocking {
                     repeat(120) {
                         delay(500)
-                        val myContext = MyContextHolder.myContextHolder.initialize(context).getNow()
+                        val myContext = myContextHolder.initialize(context).getNow()
                         when (myContext.state) {
                             MyContextState.ERROR -> fail("Error $myContext")
                             MyContextState.DATABASE_UNAVAILABLE -> fail("Database unavailable $myContext")
@@ -42,7 +42,7 @@ fun databaseUpgradeTest() {
                         if (myContext.isReady && MyServiceManager.isServiceAvailable()) return@repeat
                     }
 
-                    val myContext = MyContextHolder.myContextHolder.initialize(context).getBlocking()
+                    val myContext = myContextHolder.initialize(context).getBlocking()
                     assertTrue(myContext.toString(), myContext.isReady)
                     FirstActivity.closeAllActivities(context)
                     delay(1000)

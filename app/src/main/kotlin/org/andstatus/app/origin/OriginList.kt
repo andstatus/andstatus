@@ -31,12 +31,11 @@ import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.list.MyListActivity
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.view.MySimpleAdapter
-import java.util.*
 import kotlin.reflect.KClass
 
 /**
@@ -67,18 +66,39 @@ abstract class OriginList(clazz: KClass<*>) : MyListActivity(clazz) {
     private fun processNewIntent(intentNew: Intent) {
         val action = intentNew.getAction()
         if (Intent.ACTION_PICK == action || Intent.ACTION_INSERT == action) {
-            listView?.onItemClickListener = OnItemClickListener { parent: AdapterView<*>?, view: View, position: Int, id: Long -> onPickOrigin(parent, view, position, id) }
+            listView?.onItemClickListener =
+                OnItemClickListener { parent: AdapterView<*>?, view: View, position: Int, id: Long ->
+                    onPickOrigin(
+                        parent,
+                        view,
+                        position,
+                        id
+                    )
+                }
         } else {
-            listView?.onItemClickListener = OnItemClickListener { parent: AdapterView<*>?, view: View, position: Int, id: Long -> onEditOrigin(parent, view, position, id) }
+            listView?.onItemClickListener =
+                OnItemClickListener { parent: AdapterView<*>?, view: View, position: Int, id: Long ->
+                    onEditOrigin(
+                        parent,
+                        view,
+                        position,
+                        id
+                    )
+                }
         }
         addEnabled = Intent.ACTION_PICK != action
         originType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key))
         if (Intent.ACTION_INSERT == action) {
             supportActionBar?.setTitle(R.string.select_social_network)
         }
-        val adapter: ListAdapter = MySimpleAdapter(this,
-                data,
-                R.layout.origin_list_item, arrayOf(KEY_VISIBLE_NAME, KEY_NAME), intArrayOf(R.id.visible_name, R.id.name), true)
+        val adapter: ListAdapter = MySimpleAdapter(
+            this,
+            data,
+            R.layout.origin_list_item,
+            arrayOf(KEY_VISIBLE_NAME, KEY_NAME),
+            intArrayOf(R.id.visible_name, R.id.name),
+            true
+        )
         // Bind to our new adapter.
         setListAdapter(adapter)
         fillList()
@@ -89,7 +109,7 @@ abstract class OriginList(clazz: KClass<*>) : MyListActivity(clazz) {
         fillData(data)
         data.sortWith { lhs: MutableMap<String, String>, rhs: MutableMap<String, String> ->
             lhs.get(KEY_VISIBLE_NAME)
-                    ?.compareTo(rhs.get(KEY_VISIBLE_NAME) ?: "") ?: 0
+                ?.compareTo(rhs.get(KEY_VISIBLE_NAME) ?: "") ?: 0
         }
         MyLog.v(this) { "fillList, " + data.size + " items" }
         (getListAdapter() as BaseAdapter).notifyDataSetChanged()
@@ -110,9 +130,9 @@ abstract class OriginList(clazz: KClass<*>) : MyListActivity(clazz) {
 
     override fun onResume() {
         super.onResume()
-        if ( MyContextHolder.myContextHolder.needToRestartActivity()) {
+        if (myContextHolder.needToRestartActivity()) {
             FirstActivity.closeAllActivities(this)
-             MyContextHolder.myContextHolder.initialize(this).thenStartActivity(intent)
+            myContextHolder.initialize(this).thenStartActivity(intent)
         }
     }
 
@@ -127,7 +147,7 @@ abstract class OriginList(clazz: KClass<*>) : MyListActivity(clazz) {
 
     fun onEditOrigin(parent: AdapterView<*>?, view: View, position: Int, id: Long) {
         val name = (view.findViewById<View?>(R.id.name) as TextView).text.toString()
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(name)
+        val origin: Origin = myContextHolder.getNow().origins.fromName(name)
         if (origin.isPersistent()) {
             val intent = Intent(this@OriginList, OriginEditor::class.java)
             intent.action = Intent.ACTION_EDIT

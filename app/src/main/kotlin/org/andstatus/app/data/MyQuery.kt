@@ -23,7 +23,7 @@ import android.provider.BaseColumns
 import androidx.core.util.Pair
 import org.andstatus.app.context.ActorInTimeline
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
@@ -63,7 +63,7 @@ object MyQuery {
      * [NoteTable._ID] ). Or 0 if nothing was found.
      */
     fun oidToId(oidEnum: OidEnum?, originId: Long, oid: String?): Long {
-        return oidToId(MyContextHolder.myContextHolder.getNow(), oidEnum, originId, oid)
+        return oidToId(myContextHolder.getNow(), oidEnum, originId, oid)
     }
 
     fun oidToId(myContext: MyContext, oidEnum: OidEnum?, originId: Long, oid: String?): Long {
@@ -88,7 +88,7 @@ object MyQuery {
 
     fun sqlToLong(databaseIn: SQLiteDatabase?, msgLogIn: String?, sql: String?): Long {
         val msgLog = StringUtil.notNull(msgLogIn)
-        val db = databaseIn ?: MyContextHolder.myContextHolder.getNow().database
+        val db = databaseIn ?: myContextHolder.getNow().database
         if (db == null) {
             MyLog.databaseIsNull { msgLog }
             return 0
@@ -369,7 +369,7 @@ object MyQuery {
                 } else {
                     throw IllegalArgumentException("$method; Unknown name \"$actorIdColumnName\"")
                 }
-                val db: SQLiteDatabase? = MyContextHolder.myContextHolder.getNow().database
+                val db: SQLiteDatabase? = myContextHolder.getNow().database
                 if (db == null) {
                     MyLog.databaseIsNull { method }
                     return ""
@@ -475,7 +475,7 @@ object MyQuery {
         condition: String
     ): String {
         val method = "cond2str"
-        val db = dbIn ?: MyContextHolder.myContextHolder.getNow().database
+        val db = dbIn ?: myContextHolder.getNow().database
         if (db == null) {
             MyLog.databaseIsNull { method }
             return ""
@@ -658,7 +658,7 @@ object MyQuery {
         return getLongs(sql).firstOrNull() ?: 0
     }
 
-    fun getLongs(sql: String): Set<Long> = getLongs(MyContextHolder.myContextHolder.getNow(), sql)
+    fun getLongs(sql: String): Set<Long> = getLongs(myContextHolder.getNow(), sql)
 
     fun getLongs(myContext: MyContext, sql: String): Set<Long> =
         getSet(myContext, sql) { cursor: Cursor -> cursor.getLong(0) }

@@ -16,6 +16,7 @@
 package org.andstatus.app.context
 
 import android.os.Environment
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState
@@ -68,7 +69,7 @@ object MyStorage {
         val method = "getDataFilesDir"
         var dir: File? = null
         val textToLog = StringBuilder()
-        val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+        val myContext: MyContext = myContextHolder.getNow()
         if (myContext.isEmpty) {
             textToLog.append("No android.content.Context yet")
         } else {
@@ -129,7 +130,8 @@ object MyStorage {
 
     private fun isStorageExternal(useExternalStorage: TriState): Boolean {
         return useExternalStorage.toBoolean(
-                SharedPreferencesUtil.getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false))
+            SharedPreferencesUtil.getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false)
+        )
     }
 
     fun getDatabasePath(name: String?): File? {

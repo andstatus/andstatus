@@ -19,19 +19,20 @@ import android.app.PendingIntent
 import android.database.Cursor
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyProvider
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.timeline.meta.Timeline
-import java.util.*
 import java.util.function.Function
 
-class NotificationEvents private constructor(val myContext: MyContext,
-                                             private val enabledEvents: List<NotificationEventType>,
-                                             val map: Map<NotificationEventType, NotificationData>) {
+class NotificationEvents private constructor(
+    val myContext: MyContext,
+    private val enabledEvents: List<NotificationEventType>,
+    val map: Map<NotificationEventType, NotificationData>
+) {
     /** @return 0 if not found
      */
     fun getCount(eventType: NotificationEventType): Long {
@@ -70,35 +71,39 @@ class NotificationEvents private constructor(val myContext: MyContext,
             NotificationEventType.OUTBOX
         } else {
             map.values.stream().filter { data: NotificationData -> data.count > 0 }
-                    .map { data: NotificationData -> data.event }
-                    .findFirst().orElse(NotificationEventType.EMPTY)
+                .map { data: NotificationData -> data.event }
+                .findFirst().orElse(NotificationEventType.EMPTY)
         }
     }
 
     fun load(): NotificationEvents {
         val sql = "SELECT " + ActivityTable.NEW_NOTIFICATION_EVENT + ", " +
-                ActivityTable.NOTIFIED_ACTOR_ID + ", " +
-                ActivityTable.INS_DATE + ", " +
-                ActivityTable.UPDATED_DATE +
-                " FROM " + ActivityTable.TABLE_NAME +
-                " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT + "!=0"
+            ActivityTable.NOTIFIED_ACTOR_ID + ", " +
+            ActivityTable.INS_DATE + ", " +
+            ActivityTable.UPDATED_DATE +
+            " FROM " + ActivityTable.TABLE_NAME +
+            " WHERE " + ActivityTable.NEW_NOTIFICATION_EVENT + "!=0"
         val loadedMap: Map<NotificationEventType, NotificationData> = MyQuery.foldLeft(myContext, sql, HashMap(),
-                { map1: HashMap<NotificationEventType, NotificationData> ->
-                    Function { cursor: Cursor ->
-                        foldEvent(
-                                map1,
-                                NotificationEventType.fromId(DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)),
-                                myContext.users.load(DbUtils.getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID)),
-                                Math.max(DbUtils.getLong(cursor, ActivityTable.INS_DATE), DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE))
+            { map1: HashMap<NotificationEventType, NotificationData> ->
+                Function { cursor: Cursor ->
+                    foldEvent(
+                        map1,
+                        NotificationEventType.fromId(DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)),
+                        myContext.users.load(DbUtils.getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID)),
+                        Math.max(
+                            DbUtils.getLong(cursor, ActivityTable.INS_DATE),
+                            DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE)
                         )
-                    }
-                })
+                    )
+                }
+            })
         return NotificationEvents(myContext, enabledEvents, loadedMap)
     }
 
     private fun foldEvent(
-            map: HashMap<NotificationEventType, NotificationData>,
-            eventType: NotificationEventType, myActor: Actor, updatedDate: Long): HashMap<NotificationEventType, NotificationData> {
+        map: HashMap<NotificationEventType, NotificationData>,
+        eventType: NotificationEventType, myActor: Actor, updatedDate: Long
+    ): HashMap<NotificationEventType, NotificationData> {
         val data = map.get(eventType)
         if (data == null) {
             if (enabledEvents.contains(eventType)) {
@@ -117,7 +122,7 @@ class NotificationEvents private constructor(val myContext: MyContext,
     companion object {
         val EMPTY = of(MyContextEmpty.EMPTY, emptyList())
         fun newInstance(): NotificationEvents {
-            return of( MyContextHolder.myContextHolder.getNow(), emptyList())
+            return of(myContextHolder.getNow(), emptyList())
         }
 
         fun of(myContext: MyContext, enabledEvents: List<NotificationEventType>): NotificationEvents {

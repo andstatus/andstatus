@@ -25,7 +25,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.IBinder
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.util.MyLog
 
@@ -37,16 +37,20 @@ class AuthenticatorService : Service() {
         /**
          * We add account launching [AccountSettingsActivity] activity
          */
-        override fun addAccount(response: AccountAuthenticatorResponse?, accountType: String,
-                                authTokenType: String?, requiredFeatures: Array<String?>?, options: Bundle?): Bundle {
+        override fun addAccount(
+            response: AccountAuthenticatorResponse?, accountType: String,
+            authTokenType: String?, requiredFeatures: Array<String?>?, options: Bundle?
+        ): Bundle {
             // There are two cases here:
             // 1) We are called with a username/password; this comes from the traditional email
             //    app UI; we simply create the account and return the proper bundle
             return if (options != null && options.containsKey(OPTIONS_PASSWORD)
-                    && options.containsKey(OPTIONS_USERNAME)) {
+                && options.containsKey(OPTIONS_USERNAME)
+            ) {
                 val account = Account(options.getString(OPTIONS_USERNAME), ANDROID_ACCOUNT_TYPE)
                 AccountManager.get(this@AuthenticatorService).addAccountExplicitly(
-                        account, options.getString(OPTIONS_PASSWORD), null)
+                    account, options.getString(OPTIONS_PASSWORD), null
+                )
                 val b = Bundle()
                 b.putString(AccountManager.KEY_ACCOUNT_NAME, options.getString(OPTIONS_USERNAME))
                 b.putString(AccountManager.KEY_ACCOUNT_TYPE, ANDROID_ACCOUNT_TYPE)
@@ -66,8 +70,10 @@ class AuthenticatorService : Service() {
             }
         }
 
-        override fun confirmCredentials(response: AccountAuthenticatorResponse?, account: Account?,
-                                        options: Bundle?): Bundle? {
+        override fun confirmCredentials(
+            response: AccountAuthenticatorResponse?, account: Account?,
+            options: Bundle?
+        ): Bundle? {
             return null
         }
 
@@ -75,8 +81,10 @@ class AuthenticatorService : Service() {
             return null
         }
 
-        override fun getAuthToken(response: AccountAuthenticatorResponse?, account: Account?,
-                                  authTokenType: String?, loginOptions: Bundle?): Bundle? {
+        override fun getAuthToken(
+            response: AccountAuthenticatorResponse?, account: Account?,
+            authTokenType: String?, loginOptions: Bundle?
+        ): Bundle? {
             return null
         }
 
@@ -85,34 +93,40 @@ class AuthenticatorService : Service() {
             return null
         }
 
-        override fun hasFeatures(response: AccountAuthenticatorResponse?, account: Account?, features: Array<String?>?): Bundle? {
+        override fun hasFeatures(
+            response: AccountAuthenticatorResponse?,
+            account: Account?,
+            features: Array<String?>?
+        ): Bundle? {
             return null
         }
 
-        override fun updateCredentials(response: AccountAuthenticatorResponse?, account: Account?,
-                                       authTokenType: String?, loginOptions: Bundle?): Bundle? {
+        override fun updateCredentials(
+            response: AccountAuthenticatorResponse?, account: Account?,
+            authTokenType: String?, loginOptions: Bundle?
+        ): Bundle? {
             return null
         }
 
         override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account): Bundle {
             var deleted = true
             if (AccountUtils.isVersionCurrent(context, account)) {
-                deleted =  MyContextHolder.myContextHolder
-                        .initialize(context, this)
-                        .getFuture()
-                        .tryBlocking()
-                        .map { myContext: MyContext ->
-                            myContext.accounts
-                                    .fromAccountName(account.name)
-                        }
-                        .filter { obj: MyAccount -> obj.isValid }
-                        .map { ma: MyAccount ->
-                            MyLog.i(this, "Removing $ma")
-                            MyContextHolder.myContextHolder.getNow().timelines.onAccountDelete(ma)
-                            MyPreferences.onPreferencesChanged()
-                            true
-                        }
-                        .getOrElse(false)
+                deleted = myContextHolder
+                    .initialize(context, this)
+                    .getFuture()
+                    .tryBlocking()
+                    .map { myContext: MyContext ->
+                        myContext.accounts
+                            .fromAccountName(account.name)
+                    }
+                    .filter { obj: MyAccount -> obj.isValid }
+                    .map { ma: MyAccount ->
+                        MyLog.i(this, "Removing $ma")
+                        myContextHolder.getNow().timelines.onAccountDelete(ma)
+                        MyPreferences.onPreferencesChanged()
+                        true
+                    }
+                    .getOrElse(false)
             }
             val result = Bundle()
             result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, deleted)
@@ -131,7 +145,7 @@ class AuthenticatorService : Service() {
     override fun onCreate() {
         super.onCreate()
         MyLog.v(this, "onCreate")
-         MyContextHolder.myContextHolder.initialize(this).getBlocking()
+        myContextHolder.initialize(this).getBlocking()
     }
 
     override fun onDestroy() {

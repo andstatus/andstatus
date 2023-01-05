@@ -19,14 +19,13 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.os.Parcel
 import android.os.Parcelable
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.database.table.CommandTable
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.RelativeTime.millisToDelaySeconds
-import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 
@@ -147,9 +146,7 @@ class CommandResult : Parcelable {
         if (executionCount > 0) {
             sb.withComma("executed", executionCount)
             sb.withComma(
-                "last", RelativeTime.getDifference(
-                    MyContextHolder.myContextHolder.getNow().context, lastExecutedDate
-                )
+                "last", RelativeTime.getDifference(myContextHolder.getNow().context, lastExecutedDate)
             )
             if (retriesLeft > 0) sb.withComma("retriesLeft", retriesLeft)
             if (!hasError()) sb.withComma("error", "none")
@@ -303,7 +300,8 @@ class CommandResult : Parcelable {
     companion object {
         const val INITIAL_NUMBER_OF_RETRIES = 10
 
-        @JvmField val CREATOR: Parcelable.Creator<CommandResult> = object : Parcelable.Creator<CommandResult> {
+        @JvmField
+        val CREATOR: Parcelable.Creator<CommandResult> = object : Parcelable.Creator<CommandResult> {
             override fun createFromParcel(inp: Parcel): CommandResult {
                 return CommandResult(inp)
             }

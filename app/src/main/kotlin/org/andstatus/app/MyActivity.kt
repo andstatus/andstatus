@@ -28,7 +28,7 @@ import androidx.fragment.app.Fragment
 import io.vavr.control.Try
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyTheme
 import org.andstatus.app.util.DialogFactory
@@ -92,7 +92,7 @@ open class MyActivity(
                 if (previousErrorInflatingTime == 0L) {
                     previousErrorInflatingTime = System.currentTimeMillis()
                     finish()
-                    MyContextHolder.myContextHolder.getNow().setExpired { logMsg }
+                    myContextHolder.getNow().setExpired { logMsg }
                     FirstActivity.goHome(this)
                 } else {
                     throw IllegalStateException(logMsg, e)
@@ -214,7 +214,7 @@ open class MyActivity(
      *         success MyContext Ready or EMPTY if not ready
      */
     fun myReadyContextOrRestartMe(): Try<MyContext> {
-        val myContext = MyContextHolder.myContextHolder.tryReadyNow()
+        val myContext = myContextHolder.tryReadyNow()
         var finishing = isFinishing
         if (myContext.isFailure) {
             if (initializeThenRestartActivity()) finishing = true
@@ -246,8 +246,8 @@ open class MyActivity(
             super.finish()
         }
         when (actionToDo) {
-            OnFinishAction.RESTART_ME -> MyContextHolder.myContextHolder.initialize(this).thenStartActivity(this.intent)
-            OnFinishAction.RESTART_APP -> MyContextHolder.myContextHolder.initialize(this).thenStartApp()
+            OnFinishAction.RESTART_ME -> myContextHolder.initialize(this).thenStartActivity(this.intent)
+            OnFinishAction.RESTART_APP -> myContextHolder.initialize(this).thenStartApp()
             else -> {}
         }
     }

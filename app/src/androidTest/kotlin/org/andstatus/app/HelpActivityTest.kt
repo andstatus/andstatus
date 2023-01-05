@@ -23,7 +23,7 @@ import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.viewpager.widget.ViewPager
 import org.andstatus.app.context.ActivityTest
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
@@ -73,10 +73,7 @@ class HelpActivityTest : ActivityTest<HelpActivity>() {
         Espresso.onView(ViewMatchers.withId(R.id.splash_application_version)).check(
             ViewAssertions.matches(
                 ViewMatchers.withText(
-                    CoreMatchers.containsString(
-                        MyContextHolder.myContextHolder
-                            .executionMode.code
-                    )
+                    CoreMatchers.containsString(myContextHolder.executionMode.code)
                 )
             )
         )

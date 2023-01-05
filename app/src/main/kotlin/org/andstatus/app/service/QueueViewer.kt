@@ -24,7 +24,7 @@ import android.view.MenuItem
 import android.view.View
 import io.vavr.control.Try
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.list.SyncLoader
 import org.andstatus.app.os.AsyncEffects
 import org.andstatus.app.os.AsyncEnum
@@ -43,7 +43,8 @@ class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
     override fun newSyncLoader(args: Bundle?): SyncLoader<QueueData> {
         return object : SyncLoader<QueueData>() {
             override fun load(publisher: ProgressPublisher?): SyncLoader<QueueData> {
-                val queueTypes = arrayOf<QueueType>(QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR)
+                val queueTypes =
+                    arrayOf<QueueType>(QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR)
                 for (queueType in queueTypes) {
                     myContext.queues[queueType].forEach { cd ->
                         items.add(QueueData.getNew(queueType, cd))
@@ -68,7 +69,7 @@ class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
             R.id.clear_the_queue -> AsyncEffects<QueueViewer>(taskId = this, pool = AsyncEnum.DEFAULT_POOL)
-                .doInBackground { MyContextHolder.myContextHolder.getBlocking().queues.clear() }
+                .doInBackground { myContextHolder.getBlocking().queues.clear() }
                 .onPostExecute { activity: QueueViewer?, _: Try<Unit> -> activity?.showList(WhichPage.CURRENT) }
                 .execute(this)
             else -> return super.onOptionsItemSelected(item)
@@ -99,11 +100,7 @@ class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
             }
             R.id.menuItemDelete -> {
                 AsyncEffects<QueueViewer>(taskId = this, pool = AsyncEnum.DEFAULT_POOL)
-                    .doInBackground {
-                        MyContextHolder.myContextHolder.getBlocking().queues.deleteCommand(
-                            data.commandData
-                        )
-                    }
+                    .doInBackground { myContextHolder.getBlocking().queues.deleteCommand(data.commandData) }
                     .onPostExecute { activity: QueueViewer?, _: Try<Unit> -> activity?.showList(WhichPage.CURRENT) }
                     .execute(this)
                 true

@@ -24,7 +24,7 @@ import android.widget.Spinner
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.ActivityTest
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.lang.SelectableEnumList
@@ -54,36 +54,48 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
         var host = "$originName.example.com"
         var isSsl = false
         var allowHtml = true
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml, TriState.UNKNOWN,
-                TriState.UNKNOWN,
-                true, true)
+        forOneOrigin(
+            originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml, TriState.UNKNOWN,
+            TriState.UNKNOWN,
+            true, true
+        )
         host = "$originName.some.example.com"
         isSsl = true
         allowHtml = false
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml, TriState.UNKNOWN,
-                TriState.UNKNOWN,
-                false, true)
+        forOneOrigin(
+            originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml, TriState.UNKNOWN,
+            TriState.UNKNOWN,
+            false, true
+        )
         host = "$originName. я badhost.example.com"
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.MISCONFIGURED, allowHtml, TriState.UNKNOWN,
-                TriState.TRUE,
-                true, false)
+        forOneOrigin(
+            originType, originName, host, isSsl, SslModeEnum.MISCONFIGURED, allowHtml, TriState.UNKNOWN,
+            TriState.TRUE,
+            true, false
+        )
         host = "http://$originName.fourth. example. com "
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml, TriState.UNKNOWN,
-                TriState.FALSE,
-                false, false)
+        forOneOrigin(
+            originType, originName, host, isSsl, SslModeEnum.SECURE, allowHtml, TriState.UNKNOWN,
+            TriState.FALSE,
+            false, false
+        )
         host = "http://$originName.fifth.example.com/status"
-        forOneOrigin(originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml, TriState.UNKNOWN,
-                TriState.UNKNOWN,
-                true, true)
+        forOneOrigin(
+            originType, originName, host, isSsl, SslModeEnum.INSECURE, allowHtml, TriState.UNKNOWN,
+            TriState.UNKNOWN,
+            true, true
+        )
     }
 
-    private fun forOneOrigin(originType: OriginType, originName: String,
-                             hostOrUrl: String, isSsl: Boolean, sslMode: SslModeEnum,
-                             allowHtml: Boolean, mentionAsWebFingerId: TriState,
-                             useLegacyHttpProtocol: TriState,
-                             inCombinedGlobalSearch: Boolean, inCombinedPublicReload: Boolean) {
+    private fun forOneOrigin(
+        originType: OriginType, originName: String,
+        hostOrUrl: String, isSsl: Boolean, sslMode: SslModeEnum,
+        allowHtml: Boolean, mentionAsWebFingerId: TriState,
+        useLegacyHttpProtocol: TriState,
+        inCombinedGlobalSearch: Boolean, inCombinedPublicReload: Boolean
+    ) {
         val method = "OriginEditorTest"
-        val originOld: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(originName)
+        val originOld: Origin = myContextHolder.getNow().origins.fromName(originName)
         val intent = Intent()
         if (originOld.isPersistent()) {
             intent.action = Intent.ACTION_EDIT
@@ -109,7 +121,9 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
         val spinnerUseLegacyHttpProtocol = activity.findViewById<Spinner?>(R.id.use_legacy_http_protocol)
         val clicker: Runnable = object : Runnable {
             override fun run() {
-                spinnerOriginType.setSelection(SelectableEnumList.Companion.newInstance<OriginType>(OriginType::class.java).getIndex(originType))
+                spinnerOriginType.setSelection(
+                    SelectableEnumList.Companion.newInstance<OriginType>(OriginType::class.java).getIndex(originType)
+                )
                 editTextOriginName.setText(originName)
                 editTextHost.setText(hostOrUrl)
                 checkBoxIsSsl.isChecked = isSsl
@@ -117,8 +131,10 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
                 checkBoxAllowHtml.isChecked = allowHtml
                 spinnerMentionAsWebFingerId.setSelection(mentionAsWebFingerId.getEntriesPosition())
                 spinnerUseLegacyHttpProtocol.setSelection(useLegacyHttpProtocol.getEntriesPosition())
-                (activity.findViewById<View?>(R.id.in_combined_global_search) as CheckBox).isChecked = inCombinedGlobalSearch
-                (activity.findViewById<View?>(R.id.in_combined_public_reload) as CheckBox).isChecked = inCombinedPublicReload
+                (activity.findViewById<View?>(R.id.in_combined_global_search) as CheckBox).isChecked =
+                    inCombinedGlobalSearch
+                (activity.findViewById<View?>(R.id.in_combined_public_reload) as CheckBox).isChecked =
+                    inCombinedPublicReload
                 DbUtils.waitMs(method, 1000)
                 MyLog.v(this, "$method-Log before click")
                 buttonSave.performClick()
@@ -128,7 +144,7 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
         activity.runOnUiThread(clicker)
         waitForIdleSync()
         DbUtils.waitMs(method, 200)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(originName)
+        val origin: Origin = myContextHolder.getNow().origins.fromName(originName)
         assertEquals("Origin '$originName' added", originName, origin.name)
         assertEquals(originType, origin.originType)
         if (hostOrUrl.contains("bad")) {
@@ -144,8 +160,10 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
             }
         }
         assertEquals(isSsl, origin.isSsl())
-        assertEquals("$origin, Spinner: ${spinnerSslMode.selectedItem}, " +
-                "in activity: ${activity.spinnerSslMode?.selectedItem}", sslMode, origin.getSslMode())
+        assertEquals(
+            "$origin, Spinner: ${spinnerSslMode.selectedItem}, " +
+                "in activity: ${activity.spinnerSslMode?.selectedItem}", sslMode, origin.getSslMode()
+        )
         assertEquals(allowHtml, origin.isHtmlContentAllowed())
         assertEquals(mentionAsWebFingerId, origin.getMentionAsWebFingerId())
         assertEquals(useLegacyHttpProtocol, origin.useLegacyHttpProtocol())
@@ -155,6 +173,6 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
 
     @After
     fun tearDown() {
-         MyContextHolder.myContextHolder.initialize(null, this)
+        myContextHolder.initialize(null, this)
     }
 }

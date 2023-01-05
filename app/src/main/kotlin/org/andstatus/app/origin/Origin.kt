@@ -27,7 +27,7 @@ import org.andstatus.app.account.AccountName
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyProvider
@@ -58,14 +58,17 @@ import java.util.regex.Pattern
  *
  * @author yvolk@yurivolkov.com
  */
-open class Origin internal constructor(myContextIn: MyContext, val originType: OriginType) : Comparable<Origin>, IsEmpty {
+open class Origin internal constructor(myContextIn: MyContext, val originType: OriginType) : Comparable<Origin>,
+    IsEmpty {
     val myContext: MyContext = myContextIn
         get() = field.takeIf { it.nonEmpty && !it.isExpired }
-                ?: MyContextHolder.myContextHolder.getNow()
+            ?: myContextHolder.getNow()
 
     val shortUrlLength: Int
+
     /** the Origin name, unique in the application */
     var name = ""
+
     /** the OriginId in MyDatabase. 0 means that this system doesn't exist */
     var id: Long = 0
     var url: URL? = null
@@ -101,9 +104,9 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
 
     private fun calcIsValid(): Boolean {
         return (nonEmpty
-                && isNameValid()
-                && urlIsValid()
-                && (isSsl() == originType.sslDefault || originType.canChangeSsl))
+            && isNameValid()
+            && urlIsValid()
+            && (isSsl() == originType.sslDefault || originType.canChangeSsl))
     }
 
     fun isOAuthDefault(): Boolean {
@@ -308,11 +311,11 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
         return if (this === EMPTY) {
             "Origin:EMPTY"
         } else "Origin:{" + (if (isValid) "" else "(invalid) ") + "name:" + name +
-        ", type:" + originType +
-        (if (url != null) ", url:" + url else "") +
-        (if (isSsl()) ", " + getSslMode() else "") +
-        (if (getMentionAsWebFingerId() != TriState.UNKNOWN) ", mentionAsWf:" + getMentionAsWebFingerId() else "") +
-        "}"
+            ", type:" + originType +
+            (if (url != null) ", url:" + url else "") +
+            (if (isSsl()) ", " + getSslMode() else "") +
+            (if (getMentionAsWebFingerId() != TriState.UNKNOWN) ", mentionAsWf:" + getMentionAsWebFingerId() else "") +
+            "}"
     }
 
     fun getTextLimit(): Int {
@@ -361,7 +364,8 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
         if (groupActorReferenceChar().isPresent()) {
             val indexOfGroupReference = text.indexOf(groupActorReferenceChar().get(), textStart)
             if (indexOfGroupReference >= textStart &&
-                    (indexOfReference < textStart || indexOfGroupReference < indexOfReference)) {
+                (indexOfReference < textStart || indexOfGroupReference < indexOfReference)
+            ) {
                 indexOfReference = indexOfGroupReference
                 groupType = GroupType.GENERIC
             }
@@ -393,8 +397,8 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
     fun isReferenceChar(c: Char): Boolean {
         return if (c == actorReferenceChar()) true
         else groupActorReferenceChar()
-                .map { rc: Char? -> rc == c }
-                .orElse(false)
+            .map { rc: Char? -> rc == c }
+            .orElse(false)
     }
 
     fun actorReferenceChar(): Char {
@@ -425,7 +429,8 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
          */
         constructor(myContext: MyContext, cursor: Cursor) {
             val originType1: OriginType = OriginType.fromId(
-                    DbUtils.getLong(cursor, OriginTable.ORIGIN_TYPE_ID))
+                DbUtils.getLong(cursor, OriginTable.ORIGIN_TYPE_ID)
+            )
             origin = fromType(myContext, originType1)
             origin.id = DbUtils.getLong(cursor, BaseColumns._ID)
             origin.name = DbUtils.getString(cursor, OriginTable.ORIGIN_NAME)
@@ -434,12 +439,22 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
             setSslMode(SslModeEnum.fromId(DbUtils.getLong(cursor, OriginTable.SSL_MODE)))
             origin.allowHtml = DbUtils.getBoolean(cursor, OriginTable.ALLOW_HTML)
             val textLimit = DbUtils.getInt(cursor, OriginTable.TEXT_LIMIT)
-            setTextLimit(if (textLimit > 0) textLimit else
-                if (originType1.textLimitDefault > 0) originType1.textLimitDefault else TEXT_LIMIT_MAXIMUM)
-            origin.setInCombinedGlobalSearch(DbUtils.getBoolean(cursor,
-                    OriginTable.IN_COMBINED_GLOBAL_SEARCH))
-            origin.setInCombinedPublicReload(DbUtils.getBoolean(cursor,
-                    OriginTable.IN_COMBINED_PUBLIC_RELOAD))
+            setTextLimit(
+                if (textLimit > 0) textLimit else
+                    if (originType1.textLimitDefault > 0) originType1.textLimitDefault else TEXT_LIMIT_MAXIMUM
+            )
+            origin.setInCombinedGlobalSearch(
+                DbUtils.getBoolean(
+                    cursor,
+                    OriginTable.IN_COMBINED_GLOBAL_SEARCH
+                )
+            )
+            origin.setInCombinedPublicReload(
+                DbUtils.getBoolean(
+                    cursor,
+                    OriginTable.IN_COMBINED_PUBLIC_RELOAD
+                )
+            )
             setMentionAsWebFingerId(DbUtils.getTriState(cursor, OriginTable.MENTION_AS_WEBFINGER_ID))
             setUseLegacyHttpProtocol(DbUtils.getTriState(cursor, OriginTable.USE_LEGACY_HTTP))
         }
@@ -487,9 +502,9 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
                 return nameIn
             }
             return DOTS_PATTERN.matcher(
-                    INVALID_NAME_PART_PATTERN.matcher(
-                            StringUtils.stripAccents(nameIn.trim { it <= ' ' })
-                    ).replaceAll(".")
+                INVALID_NAME_PART_PATTERN.matcher(
+                    StringUtils.stripAccents(nameIn.trim { it <= ' ' })
+                ).replaceAll(".")
             ).replaceAll(".")
             // Test with: http://www.regexplanet.com/advanced/java/index.html
         }
@@ -564,7 +579,7 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
             }
             if (origin.id == 0L) {
                 val existing = origin.myContext.origins
-                        .fromName(origin.name)
+                    .fromName(origin.name)
                 if (existing.isPersistent()) {
                     if (origin.originType !== existing.originType) {
                         MyLog.w(this, "Origin with this name and other type already exists $existing")
@@ -588,13 +603,15 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
                 values.put(OriginTable.ORIGIN_NAME, origin.name)
                 values.put(OriginTable.ORIGIN_TYPE_ID, origin.originType.getId())
                 DbUtils.addRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, values, 3)
-                        .onSuccess { idAdded: Long -> origin.id = idAdded }
+                    .onSuccess { idAdded: Long -> origin.id = idAdded }
                 changed = origin.isPersistent()
             } else {
-                changed = DbUtils.updateRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, origin.id,
-                        values, 3)
-                        .onFailure { e: Throwable? -> MyLog.w("Origin", "Failed to save $this") }
-                        .isSuccess
+                changed = DbUtils.updateRowWithRetry(
+                    getMyContext(), OriginTable.TABLE_NAME, origin.id,
+                    values, 3
+                )
+                    .onFailure { e: Throwable? -> MyLog.w("Origin", "Failed to save $this") }
+                    .isSuccess
             }
             if (changed && getMyContext().isReady) {
                 MyPreferences.onPreferencesChanged()
@@ -606,19 +623,25 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
         fun delete(): Boolean {
             val sa = SelectionAndArgs()
             sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.ORIGIN_ID + "=" + origin.id)
-            val deletedActivities: Long = MyProvider.deleteActivities(getMyContext(),
-                    sa.selection, sa.selectionArgs, false).toLong()
-            val deletedActors = MyQuery.getLongs(getMyContext(), "SELECT " + BaseColumns._ID
+            val deletedActivities: Long = MyProvider.deleteActivities(
+                getMyContext(),
+                sa.selection, sa.selectionArgs, false
+            ).toLong()
+            val deletedActors = MyQuery.getLongs(
+                getMyContext(), "SELECT " + BaseColumns._ID
                     + " FROM " + ActorTable.TABLE_NAME
-                    + " WHERE " + ActorTable.ORIGIN_ID + "=" + origin.id).stream()
-                    .mapToLong { actorId: Long -> MyProvider.deleteActor(getMyContext(), actorId) }
-                    .sum()
+                    + " WHERE " + ActorTable.ORIGIN_ID + "=" + origin.id
+            ).stream()
+                .mapToLong { actorId: Long -> MyProvider.deleteActor(getMyContext(), actorId) }
+                .sum()
             val deleted = (!origin.hasNotes()
-                    && MyProvider.delete(getMyContext(), OriginTable.TABLE_NAME, BaseColumns._ID, origin.id) > 0)
+                && MyProvider.delete(getMyContext(), OriginTable.TABLE_NAME, BaseColumns._ID, origin.id) > 0)
             if (deleted) {
-                MyLog.i(this, "Deleted Origin " + origin
+                MyLog.i(
+                    this, "Deleted Origin " + origin
                         + ", its activities: " + deletedActivities
-                        + ", actors: " + deletedActors)
+                        + ", actors: " + deletedActors
+                )
                 getMyContext().setExpired { "Origin $origin deleted" }
             }
             return deleted

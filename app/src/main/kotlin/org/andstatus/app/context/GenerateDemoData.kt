@@ -21,6 +21,7 @@ import org.andstatus.app.FirstActivity
 import org.andstatus.app.account.DemoAccountInserter
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.backup.ProgressLogger
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DemoGnuSocialConversationInserter
 import org.andstatus.app.data.checker.DataChecker
 import org.andstatus.app.net.social.Actor
@@ -38,9 +39,10 @@ import org.hamcrest.MatcherAssert
 import org.junit.Assert
 import java.util.*
 
-class GenerateDemoData constructor(val progressListener: ProgressLogger.ProgressListener,
-                                   val myContext: MyContext,
-                                   val demoData: DemoData
+class GenerateDemoData constructor(
+    val progressListener: ProgressLogger.ProgressListener,
+    val myContext: MyContext,
+    val demoData: DemoData
 ) :
     AsyncRunnable(GenerateDemoData::class, AsyncEnum.DEFAULT_POOL) {
     val logTag: String = progressListener.getLogTag()
@@ -51,7 +53,7 @@ class GenerateDemoData constructor(val progressListener: ProgressLogger.Progress
         progressListener.onProgressMessage("Generating demo data...")
         delay(500)
         MyLog.v(logTag, "Before initialize 1")
-         MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
+        myContextHolder.initialize(null, logTag).getBlocking()
         MyLog.v(logTag, "After initialize 1")
         MyServiceManager.setServiceUnavailable()
         val originInserter = DemoOriginInserter(myContext)
@@ -60,13 +62,13 @@ class GenerateDemoData constructor(val progressListener: ProgressLogger.Progress
         accountInserter.insert()
         myContext.timelines.saveChanged()
         MyLog.v(logTag, "Before initialize 2")
-        MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
+        myContextHolder.initialize(null, logTag).getBlocking()
         MyLog.v(logTag, "After initialize 2")
         MyServiceManager.setServiceUnavailable()
         progressListener.onProgressMessage("Demo accounts added...")
         delay(500)
 
-        val myContext2 = MyContextHolder.myContextHolder.getBlocking()
+        val myContext2 = myContextHolder.getBlocking()
         Assert.assertTrue("Context is not ready $myContext2", myContext2.isReady)
         demoData.checkDataPath()
         val size: Int = myContext2.accounts.size()
@@ -81,7 +83,7 @@ class GenerateDemoData constructor(val progressListener: ProgressLogger.Progress
         val size2: Int = myContext2.users.size()
         Assert.assertTrue(
             "Only $size2 users added: ${myContext2.users}\n" +
-                    "Accounts: ${myContext2.accounts}",
+                "Accounts: ${myContext2.accounts}",
             size2 >= size
         )
 
@@ -92,25 +94,27 @@ class GenerateDemoData constructor(val progressListener: ProgressLogger.Progress
         DemoGnuSocialConversationInserter().insertConversation()
         progressListener.onProgressMessage("Demo notes added...")
         delay(500)
-        if ( MyContextHolder.myContextHolder.getNow().accounts.size() == 0) {
+        if (myContextHolder.getNow().accounts.size() == 0) {
             Assert.fail("No persistent accounts")
         }
         demoData.setSuccessfulAccountAsCurrent()
-        val defaultTimeline: Timeline = MyContextHolder.myContextHolder.getNow().timelines.filter(
-                false, TriState.TRUE, TimelineType.EVERYTHING, Actor.EMPTY,
-                MyContextHolder.myContextHolder.getNow().accounts.currentAccount.origin)
-                .findFirst().orElse(Timeline.EMPTY)
+        val defaultTimeline: Timeline = myContextHolder.getNow().timelines.filter(
+            false, TriState.TRUE, TimelineType.EVERYTHING, Actor.EMPTY,
+            myContextHolder.getNow().accounts.currentAccount.origin
+        )
+            .findFirst().orElse(Timeline.EMPTY)
         MatcherAssert.assertThat(defaultTimeline.timelineType, CoreMatchers.`is`(TimelineType.EVERYTHING))
-        MyContextHolder.myContextHolder.getNow().timelines.setDefault(defaultTimeline)
+        myContextHolder.getNow().timelines.setDefault(defaultTimeline)
         MyLog.v(logTag, "Before initialize 3")
-        MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
+        myContextHolder.initialize(null, logTag).getBlocking()
         MyLog.v(logTag, "After initialize 3")
         DemoData.assertOriginsContext()
         DemoOriginInserter.assertDefaultTimelinesForOrigins()
         DemoAccountInserter.assertDefaultTimelinesForAccounts()
         Assert.assertEquals(
             "Data errors exist", 0, DataChecker.fixData(
-                ProgressLogger(progressListener), includeLong = true, countOnly = true)
+                ProgressLogger(progressListener), includeLong = true, countOnly = true
+            )
         )
         MyLog.v(logTag, "After data checker")
         progressListener.onProgressMessage("Demo data is ready")

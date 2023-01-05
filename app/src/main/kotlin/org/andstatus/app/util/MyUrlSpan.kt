@@ -35,7 +35,7 @@ import android.widget.Toast
 import androidx.annotation.IdRes
 import androidx.annotation.StringRes
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
@@ -55,25 +55,25 @@ class MyUrlSpan : URLSpan {
         }
 
         fun getTimeline(): Timeline {
-            return searchQuery.map({ s: String? ->
-                MyContextHolder.myContextHolder.getNow().timelines
-                        .get(TimelineType.SEARCH, Actor.EMPTY, Origin.EMPTY, s)
-            })
-                    .orElse(actor.map({ a: Actor ->
-                        MyContextHolder.myContextHolder.getNow().timelines.forUserAtHomeOrigin(TimelineType.SENT, a)
-                    })
-                            .orElse(Timeline.EMPTY))
+            return searchQuery.map { s: String? ->
+                myContextHolder.getNow().timelines
+                    .get(TimelineType.SEARCH, Actor.EMPTY, Origin.EMPTY, s)
+            }
+                .orElse(actor.map { a: Actor ->
+                    myContextHolder.getNow().timelines.forUserAtHomeOrigin(TimelineType.SENT, a)
+                }
+                    .orElse(Timeline.EMPTY))
         }
 
         override fun toString(): String = "MyUrlSpan{" +
             Stream.of(
-                    actor.map { obj: Actor -> obj.toString() },
-                    searchQuery.map { obj: String? -> obj.toString() },
-                    url.map { obj: String? -> obj.toString() }
+                actor.map { obj: Actor -> obj.toString() },
+                searchQuery.map { obj: String? -> obj.toString() },
+                url.map { obj: String? -> obj.toString() }
             )
-                    .filter { obj: Optional<String> -> obj.isPresent }
-                    .map { obj: Optional<String> -> obj.get() }
-                    .collect(Collectors.joining(", ")) +
+                .filter { obj: Optional<String> -> obj.isPresent }
+                .map { obj: Optional<String> -> obj.get() }
+                .collect(Collectors.joining(", ")) +
             '}'
     }
 
@@ -94,10 +94,12 @@ class MyUrlSpan : URLSpan {
             MyLog.v(this, e)
             try {
                 MyLog.i(this, "Malformed link:'$url', $data")
-                val myContext = MyContextHolder.myContextHolder.getNow()
+                val myContext = myContextHolder.getNow()
                 if (myContext.nonEmpty) {
-                    Toast.makeText(myContext.context, myContext.context.getText(R.string.malformed_link)
-                            .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        myContext.context, myContext.context.getText(R.string.malformed_link)
+                            .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e2: Exception) {
                 MyLog.d(this, "Couldn't show a toast", e2)
@@ -106,10 +108,12 @@ class MyUrlSpan : URLSpan {
             MyLog.v(this, e)
             try {
                 MyLog.i(this, "Malformed link:'$url', $data")
-                val myContext = MyContextHolder.myContextHolder.getNow()
+                val myContext = myContextHolder.getNow()
                 if (myContext.nonEmpty) {
-                    Toast.makeText(myContext.context, myContext.context.getText(R.string.malformed_link)
-                            .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        myContext.context, myContext.context.getText(R.string.malformed_link)
+                            .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e2: Exception) {
                 MyLog.d(this, "Couldn't show a toast", e2)
@@ -131,7 +135,8 @@ class MyUrlSpan : URLSpan {
         val EMPTY_SPANNABLE: Spannable = SpannableString("")
         val EMPTY_URL: String = "content://"
 
-        @JvmField val CREATOR: Parcelable.Creator<MyUrlSpan> = object : Parcelable.Creator<MyUrlSpan> {
+        @JvmField
+        val CREATOR: Parcelable.Creator<MyUrlSpan> = object : Parcelable.Creator<MyUrlSpan> {
             override fun createFromParcel(parcel: Parcel): MyUrlSpan {
                 return MyUrlSpan(parcel.readString() ?: "")
             }
@@ -142,7 +147,13 @@ class MyUrlSpan : URLSpan {
         }
 
         fun showLabel(activity: Activity, @IdRes viewId: Int, @StringRes stringResId: Int) =
-            showText(activity.findViewById(viewId), activity.getText(stringResId).toString(), TextMediaType.UNKNOWN, false, false)
+            showText(
+                activity.findViewById(viewId),
+                activity.getText(stringResId).toString(),
+                TextMediaType.UNKNOWN,
+                false,
+                false
+            )
 
         fun showAsPlainText(parentView: View, @IdRes viewId: Int, text: String?, showIfEmpty: Boolean) =
             showText(parentView, viewId, MyHtml.htmlToCompactPlainText(text), TextMediaType.PLAIN, false, showIfEmpty)
@@ -150,10 +161,23 @@ class MyUrlSpan : URLSpan {
         fun showText(parentView: View, @IdRes viewId: Int, text: String?, linkify: Boolean, showIfEmpty: Boolean) =
             showText(parentView, viewId, text, TextMediaType.UNKNOWN, linkify, showIfEmpty)
 
-        fun showText(parentView: View, @IdRes viewId: Int, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) =
+        fun showText(
+            parentView: View,
+            @IdRes viewId: Int,
+            text: String?,
+            mediaType: TextMediaType?,
+            linkify: Boolean,
+            showIfEmpty: Boolean
+        ) =
             showText(parentView.findViewById(viewId), text, mediaType, linkify, showIfEmpty)
 
-        fun showText(textView: TextView?, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) =
+        fun showText(
+            textView: TextView?,
+            text: String?,
+            mediaType: TextMediaType?,
+            linkify: Boolean,
+            showIfEmpty: Boolean
+        ) =
             showSpannable(textView, toSpannable(text, mediaType, linkify), showIfEmpty)
 
         fun showSpannable(textView: TextView?, spannable: Spannable, showIfEmpty: Boolean): TextView? {
@@ -184,7 +208,8 @@ class MyUrlSpan : URLSpan {
                 text = text.replace(SOFT_HYPHEN, "-")
             }
             val spannable = if (mediaType == TextMediaType.HTML ||
-                    mediaType == TextMediaType.UNKNOWN && MyHtml.hasHtmlMarkup(text)) htmlToSpannable(text) else SpannableString(text)
+                mediaType == TextMediaType.UNKNOWN && MyHtml.hasHtmlMarkup(text)
+            ) htmlToSpannable(text) else SpannableString(text)
             if (linkify && !hasUrlSpans(spannable)) {
                 Linkify.addLinks(spannable, Linkify.WEB_URLS)
             }
@@ -195,13 +220,13 @@ class MyUrlSpan : URLSpan {
         private fun htmlToSpannable(text: String?): Spannable {
             val spanned = Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT)
             return if (Spannable::class.java.isAssignableFrom(spanned.javaClass)) spanned as Spannable
-                else SpannableString.valueOf(spanned)
+            else SpannableString.valueOf(spanned)
         }
 
         fun getText(parentView: View, @IdRes viewId: Int): String {
             val view = parentView.findViewById<View?>(viewId)
             return if (view == null || !TextView::class.java.isAssignableFrom(view.javaClass)) ""
-              else (view as TextView).text.toString()
+            else (view as TextView).text.toString()
         }
 
         /**
@@ -234,15 +259,19 @@ class MyUrlSpan : URLSpan {
                     val layout = widget.getLayout()
                     val line = layout.getLineForVertical(y.toInt())
                     val off = layout.getOffsetForHorizontal(line, x)
-                    val link = buffer.getSpans(off, off,
-                            ClickableSpan::class.java)
+                    val link = buffer.getSpans(
+                        off, off,
+                        ClickableSpan::class.java
+                    )
                     if (link.size > 0) {
                         if (action == MotionEvent.ACTION_UP) {
                             link[0].onClick(widget)
                         } else if (buffer is Spannable) {
-                            Selection.setSelection(buffer as Spannable?,
-                                    buffer.getSpanStart(link[0]),
-                                    buffer.getSpanEnd(link[0]))
+                            Selection.setSelection(
+                                buffer as Spannable?,
+                                buffer.getSpanStart(link[0]),
+                                buffer.getSpanEnd(link[0])
+                            )
                         }
                         return true
                     }

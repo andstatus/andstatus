@@ -16,7 +16,7 @@
 package org.andstatus.app.timeline.meta
 
 import org.andstatus.app.context.ActivityTest
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.junit.Assert
 import org.junit.Before
@@ -38,9 +38,11 @@ class ManageTimelinesTest : ActivityTest<ManageTimelines>() {
 
     @Test
     fun testActivityOpened() {
-        val expectedCount: Int =  MyContextHolder.myContextHolder.getNow().timelines.values().size
+        val expectedCount: Int = myContextHolder.getNow().timelines.values().size
         TestSuite.waitForListLoaded(activity, expectedCount)
-        Assert.assertTrue("Timelines shown: " + activity.getListAdapter().count,
-                activity.getListAdapter().count == expectedCount)
+        Assert.assertTrue(
+            "Timelines shown: " + activity.getListAdapter().count,
+            activity.getListAdapter().count == expectedCount
+        )
     }
 }

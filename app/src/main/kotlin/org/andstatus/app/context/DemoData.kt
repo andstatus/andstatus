@@ -20,6 +20,7 @@ import android.net.Uri
 import org.andstatus.app.account.CredentialsVerificationStatus
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.backup.ProgressLogger
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.DemoConversationInserter
 import org.andstatus.app.data.checker.CheckConversations
@@ -159,7 +160,7 @@ class DemoData {
         Assert.assertEquals(
             "Conversations need fixes", 0,
             CheckConversations()
-                .setMyContext(MyContextHolder.myContextHolder.getNow())
+                .setMyContext(myContextHolder.getNow())
                 .setLogger(ProgressLogger.getEmpty("CheckConversations"))
                 .setCountOnly(true)
                 .fix()
@@ -167,15 +168,15 @@ class DemoData {
     }
 
     fun setSuccessfulAccountAsCurrent() {
-        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.myContextHolder.getNow().accounts.size())
-        var found = (MyContextHolder.myContextHolder.getNow().accounts.currentAccount.credentialsVerified
+        MyLog.i(TAG, "Persistent accounts: " + myContextHolder.getNow().accounts.size())
+        var found = (myContextHolder.getNow().accounts.currentAccount.credentialsVerified
             == CredentialsVerificationStatus.SUCCEEDED)
         if (!found) {
-            for (ma in MyContextHolder.myContextHolder.getNow().accounts.get()) {
+            for (ma in myContextHolder.getNow().accounts.get()) {
                 MyLog.i(TAG, ma.toString())
                 if (ma.credentialsVerified == CredentialsVerificationStatus.SUCCEEDED) {
                     found = true
-                    MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+                    myContextHolder.getNow().accounts.setCurrentAccount(ma)
                     break
                 }
             }
@@ -183,7 +184,7 @@ class DemoData {
         Assert.assertTrue("Found account, which is successfully verified", found)
         Assert.assertTrue(
             "Current account is successfully verified",
-            MyContextHolder.myContextHolder.getNow().accounts.currentAccount.credentialsVerified
+            myContextHolder.getNow().accounts.currentAccount.credentialsVerified
                 == CredentialsVerificationStatus.SUCCEEDED
         )
     }
@@ -191,8 +192,8 @@ class DemoData {
     fun checkDataPath() {
         if (dataPath.isNotEmpty()) {
             Assert.assertEquals(
-                "Data path. " + MyContextHolder.myContextHolder.getNow(), dataPath,
-                MyContextHolder.myContextHolder.getNow().context.getDatabasePath("andstatus")?.path
+                "Data path. " + myContextHolder.getNow(), dataPath,
+                myContextHolder.getNow().context.getDatabasePath("andstatus")?.path
             )
         }
     }
@@ -206,14 +207,14 @@ class DemoData {
     }
 
     fun getMyAccount(accountName: String?): MyAccount {
-        val ma: MyAccount = MyContextHolder.myContextHolder.getBlocking().accounts.fromAccountName(accountName)
+        val ma: MyAccount = myContextHolder.getBlocking().accounts.fromAccountName(accountName)
         Assert.assertTrue("$accountName exists", ma.isValid)
         Assert.assertTrue("Origin for $accountName doesn't exist", ma.origin.isValid)
         return ma
     }
 
     fun getAccountActorByOid(actorOid: String?): Actor {
-        for (ma in MyContextHolder.myContextHolder.getBlocking().accounts.get()) {
+        for (ma in myContextHolder.getBlocking().accounts.get()) {
             if (ma.getActorOid() == actorOid) {
                 return ma.actor
             }
@@ -253,7 +254,7 @@ class DemoData {
         }
 
         fun assertOriginsContext() {
-            MyContextHolder.myContextHolder.getNow().origins.collection()
+            myContextHolder.getNow().origins.collection()
                 .forEach(Consumer { obj: Origin -> obj.assertContext() })
         }
     }

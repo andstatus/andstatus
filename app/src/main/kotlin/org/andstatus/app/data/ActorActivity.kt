@@ -17,7 +17,7 @@ package org.andstatus.app.data
 
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.util.MyLog
@@ -96,12 +96,13 @@ class ActorActivity(actorIdIn: Long, activityId: Long, activityDate: Long) {
      * @return true if succeeded
      */
     fun save(): Boolean {
-        MyLog.v(this
+        MyLog.v(
+            this
         ) {
             ("actorId " + actorId + ": " +
-                    MyQuery.actorIdToWebfingerId( MyContextHolder.myContextHolder.getNow(), actorId)
-                    + " Latest activity update at " + Date(getLastActivityDate()).toString()
-                    + if (changed) "" else " not changed")
+                MyQuery.actorIdToWebfingerId(myContextHolder.getNow(), actorId)
+                + " Latest activity update at " + Date(getLastActivityDate()).toString()
+                + if (changed) "" else " not changed")
         }
         if (!changed) {
             return true
@@ -114,8 +115,8 @@ class ActorActivity(actorIdIn: Long, activityId: Long, activityDate: Long) {
             lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId)
             MyLog.v(this) {
                 ("There is newer information in the database. Actor " + actorId + ": "
-                        + MyQuery.actorIdToWebfingerId( MyContextHolder.myContextHolder.getNow(), actorId)
-                        + " Latest activity at " + Date(getLastActivityDate()).toString())
+                    + MyQuery.actorIdToWebfingerId(myContextHolder.getNow(), actorId)
+                    + " Latest activity at " + Date(getLastActivityDate()).toString())
             }
             changed = false
             return true
@@ -125,8 +126,8 @@ class ActorActivity(actorIdIn: Long, activityId: Long, activityDate: Long) {
             sql += ActorTable.ACTOR_ACTIVITY_ID + "=" + lastActivityId
             sql += ", " + ActorTable.ACTOR_ACTIVITY_DATE + "=" + lastActivityDate
             sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + sql
-                    + " WHERE " + BaseColumns._ID + "=" + actorId)
-            val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().database
+                + " WHERE " + BaseColumns._ID + "=" + actorId)
+            val db: SQLiteDatabase? = myContextHolder.getNow().database
             if (db == null) {
                 MyLog.databaseIsNull { "Save $this" }
                 return false

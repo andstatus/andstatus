@@ -16,13 +16,16 @@
 package org.andstatus.app.note
 
 import android.net.Uri
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.UriUtils
 import java.util.*
 
-class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, previousData: NoteEditorData? = NoteEditorData.EMPTY) : IsEmpty {
+class NoteEditorCommand @JvmOverloads constructor(
+    currentData: NoteEditorData?,
+    previousData: NoteEditorData? = NoteEditorData.EMPTY
+) : IsEmpty {
     @Volatile
     private var currentNoteId: Long? = null
     private var mediaUri = Uri.EMPTY
@@ -68,7 +71,7 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
     }
 
     fun loadCurrent() {
-        currentData = NoteEditorData.load( MyContextHolder.myContextHolder.getNow(), getCurrentNoteId())
+        currentData = NoteEditorData.load(myContextHolder.getNow(), getCurrentNoteId())
     }
 
     override val isEmpty: Boolean
@@ -87,7 +90,7 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
 
     fun needToSavePreviousData(): Boolean {
         return (previousData?.isValid() == true && previousData.nonEmpty
-                && (previousData.getNoteId() == 0L || currentData?.getNoteId() != previousData.getNoteId()))
+            && (previousData.getNoteId() == 0L || currentData?.getNoteId() != previousData.getNoteId()))
     }
 
     override fun toString(): String {

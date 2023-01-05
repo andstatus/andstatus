@@ -24,6 +24,7 @@ import org.andstatus.app.appwidget.AppWidgets
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncTaskLauncher
@@ -94,7 +95,7 @@ class MyService(
 
         if (jobParameters == null) jobParameters = params
         if (myContext.isEmpty) {
-            myContext = MyContextHolder.myContextHolder.initialize(this).getBlocking()
+            myContext = myContextHolder.initialize(this).getBlocking()
         }
         needToRescheduleJob.set(false)
         latestActivityTime = System.currentTimeMillis()
@@ -118,7 +119,7 @@ class MyService(
     }
 
     private fun isForcedToStop(): Boolean {
-        return mForcedToStop || MyContextHolder.myContextHolder.isShuttingDown
+        return mForcedToStop || myContextHolder.isShuttingDown
     }
 
     fun broadcastBeforeExecutingCommand(commandData: CommandData) {
@@ -136,7 +137,7 @@ class MyService(
     private fun ensureInitialized() {
         if (initialized.get() || isStopping.get()) return
         if (!myContext.isReady) {
-            myContext = MyContextHolder.myContextHolder.initialize(this).getBlocking()
+            myContext = myContextHolder.initialize(this).getBlocking()
             if (!myContext.isReady) return
         }
         if (initialized.compareAndSet(false, true)) {
@@ -190,7 +191,7 @@ class MyService(
                 "$method; shouldStop:$shouldStop, needToExecute:$needToExecute"
             }
             if (shouldStop || (!needToExecute
-                        && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))
+                    && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))
             ) {
                 stopDelayed(false)
             } else if (needToExecute) startExecution()
@@ -254,8 +255,8 @@ class MyService(
             myContext.notifier.clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
             MyLog.i(
                 this, "Stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime) +
-                        ", succeeded:" + succeededCommands.get() +
-                        ", failed:" + failedCommands.get()
+                    ", succeeded:" + succeededCommands.get() +
+                    ", failed:" + failedCommands.get()
             )
         } finally {
             succeededCommands.set(0)

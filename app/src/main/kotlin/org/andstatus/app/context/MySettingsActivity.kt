@@ -26,6 +26,7 @@ import androidx.preference.PreferenceScreen
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 
@@ -57,8 +58,10 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
     }
 
     // TODO: Not fully implemented, but it is unused yet...
-    override fun onPreferenceStartScreen(preferenceFragmentCompat: PreferenceFragmentCompat?,
-                                         preferenceScreen: PreferenceScreen): Boolean {
+    override fun onPreferenceStartScreen(
+        preferenceFragmentCompat: PreferenceFragmentCompat?,
+        preferenceScreen: PreferenceScreen
+    ): Boolean {
         val ft = supportFragmentManager.beginTransaction()
         val fragment = MySettingsFragment()
         val args = Bundle()
@@ -77,9 +80,9 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
         fragment.arguments = args
         fragment.setTargetFragment(caller, 0)
         supportFragmentManager.beginTransaction()
-                .replace(R.id.settings_container, fragment, pref.getKey())
-                .addToBackStack(pref.getKey())
-                .commit()
+            .replace(R.id.settings_container, fragment, pref.getKey())
+            .addToBackStack(pref.getKey())
+            .commit()
         return true
     }
 
@@ -105,7 +108,7 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
         } else {
             val settingsGroup: MySettingsGroup = MySettingsGroup.fromIntent(intent)
             if (settingsGroup != MySettingsGroup.UNKNOWN) {
-                if (! MyContextHolder.myContextHolder.needToRestartActivity()) {
+                if (!myContextHolder.needToRestartActivity()) {
                     intent.removeExtra(IntentExtra.SETTINGS_GROUP.key)
                     setIntent(intent)
                 }
@@ -118,14 +121,14 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
 
     override fun onResume() {
         super.onResume()
-        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() ||  MyContextHolder.myContextHolder.needToRestartActivity()) {
+        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || myContextHolder.needToRestartActivity()) {
             if (initializeThenRestartActivity()) {
                 logEvent("onResume", "Recreating")
                 return
             }
         }
         if (isRootScreen()) {
-            MyContextHolder.myContextHolder.getNow().isInForeground = true
+            myContextHolder.getNow().isInForeground = true
             MyServiceManager.setServiceUnavailable()
             MyServiceManager.stopService()
         }
@@ -136,7 +139,7 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
         super.onPause()
         logEvent("onPause", "")
         if (isRootScreen()) {
-            MyContextHolder.myContextHolder.getNow().isInForeground = false
+            myContextHolder.getNow().isInForeground = false
         }
     }
 
@@ -179,9 +182,15 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
     companion object {
         fun goToMySettingsAccounts(activity: Activity) {
             activity.finish()
-            MyContextHolder.myContextHolder
-            .initialize(activity)
-            .thenStartActivity(MySettingsGroup.ACCOUNTS.addTo(Intent(activity.applicationContext, MySettingsActivity::class.java)))
+            myContextHolder.initialize(activity)
+                .thenStartActivity(
+                    MySettingsGroup.ACCOUNTS.addTo(
+                        Intent(
+                            activity.applicationContext,
+                            MySettingsActivity::class.java
+                        )
+                    )
+                )
         }
     }
 }

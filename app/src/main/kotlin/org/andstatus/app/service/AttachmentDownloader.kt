@@ -17,7 +17,7 @@ package org.andstatus.app.service
 
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.NoteContextMenuData
 import org.andstatus.app.util.MyLog
@@ -25,7 +25,7 @@ import org.andstatus.app.util.MyLog
 class AttachmentDownloader(myContext: MyContext, data: DownloadData) : FileDownloader(myContext, data) {
 
     override fun findBestAccountForDownload(): MyAccount {
-        return NoteContextMenuData.getBestAccountToDownloadNote( MyContextHolder.myContextHolder.getNow(), data.noteId)
+        return NoteContextMenuData.getBestAccountToDownloadNote(myContextHolder.getNow(), data.noteId)
     }
 
     override fun onSuccessfulLoad() {

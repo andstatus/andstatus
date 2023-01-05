@@ -34,7 +34,7 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyTheme
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.Taggable
@@ -46,7 +46,7 @@ open class SelectorDialog : DialogFragment() {
     private var toolbar: Toolbar? = null
     var listView: ListView? = null
     private val mLayoutId = R.layout.my_list_dialog
-    protected var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+    protected var myContext: MyContext = myContextHolder.getNow()
     private var resultReturned = false
 
     fun setRequestCode(requestCode: ActivityRequestCode): Bundle {
@@ -58,8 +58,10 @@ open class SelectorDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val context: Context = activity ?: throw IllegalStateException("Fragment $this not attached to an activity.")
-        val dialog = Dialog(context,
-                MyTheme.getThemeId(context, MyTheme.getThemeName(context)))
+        val dialog = Dialog(
+            context,
+            MyTheme.getThemeId(context, MyTheme.getThemeName(context))
+        )
         MyTheme.applyStyles(dialog.context, true)
         return dialog
     }
@@ -72,8 +74,10 @@ open class SelectorDialog : DialogFragment() {
         return listView?.getAdapter() as MySimpleAdapter?
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val view = inflater.inflate(mLayoutId, container, false)
         toolbar = view.findViewById<View?>(R.id.my_action_bar) as Toolbar
         listView = view.findViewById<View?>(android.R.id.list) as ListView
@@ -99,9 +103,9 @@ open class SelectorDialog : DialogFragment() {
             val activity: Activity? = activity
             if (activity is MyActivity) {
                 activity.onActivityResult(
-                        myGetArguments().getInt(IntentExtra.REQUEST_CODE.key),
-                        Activity.RESULT_OK,
-                        selectedData
+                    myGetArguments().getInt(IntentExtra.REQUEST_CODE.key),
+                    Activity.RESULT_OK,
+                    selectedData
                 )
             }
         }
@@ -114,9 +118,9 @@ open class SelectorDialog : DialogFragment() {
             val activity: Activity? = activity
             if (activity is MyActivity) {
                 activity.onActivityResult(
-                        myGetArguments().getInt(IntentExtra.REQUEST_CODE.key),
-                        Activity.RESULT_CANCELED,
-                        Intent()
+                    myGetArguments().getInt(IntentExtra.REQUEST_CODE.key),
+                    Activity.RESULT_CANCELED,
+                    Intent()
                 )
             }
         }

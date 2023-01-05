@@ -26,7 +26,7 @@ import org.andstatus.app.R
 import org.andstatus.app.SearchObjects
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.ContentValuesUtils
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyQuery
@@ -58,15 +58,16 @@ import java.util.concurrent.atomic.AtomicBoolean
  * @author yvolk@yurivolkov.com
  */
 class CommandData private constructor(
-        commandId: Long,
-        val command: CommandEnum,
-        val myAccount: MyAccount,
-        /** [MyAccount] for this command. Invalid account if command is not Account
-         * specific ( do we have such? )
-         * It holds actorId for command, which need such parameter (not only for a timeline)
-         */
-        val commandTimeline: CommandTimeline,
-        createdDate: Long) : Comparable<CommandData>, Taggable, IsEmpty {
+    commandId: Long,
+    val command: CommandEnum,
+    val myAccount: MyAccount,
+    /** [MyAccount] for this command. Invalid account if command is not Account
+     * specific ( do we have such? )
+     * It holds actorId for command, which need such parameter (not only for a timeline)
+     */
+    val commandTimeline: CommandTimeline,
+    createdDate: Long
+) : Comparable<CommandData>, Taggable, IsEmpty {
 
     val commandId: Long = if (commandId == 0L) MyLog.uniqueCurrentTimeMS else commandId
     private val createdDate: Long = if (createdDate > 0) createdDate else this.commandId
@@ -74,7 +75,7 @@ class CommandData private constructor(
 
     val myContext: MyContext
         get() = commandTimeline.myContext.takeIf { it.nonEmpty }
-                ?: myAccount.myContext
+            ?: myAccount.myContext
 
     @Volatile
     private var mInForeground = false
@@ -98,8 +99,9 @@ class CommandData private constructor(
     private fun setTrimmedNoteContentAsDescription(noteId: Long) {
         if (noteId != 0L) {
             description = trimConditionally(
-                    MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId), true)
-                    .toString()
+                MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId), true
+            )
+                .toString()
         }
     }
 
@@ -236,7 +238,10 @@ class CommandData private constructor(
 
     private fun toUserFriendlyForm(myContext: MyContext, summaryOnly: Boolean): String {
         val builder: MyStringBuilder = MyStringBuilder.of(
-                if (command == CommandEnum.GET_TIMELINE || command == CommandEnum.GET_OLDER_TIMELINE) "" else toShortCommandName(myContext))
+            if (command == CommandEnum.GET_TIMELINE || command == CommandEnum.GET_OLDER_TIMELINE) "" else toShortCommandName(
+                myContext
+            )
+        )
         if (!summaryOnly) {
             if (mInForeground) builder.withSpace(", foreground")
             if (mManuallyLaunched) builder.withSpace(", manual")
@@ -258,8 +263,12 @@ class CommandData private constructor(
                 builder.append(WhichPage.OLDER.getTitle(myContext.context))
                 builder.withSpace(TimelineTitle.from(myContext, getTimeline()).toString())
             }
-            CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS -> builder.withSpace(getTimeline().actor.actorNameInTimeline)
-            CommandEnum.GET_ACTOR, CommandEnum.SEARCH_ACTORS -> if (getUsername().isNotEmpty()) builder.withSpaceQuoted(getUsername())
+            CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS -> builder.withSpace(
+                getTimeline().actor.actorNameInTimeline
+            )
+            CommandEnum.GET_ACTOR, CommandEnum.SEARCH_ACTORS -> if (getUsername().isNotEmpty()) builder.withSpaceQuoted(
+                getUsername()
+            )
             else -> appendScopeName(myContext, builder)
         }
         if (!summaryOnly) {
@@ -281,7 +290,10 @@ class CommandData private constructor(
     }
 
     fun createdDateWithLabel(context: Context): String {
-        return context.getText(R.string.created_label).toString() + " " + RelativeTime.getDifference(context, getCreatedDate())
+        return context.getText(R.string.created_label).toString() + " " + RelativeTime.getDifference(
+            context,
+            getCreatedDate()
+        )
     }
 
     fun toCommandProgress(myContext: MyContext): String {
@@ -318,7 +330,7 @@ class CommandData private constructor(
         }
         MyLog.v(this) {
             (method + " id=" + commandId + (if (deleted.get()) " deleted" else " not found")
-                    + ", processed queue: " + queue.size)
+                + ", processed queue: " + queue.size)
         }
         return deleted.get()
     }
@@ -337,8 +349,10 @@ class CommandData private constructor(
             ?: executedMoreSecondsAgoThan(QueueAccessor.MIN_RETRY_PERIOD_SECONDS)
 
     fun executedMoreSecondsAgoThan(predefinedPeriodSeconds: Long): Boolean {
-        return RelativeTime.moreSecondsAgoThan(getResult().getLastExecutedDate(),
-                predefinedPeriodSeconds)
+        return RelativeTime.moreSecondsAgoThan(
+            getResult().getLastExecutedDate(),
+            predefinedPeriodSeconds
+        )
     }
 
     fun resetRetries() {
@@ -369,12 +383,16 @@ class CommandData private constructor(
         private val TAG: String = CommandData::class.simpleName!!
         val EMPTY = newCommand(CommandEnum.EMPTY)
 
-        fun newSearch(searchObjects: SearchObjects?,
-                      myContext: MyContext, origin: Origin, queryString: String?): CommandData {
+        fun newSearch(
+            searchObjects: SearchObjects?,
+            myContext: MyContext, origin: Origin, queryString: String?
+        ): CommandData {
             return if (searchObjects == SearchObjects.NOTES) {
                 val timeline = myContext.timelines.get(TimelineType.SEARCH, Actor.EMPTY, origin, queryString)
-                CommandData(0, CommandEnum.GET_TIMELINE, timeline.myAccountToSync,
-                        CommandTimeline.of(timeline), 0)
+                CommandData(
+                    0, CommandEnum.GET_TIMELINE, timeline.myAccountToSync,
+                    CommandTimeline.of(timeline), 0
+                )
             } else {
                 newActorCommand(CommandEnum.SEARCH_ACTORS, Actor.EMPTY, queryString)
             }
@@ -402,10 +420,18 @@ class CommandData private constructor(
             return newActorCommandAtOrigin(command, actor, username, Origin.EMPTY)
         }
 
-        fun newActorCommandAtOrigin(command: CommandEnum, actor: Actor, username: String?, origin: Origin): CommandData {
-            val commandData = newTimelineCommand(command,
-                    MyContextHolder.myContextHolder.getNow().timelines.get(
-                            if (origin.isEmpty) TimelineType.SENT else TimelineType.SENT_AT_ORIGIN, actor, origin))
+        fun newActorCommandAtOrigin(
+            command: CommandEnum,
+            actor: Actor,
+            username: String?,
+            origin: Origin
+        ): CommandData {
+            val commandData = newTimelineCommand(
+                command,
+                myContextHolder.getNow().timelines.get(
+                    if (origin.isEmpty) TimelineType.SENT else TimelineType.SENT_AT_ORIGIN, actor, origin
+                )
+            )
             commandData.setUsername(username)
             commandData.description = commandData.getUsername()
             return commandData
@@ -421,9 +447,14 @@ class CommandData private constructor(
             return commandData
         }
 
-        fun actOnActorCommand(command: CommandEnum, myAccount: MyAccount, actor: Actor, username: String?): CommandData {
+        fun actOnActorCommand(
+            command: CommandEnum,
+            myAccount: MyAccount,
+            actor: Actor,
+            username: String?
+        ): CommandData {
             if (myAccount.nonValid || actor.isEmpty && username.isNullOrEmpty()) return EMPTY
-            val timeline: Timeline = MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.SENT, actor, Origin.EMPTY)
+            val timeline: Timeline = myContextHolder.getNow().timelines.get(TimelineType.SENT, actor, Origin.EMPTY)
             val commandData = if (actor.isEmpty) newAccountCommand(command, myAccount)
             else CommandData(0, command, myAccount, CommandTimeline.of(timeline), 0)
             commandData.setUsername(username)
@@ -436,14 +467,20 @@ class CommandData private constructor(
         }
 
         fun newOriginCommand(command: CommandEnum, origin: Origin): CommandData {
-            return newTimelineCommand(command, if (origin.isEmpty) Timeline.EMPTY
-            else MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, origin))
+            return newTimelineCommand(
+                command, if (origin.isEmpty) Timeline.EMPTY
+                else myContextHolder.getNow().timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, origin)
+            )
         }
 
-        fun newTimelineCommand(command: CommandEnum, myAccount: MyAccount,
-                               timelineType: TimelineType): CommandData {
-            return newTimelineCommand(command, MyContextHolder.myContextHolder.getNow().timelines
-                    .get(timelineType, myAccount.actor, Origin.EMPTY))
+        fun newTimelineCommand(
+            command: CommandEnum, myAccount: MyAccount,
+            timelineType: TimelineType
+        ): CommandData {
+            return newTimelineCommand(
+                command, myContextHolder.getNow().timelines
+                    .get(timelineType, myAccount.actor, Origin.EMPTY)
+            )
         }
 
         fun newTimelineCommand(command: CommandEnum, timeline: Timeline): CommandData {
@@ -480,11 +517,12 @@ class CommandData private constructor(
             val command: CommandEnum = CommandEnum.load(DbUtils.getString(cursor, CommandTable.COMMAND_CODE))
             if (CommandEnum.UNKNOWN == command) return EMPTY
             val commandData = CommandData(
-                    DbUtils.getLong(cursor, BaseColumns._ID),
-                    command,
-                    myContext.accounts.fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
-                    CommandTimeline.fromCursor(myContext, cursor),
-                    DbUtils.getLong(cursor, CommandTable.CREATED_DATE))
+                DbUtils.getLong(cursor, BaseColumns._ID),
+                command,
+                myContext.accounts.fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
+                CommandTimeline.fromCursor(myContext, cursor),
+                DbUtils.getLong(cursor, CommandTable.CREATED_DATE)
+            )
             commandData.description = DbUtils.getString(cursor, CommandTable.DESCRIPTION)
             commandData.mInForeground = DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND)
             commandData.mManuallyLaunched = DbUtils.getBoolean(cursor, CommandTable.MANUALLY_LAUNCHED)
