@@ -35,6 +35,7 @@ import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.Identified
+import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState
@@ -47,9 +48,8 @@ import java.util.function.BiConsumer
  * It allows to avoid "Application not responding" errors.
  * It is transparent and shows progress indicator only, launches next activity after application initialization.
  */
-class FirstActivity(
-    private val identifiable: Identifiable = Identified(FirstActivity::class)
-) : AppCompatActivity(), Identifiable by identifiable {
+class FirstActivity() : AppCompatActivity(), Identifiable {
+    override val instanceId: Long = InstanceId.next()
 
     enum class NeedToStart {
         HELP, CHANGELOG, OTHER

@@ -3,6 +3,7 @@ package org.andstatus.app.context
 import io.vavr.control.Try
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncResult
+import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 
 class MyContextAction(
@@ -15,8 +16,8 @@ class MyContextAction(
 
     private fun newTask(futureContext: MyFutureContext, contextAction: MyContextAction) =
         AsyncResult<Unit, Unit>(
-            "myContextAction_${futureContext.instanceTag}",
-            AsyncEnum.QUICK_UI,
+            "myContextAction${InstanceId.next()}",
+            AsyncEnum.DEFAULT_POOL,
             false
         ).apply {
             if (contextAction.mainThread) {

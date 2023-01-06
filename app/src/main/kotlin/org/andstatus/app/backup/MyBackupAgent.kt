@@ -307,7 +307,7 @@ class MyBackupAgent : BackupAgent() {
         myContextHolder
             .setOnRestore(true)
             .initialize(this).getBlocking()
-        if (myContextHolder.getNow().state == MyContextState.UPGRADING && activity != null) {
+        if (activity != null) {
             myContextHolder.upgradeIfNeeded(activity)
         }
         if (optionalNextHeader(data, LOG_FILES_KEY)) {

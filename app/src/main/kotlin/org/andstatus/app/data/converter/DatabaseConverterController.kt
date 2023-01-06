@@ -59,6 +59,7 @@ object DatabaseConverterController {
         synchronized(upgradeLock) {
             upgradeEnded = true
             upgradeEndedSuccessfully = success
+            upgradeEndTime = 0
         }
         if (!success) {
             throw ApplicationUpgradeException(databaseConverter.converterError)

@@ -41,7 +41,7 @@ internal class DatabaseConverter(val progressLogger: ProgressLogger) {
             MyLog.ignored(this, e)
             DbUtils.waitMs("ApplicationUpgradeException", 30000)
         } finally {
-            DbUtils.waitMs("execute finally", 2000)
+            DbUtils.waitMs("execute finally", 1000)
             if (success) {
                 msgLog = ("Upgrade successfully completed in "
                         + TimeUnit.MILLISECONDS.toSeconds(endTime - startTime)

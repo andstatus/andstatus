@@ -48,8 +48,9 @@ object ApplicationDataUtil {
     }
 
     private fun deleteAccounts() {
-        val am = AccountManager.get(myContextHolder.getNow().context)
-        val aa = AccountUtils.getCurrentAccounts(myContextHolder.getNow().context)
+        val myContext = myContextHolder.getNow()
+        val am = AccountManager.get(myContext.context)
+        val aa = AccountUtils.getCurrentAccounts(myContext.context)
         for (androidAccount in aa) {
             val logMsg = "Removing old account: " + androidAccount.name
             MyLog.i(this, logMsg)

@@ -63,7 +63,7 @@ class MyServiceHeartBeat constructor(myService: MyService) : AsyncTask<Unit, Lon
                 QueueExecutor.MAX_EXECUTION_TIME_SECONDS
             )
         ) {
-            MyLog.d(this, AsyncTaskLauncher.threadPoolInfo())
+            MyLog.d(this, AsyncTaskLauncher.threadPoolInfo)
         }
         myServiceRef.get()?.startStopExecution()
     }

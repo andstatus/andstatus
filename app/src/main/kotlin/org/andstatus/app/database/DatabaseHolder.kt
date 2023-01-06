@@ -26,7 +26,7 @@ import org.andstatus.app.util.MyLog
 import java.util.concurrent.atomic.AtomicBoolean
 
 class DatabaseHolder(context: Context, private val creationEnabled: Boolean) :
-        SQLiteOpenHelper(context, DATABASE_NAME, null, DatabaseCreator.DATABASE_VERSION) {
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DatabaseCreator.DATABASE_VERSION) {
     @Volatile
     private var databaseWasNotCreated = false
     private val onUpgradeTriggered: AtomicBoolean = AtomicBoolean(false)
@@ -42,7 +42,11 @@ class DatabaseHolder(context: Context, private val creationEnabled: Boolean) :
             onUpgradeTriggered.set(false)
             if (MyStorage.isDataAvailable()) {
                 val db = writableDatabase
-                if (onUpgradeTriggered.get() || DatabaseConverterController.isUpgrading()) {
+                MyLog.v(
+                    this, "onUpgradeTriggered:${onUpgradeTriggered.get()}" +
+                        ", isUpgrading:${DatabaseConverterController.isUpgrading()}, dbIsOpen:${db?.isOpen}"
+                )
+                if (DatabaseConverterController.isUpgrading()) {
                     state = MyContextState.UPGRADING
                 } else {
                     if (db != null && db.isOpen) {
@@ -84,7 +88,7 @@ class DatabaseHolder(context: Context, private val creationEnabled: Boolean) :
     }
 
     companion object {
-        val DATABASE_NAME: String = "andstatus.sqlite"
+        const val DATABASE_NAME: String = "andstatus.sqlite"
     }
 
     init {

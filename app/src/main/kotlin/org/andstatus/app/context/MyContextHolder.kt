@@ -147,7 +147,7 @@ class MyContextHolder private constructor(
             MyLog.d(this, "Skipping initialization: upgrade in progress (called by: $calledBy)")
         } else {
             synchronized(contextLock) {
-                myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy)
+                myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy, duringUpgrade)
             }
         }
         return this
@@ -215,7 +215,7 @@ class MyContextHolder private constructor(
         builder.append("\n")
         builder.append(ImageCaches.getCacheInfo())
         builder.append("\n")
-        builder.append(AsyncTaskLauncher.threadPoolInfo())
+        builder.append(AsyncTaskLauncher.threadPoolInfo)
         return builder.toString()
     }
 

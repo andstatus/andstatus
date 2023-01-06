@@ -67,7 +67,7 @@ class AsyncTaskLauncher {
             removeFinishedTasks()
             Try.success(asyncTask)
         } catch (e: Exception) {
-            val msgLog = "Launching $asyncTask in ${threadPoolInfo()}"
+            val msgLog = "Launching $asyncTask in ${threadPoolInfo}"
             MyLog.w(anyTag, msgLog, e)
             Try.failure(Exception("${e.message} $msgLog", e))
         }
@@ -134,14 +134,15 @@ class AsyncTaskLauncher {
             }
         }
 
-        fun threadPoolInfo(): String {
-            val builder = getLaunchedTasksInfo()
-            builder.append("\nThread pools:")
-            for (pool in AsyncEnum.values()) {
-                builder.append("\n${pool.name}: ${getExecutor(pool)}")
+        val threadPoolInfo: String
+            get() {
+                val builder = getLaunchedTasksInfo()
+                builder.append("\nThread pools:")
+                for (pool in AsyncEnum.values()) {
+                    builder.append("\n${pool.name}: ${getExecutor(pool)}")
+                }
+                return builder.toString()
             }
-            return builder.toString()
-        }
 
         private fun getLaunchedTasksInfo(): StringBuilder {
             val builder = StringBuilder("\n")

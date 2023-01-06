@@ -296,9 +296,10 @@ open class AsyncTask<Params, Progress, Result>(
 
     override fun toString(): String {
         return (instanceTag + " on " + pool.name +
-                ", age: " + RelativeTime.secMsAgo(createdAt) +
-                ", " + stateSummary +
-                ", instanceId: " + instanceId)
+            ", age: " + RelativeTime.secMsAgo(createdAt) +
+            (if (startedAt.get() > 0) ", started: " + RelativeTime.secMsAgo(startedAt) else ", not started") +
+            ", " + stateSummary +
+            ", instanceId: " + instanceId)
     }
 
     private val stateSummary: String

@@ -136,20 +136,20 @@ open class MyContextImpl internal constructor(
         preferencesChangeTime = MyPreferences.getPreferencesChangeTime()
         initializeDatabase(createApplicationData)
         when (state) {
-            MyContextState.DATABASE_READY -> state = if (!origins.initialize()) {
-                MyContextState.DATABASE_UNAVAILABLE
-            } else if (myContextHolder.isOnRestore()) {
-                MyContextState.RESTORING
-            } else {
-                users.initialize()
-                accounts.initialize()
-                timelines.initialize()
-                ImageCaches.initialize(context)
-                this.queues.load()
-                MyContextState.READY
-            }
-            else -> {
-            }
+            MyContextState.DATABASE_READY -> state =
+                if (!origins.initialize()) {
+                    MyContextState.DATABASE_UNAVAILABLE
+                } else if (myContextHolder.isOnRestore()) {
+                    MyContextState.RESTORING
+                } else {
+                    users.initialize()
+                    accounts.initialize()
+                    timelines.initialize()
+                    ImageCaches.initialize(context)
+                    this.queues.load()
+                    MyContextState.READY
+                }
+            else -> {}
         }
         if (state == MyContextState.READY) {
             notifier.initialize()

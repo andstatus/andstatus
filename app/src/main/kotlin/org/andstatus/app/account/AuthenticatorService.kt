@@ -27,13 +27,18 @@ import android.os.IBinder
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.util.Identifiable
+import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 
 /**
  * Based on a very basic authenticator service for POP/IMAP...
  */
 class AuthenticatorService : Service() {
-    internal inner class Authenticator(private val context: Context) : AbstractAccountAuthenticator(context) {
+    internal inner class Authenticator(private val context: Context) : AbstractAccountAuthenticator(context),
+        Identifiable {
+        override val instanceId = InstanceId.next()
+
         /**
          * We add account launching [AccountSettingsActivity] activity
          */
@@ -112,9 +117,7 @@ class AuthenticatorService : Service() {
             var deleted = true
             if (AccountUtils.isVersionCurrent(context, account)) {
                 deleted = myContextHolder
-                    .initialize(context, this)
-                    .getFuture()
-                    .tryBlocking()
+                    .tryCurrent
                     .map { myContext: MyContext ->
                         myContext.accounts
                             .fromAccountName(account.name)
@@ -122,7 +125,7 @@ class AuthenticatorService : Service() {
                     .filter { obj: MyAccount -> obj.isValid }
                     .map { ma: MyAccount ->
                         MyLog.i(this, "Removing $ma")
-                        myContextHolder.getNow().timelines.onAccountDelete(ma)
+                        ma.origin.myContext.timelines.onAccountDelete(ma)
                         MyPreferences.onPreferencesChanged()
                         true
                     }
@@ -145,7 +148,7 @@ class AuthenticatorService : Service() {
     override fun onCreate() {
         super.onCreate()
         MyLog.v(this, "onCreate")
-        myContextHolder.initialize(this).getBlocking()
+        myContextHolder.initialize(this)
     }
 
     override fun onDestroy() {
