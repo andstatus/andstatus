@@ -16,14 +16,19 @@
 package org.andstatus.app.data.converter
 
 import android.app.Activity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
+import org.andstatus.app.data.DbUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.Taggable
 import java.util.concurrent.TimeUnit
 
 object DatabaseConverterController {
-    val TAG: String = DatabaseConverterController::class.simpleName!!
+    val TAG: String = Taggable.anyToTag(DatabaseConverterController::class)
 
     // TODO: Should be one object for atomic updates. start ---
     internal val upgradeLock: Any = Any()
@@ -32,9 +37,16 @@ object DatabaseConverterController {
     internal var shouldTriggerDatabaseUpgrade = false
 
     /** Semaphore enabling uninterrupted system upgrade */
+    @Volatile
     internal var upgradeEndTime = 0L
+
+    @Volatile
     internal var upgradeStarted = false
+
+    @Volatile
     private var upgradeEnded = false
+
+    @Volatile
     internal var upgradeEndedSuccessfully = false
 
     @Volatile
@@ -86,7 +98,13 @@ object DatabaseConverterController {
         if (!skip && acquireUpgradeLock(requestorName)) {
             val asyncUpgrade = AsyncUpgrade(upgradeRequestorIn, myContextHolder.isOnRestore())
             if (myContextHolder.isOnRestore()) {
-                asyncUpgrade.syncUpgrade()
+                // TODO: Make restore async also...
+                val job: Job = CoroutineScope(Dispatchers.Default).launch {
+                    asyncUpgrade.syncUpgrade()
+                }
+                while (!job.isCompleted) {
+                    DbUtils.waitMs(TAG, 1000)
+                }
             } else {
                 asyncUpgrade.execute(TAG, Unit)
             }

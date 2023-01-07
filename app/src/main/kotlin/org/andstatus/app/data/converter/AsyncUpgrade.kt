@@ -39,7 +39,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
         return TryUtils.SUCCESS
     }
 
-    fun syncUpgrade() {
+    suspend fun syncUpgrade() {
         var success = false
         try {
             progressLogger.logProgress(upgradeRequester.getText(R.string.label_upgrading))
@@ -49,7 +49,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
         }
     }
 
-    private fun doUpgrade(): Boolean {
+    private suspend fun doUpgrade(): Boolean {
         var success = false
         var locUpgradeStarted = false
         try {
@@ -61,15 +61,15 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
                 "Upgrade triggered by " + Taggable.anyToTag(upgradeRequester)
             )
             MyServiceManager.setServiceUnavailable()
-            myContextHolder.releaseNow { "doUpgrade" }
+            myContextHolder.releaseBlocking { "doUpgrade" }
             // Upgrade will occur inside this call synchronously
-            // TODO: Add completion stage instead of blocking...
-            myContextHolder.initializeDuringUpgrade(upgradeRequester).getBlocking()
+            myContextHolder.initializeDuringUpgrade(upgradeRequester)
+            myContextHolder.waitForMyContextInitialized()
             synchronized(DatabaseConverterController.upgradeLock) {
                 DatabaseConverterController.shouldTriggerDatabaseUpgrade = false
             }
         } catch (e: Exception) {
-            MyLog.i(DatabaseConverterController.TAG, "Failed to trigger database upgrade, will try later", e)
+            MyLog.i(DatabaseConverterController.TAG, "Failed to upgrade database, will try later", e)
         } finally {
             synchronized(DatabaseConverterController.upgradeLock) {
                 success = DatabaseConverterController.upgradeEndedSuccessfully
@@ -85,22 +85,25 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
         if (success) {
             MyLog.i(DatabaseConverterController.TAG, "success " + myContextHolder.getNow().state)
             onUpgradeSucceeded()
+            MyLog.i(DatabaseConverterController.TAG, "after onUpgradeSucceeded " + myContextHolder.getFuture())
         }
         return success
     }
 
-    private fun onUpgradeSucceeded() {
+    private suspend fun onUpgradeSucceeded() {
         MyServiceManager.setServiceUnavailable()
         if (!myContextHolder.getNow().isReady) {
-            myContextHolder.releaseNow { "onUpgradeSucceeded1" }
-            myContextHolder.initialize(upgradeRequester).getBlocking()
+            myContextHolder.releaseBlocking { "onUpgradeSucceeded1" }
+            myContextHolder.initialize(upgradeRequester)
+            myContextHolder.waitForMyContextInitialized()
         }
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
         if (isRestoring) return
         DataChecker.fixData(progressLogger, false, false)
-        myContextHolder.releaseNow { "onUpgradeSucceeded2" }
-        myContextHolder.initialize(upgradeRequester).getBlocking()
+        myContextHolder.releaseBlocking { "onUpgradeSucceeded2" }
+        myContextHolder.initialize(upgradeRequester)
+        myContextHolder.waitForMyContextInitialized()
         MyServiceManager.setServiceAvailable()
     }
 

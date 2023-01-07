@@ -18,8 +18,11 @@ package org.andstatus.app.context
 import android.content.Intent
 import android.util.AndroidRuntimeException
 import io.vavr.control.Try
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.HelpActivity
+import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.http.TlsSniSocketFactory
 import org.andstatus.app.os.AsyncEnum
@@ -59,14 +62,22 @@ class MyFutureContext private constructor(
         checkQueueExecutor(task, false)
     }
 
-    fun releaseNow(reason: Supplier<String>): MyFutureContext {
-        val previousContext = getNow()
-        if (future.isRunning) {
-            MyLog.i(this, "Will cancel running future, ${reason.get()}")
-            future.cancel()
+    suspend fun release(reason: Supplier<String>) {
+        val previousFuture = this
+        return withContext(AsyncTaskLauncher.getExecutor(AsyncEnum.DEFAULT_POOL)) {
+            if (!future.isFinished) {
+                MyLog.i(previousFuture, "Will cancel running future, ${reason.get()}")
+                future.cancel()
+                delay(200)
+            }
+            while (!future.isFinished) {
+                MyLog.i(previousFuture, "Previous future is running: ${previousFuture.future}")
+                delay(200)
+            }
+            MyLog.i(previousFuture, "Previous future finished: ${previousFuture.future}")
+            val myContext = getNow()
+            release2(previousFuture, myContext, reason)
         }
-        release2(this, previousContext, reason)
-        return completed(this, previousContext)
     }
 
     val isCompletedExceptionally: Boolean get() = future.isFinished && future.result.isFailure
@@ -147,7 +158,10 @@ class MyFutureContext private constructor(
             val calledBy: Any = calledByIn ?: previousContext
             var willInitialize = true;
             val reason: String = (
-                if (duringUpgrade) {
+                if (myContextHolder.onDeleteApplicationData) {
+                    willInitialize = false
+                    "On delete application data"
+                } else if (duringUpgrade) {
                     "During upgrade"
                 } else if (previousContext.state == MyContextState.UPGRADING) {
                     willInitialize = false
@@ -155,6 +169,9 @@ class MyFutureContext private constructor(
                 } else if (previousFuture.future.isRunning) {
                     willInitialize = false
                     "Previous is running"
+                } else if (!previousFuture.future.isFinished) {
+                    willInitialize = false
+                    "Previous didn't finish"
                 } else if (!previousContext.isReady) {
                     "Previous not ready"
                 } else if (previousContext.isExpired) {
@@ -185,7 +202,7 @@ class MyFutureContext private constructor(
                                 SyncInitiator.register(myContext)
                                 MyServiceManager.registerReceiver(myContext.context)
                             }
-                        } .also {
+                        }.also {
                             MyLog.v(previousFuture) { "Initialization of ${future.instanceTag} result: $it" }
                         }
                     }
@@ -220,15 +237,7 @@ class MyFutureContext private constructor(
             MyLog.d(previousFuture, "Release completed, " + reason.get())
         }
 
-        fun completed(previousFuture: MyFutureContext?, myContext: MyContext): MyFutureContext {
-            val queueCopy: BlockingQueue<MyContextAction> = ArrayBlockingQueue(20)
-            previousFuture?.queue?.let { queue ->
-                while (queue.isNotEmpty()) {
-                    queue.poll()?.let(queueCopy::put)
-                }
-            }
-            return MyFutureContext(myContext, completedFuture(myContext), queueCopy)
-        }
+        fun completed(myContext: MyContext): MyFutureContext = MyFutureContext(myContext, completedFuture(myContext))
 
         private fun completedFuture(myContext: MyContext): AsyncResult<MyContext, MyContext> {
             val future = AsyncResult<MyContext, MyContext>("completedMyContext", AsyncEnum.QUICK_UI, true)
@@ -239,7 +248,7 @@ class MyFutureContext private constructor(
         fun startActivity(myContext: MyContext, intent: Intent?) {
             if (intent != null) {
                 var launched = false
-                if (myContext.isReady) {
+                if (myContext.isReady || myContext.state == MyContextState.UPGRADING) {
                     try {
                         MyLog.d(TAG, "Start activity with intent:$intent")
                         myContext.context.startActivity(intent)

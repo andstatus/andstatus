@@ -47,8 +47,8 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
             MyAction.ACTION_SHUTDOWN -> {
                 MyLog.d(this, "onReceive $instanceId ShutDown")
                 setServiceUnavailable()
-                myContextHolder.onShutDown()
                 stopService()
+                myContextHolder.onShutDown()
             }
             else -> {
                 if (serviceAvailability.get().isAvailable() && !myContextHolder.getNow().isReady) {

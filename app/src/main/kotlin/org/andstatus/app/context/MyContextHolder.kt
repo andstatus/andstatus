@@ -22,6 +22,11 @@ import android.content.pm.PackageManager
 import android.os.SystemClock
 import android.provider.Settings
 import io.vavr.control.Try
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.graphics.ImageCaches
@@ -52,11 +57,14 @@ class MyContextHolder private constructor(
     private val contextLock: Any = Any()
 
     @Volatile
-    private var myFutureContext: MyFutureContext = MyFutureContext.completed(null, MyContextEmpty.EMPTY)
+    private var myFutureContext: MyFutureContext = MyFutureContext.completed(MyContextEmpty.EMPTY)
     // end ---
 
     @Volatile
     private var onRestore = false
+
+    @Volatile
+    var onDeleteApplicationData = false
 
     @Volatile
     var executionMode = ExecutionMode.UNKNOWN
@@ -117,7 +125,7 @@ class MyContextHolder private constructor(
         synchronized(contextLock) {
             if (!myFutureContext.future.isFinished) return false
             myFutureContext.getNow().release { "trySetCreator" }
-            myFutureContext = MyFutureContext.completed(myFutureContext, contextCreatorNew)
+            myFutureContext = MyFutureContext.completed(contextCreatorNew)
         }
         return true
     }
@@ -151,6 +159,13 @@ class MyContextHolder private constructor(
             }
         }
         return this
+    }
+
+    suspend fun waitForMyContextInitialized() {
+        while (!myFutureContext.future.isFinished) {
+            delay(1000)
+            MyLog.v(DatabaseConverterController.TAG, "Waiting for upgrade to finish, ${myFutureContext.future}")
+        }
     }
 
     fun thenStartActivity(intent: Intent?): MyContextHolder {
@@ -189,7 +204,7 @@ class MyContextHolder private constructor(
                     "No compatible context" + ", called by " +
                         Taggable.anyToTag(calledBy)
                 }
-                myFutureContext = MyFutureContext.completed(myFutureContext, contextCreator)
+                myFutureContext = MyFutureContext.completed(contextCreator)
             }
         }
         return this
@@ -252,12 +267,14 @@ class MyContextHolder private constructor(
 
     fun onShutDown() {
         isShuttingDown = true
-        releaseNow { "onShutDown" }
+        CoroutineScope(Dispatchers.Main).launch {
+            myFutureContext.release { "onShutDown" }
+        }
     }
 
-    fun releaseNow(reason: Supplier<String>) {
-        synchronized(contextLock) {
-            myFutureContext = myFutureContext.releaseNow(reason)
+    fun releaseBlocking(reason: Supplier<String>) {
+        runBlocking {
+            myFutureContext.release(reason)
         }
     }
 

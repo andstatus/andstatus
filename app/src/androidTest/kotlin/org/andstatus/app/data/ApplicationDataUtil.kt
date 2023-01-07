@@ -35,16 +35,27 @@ import java.util.concurrent.TimeUnit
 
 object ApplicationDataUtil {
 
-    fun deleteApplicationData() {
-        MyServiceManager.setServiceUnavailable()
-        deleteAccounts()
-        val context: Context = myContextHolder.getNow().context
-        myContextHolder.releaseNow { "deleteApplicationData" }
-        deleteFiles(context, false)
-        deleteFiles(context, true)
-        SharedPreferencesUtil.resetHasSetDefaultValues()
-        Assert.assertEquals(TriState.FALSE, MyStorage.isApplicationDataCreated())
-        TestSuite.onDataDeleted()
+    suspend fun deleteApplicationData() {
+        val method = "deleteApplicationData"
+        MyLog.v(method, "$method; started")
+        try {
+            val context: Context = myContextHolder.getNow().context
+            myContextHolder.initialize(context)
+            myContextHolder.waitForMyContextInitialized()
+
+            myContextHolder.onDeleteApplicationData = true
+            MyServiceManager.setServiceUnavailable()
+            deleteAccounts()
+            myContextHolder.releaseBlocking { method }
+            deleteFiles(context, false)
+            deleteFiles(context, true)
+            SharedPreferencesUtil.resetHasSetDefaultValues()
+            Assert.assertEquals(TriState.FALSE, MyStorage.isApplicationDataCreated())
+            TestSuite.onDataDeleted()
+        } finally {
+            MyLog.v(method, "$method; ended")
+            myContextHolder.onDeleteApplicationData = false
+        }
     }
 
     private fun deleteAccounts() {

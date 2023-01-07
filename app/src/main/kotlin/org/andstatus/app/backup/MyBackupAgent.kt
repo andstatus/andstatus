@@ -140,7 +140,7 @@ class MyBackupAgent : BackupAgent() {
     }
 
     private fun doBackup(data: MyBackupDataOutput) {
-        myContextHolder.releaseNow { "doBackup" }
+        myContextHolder.releaseBlocking { "doBackup" }
         sharedPreferencesBackedUp = backupFile(
             data,
             SHARED_PREFERENCES_KEY,
@@ -288,7 +288,7 @@ class MyBackupAgent : BackupAgent() {
         }
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
-        myContextHolder.releaseNow { "ensureNoDataIsPresent" }
+        myContextHolder.releaseBlocking { "ensureNoDataIsPresent" }
     }
 
     private fun doRestore(data: MyBackupDataInput) {
@@ -302,7 +302,7 @@ class MyBackupAgent : BackupAgent() {
         MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME)?.let { file ->
             databasesRestored += restoreFile(data, file)
         }
-        myContextHolder.releaseNow { "doRestore, database restored" }
+        myContextHolder.releaseBlocking { "doRestore, database restored" }
         myContextHolder
             .setOnRestore(true)
             .initialize(this).getBlocking()
@@ -318,7 +318,7 @@ class MyBackupAgent : BackupAgent() {
         data.setMyContext(myContextHolder.getNow())
         assertNextHeader(data, KEY_ACCOUNT)
         accountsRestored += data.getMyContext().accounts.onRestore(data, backupDescriptor!!)
-        myContextHolder.releaseNow { "doRestore, accounts restored" }
+        myContextHolder.releaseBlocking { "doRestore, accounts restored" }
         myContextHolder.setOnRestore(false)
         myContextHolder.initialize(this).getBlocking()
     }
@@ -338,7 +338,7 @@ class MyBackupAgent : BackupAgent() {
             MyLog.v(this) { "Couldn't delete " + tempFile.absolutePath }
         }
         fixExternalStorage()
-        myContextHolder.releaseNow { "restoreSharedPreferences" }
+        myContextHolder.releaseBlocking { "restoreSharedPreferences" }
         myContextHolder.initialize(this).getBlocking()
     }
 

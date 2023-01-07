@@ -163,7 +163,7 @@ object TestSuite {
     @Synchronized
     fun forget() {
         MyLog.d(TAG, "Before forget")
-        myContextHolder.releaseNow { "forget" }
+        myContextHolder.releaseBlocking { "forget" }
         context = null
         initialized = false
     }
@@ -216,6 +216,7 @@ object TestSuite {
     }
 
     fun onDataDeleted() {
+        MyLog.v(TAG, "onDataDeleted")
         dataAdded = false
     }
 

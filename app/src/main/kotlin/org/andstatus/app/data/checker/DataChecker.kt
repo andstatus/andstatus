@@ -105,7 +105,7 @@ abstract class DataChecker {
                 override suspend fun doInBackground(params: Unit): Try<Unit> {
                     fixData(logger, includeLong, countOnly)
                     delay(3000)
-                    myContextHolder.releaseNow { "fixDataAsync" }
+                    myContextHolder.releaseBlocking { "fixDataAsync" }
                     myContextHolder.initialize(null, TAG).getBlocking()
                     return TryUtils.SUCCESS
                 }

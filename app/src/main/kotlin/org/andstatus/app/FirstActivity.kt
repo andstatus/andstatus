@@ -31,10 +31,8 @@ import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsGroup
 import org.andstatus.app.data.DbUtils
-import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.util.Identifiable
-import org.andstatus.app.util.Identified
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
@@ -82,28 +80,29 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
                 finish()
             }
             MyAction.CLOSE_ALL_ACTIVITIES -> finish()
-            else -> if (myContextHolder.getFuture().isReady || myContextHolder.getNow().state == MyContextState.UPGRADING) {
-                startNextActivitySync(myContextHolder.getNow(), intent)
-                finish()
-            } else {
-                myContextHolder.initialize(this)
-                    .with("startNextActivity", true) { tryMyContext: Try<MyContext> ->
-                        tryMyContext.flatMap { myContext ->
-                            val msg = "Launching next activity from $instanceIdString"
-                            if (myContext.isReady && !myContext.isExpired) {
-                                try {
-                                    startNextActivitySync(myContext, intent)
-                                    TryUtils.SUCCESS
-                                } catch (e: Exception) {
-                                    MyLog.w(instanceTag, msg, e)
-                                    TryUtils.failure<Unit>(msg, e)
-                                }
-                            } else TryUtils.failure<Unit>("$msg, MyContext is not ready: ${myContext.state}")
+            else ->
+                if (myContextHolder.getFuture().isReady || myContextHolder.getNow().state == MyContextState.UPGRADING) {
+                    startNextActivitySync(myContextHolder.getNow(), intent)
+                    finish()
+                } else {
+                    myContextHolder.initialize(this)
+                        .with("startNextActivity", true) { tryMyContext: Try<MyContext> ->
+                            tryMyContext.flatMap { myContext ->
+                                val msg = "Launching next activity from $instanceIdString"
+                                if ((myContext.isReady || myContext.state == MyContextState.UPGRADING) && !myContext.isExpired) {
+                                    try {
+                                        startNextActivitySync(myContext, intent)
+                                        TryUtils.SUCCESS
+                                    } catch (e: Exception) {
+                                        MyLog.w(instanceTag, msg, e)
+                                        TryUtils.failure<Unit>(msg, e)
+                                    }
+                                } else TryUtils.failure<Unit>("$msg, MyContext is not ready: ${myContext.state}")
+                            }
+                        }.also {
+                            finish()
                         }
-                    }.also {
-                        finish()
-                    }
-            }
+                }
         }
     }
 

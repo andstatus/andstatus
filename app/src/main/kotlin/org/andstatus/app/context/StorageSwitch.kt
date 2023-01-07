@@ -196,7 +196,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
                         MyLog.v(this, method + " to: " + dbFileNew.path)
                     }
                     try {
-                        myContextHolder.releaseNow { "moveDatabase" }
+                        myContextHolder.releaseBlocking { "moveDatabase" }
                         if (FileUtils.copyFile(this, dbFileOld, dbFileNew)) {
                             copied = true
                             succeeded = true

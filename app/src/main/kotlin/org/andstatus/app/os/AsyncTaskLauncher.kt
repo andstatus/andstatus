@@ -72,7 +72,7 @@ class AsyncTaskLauncher {
             Try.failure(Exception("${e.message} $msgLog", e))
         }
 
-        private fun getExecutor(pool: AsyncEnum): CoroutineContext {
+        fun getExecutor(pool: AsyncEnum): CoroutineContext {
             var executor: CoroutineContext?
             executor = when (pool) {
                 AsyncEnum.DEFAULT_POOL -> Dispatchers.Default
