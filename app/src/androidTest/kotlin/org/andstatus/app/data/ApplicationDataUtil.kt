@@ -39,7 +39,7 @@ object ApplicationDataUtil {
         MyServiceManager.setServiceUnavailable()
         deleteAccounts()
         val context: Context = myContextHolder.getNow().context
-        myContextHolder.release { "deleteApplicationData" }
+        myContextHolder.releaseNow { "deleteApplicationData" }
         deleteFiles(context, false)
         deleteFiles(context, true)
         SharedPreferencesUtil.resetHasSetDefaultValues()

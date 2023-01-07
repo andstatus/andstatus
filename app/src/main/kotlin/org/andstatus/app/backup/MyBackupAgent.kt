@@ -25,7 +25,6 @@ import android.text.format.Formatter
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
-import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MyStorage
 import org.andstatus.app.data.DataPruner
@@ -141,7 +140,7 @@ class MyBackupAgent : BackupAgent() {
     }
 
     private fun doBackup(data: MyBackupDataOutput) {
-        myContextHolder.release { "doBackup" }
+        myContextHolder.releaseNow { "doBackup" }
         sharedPreferencesBackedUp = backupFile(
             data,
             SHARED_PREFERENCES_KEY,
@@ -289,7 +288,7 @@ class MyBackupAgent : BackupAgent() {
         }
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
-        myContextHolder.release { "ensureNoDataIsPresent" }
+        myContextHolder.releaseNow { "ensureNoDataIsPresent" }
     }
 
     private fun doRestore(data: MyBackupDataInput) {
@@ -303,7 +302,7 @@ class MyBackupAgent : BackupAgent() {
         MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME)?.let { file ->
             databasesRestored += restoreFile(data, file)
         }
-        myContextHolder.release { "doRestore, database restored" }
+        myContextHolder.releaseNow { "doRestore, database restored" }
         myContextHolder
             .setOnRestore(true)
             .initialize(this).getBlocking()
@@ -319,7 +318,7 @@ class MyBackupAgent : BackupAgent() {
         data.setMyContext(myContextHolder.getNow())
         assertNextHeader(data, KEY_ACCOUNT)
         accountsRestored += data.getMyContext().accounts.onRestore(data, backupDescriptor!!)
-        myContextHolder.release { "doRestore, accounts restored" }
+        myContextHolder.releaseNow { "doRestore, accounts restored" }
         myContextHolder.setOnRestore(false)
         myContextHolder.initialize(this).getBlocking()
     }
@@ -339,7 +338,7 @@ class MyBackupAgent : BackupAgent() {
             MyLog.v(this) { "Couldn't delete " + tempFile.absolutePath }
         }
         fixExternalStorage()
-        myContextHolder.release { "restoreSharedPreferences" }
+        myContextHolder.releaseNow { "restoreSharedPreferences" }
         myContextHolder.initialize(this).getBlocking()
     }
 

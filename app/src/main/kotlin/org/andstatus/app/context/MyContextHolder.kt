@@ -252,10 +252,10 @@ class MyContextHolder private constructor(
 
     fun onShutDown() {
         isShuttingDown = true
-        release { "onShutDown" }
+        releaseNow { "onShutDown" }
     }
 
-    fun release(reason: Supplier<String>) {
+    fun releaseNow(reason: Supplier<String>) {
         synchronized(contextLock) {
             myFutureContext = myFutureContext.releaseNow(reason)
         }

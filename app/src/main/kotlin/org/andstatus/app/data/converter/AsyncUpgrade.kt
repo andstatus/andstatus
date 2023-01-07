@@ -61,7 +61,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
                 "Upgrade triggered by " + Taggable.anyToTag(upgradeRequester)
             )
             MyServiceManager.setServiceUnavailable()
-            myContextHolder.release { "doUpgrade" }
+            myContextHolder.releaseNow { "doUpgrade" }
             // Upgrade will occur inside this call synchronously
             // TODO: Add completion stage instead of blocking...
             myContextHolder.initializeDuringUpgrade(upgradeRequester).getBlocking()
@@ -92,14 +92,14 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
     private fun onUpgradeSucceeded() {
         MyServiceManager.setServiceUnavailable()
         if (!myContextHolder.getNow().isReady) {
-            myContextHolder.release { "onUpgradeSucceeded1" }
+            myContextHolder.releaseNow { "onUpgradeSucceeded1" }
             myContextHolder.initialize(upgradeRequester).getBlocking()
         }
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
         if (isRestoring) return
         DataChecker.fixData(progressLogger, false, false)
-        myContextHolder.release { "onUpgradeSucceeded2" }
+        myContextHolder.releaseNow { "onUpgradeSucceeded2" }
         myContextHolder.initialize(upgradeRequester).getBlocking()
         MyServiceManager.setServiceAvailable()
     }

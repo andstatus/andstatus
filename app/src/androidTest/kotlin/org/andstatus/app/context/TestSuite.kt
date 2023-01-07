@@ -163,7 +163,7 @@ object TestSuite {
     @Synchronized
     fun forget() {
         MyLog.d(TAG, "Before forget")
-        myContextHolder.release { "forget" }
+        myContextHolder.releaseNow { "forget" }
         context = null
         initialized = false
     }

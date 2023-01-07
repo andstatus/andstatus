@@ -68,8 +68,6 @@ class MyServiceHeartBeat constructor(myService: MyService) : AsyncTask<Unit, Lon
         myServiceRef.get()?.startStopExecution()
     }
 
-    override val instanceTag: String get() = super.instanceTag + "-it" + mIteration
-
     override val isReallyWorking: Boolean
         get() {
             return needsBackgroundWork && !RelativeTime.wasButMoreSecondsAgoThan(
