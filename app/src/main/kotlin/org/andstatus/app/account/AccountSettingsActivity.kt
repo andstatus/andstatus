@@ -65,8 +65,6 @@ import org.andstatus.app.origin.PersistentOriginList
 import org.andstatus.app.origin.SIMPLE_USERNAME_EXAMPLES
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncResult
-import org.andstatus.app.os.NonUiThreadExecutor
-import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.service.MyServiceState
 import org.andstatus.app.timeline.TimelineActivity

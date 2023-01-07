@@ -26,7 +26,6 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TriState
 import java.util.*
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.function.Consumer
@@ -46,14 +45,14 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
             myContext,
             "SELECT * FROM " + TimelineTable.TABLE_NAME,
             { cursor: Cursor -> Timeline.fromCursor(myContext, cursor) })
-                .forEach(Consumer { timeline: Timeline ->
-            if (timeline.isValid()) {
-                timelines[timeline.getId()] = timeline
-                if (MyLog.isVerboseEnabled() && timelines.size < 5) {
-                    MyLog.v(PersistentTimelines::class.java, "$method; $timeline")
-                }
-            } else MyLog.w(PersistentTimelines::class.java, "$method; invalid skipped $timeline")
-        })
+            .forEach(Consumer { timeline: Timeline ->
+                if (timeline.isValid()) {
+                    timelines[timeline.getId()] = timeline
+                    if (MyLog.isVerboseEnabled() && timelines.size < 5) {
+                        MyLog.v(PersistentTimelines::class.java, "$method; $timeline")
+                    }
+                } else MyLog.w(PersistentTimelines::class.java, "$method; invalid skipped $timeline")
+            })
         MyLog.i(this, "timelinesInitializedMs:" + stopWatch.time + "; " + timelines.size + " timelines")
         return this
     }
@@ -84,7 +83,7 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
     }
 
     fun forUser(timelineType: TimelineType, actor: Actor): Timeline {
-        return get(0, timelineType, actor,  Origin.EMPTY, "")
+        return get(0, timelineType, actor, Origin.EMPTY, "")
     }
 
     operator fun get(timelineType: TimelineType, actor: Actor, origin: Origin): Timeline {
@@ -95,8 +94,10 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
         return get(0, timelineType, actor, origin, searchQuery)
     }
 
-    operator fun get(id: Long, timelineType: TimelineType,
-                     actor: Actor, origin: Origin, searchQuery: String?): Timeline {
+    operator fun get(
+        id: Long, timelineType: TimelineType,
+        actor: Actor, origin: Origin, searchQuery: String?
+    ): Timeline {
         if (id != 0L) return fromId(id)
         if (timelineType == TimelineType.UNKNOWN) return Timeline.EMPTY
         val newTimeline = Timeline(myContext, id, timelineType, actor, origin, searchQuery, 0)
@@ -116,9 +117,10 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
         if (ma.isValidAndSucceeded()) {
             for (timeline in values()) {
                 if (timeline.isSyncedAutomatically() &&
-                        (!timeline.timelineType.isAtOrigin() && timeline.myAccountToSync == ma ||
-                                timeline.timelineType.isAtOrigin() && timeline.getOrigin() == ma.origin) &&
-                        timeline.isTimeToAutoSync()) {
+                    (!timeline.timelineType.isAtOrigin() && timeline.myAccountToSync == ma ||
+                        timeline.timelineType.isAtOrigin() && timeline.getOrigin() == ma.origin) &&
+                    timeline.isTimeToAutoSync()
+                ) {
                     timelines.add(timeline)
                 }
             }
@@ -130,12 +132,13 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
         return when {
             timelineToSync.isSyncableForOrigins() -> {
                 myContext.origins.originsToSync(
-                        timelineToSync.myAccountToSync.origin, true, timelineToSync.hasSearchQuery())
-                        .stream().map { origin: Origin -> timelineToSync.cloneForOrigin(myContext, origin) }
+                    timelineToSync.myAccountToSync.origin, true, timelineToSync.hasSearchQuery()
+                )
+                    .stream().map { origin: Origin -> timelineToSync.cloneForOrigin(myContext, origin) }
             }
             timelineToSync.isSyncableForAccounts() -> {
                 myContext.accounts.accountsToSync()
-                        .stream().map { account: MyAccount -> timelineToSync.cloneForAccount(myContext, account) }
+                    .stream().map { account: MyAccount -> timelineToSync.cloneForAccount(myContext, account) }
             }
             timelineToSync.isSyncable() -> {
                 Stream.of(timelineToSync)
@@ -146,12 +149,22 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
         }
     }
 
-    fun filter(isForSelector: Boolean,
-               isTimelineCombined: TriState,
-               timelineType: TimelineType,
-               actor: Actor,
-               origin: Origin): Stream<Timeline> {
-        return stream().filter { timeline: Timeline -> timeline.match(isForSelector, isTimelineCombined, timelineType, actor, origin) }
+    fun filter(
+        isForSelector: Boolean,
+        isTimelineCombined: TriState,
+        timelineType: TimelineType,
+        actor: Actor,
+        origin: Origin
+    ): Stream<Timeline> {
+        return stream().filter { timeline: Timeline ->
+            timeline.match(
+                isForSelector,
+                isTimelineCombined,
+                timelineType,
+                actor,
+                origin
+            )
+        }
     }
 
     fun onAccountDelete(ma: MyAccount) {
@@ -174,8 +187,8 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
         }
     }
 
-    fun saveChanged(): CompletableFuture<MyContext> {
-        return TimelineSaver().execute(myContext)
+    fun saveChanged(postExecute: (Boolean) -> Unit = {}) {
+        return TimelineSaver().execute(myContext, postExecute)
     }
 
     fun addNew(timeline: Timeline): Timeline {

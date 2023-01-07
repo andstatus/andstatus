@@ -81,11 +81,12 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
         when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR -> selectedItem?.let { item ->
                 val displayedInSelector: DisplayedInSelector = DisplayedInSelector.load(
-                        data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key))
+                    data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key)
+                )
                 item.timeline.setDisplayedInSelector(displayedInSelector)
                 MyLog.v("isDisplayedInSelector") {
                     displayedInSelector.save() + " " +
-                            item.timeline
+                        item.timeline
                 }
                 if (displayedInSelector != DisplayedInSelector.IN_CONTEXT || sortByField == R.id.displayedInSelector) {
                     showList(WhichPage.CURRENT)
@@ -102,7 +103,7 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
 
     private fun showSortColumn() {
         val parent = columnHeadersParent ?: return
-        for (i in 0 until parent.getChildCount() ) {
+        for (i in 0 until parent.getChildCount()) {
             val view = parent.getChildAt(i)
             if (!TextView::class.java.isAssignableFrom(view.javaClass)) {
                 continue
@@ -148,9 +149,11 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
     }
 
     override fun newListAdapter(): BaseTimelineAdapter<ManageTimelinesViewItem> {
-        return object : BaseTimelineAdapter<ManageTimelinesViewItem>(myContext,
-                myContext.timelines[TimelineType.MANAGE_TIMELINES, Actor.EMPTY,  Origin.EMPTY],
-                getLoaded().getList() as MutableList<ManageTimelinesViewItem>) {
+        return object : BaseTimelineAdapter<ManageTimelinesViewItem>(
+            myContext,
+            myContext.timelines[TimelineType.MANAGE_TIMELINES, Actor.EMPTY, Origin.EMPTY],
+            getLoaded().getList() as MutableList<ManageTimelinesViewItem>
+        ) {
             var defaultTimeline: Timeline? = myContext.timelines.getDefault()
 
             override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
@@ -164,50 +167,66 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
                 MyUrlSpan.showText(view, R.id.origin, item.timelineTitle.originName, false, true)
                 showDisplayedInSelector(view, item)
                 MyCheckBox.set(view, R.id.synced, item.timeline.isSyncedAutomatically(),
-                        if (item.timeline.isSyncableAutomatically()) CompoundButton.OnCheckedChangeListener {
-                            buttonView: CompoundButton?, isChecked: Boolean ->
-                            item.timeline.setSyncedAutomatically(isChecked)
-                            MyLog.v("isSyncedAutomatically") { (if (isChecked) "+ " else "- ") + item.timeline }
-                        } else null)
-                MyUrlSpan.showText(view, R.id.syncedTimesCount,
-                        I18n.notZero(item.timeline.getSyncedTimesCount(isTotal)), false, true)
-                MyUrlSpan.showText(view, R.id.downloadedItemsCount,
-                        I18n.notZero(item.timeline.getDownloadedItemsCount(isTotal)), false, true)
-                MyUrlSpan.showText(view, R.id.newItemsCount,
-                        I18n.notZero(item.timeline.getNewItemsCount(isTotal)), false, true)
-                MyUrlSpan.showText(view, R.id.syncSucceededDate,
-                        RelativeTime.getDifference(this@ManageTimelines, item.timeline.getSyncSucceededDate()),
-                        false, true)
-                MyUrlSpan.showText(view, R.id.syncFailedTimesCount,
-                        I18n.notZero(item.timeline.getSyncFailedTimesCount(isTotal)), false, true)
-                MyUrlSpan.showText(view, R.id.syncFailedDate,
-                        RelativeTime.getDifference(this@ManageTimelines, item.timeline.getSyncFailedDate()),
-                        false, true)
+                    if (item.timeline.isSyncableAutomatically()) CompoundButton.OnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
+                        item.timeline.setSyncedAutomatically(isChecked)
+                        MyLog.v("isSyncedAutomatically") { (if (isChecked) "+ " else "- ") + item.timeline }
+                    } else null)
+                MyUrlSpan.showText(
+                    view, R.id.syncedTimesCount,
+                    I18n.notZero(item.timeline.getSyncedTimesCount(isTotal)), false, true
+                )
+                MyUrlSpan.showText(
+                    view, R.id.downloadedItemsCount,
+                    I18n.notZero(item.timeline.getDownloadedItemsCount(isTotal)), false, true
+                )
+                MyUrlSpan.showText(
+                    view, R.id.newItemsCount,
+                    I18n.notZero(item.timeline.getNewItemsCount(isTotal)), false, true
+                )
+                MyUrlSpan.showText(
+                    view, R.id.syncSucceededDate,
+                    RelativeTime.getDifference(this@ManageTimelines, item.timeline.getSyncSucceededDate()),
+                    false, true
+                )
+                MyUrlSpan.showText(
+                    view, R.id.syncFailedTimesCount,
+                    I18n.notZero(item.timeline.getSyncFailedTimesCount(isTotal)), false, true
+                )
+                MyUrlSpan.showText(
+                    view, R.id.syncFailedDate,
+                    RelativeTime.getDifference(this@ManageTimelines, item.timeline.getSyncFailedDate()),
+                    false, true
+                )
                 MyUrlSpan.showText(view, R.id.errorMessage, item.timeline.getErrorMessage(), false, true)
-                MyUrlSpan.showText(view, R.id.lastChangedDate,
-                        RelativeTime.getDifference(this@ManageTimelines, item.timeline.getLastChangedDate()),
-                        false, true)
+                MyUrlSpan.showText(
+                    view, R.id.lastChangedDate,
+                    RelativeTime.getDifference(this@ManageTimelines, item.timeline.getLastChangedDate()),
+                    false, true
+                )
                 return view
             }
 
             protected fun showDisplayedInSelector(parentView: View, item: ManageTimelinesViewItem) {
                 val view = parentView.findViewById<CheckBox?>(R.id.displayedInSelector)
-                MyCheckBox.set(parentView,
-                        R.id.displayedInSelector,
-                        item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER
+                MyCheckBox.set(
+                    parentView,
+                    R.id.displayedInSelector,
+                    item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER
                 ) { buttonView: CompoundButton, isChecked: Boolean ->
                     if (isChecked) {
                         selectedItem = item
                         EnumSelector.newInstance<DisplayedInSelector>(
-                                ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR,
-                                DisplayedInSelector::class.java).show(this@ManageTimelines)
+                            ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR,
+                            DisplayedInSelector::class.java
+                        ).show(this@ManageTimelines)
                     } else {
                         item.timeline.setDisplayedInSelector(DisplayedInSelector.NEVER)
                         buttonView.setText("")
                     }
                     MyLog.v("isDisplayedInSelector") { (if (isChecked) "+ " else "- ") + item.timeline }
                 }
-                view.text = if (item.timeline == defaultTimeline) "D" else if (item.timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS) "*" else ""
+                view.text =
+                    if (item.timeline == defaultTimeline) "D" else if (item.timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS) "*" else ""
             }
 
             private fun newView(): View {
@@ -222,14 +241,20 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
     }
 
     override fun getCustomTitle(): CharSequence {
-        val title = StringBuilder(title
+        val title = StringBuilder(
+            title
                 .toString() + (if (getListAdapter().getCount() == 0) "" else " " + getListAdapter().getCount())
-                + " / ")
+                + " / "
+        )
         if (isTotal) {
             title.append(getText(R.string.total_counters))
         } else if (countersSince > 0) {
-            title.append(StringUtil.format(this, R.string.since,
-                    RelativeTime.getDifference(this, countersSince)))
+            title.append(
+                StringUtil.format(
+                    this, R.string.since,
+                    RelativeTime.getDifference(this, countersSince)
+                )
+            )
         }
         return title
     }
@@ -238,11 +263,11 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
         when (item.getItemId()) {
             R.id.reset_counters_menu_item -> {
                 myContext.timelines.resetCounters(isTotal)
-                myContext.timelines.saveChanged().thenRun { showList(WhichPage.CURRENT) }
+                myContext.timelines.saveChanged { showList(WhichPage.CURRENT) }
             }
             R.id.reset_timelines_order -> {
                 myContext.timelines.resetDefaultSelectorOrder()
-                myContext.timelines.saveChanged().thenRun { sortBy(R.id.displayedInSelector, true) }
+                myContext.timelines.saveChanged { sortBy(R.id.displayedInSelector, true) }
             }
             R.id.total_counters -> {
                 isTotal = !isTotal

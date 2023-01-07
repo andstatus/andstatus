@@ -23,10 +23,11 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.TimelineTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.os.AsyncUtil
-import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.util.TriState
-import java.util.concurrent.CompletableFuture
+import org.andstatus.app.util.TryUtils
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 
@@ -49,22 +50,25 @@ class TimelineSaver {
         return this
     }
 
-    fun execute(myContext: MyContext): CompletableFuture<MyContext> {
-        return if (AsyncUtil.isUiThread) {
-            CompletableFuture.supplyAsync({ executeSynchronously(myContext) }, NonUiThreadExecutor.INSTANCE)
+    fun execute(myContext: MyContext, postExecute: (Boolean) -> Unit = {}) {
+        if (AsyncUtil.isUiThread) {
+            AsyncResult<Unit, Boolean>("saveTimeline", AsyncEnum.DEFAULT_POOL)
+                .doInBackground { TryUtils.ofS { executeSynchronously(myContext) } }
+                .onPostExecute { unit, ok -> postExecute(ok.isSuccess) }
+                .execute(Unit)
         } else {
-            CompletableFuture.completedFuture(executeSynchronously(myContext))
+            executeSynchronously(myContext).let(postExecute)
         }
     }
 
-    private fun executeSynchronously(myContext: MyContext): MyContext {
+    private fun executeSynchronously(myContext: MyContext): Boolean {
         for (count in 30 downTo 1) {
             if (executing.compareAndSet(false, true)) {
                 executeSequentially(myContext)
             }
             DbUtils.waitMs(this, 50)
         }
-        return myContext
+        return true
     }
 
     private fun executeSequentially(myContext: MyContext) {
@@ -85,35 +89,48 @@ class TimelineSaver {
     }
 
     private fun addDefaultTimelinesIfNoneFound(myContext: MyContext) {
-        myContext.accounts.get().forEach(Consumer { ma: MyAccount -> addDefaultMyAccountTimelinesIfNoneFound(myContext, ma) })
+        myContext.accounts.get()
+            .forEach(Consumer { ma: MyAccount -> addDefaultMyAccountTimelinesIfNoneFound(myContext, ma) })
     }
 
     private fun addDefaultMyAccountTimelinesIfNoneFound(myContext: MyContext, ma: MyAccount) {
-        if (ma.isValid && myContext.timelines.filter(false, TriState.FALSE,
-                        TimelineType.UNKNOWN, ma.actor,  Origin.EMPTY).count() == 0L) {
+        if (ma.isValid && myContext.timelines.filter(
+                false, TriState.FALSE,
+                TimelineType.UNKNOWN, ma.actor, Origin.EMPTY
+            ).count() == 0L
+        ) {
             addDefaultCombinedTimelinesIfNoneFound(myContext)
             addDefaultOriginTimelinesIfNoneFound(myContext, ma.origin)
-            val timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    BaseColumns._ID, TimelineTable.ACTOR_ID + "=" + ma.actorId)
+            val timelineId = MyQuery.conditionToLongColumnValue(
+                TimelineTable.TABLE_NAME,
+                BaseColumns._ID, TimelineTable.ACTOR_ID + "=" + ma.actorId
+            )
             if (timelineId == 0L) addDefaultForMyAccount(myContext, ma)
         }
     }
 
     private fun addDefaultCombinedTimelinesIfNoneFound(myContext: MyContext) {
-        if (myContext.timelines.filter(false, TriState.TRUE,
-                        TimelineType.UNKNOWN, Actor.EMPTY,  Origin.EMPTY).count() == 0L) {
-            val timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    BaseColumns._ID, TimelineTable.ACTOR_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0")
+        if (myContext.timelines.filter(
+                false, TriState.TRUE,
+                TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY
+            ).count() == 0L
+        ) {
+            val timelineId = MyQuery.conditionToLongColumnValue(
+                TimelineTable.TABLE_NAME,
+                BaseColumns._ID, TimelineTable.ACTOR_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0"
+            )
             if (timelineId == 0L) addDefaultCombined(myContext)
         }
     }
 
     private fun addDefaultOriginTimelinesIfNoneFound(myContext: MyContext, origin: Origin) {
         if (!origin.isValid) return
-        val timelineId = MyQuery.conditionToLongColumnValue(myContext.database,
-                "Any timeline for " + origin.name,
-                TimelineTable.TABLE_NAME, BaseColumns._ID,
-                TimelineTable.ORIGIN_ID + "=" + origin.id)
+        val timelineId = MyQuery.conditionToLongColumnValue(
+            myContext.database,
+            "Any timeline for " + origin.name,
+            TimelineTable.TABLE_NAME, BaseColumns._ID,
+            TimelineTable.ORIGIN_ID + "=" + origin.id
+        )
         if (timelineId == 0L) addDefaultForOrigin(myContext, origin)
     }
 
@@ -126,7 +143,8 @@ class TimelineSaver {
     private fun addDefaultForOrigin(myContext: MyContext, origin: Origin) {
         for (timelineType in TimelineType.getDefaultOriginTimelineTypes()) {
             if (origin.originType.isTimelineTypeSyncable(timelineType)
-                    || timelineType == TimelineType.EVERYTHING) {
+                || timelineType == TimelineType.EVERYTHING
+            ) {
                 myContext.timelines[timelineType, Actor.EMPTY, origin].save(myContext)
             }
         }
@@ -135,7 +153,7 @@ class TimelineSaver {
     fun addDefaultCombined(myContext: MyContext) {
         for (timelineType in TimelineType.values()) {
             if (timelineType.isCombinedRequired()) {
-                myContext.timelines[timelineType, Actor.EMPTY,  Origin.EMPTY].save(myContext)
+                myContext.timelines[timelineType, Actor.EMPTY, Origin.EMPTY].save(myContext)
             }
         }
     }

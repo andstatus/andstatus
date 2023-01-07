@@ -25,15 +25,18 @@ import org.andstatus.app.timeline.WhichPage
 */   enum class ManageTimelinesContextMenuItem : ContextMenuItem {
     OPEN_TIMELINE {
         override fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
-            startForTimeline(menu.getActivity().myContext, menu.getActivity(),
-                    viewItem.timeline)
+            startForTimeline(
+                menu.getActivity().myContext, menu.getActivity(),
+                viewItem.timeline
+            )
             return true
         }
     },
     SYNC_NOW {
         override fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
             MyServiceManager.sendManualForegroundCommand(
-                    CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, viewItem.timeline))
+                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, viewItem.timeline)
+            )
             return true
         }
     },
@@ -75,8 +78,9 @@ import org.andstatus.app.timeline.WhichPage
 
     companion object {
         private fun saveAndShowList(menu: ManageTimelinesContextMenu) {
-            menu.getActivity().myContext.timelines.saveChanged()
-                    .thenRun { menu.getActivity().showList(WhichPage.CURRENT) }
+            menu.getActivity().myContext.timelines.saveChanged {
+                menu.getActivity().showList(WhichPage.CURRENT)
+            }
         }
 
         fun fromId(id: Int): ManageTimelinesContextMenuItem {

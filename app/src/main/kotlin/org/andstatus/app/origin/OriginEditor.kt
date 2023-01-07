@@ -33,17 +33,17 @@ import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.lang.SelectableEnumList
 import org.andstatus.app.net.http.SslModeEnum
 import org.andstatus.app.notification.Notifier.Companion.beep
-import org.andstatus.app.os.NonUiThreadExecutor
-import org.andstatus.app.os.UiThreadExecutor
+import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.DialogFactory
 import org.andstatus.app.util.MyCheckBox
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyUrlSpan
 import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UrlUtils
 import org.andstatus.app.util.ViewUtils
-import java.util.concurrent.CompletableFuture
 
 /**
  * Add/Update Microblogging system
@@ -98,13 +98,15 @@ class OriginEditor : MyActivity(OriginEditor::class) {
 
     private fun deleteOrigin(confirmed: Boolean) {
         if (!confirmed) return
-        CompletableFuture.supplyAsync({ builder?.delete() }, NonUiThreadExecutor.INSTANCE)
-            .thenAcceptAsync({ ok: Boolean? ->
-                if (ok == true) {
+        val builder2 = builder ?: return
+        AsyncResult<Unit, Boolean>("deleteOrigin", AsyncEnum.DEFAULT_POOL)
+            .doInBackground { TryUtils.ofS { builder2.delete() } }
+            .onPostExecute { unit, ok ->
+                if (ok.isSuccess) {
                     setResult(RESULT_OK)
                     finish()
                 }
-            }, UiThreadExecutor.INSTANCE)
+            }
     }
 
     private fun processNewIntent(intentNew: Intent) {

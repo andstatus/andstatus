@@ -204,7 +204,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
     private inner class AsyncLoader : AsyncTask<Bundle?, String?, SyncLoader<*>>, ProgressPublisher {
         private var mSyncLoader: SyncLoader<*>? = null
 
-        constructor(taskId: String?) : super(taskId, AsyncEnum.DEFAULT_POOL) {}
+        constructor(taskId: String) : super(taskId, AsyncEnum.DEFAULT_POOL) {}
         constructor() : super(AsyncEnum.DEFAULT_POOL) {}
 
         fun getSyncLoader(): SyncLoader<*> {

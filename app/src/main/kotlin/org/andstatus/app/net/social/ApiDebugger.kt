@@ -30,12 +30,13 @@ import org.andstatus.app.util.DialogFactory
 class ApiDebugger(private val myContext: MyContext, private val activityContext: Context) {
     fun debugGet() {
         DialogFactory.showTextInputBox(activityContext, "Debug Social network API",
-                "Type API path to GET e.g.\nstatusnet/conversation/12345.json\nor complete URL",
-                { text: String -> this.debugGet(text) }, previousValue)
+            "Type API path to GET e.g.\nstatusnet/conversation/12345.json\nor complete URL",
+            { text: String -> this.debugGet(text) }, previousValue
+        )
     }
 
     private fun debugGet(text: String) {
-        AsyncResult<Unit, HttpReadResult>(taskId = null, pool = AsyncEnum.DEFAULT_POOL)
+        AsyncResult<Unit, HttpReadResult>("debugGet", AsyncEnum.DEFAULT_POOL)
             .doInBackground { debugApiAsync(text) }
             .onPostExecute { _: Any?, results: Try<HttpReadResult> -> debugApiSync(results) }
             .execute(this, Unit)

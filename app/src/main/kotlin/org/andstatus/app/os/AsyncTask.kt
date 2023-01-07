@@ -49,7 +49,7 @@ typealias AsyncResult<Params, Result> = AsyncTask<Params, Unit, Result>
  * @author yvolk@yurivolkov.com
  */
 open class AsyncTask<Params, Progress, Result>(
-    taskId: Any?,
+    taskId: Any,
     val pool: AsyncEnum,
     open val cancelable: Boolean = true,
     identifiable: Identifiable = Identified.fromAny(taskId)
