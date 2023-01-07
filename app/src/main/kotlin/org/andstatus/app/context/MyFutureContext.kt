@@ -32,6 +32,7 @@ import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.Taggable
+import org.andstatus.app.util.TryUtils
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.atomic.AtomicReference
@@ -65,7 +66,7 @@ class MyFutureContext private constructor(
             future.cancel()
         }
         release2(this, previousContext, reason)
-        return completed(previousContext)
+        return completed(this, previousContext)
     }
 
     val isCompletedExceptionally: Boolean get() = future.isFinished && future.result.isFailure
@@ -176,13 +177,16 @@ class MyFutureContext private constructor(
             val future = AsyncResult<MyContext, MyContext>("futureContext", AsyncEnum.DEFAULT_POOL, false)
                 .also { future ->
                     future.doInBackground {
-                        Try.of {
+                        TryUtils.ofS {
                             MyLog.v(previousFuture) { "Preparing for initialization of ${future.instanceTag}" }
                             release2(previousFuture, previousContext) { "Initialization of ${future.instanceTag}" }
-                            previousContext.newInitialized(calledBy).also { myContext ->
+                            previousContext.newInstance(calledBy).also { myContext ->
+                                myContext.initialize()
                                 SyncInitiator.register(myContext)
                                 MyServiceManager.registerReceiver(myContext.context)
                             }
+                        } .also {
+                            MyLog.v(previousFuture) { "Initialization of ${future.instanceTag} result: $it" }
                         }
                     }
                 }
@@ -216,8 +220,14 @@ class MyFutureContext private constructor(
             MyLog.d(previousFuture, "Release completed, " + reason.get())
         }
 
-        fun completed(myContext: MyContext): MyFutureContext {
-            return MyFutureContext(MyContextEmpty.EMPTY, completedFuture(myContext))
+        fun completed(previousFuture: MyFutureContext?, myContext: MyContext): MyFutureContext {
+            val queueCopy: BlockingQueue<MyContextAction> = ArrayBlockingQueue(20)
+            previousFuture?.queue?.let { queue ->
+                while (queue.isNotEmpty()) {
+                    queue.poll()?.let(queueCopy::put)
+                }
+            }
+            return MyFutureContext(myContext, completedFuture(myContext), queueCopy)
         }
 
         private fun completedFuture(myContext: MyContext): AsyncResult<MyContext, MyContext> {

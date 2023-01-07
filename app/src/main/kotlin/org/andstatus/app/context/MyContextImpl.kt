@@ -105,11 +105,11 @@ open class MyContextImpl internal constructor(
         return contextToUse
     }
 
-    override fun newInitialized(initializer: Any): MyContext {
-        return MyContextImpl(this, context, initializer).initialize()
+    override fun newInstance(initializer: Any): MyContext {
+        return MyContextImpl(this, context, initializer)
     }
 
-    fun initialize(): MyContext {
+    override suspend fun initialize(): MyContext {
         val stopWatch: StopWatch = StopWatch.createStarted()
         MyLog.i(this, "Starting initialization by $initializedBy")
         val myContext: MyContext = initializeInternal(initializedBy)
@@ -117,7 +117,7 @@ open class MyContextImpl internal constructor(
         return myContext
     }
 
-    private fun initializeInternal(initializer: Any?): MyContextImpl {
+    private suspend fun initializeInternal(initializer: Any?): MyContextImpl {
         val method = "initialize"
         if (!Permissions.checkPermission(context, PermissionType.GET_ACCOUNTS)) {
             state = MyContextState.NO_PERMISSIONS
@@ -146,7 +146,7 @@ open class MyContextImpl internal constructor(
                     accounts.initialize()
                     timelines.initialize()
                     ImageCaches.initialize(context)
-                    this.queues.load()
+                    queues.load()
                     MyContextState.READY
                 }
             else -> {}
@@ -158,7 +158,7 @@ open class MyContextImpl internal constructor(
         return this
     }
 
-    private fun initializeDatabase(createApplicationData: Boolean) {
+    private suspend fun initializeDatabase(createApplicationData: Boolean) {
         val stopWatch: StopWatch = StopWatch.createStarted()
         val method = "initializeDatabase"
         val newDb = DatabaseHolder(baseContext, createApplicationData)

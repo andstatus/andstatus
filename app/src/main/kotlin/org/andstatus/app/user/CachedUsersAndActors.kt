@@ -39,7 +39,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         return myUsers.size
     }
 
-    fun initialize(): CachedUsersAndActors {
+    suspend fun initialize(): CachedUsersAndActors {
         val stopWatch: StopWatch = StopWatch.createStarted()
         initializeMyUsers()
         initializeMyFriendsOrFollowers(GroupType.FRIENDS, friendsOfMyActors)
@@ -53,7 +53,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         return this
     }
 
-    private fun initializeMyUsers() {
+    private suspend fun initializeMyUsers() {
         users.clear()
         actors.clear()
         myUsers.clear()
@@ -65,7 +65,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         MyQuery.getSet(myContext, sql, function).forEach(Consumer { actor: Actor -> updateCache(actor) })
     }
 
-    private fun initializeMyFriendsOrFollowers(groupType: GroupType, groupMembers: MutableMap<Long, MutableSet<Long>>) {
+    private suspend fun initializeMyFriendsOrFollowers(groupType: GroupType, groupMembers: MutableMap<Long, MutableSet<Long>>) {
         val MY_ACTOR_ID = "myActorId"
         groupMembers.clear()
         val sql = ("SELECT DISTINCT " + ActorSql.selectFullProjection() +

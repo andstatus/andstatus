@@ -1,6 +1,7 @@
 package org.andstatus.app.account
 
 import android.accounts.Account
+import kotlinx.coroutines.delay
 import org.andstatus.app.backup.MyBackupAgent
 import org.andstatus.app.backup.MyBackupDataInput
 import org.andstatus.app.backup.MyBackupDataOutput
@@ -45,7 +46,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         return myAccounts.size
     }
 
-    fun initialize(): MyAccounts {
+    suspend fun initialize(): MyAccounts {
         val stopWatch: StopWatch = StopWatch.createStarted()
         myAccounts.clear()
         recentAccounts.clear()
@@ -56,6 +57,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
             } else {
                 MyLog.w(this, "The account is invalid: $ma")
             }
+            delay(1)
         }
         calculateDistinctOriginsCount()
         recentAccounts.addAll(myAccounts.stream().limit(3).collect(Collectors.toList()))

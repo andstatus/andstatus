@@ -52,7 +52,7 @@ class MyContextHolder private constructor(
     private val contextLock: Any = Any()
 
     @Volatile
-    private var myFutureContext: MyFutureContext = MyFutureContext.completed(MyContextEmpty.EMPTY)
+    private var myFutureContext: MyFutureContext = MyFutureContext.completed(null, MyContextEmpty.EMPTY)
     // end ---
 
     @Volatile
@@ -117,7 +117,7 @@ class MyContextHolder private constructor(
         synchronized(contextLock) {
             if (!myFutureContext.future.isFinished) return false
             myFutureContext.getNow().release { "trySetCreator" }
-            myFutureContext = MyFutureContext.completed(contextCreatorNew)
+            myFutureContext = MyFutureContext.completed(myFutureContext, contextCreatorNew)
         }
         return true
     }
@@ -189,7 +189,7 @@ class MyContextHolder private constructor(
                     "No compatible context" + ", called by " +
                         Taggable.anyToTag(calledBy)
                 }
-                myFutureContext = MyFutureContext.completed(contextCreator)
+                myFutureContext = MyFutureContext.completed(myFutureContext, contextCreator)
             }
         }
         return this

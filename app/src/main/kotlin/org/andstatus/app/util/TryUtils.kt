@@ -101,6 +101,24 @@ object TryUtils {
         return Try.success(kotlin.collections.emptyList<T>())
     }
 
+    /**
+     * Creates a Try of a suspend Callable.
+     *
+     * @param callable A supplier that may throw a checked exception
+     * @param <T>      Component type
+     * @return `Success(callable.call())` if no exception occurs, otherwise `Failure(cause)` if a
+     * non-fatal error occurs calling `callable.call()`.
+     * @throws Error if the cause of the [Failure] is fatal, i.e. non-recoverable
+    </T> */
+    suspend fun <T> ofS(callable: suspend () -> T): Try<T> {
+        Objects.requireNonNull(callable, "callable is null")
+        return try {
+            Try.success(callable())
+        } catch (t: Throwable) {
+            Try.failure(t)
+        }
+    }
+
     suspend fun <T> Try<T>.onSuccessS(action: suspend (T) -> Unit): Try<T> {
         if (isSuccess) {
             action(get())

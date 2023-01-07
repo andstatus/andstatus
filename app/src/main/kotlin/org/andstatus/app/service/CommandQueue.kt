@@ -111,25 +111,22 @@ class CommandQueue(val myContext: MyContext) {
 
     fun pollOrEmpty(queueType: QueueType): CommandData = get(queueType).poll() ?: CommandData.EMPTY
 
-    fun load(): CommandQueue {
+    suspend fun load(): CommandQueue {
         if (loaded) {
             MyLog.v(TAG, "Already loaded")
         } else {
-            runBlocking {
-                mutex.withLock {
-                    val stopWatch: StopWatch = StopWatch.createStarted()
-                    val count = (load(QueueType.CURRENT) + load(QueueType.DOWNLOADS)
-                        + load(QueueType.SKIPPED) + load(QueueType.RETRY))
-                    val countError = load(QueueType.ERROR)
-                    MyLog.i(
-                        TAG, "commandQueueInitializedMs:" + stopWatch.time + ";"
-                            + (if (count > 0) Integer.toString(count) else " no") + " msg in queues"
-                            + if (countError > 0) ", plus $countError in Error queue" else ""
-                    )
-                    loaded = true
-                }
+            mutex.withLock {
+                val stopWatch: StopWatch = StopWatch.createStarted()
+                val count = (load(QueueType.CURRENT) + load(QueueType.DOWNLOADS)
+                    + load(QueueType.SKIPPED) + load(QueueType.RETRY))
+                val countError = load(QueueType.ERROR)
+                MyLog.i(
+                    TAG, "commandQueueInitializedMs:" + stopWatch.time + ";"
+                        + (if (count > 0) Integer.toString(count) else " no") + " msg in queues"
+                        + if (countError > 0) ", plus $countError in Error queue" else ""
+                )
+                loaded = true
             }
-
         }
         return this
     }

@@ -88,7 +88,9 @@ class CommandDataTest {
         queues[QueueType.ERROR].addToQueue(commandData)
         queues.save()
         Assert.assertEquals(1, queues[QueueType.ERROR].size)
-        queues.load()
+        runBlocking {
+            queues.load()
+        }
         Assert.assertEquals(1, queues[QueueType.ERROR].size)
         Assert.assertEquals(commandData, queues.getFromQueue(QueueType.ERROR, commandData))
         val commandData2 = queues[QueueType.ERROR].poll() ?: throw IllegalStateException("No data")

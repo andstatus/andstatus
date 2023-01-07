@@ -38,7 +38,7 @@ import java.util.stream.Stream
 class PersistentTimelines private constructor(private val myContext: MyContext) {
     private val timelines: ConcurrentMap<Long, Timeline> = ConcurrentHashMap()
 
-    fun initialize(): PersistentTimelines {
+    suspend fun initialize(): PersistentTimelines {
         val stopWatch: StopWatch = StopWatch.createStarted()
         val method = "initialize"
         timelines.clear()

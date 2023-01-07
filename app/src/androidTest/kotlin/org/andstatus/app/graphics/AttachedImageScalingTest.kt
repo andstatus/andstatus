@@ -1,6 +1,7 @@
 package org.andstatus.app.graphics
 
 import android.graphics.Point
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.TestSuite
 import org.junit.Assert
@@ -15,7 +16,9 @@ class AttachedImageScalingTest {
 
     @Test
     fun testScaling() {
-        ImageCaches.initialize(myContextHolder.getNow().context)
+        runBlocking {
+            ImageCaches.initialize(myContextHolder.getNow().context)
+        }
         val cache = ImageCaches.getCache(CacheName.ATTACHED_IMAGE)
         val exactlyMaxSize = Point(cache.getMaxBitmapWidth(), cache.getMaxBitmapWidth())
         var options = cache.calculateScaling(this, exactlyMaxSize)

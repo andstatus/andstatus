@@ -36,7 +36,8 @@ import org.andstatus.app.util.IsEmpty
 import java.util.function.Supplier
 
 interface MyContext : Identifiable, IsEmpty {
-    fun newInitialized(initializer: Any): MyContext
+    fun newInstance(initializer: Any): MyContext
+    suspend fun initialize(): MyContext
     val initialized: Boolean
     val isReady: Boolean
     val state: MyContextState

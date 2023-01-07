@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.service
 
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.account.MyAccountTest
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
@@ -240,8 +241,10 @@ class MyServiceTestHelper : MyServiceEventsListener {
         serviceConnector?.unregisterReceiver(myContext.context)
         TestSuite.clearHttpStubs()
         TestSuite.getMyContextForTest().connectionState = ConnectionState.UNKNOWN
-        myContextHolder.getBlocking().accounts.initialize()
-        myContextHolder.getBlocking().timelines.initialize()
+        runBlocking {
+            myContextHolder.getBlocking().accounts.initialize()
+            myContextHolder.getBlocking().timelines.initialize()
+        }
         MyServiceManager.Companion.setServiceAvailable()
         MyLog.v(this, "tearDown ended")
     }

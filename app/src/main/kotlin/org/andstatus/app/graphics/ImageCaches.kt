@@ -47,8 +47,7 @@ object ImageCaches {
     @Volatile
     private var avatarsCache: ImageCache? = null
 
-    @Synchronized
-    fun initialize(context: Context) {
+    suspend fun initialize(context: Context) {
         val stopWatch: StopWatch = StopWatch.createStarted()
         styledImages.clear()
         initializeAttachedImagesCache(context)

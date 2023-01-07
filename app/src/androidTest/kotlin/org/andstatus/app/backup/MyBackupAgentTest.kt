@@ -2,6 +2,7 @@ package org.andstatus.app.backup
 
 import androidx.documentfile.provider.DocumentFile
 import io.vavr.control.Try
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.account.MyAccounts
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
@@ -27,7 +28,9 @@ class MyBackupAgentTest : IgnoredInTravis2() {
     @Test
     fun testBackupRestore() {
         val accountsBefore: MyAccounts = MyAccounts.Companion.newEmpty(myContextHolder.getNow())
-        accountsBefore.initialize()
+        runBlocking {
+            accountsBefore.initialize()
+        }
         TestSuite.forget()
         TestSuite.initialize(this)
         DemoData.demoData.assertConversations()

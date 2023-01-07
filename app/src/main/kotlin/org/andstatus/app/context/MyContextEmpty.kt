@@ -28,8 +28,10 @@ import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.user.CachedUsersAndActors
 import java.util.function.Supplier
 
-class MyContextEmpty: MyContext {
-    override fun newInitialized(initializer: Any): MyContext = throwException()
+class MyContextEmpty : MyContext {
+    override fun newInstance(initializer: Any): MyContext = this
+
+    override suspend fun initialize(): MyContext = this
 
     override val initialized: Boolean = false
 
@@ -37,8 +39,7 @@ class MyContextEmpty: MyContext {
 
     override val state: MyContextState = MyContextState.EMPTY
 
-    override val context: Context
-        get() = throwException()
+    override val context: Context get() = throwException()
 
     override val baseContext: Context get() = throwException()
 

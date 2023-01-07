@@ -58,8 +58,8 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
         this.httpConnectionStubInstance = httpConnectionStubInstance
     }
 
-    override fun newInitialized(initializer: Any): MyContext {
-        return MyContextTestImpl(this, context, initializer).initialize()
+    override fun newInstance(initializer: Any): MyContext {
+        return MyContextTestImpl(this, context, initializer)
     }
 
     override val isTestRun: Boolean = true
