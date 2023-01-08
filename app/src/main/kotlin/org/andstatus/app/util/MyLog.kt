@@ -90,6 +90,7 @@ object MyLog {
 
     // TODO: Should be one object for atomic updates. start ---
     private val logToFileEnabled: AtomicBoolean = AtomicBoolean(false)
+    @Volatile
     private var logFileName: String? = null
     // end ---
 

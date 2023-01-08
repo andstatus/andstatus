@@ -166,6 +166,9 @@ class MyFutureContext private constructor(
                 } else if (previousContext.state == MyContextState.UPGRADING) {
                     willInitialize = false
                     "Is upgrading"
+                } else if (previousContext.state == MyContextState.RESTORING) {
+                    willInitialize = false
+                    "Is restoring"
                 } else if (previousFuture.future.isRunning) {
                     willInitialize = false
                     "Previous is running"
