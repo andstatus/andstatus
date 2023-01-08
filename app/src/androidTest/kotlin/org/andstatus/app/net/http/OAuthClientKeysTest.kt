@@ -28,8 +28,7 @@ import org.junit.Test
 class OAuthClientKeysTest {
     @Before
     fun setUp() {
-        TestSuite.forget()
-        TestSuite.initialize(this)
+        TestSuite.initialize(this, true)
     }
 
     @Test

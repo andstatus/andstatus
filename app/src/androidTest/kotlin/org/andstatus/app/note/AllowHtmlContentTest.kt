@@ -112,8 +112,7 @@ class AllowHtmlContentTest {
     private fun setHtmlContentAllowed(allowedInPumpIo: Boolean, allowedInGnuSocial: Boolean) {
         Origin.Builder(DemoData.demoData.getPumpioConversationOrigin()).setHtmlContentAllowed(allowedInPumpIo).save()
         Origin.Builder(DemoData.demoData.getGnuSocialOrigin()).setHtmlContentAllowed(allowedInGnuSocial).save()
-        TestSuite.forget()
-        TestSuite.initialize(this)
+        TestSuite.initialize(this, true)
         Assert.assertEquals(
             "is HTML content allowed in PumpIo", allowedInPumpIo,
             DemoData.demoData.getPumpioConversationOrigin().isHtmlContentAllowed()

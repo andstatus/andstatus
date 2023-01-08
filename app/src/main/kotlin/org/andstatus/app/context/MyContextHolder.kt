@@ -25,7 +25,6 @@ import io.vavr.control.Try
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.graphics.ImageCaches
@@ -250,10 +249,8 @@ class MyContextHolder private constructor(
         }
     }
 
-    fun releaseBlocking(reason: Supplier<String>) {
-        runBlocking {
-            myFutureContext.release(reason)
-        }
+    suspend fun release(reason: Supplier<String>) {
+        myFutureContext.release(reason)
     }
 
     companion object {

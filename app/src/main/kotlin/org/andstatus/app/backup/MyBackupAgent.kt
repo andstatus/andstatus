@@ -140,8 +140,8 @@ class MyBackupAgent : BackupAgent() {
         return isServiceAvailableStored
     }
 
-    private fun doBackup(data: MyBackupDataOutput) {
-        myContextHolder.releaseBlocking { "doBackup" }
+    private suspend fun doBackup(data: MyBackupDataOutput) {
+        myContextHolder.release { "doBackup" }
         sharedPreferencesBackedUp = backupFile(
             data,
             SHARED_PREFERENCES_KEY,
@@ -288,7 +288,7 @@ class MyBackupAgent : BackupAgent() {
         }
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
-        myContextHolder.releaseBlocking { "ensureNoDataIsPresent" }
+        myContextHolder.release { "ensureNoDataIsPresent" }
     }
 
     private suspend fun doRestore(data: MyBackupDataInput) {
@@ -302,7 +302,7 @@ class MyBackupAgent : BackupAgent() {
         MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME)?.let { file ->
             databasesRestored += restoreFile(data, file)
         }
-        myContextHolder.releaseBlocking { "doRestore, database restored" }
+        myContextHolder.release { "doRestore, database restored" }
         myContextHolder
             .setOnRestore(true)
             .initialize(this).getCompleted()
@@ -318,7 +318,7 @@ class MyBackupAgent : BackupAgent() {
         data.setMyContext(myContextHolder.getNow())
         assertNextHeader(data, KEY_ACCOUNT)
         accountsRestored += data.getMyContext().accounts.onRestore(data, backupDescriptor!!)
-        myContextHolder.releaseBlocking { "doRestore, accounts restored" }
+        myContextHolder.release { "doRestore, accounts restored" }
         myContextHolder.setOnRestore(false)
         myContextHolder.initialize(this).getCompleted()
     }
@@ -338,7 +338,7 @@ class MyBackupAgent : BackupAgent() {
             MyLog.v(this) { "Couldn't delete " + tempFile.absolutePath }
         }
         fixExternalStorage()
-        myContextHolder.releaseBlocking { "restoreSharedPreferences" }
+        myContextHolder.release { "restoreSharedPreferences" }
         myContextHolder.initialize(this).getCompleted()
     }
 

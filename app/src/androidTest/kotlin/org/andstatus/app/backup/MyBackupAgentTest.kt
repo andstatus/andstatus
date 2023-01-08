@@ -30,9 +30,7 @@ class MyBackupAgentTest : IgnoredInTravis2() {
         val tag = "testBackupRestore"
         MyLog.i(this, "$tag started")
         val accountsBefore: MyAccounts = MyAccounts.Companion.newEmpty(myContextHolder.getNow())
-        runBlocking {
-            accountsBefore.initialize()
-        }
+        accountsBefore.initialize()
         TestSuite.forget()
         MyLog.i(tag, "before TestSuite.initialize 1")
         TestSuite.initialize(this)

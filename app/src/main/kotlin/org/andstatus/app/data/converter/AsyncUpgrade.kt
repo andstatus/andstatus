@@ -61,7 +61,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
                 "Upgrade triggered by " + Taggable.anyToTag(upgradeRequester)
             )
             MyServiceManager.setServiceUnavailable()
-            myContextHolder.releaseBlocking { "doUpgrade" }
+            myContextHolder.release { "doUpgrade" }
             // Upgrade will occur inside this call synchronously
             myContextHolder.initializeDuringUpgrade(upgradeRequester)
             myContextHolder.getCompleted()
@@ -93,7 +93,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
     private suspend fun onUpgradeSucceeded() {
         MyServiceManager.setServiceUnavailable()
         if (!myContextHolder.getNow().isReady) {
-            myContextHolder.releaseBlocking { "onUpgradeSucceeded1" }
+            myContextHolder.release { "onUpgradeSucceeded1" }
             myContextHolder.initialize(upgradeRequester)
             myContextHolder.getCompleted()
         }
@@ -101,7 +101,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
         MyServiceManager.stopService()
         if (isRestoring) return
         DataChecker.fixData(progressLogger, false, false)
-        myContextHolder.releaseBlocking { "onUpgradeSucceeded2" }
+        myContextHolder.release { "onUpgradeSucceeded2" }
         myContextHolder.initialize(upgradeRequester)
         myContextHolder.getCompleted()
         MyServiceManager.setServiceAvailable()

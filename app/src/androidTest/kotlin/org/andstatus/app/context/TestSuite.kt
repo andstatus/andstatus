@@ -75,8 +75,11 @@ object TestSuite {
     }
 
     @Synchronized
-    fun initialize(testCase: Any?): Context = runBlocking {
+    fun initialize(testCase: Any?, forget: Boolean = false): Context = runBlocking {
         val method = "initialize"
+        if (forget) {
+            forget()
+        }
         if (initialized) return@runBlocking context
             ?: throw IllegalStateException("Context is null for initialised TestSuite")
 
@@ -163,10 +166,9 @@ object TestSuite {
         return@runBlocking context ?: throw IllegalStateException("Failed to initialize context")
     }
 
-    @Synchronized
-    fun forget() {
+    suspend fun forget() {
         MyLog.d(TAG, "Before forget")
-        myContextHolder.releaseBlocking { "forget" }
+        myContextHolder.release { "forget" }
         context = null
         initialized = false
     }

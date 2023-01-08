@@ -46,7 +46,7 @@ object ApplicationDataUtil {
             myContextHolder.onDeleteApplicationData = true
             MyServiceManager.setServiceUnavailable()
             deleteAccounts()
-            myContextHolder.releaseBlocking { method }
+            myContextHolder.release { method }
             deleteFiles(context, false)
             deleteFiles(context, true)
             SharedPreferencesUtil.resetHasSetDefaultValues()
