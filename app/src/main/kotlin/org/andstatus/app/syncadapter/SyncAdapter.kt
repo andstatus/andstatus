@@ -39,7 +39,7 @@ class SyncAdapter(private val mContext: Context, autoInitialize: Boolean) :
             MyLog.d(this, account.name + " Service unavailable")
             return
         }
-        val myContext: MyContext = myContextHolder.initialize(mContext, this).getBlocking()
+        val myContext: MyContext = myContextHolder.initialize(mContext, this).getNow()
         MyServiceCommandsRunner(myContext).autoSyncAccount(
             myContext.accounts.fromAccountName(account.name), syncResult
         )

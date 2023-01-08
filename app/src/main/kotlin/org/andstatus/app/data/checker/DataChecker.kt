@@ -106,7 +106,7 @@ abstract class DataChecker {
                     fixData(logger, includeLong, countOnly)
                     delay(3000)
                     myContextHolder.releaseBlocking { "fixDataAsync" }
-                    myContextHolder.initialize(null, TAG).getBlocking()
+                    myContextHolder.initialize(null, TAG).getCompleted()
                     return TryUtils.SUCCESS
                 }
 

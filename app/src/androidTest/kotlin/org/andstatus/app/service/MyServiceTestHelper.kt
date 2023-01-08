@@ -46,7 +46,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
     var serviceStopped = false
     private var myContext: MyContext = myContextHolder.getNow()
 
-    fun setUp(accountName: String?) {
+    fun setUp(accountName: String?) = runBlocking {
         MyLog.i(this, "setUp started")
         try {
             MyServiceManager.setServiceUnavailable()
@@ -56,14 +56,14 @@ class MyServiceTestHelper : MyServiceEventsListener {
             if (isSingleStubbedInstance) {
                 httpConnectionStub = HttpConnectionOAuthStub()
                 TestSuite.setHttpConnectionStubInstance(httpConnectionStub)
-                myContextHolder.getBlocking().setExpired { this::class.simpleName + " setUp" }
+                myContextHolder.getCompleted().setExpired { this::class.simpleName + " setUp" }
             }
-            myContext = myContextHolder.initialize(myContext.context, this).getBlocking()
+            myContext = myContextHolder.initialize(myContext.context, this).getCompleted()
             if (!myContext.isReady) {
                 val msg = "Context is not ready after the initialization, repeating... $myContext"
                 MyLog.w(this, msg)
                 myContext.setExpired { this::class.simpleName + msg }
-                myContext = myContextHolder.initialize(myContext.context, this).getBlocking()
+                myContext = myContextHolder.initialize(myContext.context, this).getCompleted()
                 Assert.assertEquals("Context should be ready", true, myContext.isReady)
             }
             MyServiceManager.setServiceUnavailable()
@@ -73,9 +73,8 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 httpConnectionStub = ConnectionStub.newFor(accountName).http
             }
             connectionInstanceId = httpConnectionStub?.getInstanceId() ?: 0
-            serviceConnector = MyServiceEventsReceiver(myContext, this).also {
-                it.registerReceiver(myContext.context)
-            }
+            serviceConnector = MyServiceEventsReceiver(myContext, this@MyServiceTestHelper)
+                .also { it.registerReceiver(myContext.context) }
             httpConnectionStub?.clearData()
             Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(false))
         } catch (e: Exception) {
@@ -242,8 +241,8 @@ class MyServiceTestHelper : MyServiceEventsListener {
         TestSuite.clearHttpStubs()
         TestSuite.getMyContextForTest().connectionState = ConnectionState.UNKNOWN
         runBlocking {
-            myContextHolder.getBlocking().accounts.initialize()
-            myContextHolder.getBlocking().timelines.initialize()
+            myContextHolder.getCompleted().accounts.initialize()
+            myContextHolder.getCompleted().timelines.initialize()
         }
         MyServiceManager.Companion.setServiceAvailable()
         MyLog.v(this, "tearDown ended")

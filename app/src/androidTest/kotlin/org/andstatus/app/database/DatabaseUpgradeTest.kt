@@ -59,7 +59,7 @@ object DatabaseUpgradeTest {
                     }
 
                     MyLog.i(TAG, "before myContextHolder.initialize")
-                    myContext = myContextHolder.initialize(context).getBlocking()
+                    myContext = myContextHolder.initialize(context).getCompleted()
                     assertTrue(myContext.toString(), myContext.isReady)
                     MyLog.i(TAG, "before FirstActivity.closeAllActivities")
                     FirstActivity.closeAllActivities(context)

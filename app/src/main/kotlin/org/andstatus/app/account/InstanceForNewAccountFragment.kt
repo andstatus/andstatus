@@ -95,12 +95,12 @@ class InstanceForNewAccountFragment : Fragment() {
         val url1 = UrlUtils.buildUrl(hostOrUrl, true)
             ?: return TryUtils.failure(getText(R.string.error_invalid_value).toString() + ": '" + hostOrUrl + "'")
         val host = url1.host
-        for (existing in myContextHolder.getBlocking().origins.originsOfType(originType)) {
+        for (existing in myContextHolder.getNow().origins.originsOfType(originType)) {
             if (host == existing.getHost()) {
                 return Try.success(existing)
             }
         }
-        val origin = Origin.Builder(myContextHolder.getBlocking(), originType)
+        val origin = Origin.Builder(myContextHolder.getNow(), originType)
             .setHostOrUrl(hostOrUrl)
             .setName(host)
             .save()

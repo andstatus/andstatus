@@ -79,6 +79,7 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.TryUtils.getOrElseRecover
+import org.andstatus.app.util.TryUtils.onSuccessS
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.ViewUtils
 import org.andstatus.app.view.EnumSelector
@@ -1222,7 +1223,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
      * @author yvolk@yurivolkov.com
      */
     private inner class VerifyCredentialsTask(private val whoAmI: Optional<Uri>) :
-        AsyncResult<Unit, TaskResult>(AsyncEnum.QUICK_UI) {
+        AsyncResult<Unit, TaskResult>("VerifyCredentials", AsyncEnum.QUICK_UI) {
 
         override val cancelable = false // This is needed because there is initialize in the background
         private var dlg: ProgressDialog? = null
@@ -1255,10 +1256,10 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 .flatMap { actor: Actor -> state.builder.onCredentialsVerified(actor) }
                 .map({ it.myAccount })
                 .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
-                .onSuccess { myAccount: MyAccount ->
+                .onSuccessS { myAccount: MyAccount ->
                     state.forget()
                     val myContext: MyContext =
-                        myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
+                        myContextHolder.initialize(this@AccountSettingsActivity, instanceIdString).getCompleted()
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
                     val timeline = myContext.timelines.forUser(TimelineType.HOME, myAccount.actor)
                     if (timeline.isTimeToAutoSync()) {

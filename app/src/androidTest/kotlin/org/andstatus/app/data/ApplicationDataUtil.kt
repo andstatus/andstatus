@@ -41,7 +41,7 @@ object ApplicationDataUtil {
         try {
             val context: Context = myContextHolder.getNow().context
             myContextHolder.initialize(context)
-            myContextHolder.waitForMyContextInitialized()
+            myContextHolder.getCompleted()
 
             myContextHolder.onDeleteApplicationData = true
             MyServiceManager.setServiceUnavailable()

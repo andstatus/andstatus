@@ -16,6 +16,7 @@
 package org.andstatus.app.service
 
 import android.content.SyncResult
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.account.DemoAccountInserter
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData.Companion.DISK_IO_EXCEPTION_PREFIX
@@ -167,7 +168,7 @@ class MyServiceTests : IgnoredInTravis2() {
     }
 
     @Test
-    fun testSyncInForeground() {
+    fun testSyncInForeground(): Unit = runBlocking {
         val method = "testSyncInForeground"
         MyLog.i(this, "$method started")
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false)
@@ -201,7 +202,7 @@ class MyServiceTests : IgnoredInTravis2() {
             "No new data should be posted while in foreground",
             1, mService.getHttp().getRequestsCounter()
         )
-        val queues: CommandQueue = myContextHolder.getBlocking().queues
+        val queues: CommandQueue = myContextHolder.getCompleted().queues
         MyLog.i(this, "$method; Queues1:$queues")
         assertEquals("First command should be in error queue $queues",
             Optional.of(QueueType.ERROR),

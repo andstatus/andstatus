@@ -24,6 +24,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.IBinder
+import io.vavr.control.Try
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
@@ -116,8 +117,7 @@ class AuthenticatorService : Service() {
         override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account): Bundle {
             var deleted = true
             if (AccountUtils.isVersionCurrent(context, account)) {
-                deleted = myContextHolder
-                    .tryCurrent
+                deleted = Try.of { myContextHolder.getNow() }
                     .map { myContext: MyContext ->
                         myContext.accounts
                             .fromAccountName(account.name)

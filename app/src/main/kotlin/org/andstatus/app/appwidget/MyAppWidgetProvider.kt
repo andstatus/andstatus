@@ -33,7 +33,7 @@ class MyAppWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         MyLog.i(TAG, "onReceive; action=" + intent.action)
-        myContextHolder.initialize(context, TAG).getBlocking()
+        myContextHolder.initialize(context, TAG)
         super.onReceive(context, intent)
     }
 

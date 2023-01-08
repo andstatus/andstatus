@@ -41,11 +41,10 @@ import java.util.*
 
 class GenerateDemoData constructor(
     val progressListener: ProgressLogger.ProgressListener,
-    val myContext: MyContext,
     val demoData: DemoData
 ) :
     AsyncRunnable(GenerateDemoData::class, AsyncEnum.DEFAULT_POOL) {
-    val logTag: String = progressListener.getLogTag()
+    private val logTag: String = progressListener.getLogTag()
     override val cancelable: Boolean = false
 
     override suspend fun doInBackground(params: Unit): Try<Unit> {
@@ -53,7 +52,7 @@ class GenerateDemoData constructor(
         progressListener.onProgressMessage("Generating demo data...")
         delay(500)
         MyLog.v(logTag, "Before initialize 1")
-        myContextHolder.initialize(null, logTag).getBlocking()
+        val myContext: MyContext = myContextHolder.initialize(null, logTag).getCompleted()
         MyLog.v(logTag, "After initialize 1")
         MyServiceManager.setServiceUnavailable()
         val originInserter = DemoOriginInserter(myContext)
@@ -62,13 +61,13 @@ class GenerateDemoData constructor(
         accountInserter.insert()
         myContext.timelines.saveChanged()
         MyLog.v(logTag, "Before initialize 2")
-        myContextHolder.initialize(null, logTag).getBlocking()
+        myContextHolder.initialize(null, logTag).getCompleted()
         MyLog.v(logTag, "After initialize 2")
         MyServiceManager.setServiceUnavailable()
         progressListener.onProgressMessage("Demo accounts added...")
         delay(500)
 
-        val myContext2 = myContextHolder.getBlocking()
+        val myContext2 = myContextHolder.getCompleted()
         Assert.assertTrue("Context is not ready $myContext2", myContext2.isReady)
         demoData.checkDataPath()
         val size: Int = myContext2.accounts.size()
@@ -106,7 +105,7 @@ class GenerateDemoData constructor(
         MatcherAssert.assertThat(defaultTimeline.timelineType, CoreMatchers.`is`(TimelineType.EVERYTHING))
         myContextHolder.getNow().timelines.setDefault(defaultTimeline)
         MyLog.v(logTag, "Before initialize 3")
-        myContextHolder.initialize(null, logTag).getBlocking()
+        myContextHolder.initialize(null, logTag).getCompleted()
         MyLog.v(logTag, "After initialize 3")
         DemoData.assertOriginsContext()
         DemoOriginInserter.assertDefaultTimelinesForOrigins()
@@ -124,7 +123,7 @@ class GenerateDemoData constructor(
     }
 
     override suspend fun onPostExecute(result: Try<Unit>) {
-        FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context, true)
+        FirstActivity.checkAndUpdateLastOpenedAppVersion(myContextHolder.getNow().context, true)
         progressListener.onComplete(result.isSuccess)
     }
 }

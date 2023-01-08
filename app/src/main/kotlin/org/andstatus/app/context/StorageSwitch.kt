@@ -97,7 +97,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
 
         override suspend fun doInBackground(params: Unit): Try<TaskResult> {
             val result = TaskResult()
-            myContextHolder.getBlocking()
+            myContextHolder.getCompleted()
             MyServiceManager.setServiceUnavailable()
             MyServiceManager.stopService()
 
@@ -118,7 +118,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             return if (result.success) Try.success(result) else TryUtils.failure(result.getMessage())
         }
 
-        private fun moveAll(result: TaskResult) {
+        private suspend fun moveAll(result: TaskResult) {
             val useExternalStorageOld = MyStorage.isStorageExternal()
             if (mUseExternalStorageNew
                 && !MyStorage.isWritableExternalStorageAvailable(result.messageBuilder)
@@ -149,7 +149,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             }
         }
 
-        private fun moveDatabase(
+        private suspend fun moveDatabase(
             useExternalStorageNew: Boolean,
             messageToAppend: StringBuilder,
             databaseName: String

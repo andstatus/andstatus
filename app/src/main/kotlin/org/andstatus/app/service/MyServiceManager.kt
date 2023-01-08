@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.os.AsyncUtil
@@ -99,7 +100,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
     companion object {
         private const val MyServiceJobId: Int = 1
         private val myServiceJobInfo: JobInfo by lazy {
-            val context = myContextHolder.getBlocking().context
+            val context = myContextHolder.getNow().context
             JobInfo.Builder(MyServiceJobId, ComponentName(context, MyService::class.java))
                 .apply {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
@@ -210,8 +211,8 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                 if (serviceAvailability.get().isAvailable()
                     && AsyncUtil.nonUiThread // Don't block on UI thread
                     && !myContextHolder.getNow().initialized
-                ) {
-                    myContext = myContextHolder.initialize(null, TAG).getBlocking()
+                ) runBlocking {
+                    myContext = myContextHolder.initialize(null, TAG).getCompleted()
                 }
             }
             return if (myContext.isReady) {

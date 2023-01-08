@@ -214,7 +214,11 @@ open class MyActivity(
      *         success MyContext Ready or EMPTY if not ready
      */
     fun myReadyContextOrRestartMe(): Try<MyContext> {
-        val myContext = myContextHolder.tryReadyNow()
+        val myContext = myContextHolder.getNow()
+            .let {
+                if (it.isReady) Try.success(it)
+                else TryUtils.failure("No ready context: ${it.state}")
+            }
         var finishing = isFinishing
         if (myContext.isFailure) {
             if (initializeThenRestartActivity()) finishing = true

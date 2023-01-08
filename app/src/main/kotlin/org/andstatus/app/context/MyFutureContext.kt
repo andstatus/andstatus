@@ -89,7 +89,7 @@ class MyFutureContext private constructor(
     }
 
     /** Immediately get current state of MyContext initialization,
-     * error if not completed yet or if completed with error */
+     * failure if not completed yet or if completed exceptionally */
     val tryCurrent: Try<MyContext> get() = future.result
 
     fun whenSuccessAsync(mainThread: Boolean, consumer: (MyContext) -> Unit) =
@@ -141,11 +141,10 @@ class MyFutureContext private constructor(
         }
     }
 
-    // TODO: Avoid blocking
-    fun tryBlocking(): Try<MyContext> {
-        for (i in 0..9) {
-            DbUtils.waitMs(FirstActivity::class, 100)
-            if (future.isFinished) break
+    suspend fun tryCompleted(): Try<MyContext> {
+        while (!future.isFinished) {
+            delay(1000)
+            MyLog.v(this, "Waiting for initialization to finish, ${future}")
         }
         return future.result
     }

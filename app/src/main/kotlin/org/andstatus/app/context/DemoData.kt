@@ -120,7 +120,7 @@ class DemoData {
         val method = "add"
         dataPath = dataPathIn
         MyLog.v(TAG, "$method; started")
-        val asyncTask = addAsync(myContext, ProgressLogger.EMPTY_LISTENER)
+        val asyncTask = addAsync(ProgressLogger.EMPTY_LISTENER)
         var count: Long = 200
         while (count > 0) {
             MyLog.v(
@@ -146,8 +146,8 @@ class DemoData {
         MyLog.v(TAG, "$method; ended")
     }
 
-    fun addAsync(myContext: MyContext, progressListener: ProgressLogger.ProgressListener): AsyncRunnable {
-        val asyncTask = GenerateDemoData(progressListener, myContext, this)
+    fun addAsync(progressListener: ProgressLogger.ProgressListener): AsyncRunnable {
+        val asyncTask = GenerateDemoData(progressListener, this)
         asyncTask.execute(this, Unit)
         return asyncTask
     }
@@ -207,14 +207,14 @@ class DemoData {
     }
 
     fun getMyAccount(accountName: String?): MyAccount {
-        val ma: MyAccount = myContextHolder.getBlocking().accounts.fromAccountName(accountName)
+        val ma: MyAccount = myContextHolder.getNow().accounts.fromAccountName(accountName)
         Assert.assertTrue("$accountName exists", ma.isValid)
         Assert.assertTrue("Origin for $accountName doesn't exist", ma.origin.isValid)
         return ma
     }
 
     fun getAccountActorByOid(actorOid: String?): Actor {
-        for (ma in myContextHolder.getBlocking().accounts.get()) {
+        for (ma in myContextHolder.getNow().accounts.get()) {
             if (ma.getActorOid() == actorOid) {
                 return ma.actor
             }

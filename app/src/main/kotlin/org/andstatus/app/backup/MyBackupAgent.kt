@@ -22,6 +22,7 @@ import android.app.backup.BackupDataOutput
 import android.content.Context
 import android.os.ParcelFileDescriptor
 import android.text.format.Formatter
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
@@ -46,7 +47,7 @@ class MyBackupAgent : BackupAgent() {
     private var backupDescriptor: MyBackupDescriptor? = null
     private var previousKey: String? = ""
     private var accountsBackedUp: Long = 0
-    var accountsRestored: Long = 0
+    private var accountsRestored: Long = 0
     private var databasesBackedUp: Long = 0
     var databasesRestored: Long = 0
     private var sharedPreferencesBackedUp: Long = 0
@@ -88,14 +89,14 @@ class MyBackupAgent : BackupAgent() {
     fun onBackup(
         oldDescriptor: MyBackupDescriptor?, data: MyBackupDataOutput?,
         newDescriptor: MyBackupDescriptor?
-    ) {
+    ) = runBlocking {
         val method = "onBackup"
         // Ignore oldDescriptor for now...
         MyLog.i(
             this, method + " started" + (if (data != null) ", folder='" + data.getDataFolderName() + "'" else "") +
                 ", " + if (oldDescriptor?.saved() == true) "oldState:" + oldDescriptor.toString() else "no old state"
         )
-        myContextHolder.initialize(this).getBlocking()
+        myContextHolder.initialize(this@MyBackupAgent).getCompleted()
         backupDescriptor = newDescriptor
         try {
             if (data == null) {
@@ -118,7 +119,7 @@ class MyBackupAgent : BackupAgent() {
         }
     }
 
-    fun checkAndSetServiceUnavailable(): Boolean {
+    private fun checkAndSetServiceUnavailable(): Boolean {
         val isServiceAvailableStored: Boolean = MyServiceManager.isServiceAvailable()
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
@@ -175,7 +176,7 @@ class MyBackupAgent : BackupAgent() {
             .onFailure { e: Throwable ->
                 MyLog.w(
                     this, "Failed to backup folder " +
-                        sourceFolder.getAbsolutePath() + ", " + e.message
+                        sourceFolder.absolutePath + ", " + e.message
                 )
             }
             .getOrElse(0)
@@ -188,7 +189,7 @@ class MyBackupAgent : BackupAgent() {
             if (fileLength > Int.MAX_VALUE) {
                 throw FileNotFoundException(
                     "File '"
-                        + dataFile.getName() + "' is too large for backup: " + formatBytes(fileLength)
+                        + dataFile.name + "' is too large for backup: " + formatBytes(fileLength)
                 )
             }
             val bytesToWrite = fileLength.toInt()
@@ -196,9 +197,8 @@ class MyBackupAgent : BackupAgent() {
             var bytesWritten = 0
             while (bytesWritten < bytesToWrite) {
                 val bytes = FileUtils.getBytes(dataFile, bytesWritten, MyStorage.FILE_CHUNK_SIZE)
-                if (bytes.size <= 0) {
-                    break
-                }
+                if (bytes.isEmpty()) break
+
                 bytesWritten += bytes.size
                 data.writeEntityData(bytes, bytes.size)
             }
@@ -213,7 +213,7 @@ class MyBackupAgent : BackupAgent() {
                 "Backed up " + fileWritten(key, dataFile, bytesWritten)
             )
         } else {
-            MyLog.v(this) { "File doesn't exist key='" + key + "', path='" + dataFile.getAbsolutePath() }
+            MyLog.v(this) { "File doesn't exist key='" + key + "', path='" + dataFile.absolutePath }
         }
         return backedUpFilesCount
     }
@@ -228,10 +228,10 @@ class MyBackupAgent : BackupAgent() {
 
     private fun filePartiallyWritten(key: String, dataFile: File, bytesToWrite: Int, bytesWritten: Int): String {
         return if (bytesWritten == bytesToWrite) {
-            ("file:'" + dataFile.getName()
+            ("file:'" + dataFile.name
                 + "', key:'" + key + "', size:" + formatBytes(bytesWritten.toLong()))
         } else {
-            ("file:'" + dataFile.getName()
+            ("file:'" + dataFile.name
                 + "', key:'" + key + "', wrote "
                 + formatBytes(bytesWritten.toLong()) + " of " + formatBytes(bytesToWrite.toLong()))
         }
@@ -244,7 +244,7 @@ class MyBackupAgent : BackupAgent() {
         )
     }
 
-    fun onRestore(data: MyBackupDataInput?, appVersionCode: Int, newDescriptor: MyBackupDescriptor) {
+    fun onRestore(data: MyBackupDataInput?, appVersionCode: Int, newDescriptor: MyBackupDescriptor) = runBlocking {
         val method = "onRestore"
         backupDescriptor = newDescriptor
         MyLog.i(
@@ -276,11 +276,11 @@ class MyBackupAgent : BackupAgent() {
         }
     }
 
-    private fun ensureNoDataIsPresent() {
+    private suspend fun ensureNoDataIsPresent() {
         if (MyStorage.isApplicationDataCreated().isFalse) {
             return
         }
-        myContextHolder.initialize(this).getBlocking()
+        myContextHolder.initialize(this).getCompleted()
         if (!myContextHolder.getNow().isReady) {
             throw FileNotFoundException("Application context is not initialized")
         } else if (myContextHolder.getNow().accounts.nonEmpty) {
@@ -291,7 +291,7 @@ class MyBackupAgent : BackupAgent() {
         myContextHolder.releaseBlocking { "ensureNoDataIsPresent" }
     }
 
-    private fun doRestore(data: MyBackupDataInput) {
+    private suspend fun doRestore(data: MyBackupDataInput) {
         restoreSharedPreferences(data)
         if (optionalNextHeader(data, DOWNLOADS_KEY)) {
             MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS)?.let { folder ->
@@ -305,7 +305,7 @@ class MyBackupAgent : BackupAgent() {
         myContextHolder.releaseBlocking { "doRestore, database restored" }
         myContextHolder
             .setOnRestore(true)
-            .initialize(this).getBlocking()
+            .initialize(this).getCompleted()
         if (activity != null) {
             myContextHolder.upgradeIfNeeded(activity)
         }
@@ -320,10 +320,10 @@ class MyBackupAgent : BackupAgent() {
         accountsRestored += data.getMyContext().accounts.onRestore(data, backupDescriptor!!)
         myContextHolder.releaseBlocking { "doRestore, accounts restored" }
         myContextHolder.setOnRestore(false)
-        myContextHolder.initialize(this).getBlocking()
+        myContextHolder.initialize(this).getCompleted()
     }
 
-    private fun restoreSharedPreferences(data: MyBackupDataInput) {
+    private suspend fun restoreSharedPreferences(data: MyBackupDataInput) {
         MyLog.i(this, "On restoring Shared preferences")
         FirstActivity.setDefaultValues(getContext())
         assertNextHeader(data, SHARED_PREFERENCES_KEY)
@@ -339,7 +339,7 @@ class MyBackupAgent : BackupAgent() {
         }
         fixExternalStorage()
         myContextHolder.releaseBlocking { "restoreSharedPreferences" }
-        myContextHolder.initialize(this).getBlocking()
+        myContextHolder.initialize(this).getCompleted()
     }
 
     private fun getContext(): Context {
@@ -382,16 +382,15 @@ class MyBackupAgent : BackupAgent() {
         return result
             .onSuccess { s: String -> backupDescriptor!!.getLogger().logProgress(s) }
             .onFailure { e: Throwable -> backupDescriptor!!.getLogger().logProgress(e.message ?: "(some error)") }
-            .map { s: String? -> 1L }.getOrElse(0L)
+            .map { 1L }.getOrElse(0L)
     }
 
     /** @return count of restores files
      */
-    fun restoreFile(data: MyBackupDataInput, dataFile: File): Long {
+    private fun restoreFile(data: MyBackupDataInput, dataFile: File): Long {
         if (dataFile.exists() && !dataFile.delete()) {
             throw FileNotFoundException(
-                "Couldn't delete old file before restore '"
-                    + dataFile.getName() + "'"
+                "Couldn't delete old file before restore '" + dataFile.name + "'"
             )
         }
         val method = "restoreFile"
@@ -443,10 +442,10 @@ class MyBackupAgent : BackupAgent() {
     }
 
     companion object {
-        val SHARED_PREFERENCES_KEY: String = "shared_preferences"
-        val DOWNLOADS_KEY: String = "downloads"
-        val DATABASE_KEY: String = "database"
-        val LOG_FILES_KEY: String = "logs"
-        val KEY_ACCOUNT: String = "account"
+        const val SHARED_PREFERENCES_KEY: String = "shared_preferences"
+        const val DOWNLOADS_KEY: String = "downloads"
+        const val DATABASE_KEY: String = "database"
+        const val LOG_FILES_KEY: String = "logs"
+        const val KEY_ACCOUNT: String = "account"
     }
 }

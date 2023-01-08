@@ -22,6 +22,7 @@ import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ReplaceTextAction
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.matcher.ViewMatchers
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.ActivityTestHelper
 import org.andstatus.app.R
 import org.andstatus.app.activity.ActivityViewItem
@@ -45,16 +46,16 @@ import org.junit.Test
  */
 class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
 
-    override fun getActivityIntent(): Intent {
+    override fun getActivityIntent(): Intent = runBlocking {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        val myContext = myContextHolder.getBlocking()
+        val myContext = myContextHolder.getCompleted()
         val origin: Origin = myContext.origins.fromName(DemoData.demoData.gnusocialTestOriginName)
         Assert.assertTrue(origin.toString(), origin.isValid)
         MyLog.i(this, "setUp ended")
         val timeline = myContext.timelines.get(TimelineType.PUBLIC, Actor.EMPTY, origin)
         timeline.save(myContext)
-        return Intent(Intent.ACTION_VIEW, timeline.getUri())
+        Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
 
     @Test

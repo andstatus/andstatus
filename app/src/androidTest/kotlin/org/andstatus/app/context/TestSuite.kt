@@ -23,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.HelpActivity
 import org.andstatus.app.MyAction
@@ -61,7 +62,7 @@ object TestSuite {
 
     fun initializeWithAccounts(testCase: Any?): MyContextTestImpl {
         initialize(testCase)
-        if (myContextHolder.getBlocking().accounts.fromAccountName(DemoData.demoData.activityPubTestAccountName).isEmpty) {
+        if (myContextHolder.getNow().accounts.fromAccountName(DemoData.demoData.activityPubTestAccountName).isEmpty) {
             ensureDataAdded()
         }
         return getMyContextForTest()
@@ -74,10 +75,11 @@ object TestSuite {
     }
 
     @Synchronized
-    fun initialize(testCase: Any?): Context {
+    fun initialize(testCase: Any?): Context = runBlocking {
         val method = "initialize"
-        if (initialized) return context
+        if (initialized) return@runBlocking context
             ?: throw IllegalStateException("Context is null for initialised TestSuite")
+
         var creatorSet = false
         MyLog.setMinLogLevel(MyLog.VERBOSE)
         for (iter in 1..5) {
@@ -120,7 +122,7 @@ object TestSuite {
         MyLog.i(TAG, "After Initializing Test Suite loop")
         myContextHolder.executionMode =
             ExecutionMode.Companion.load(InstrumentationRegistry.getArguments().getString("executionMode"))
-        val myContext: MyContext = myContextHolder.getBlocking()
+        val myContext: MyContext = myContextHolder.getCompleted()
         Assert.assertNotEquals("MyContext state $myContext", MyContextState.EMPTY, myContext.state)
         val logLevel = MyLog.VERBOSE
         MyLog.setMinLogLevel(logLevel)
@@ -133,7 +135,7 @@ object TestSuite {
         MyLog.forget()
         Assert.assertTrue("Level $logLevel should be loggable", MyLog.isLoggable(TAG, logLevel))
         MyServiceManager.setServiceUnavailable()
-        if (myContextHolder.getBlocking().state != MyContextState.READY) {
+        if (myContextHolder.getCompleted().state != MyContextState.READY) {
             MyLog.d(TAG, "MyContext is not ready: " + myContextHolder.getNow().state)
             if (myContextHolder.getNow().state == MyContextState.NO_PERMISSIONS) {
                 Permissions.setAllGranted(true)
@@ -157,7 +159,8 @@ object TestSuite {
         ) {
             MyLog.i(TAG, "New version of application is running")
         }
-        return context ?: throw IllegalStateException("Failed to initialize context")
+        myContextHolder.initialize(null).getCompleted()
+        return@runBlocking context ?: throw IllegalStateException("Failed to initialize context")
     }
 
     @Synchronized
@@ -196,15 +199,15 @@ object TestSuite {
         getMyContextForTest().getAssertions().clear()
     }
 
-    fun getMyContextForTest(): MyContextTestImpl {
-        val myContext: MyContext = myContextHolder.getBlocking()
+    fun getMyContextForTest(): MyContextTestImpl = runBlocking {
+        val myContext: MyContext = myContextHolder.getCompleted()
         if (myContext !is MyContextTestImpl) {
             Assert.fail("Wrong type of current context: " + (myContext.javaClass.name))
         }
         if (myContext.isExpired) {
             myContextHolder.initialize(myContext.context)
         }
-        return myContextHolder.getBlocking() as MyContextTestImpl
+        myContextHolder.getCompleted() as MyContextTestImpl
     }
 
     fun setHttpConnectionStubClass(httpConnectionStubClass: Class<out HttpConnection?>?) {
@@ -291,8 +294,10 @@ object TestSuite {
     fun clearHttpStubs() {
         setHttpConnectionStubClass(null)
         setHttpConnectionStubInstance(null)
-        myContextHolder.getBlocking()
-            .accounts.get()
-            .forEach(MyAccount::setConnection)
+        runBlocking {
+            myContextHolder.getCompleted()
+                .accounts.get()
+                .forEach(MyAccount::setConnection)
+        }
     }
 }

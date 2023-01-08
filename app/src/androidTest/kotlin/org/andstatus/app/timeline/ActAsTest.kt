@@ -16,6 +16,7 @@
 package org.andstatus.app.timeline
 
 import android.content.Intent
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.ActivityTestHelper
 import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
@@ -41,18 +42,18 @@ import org.junit.Test
  */
 class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
 
-    override fun getActivityIntent(): Intent {
+    override fun getActivityIntent(): Intent = runBlocking {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        val myContext: MyContext = myContextHolder.getBlocking()
+        val myContext: MyContext = myContextHolder.getCompleted()
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
         myContext.accounts.setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
-        val timeline: Timeline = myContext.timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin)
+        val timeline: Timeline = myContext.timelines[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin]
         timeline.forgetPositionsAndDates()
         timeline.save(myContext)
-        return Intent(Intent.ACTION_VIEW, timeline.getUri())
+        Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
 
     @Test

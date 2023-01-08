@@ -24,7 +24,6 @@ import android.provider.Settings
 import io.vavr.control.Try
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
@@ -37,7 +36,6 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TamperingDetector
-import org.andstatus.app.util.TryUtils
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -97,21 +95,8 @@ class MyContextHolder private constructor(
         return getFuture().getNow()
     }
 
-    /** Immediately get current state of MyContext initialization,
-     * error if not completed yet or if completed with error */
-    val tryCurrent: Try<MyContext> get() = getFuture().tryCurrent
-
-    /**
-     * Immediately return current or previous context or failure if it is not ready
-     */
-    fun tryReadyNow(): Try<MyContext> = getNow()
-        .let {
-            if (it.isReady) Try.success(it)
-            else TryUtils.failure("No ready context: ${it.state}")
-        }
-
-    fun getBlocking(): MyContext {
-        return myFutureContext.tryBlocking().getOrElse(myFutureContext.getNow())
+    suspend fun getCompleted(): MyContext {
+        return myFutureContext.tryCompleted().getOrElse(myFutureContext.getNow())
     }
 
     fun getFuture(): MyFutureContext {
@@ -159,13 +144,6 @@ class MyContextHolder private constructor(
             }
         }
         return this
-    }
-
-    suspend fun waitForMyContextInitialized() {
-        while (!myFutureContext.future.isFinished) {
-            delay(1000)
-            MyLog.v(DatabaseConverterController.TAG, "Waiting for upgrade to finish, ${myFutureContext.future}")
-        }
     }
 
     fun thenStartActivity(intent: Intent?): MyContextHolder {

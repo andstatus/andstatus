@@ -64,7 +64,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
             myContextHolder.releaseBlocking { "doUpgrade" }
             // Upgrade will occur inside this call synchronously
             myContextHolder.initializeDuringUpgrade(upgradeRequester)
-            myContextHolder.waitForMyContextInitialized()
+            myContextHolder.getCompleted()
             synchronized(DatabaseConverterController.upgradeLock) {
                 DatabaseConverterController.shouldTriggerDatabaseUpgrade = false
             }
@@ -95,7 +95,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
         if (!myContextHolder.getNow().isReady) {
             myContextHolder.releaseBlocking { "onUpgradeSucceeded1" }
             myContextHolder.initialize(upgradeRequester)
-            myContextHolder.waitForMyContextInitialized()
+            myContextHolder.getCompleted()
         }
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
@@ -103,7 +103,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
         DataChecker.fixData(progressLogger, false, false)
         myContextHolder.releaseBlocking { "onUpgradeSucceeded2" }
         myContextHolder.initialize(upgradeRequester)
-        myContextHolder.waitForMyContextInitialized()
+        myContextHolder.getCompleted()
         MyServiceManager.setServiceAvailable()
     }
 

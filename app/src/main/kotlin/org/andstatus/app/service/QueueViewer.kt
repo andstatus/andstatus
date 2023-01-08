@@ -69,7 +69,7 @@ class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
             R.id.clear_the_queue -> AsyncEffects<QueueViewer>(taskId = this, pool = AsyncEnum.DEFAULT_POOL)
-                .doInBackground { myContextHolder.getBlocking().queues.clear() }
+                .doInBackground { myContextHolder.getNow().queues.clear() }
                 .onPostExecute { activity: QueueViewer?, _: Try<Unit> -> activity?.showList(WhichPage.CURRENT) }
                 .execute(this)
             else -> return super.onOptionsItemSelected(item)
@@ -100,7 +100,7 @@ class QueueViewer : LoadableListActivity<QueueData>(QueueViewer::class) {
             }
             R.id.menuItemDelete -> {
                 AsyncEffects<QueueViewer>(taskId = this, pool = AsyncEnum.DEFAULT_POOL)
-                    .doInBackground { myContextHolder.getBlocking().queues.deleteCommand(data.commandData) }
+                    .doInBackground { myContextHolder.getNow().queues.deleteCommand(data.commandData) }
                     .onPostExecute { activity: QueueViewer?, _: Try<Unit> -> activity?.showList(WhichPage.CURRENT) }
                     .execute(this)
                 true

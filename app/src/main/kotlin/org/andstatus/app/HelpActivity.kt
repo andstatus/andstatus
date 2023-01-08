@@ -72,13 +72,13 @@ class HelpActivity : MyActivity(HelpActivity::class) {
         if (intent.hasExtra(EXTRA_IS_FIRST_ACTIVITY)) {
             mIsFirstActivity = intent.getBooleanExtra(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity)
         }
-        if (myContextHolder.getBlocking().accounts.currentAccount.nonValid
+        if (myContextHolder.getNow().accounts.currentAccount.nonValid
             && myContextHolder.executionMode == ExecutionMode.ROBO_TEST && !generatingDemoData
         ) {
             progressListener.cancel()
             generatingDemoData = true
             progressListener = DefaultProgressListener(this, R.string.app_name, "GenerateDemoData")
-            DemoData.demoData.addAsync(myContextHolder.getBlocking(), progressListener)
+            DemoData.demoData.addAsync(progressListener)
         }
         showRestoreButton()
         showGetStartedButton()
@@ -182,12 +182,9 @@ class HelpActivity : MyActivity(HelpActivity::class) {
         private fun showVersionText(context: Context?, parentView: View) {
             val versionText = parentView.findViewById<TextView?>(R.id.splash_application_version)
             val text: MyStringBuilder = MyStringBuilder.of(myContextHolder.getVersionText(context))
-            if (!myContextHolder.getNow().isReady) {
-                text.withSpace(myContextHolder.getNow().state.toString())
-                text.withSpace(myContextHolder.getNow().lastDatabaseError)
-            }
-            myContextHolder.tryCurrent.onFailure { e: Throwable ->
-                text.append(" ${e.message} \n${MyLog.getStackTrace(e)}")
+            myContextHolder.getNow().takeIf { !it.isReady }?.let { myContext ->
+                text.withSpace(myContext.toString())
+                text.withSpace(myContext.lastDatabaseError)
             }
             versionText.text = text.toString()
             versionText.setOnClickListener { v: View? ->

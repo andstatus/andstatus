@@ -23,15 +23,16 @@ import kotlinx.coroutines.launch
 import org.andstatus.app.appwidget.AppWidgets
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
-import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.os.AsyncEnum
+import org.andstatus.app.os.AsyncRunnable
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.Identified
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.TryUtils
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
@@ -91,22 +92,32 @@ class MyService(
         } else {
             MyLog.v(this) { "onStartJob" }
         }
-        if (!isStarting.compareAndSet(false, true)) return true
+        if (isStarting) return true
 
         if (jobParameters == null) jobParameters = params
         if (myContext.isEmpty) {
-            myContext = myContextHolder.initialize(this).getBlocking()
+            myContext = myContextHolder.initialize(this).getNow()
         }
         needToRescheduleJob.set(false)
         latestActivityTime = System.currentTimeMillis()
         if (isForcedToStop()) {
             stopDelayed(true)
-        } else {
-            ensureInitialized()
-            startStopExecution()
+            return false
         }
-        isStarting.set(false)
-        return getServiceState() != MyServiceState.STOPPED
+        if (initialized.get() || isStopping.get() || !myContext.isReady) return true
+
+        AsyncRunnable("onStartJob", AsyncEnum.DEFAULT_POOL, false)
+            .doInBackground {
+                ensureInitialized()
+                startStopExecution()
+                TryUtils.SUCCESS
+            }
+            .execute(Unit)
+            .onSuccess {
+                onStartJobTask.set(it)
+            }
+
+        return true
     }
 
     override fun onStopJob(params: JobParameters?): Boolean {
@@ -134,10 +145,10 @@ class MyService(
             .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 
-    private fun ensureInitialized() {
+    private suspend fun ensureInitialized() {
         if (initialized.get() || isStopping.get()) return
         if (!myContext.isReady) {
-            myContext = myContextHolder.initialize(this).getBlocking()
+            myContext = myContextHolder.initialize(this).getCompleted()
             if (!myContext.isReady) return
         }
         if (initialized.compareAndSet(false, true)) {
@@ -218,7 +229,7 @@ class MyService(
         }
         MyLog.v(this) { "Destroyed" }
         MyLog.setNextLogFileName()
-        isStarting.set(false)
+        onStartJobTask.get().cancel()
     }
 
     /**
@@ -268,7 +279,9 @@ class MyService(
     }
 
     companion object {
-        private val isStarting: AtomicBoolean = AtomicBoolean(false)
+        private val onStartJobTask: AtomicReference<AsyncRunnable> =
+            AtomicReference(AsyncRunnable(AsyncEnum.DEFAULT_POOL).apply { result = TryUtils.SUCCESS })
+        private val isStarting get() = !onStartJobTask.get().isFinished
         private val myServiceRef: AtomicReference<MyService> = AtomicReference()
         private const val STOP_ON_INACTIVITY_AFTER_SECONDS: Long = 10
         private val widgetsInitialized: AtomicBoolean = AtomicBoolean(false)
@@ -278,7 +291,7 @@ class MyService(
                 ?.getServiceState()
                 ?: MyServiceState.STOPPED
 
-        val isWorking: Boolean get() = isStarting.get() || myServiceRef.get() != null
+        val isWorking: Boolean get() = isStarting || myServiceRef.get() != null
 
         fun stopService() {
             myServiceRef.get()?.stopDelayed(false)
