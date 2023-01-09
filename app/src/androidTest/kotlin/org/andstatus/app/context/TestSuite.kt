@@ -23,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.HelpActivity
@@ -39,6 +40,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.Permissions
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StopWatch
+import org.andstatus.app.util.TryUtils.ionSuccess
 import org.junit.Assert
 import java.util.*
 
@@ -60,7 +62,7 @@ object TestSuite {
     @Volatile
     private var dataAdded = false
 
-    fun initializeWithAccounts(testCase: Any?): MyContextTestImpl {
+    fun initializeWithAccounts(testCase: Any): MyContextTestImpl {
         initialize(testCase)
         if (myContextHolder.getNow().accounts.fromAccountName(DemoData.demoData.activityPubTestAccountName).isEmpty) {
             ensureDataAdded()
@@ -68,60 +70,22 @@ object TestSuite {
         return getMyContextForTest()
     }
 
-    fun initializeWithData(testCase: Any?): MyContextTestImpl {
+    fun initializeWithData(testCase: Any): MyContextTestImpl {
         initialize(testCase)
         ensureDataAdded()
         return getMyContextForTest()
     }
 
     @Synchronized
-    fun initialize(testCase: Any?, forget: Boolean = false): Context = runBlocking {
-        val method = "initialize"
+    fun initialize(testCase: Any, forget: Boolean = false): Context = runBlocking {
         if (forget) {
             forget()
         }
         if (initialized) return@runBlocking context
             ?: throw IllegalStateException("Context is null for initialised TestSuite")
 
-        var creatorSet = false
         MyLog.setMinLogLevel(MyLog.VERBOSE)
-        for (iter in 1..5) {
-            MyLog.i(TAG, "Initializing Test Suite, iteration=$iter")
-            if (testCase == null) {
-                MyLog.e(TAG, "testCase is null.")
-                throw IllegalArgumentException("testCase is null")
-            }
-            val instrumentation = InstrumentationRegistry.getInstrumentation()
-            if (instrumentation == null) {
-                MyLog.e(TAG, "testCase.getInstrumentation() is null.")
-                throw IllegalArgumentException("testCase.getInstrumentation() returned null")
-            }
-            val co = instrumentation.targetContext ?: run {
-                MyLog.e(TAG, "targetContext is null.")
-                throw IllegalArgumentException("testCase.getInstrumentation().getTargetContext() returned null")
-            }
-            context = co
-            MyLog.i(TAG, "Before myContextHolder.initialize $iter")
-            try {
-                if (creatorSet || myContextHolder
-                        .trySetCreator(MyContextTestImpl(myContextHolder.getNow(), co, testCase))
-                ) {
-                    creatorSet = true
-                    FirstActivity.Companion.startMeAsync(co, MyAction.INITIALIZE_APP)
-                    DbUtils.waitMs(method, 3000)
-                    if (myContextHolder.getFuture().future.isFinished) {
-                        val myContext: MyContext = myContextHolder.getNow()
-                        MyLog.i(TAG, "After starting FirstActivity $iter $myContext")
-                        if (myContext.state == MyContextState.READY) break
-                    } else {
-                        MyLog.i(TAG, "After starting FirstActivity $iter is initializing...")
-                    }
-                }
-            } catch (e: IllegalStateException) {
-                MyLog.i(TAG, "Error caught, iteration=$iter", e)
-            }
-            DbUtils.waitMs(method, 3000)
-        }
+        initializeTestSuiteLoop(testCase)
         MyLog.i(TAG, "After Initializing Test Suite loop")
         myContextHolder.executionMode =
             ExecutionMode.Companion.load(InstrumentationRegistry.getArguments().getString("executionMode"))
@@ -164,6 +128,43 @@ object TestSuite {
         }
         myContextHolder.initialize(null).getCompleted()
         return@runBlocking context ?: throw IllegalStateException("Failed to initialize context")
+    }
+
+    private suspend fun initializeTestSuiteLoop(testCase: Any) {
+        var creatorSet = false
+        for (iter in 1..5) {
+            MyLog.i(TAG, "Initializing Test Suite, iteration=$iter")
+            val instrumentation = InstrumentationRegistry.getInstrumentation()
+            if (instrumentation == null) {
+                MyLog.e(TAG, "testCase.getInstrumentation() is null.")
+                throw IllegalArgumentException("testCase.getInstrumentation() returned null")
+            }
+            val co = instrumentation.targetContext ?: run {
+                MyLog.e(TAG, "targetContext is null.")
+                throw IllegalArgumentException("testCase.getInstrumentation().getTargetContext() returned null")
+            }
+            context = co
+            MyLog.i(TAG, "Before myContextHolder.initialize $iter")
+            try {
+                if (creatorSet || myContextHolder
+                        .trySetCreator(MyContextTestImpl(myContextHolder.getNow(), co, testCase))
+                ) {
+                    creatorSet = true
+                    FirstActivity.startMeAsync(co, MyAction.INITIALIZE_APP)
+                    delay(3000)
+                    myContextHolder.future.tryCurrent.ionSuccess {
+                        val myContext: MyContext = myContextHolder.getNow()
+                        MyLog.i(TAG, "After starting FirstActivity $iter $myContext")
+                        if (myContext.state == MyContextState.READY) return
+                    }.onFailure {
+                        MyLog.i(TAG, "After starting FirstActivity $iter is initializing...")
+                    }
+                }
+            } catch (e: IllegalStateException) {
+                MyLog.i(TAG, "Error caught, iteration=$iter", e)
+            }
+            delay(3000)
+        }
     }
 
     suspend fun forget() {

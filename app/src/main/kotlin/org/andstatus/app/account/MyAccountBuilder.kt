@@ -358,7 +358,7 @@ class MyAccountBuilder private constructor(
         fun loadFromAccountData(accountData: AccountData, method: String?): MyAccountBuilder {
             val myAccount = MyAccount(accountData)
             val builder = fromMyAccount(myAccount)
-            if (!myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently()
+            if (!myContextHolder.isRestoring) builder.fixInconsistenciesWithChangedEnvironmentSilently()
             builder.logLoadResult(method)
             return builder
         }

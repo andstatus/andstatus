@@ -85,7 +85,7 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : A
         if (success) {
             MyLog.i(DatabaseConverterController.TAG, "success " + myContextHolder.getNow().state)
             onUpgradeSucceeded()
-            MyLog.i(DatabaseConverterController.TAG, "after onUpgradeSucceeded " + myContextHolder.getFuture())
+            MyLog.i(DatabaseConverterController.TAG, "after onUpgradeSucceeded " + myContextHolder.future)
         }
         return success
     }

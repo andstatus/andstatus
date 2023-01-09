@@ -50,9 +50,9 @@ object TryUtils {
 
     fun <T> ofNullableCallable(callable: Callable<out T?>?): Try<T> {
         return if (callable == null) Try.failure(CALLABLE_IS_NULL)
-          else Try.of(callable).flatMap {
-            value: T? -> if (value == null) Try.failure(VALUE_IS_NULL) else Try.success(value)
-          }
+        else Try.of(callable).flatMap { value: T? ->
+            if (value == null) Try.failure(VALUE_IS_NULL) else Try.success(value)
+        }
     }
 
     /**
@@ -148,7 +148,7 @@ object TryUtils {
         it.map(mapper).toTry()
     }
 
-    inline fun <T,U> Try<T>.iFlatMap(mapper: (T) -> Try<U>): Try<U> = if (isSuccess) {
+    inline fun <T, U> Try<T>.iFlatMap(mapper: (T) -> Try<U>): Try<U> = if (isSuccess) {
         try {
             mapper(get())
         } catch (t: Throwable) {
@@ -167,5 +167,12 @@ object TryUtils {
     fun <T> T.toSuccess(): Try<T> = Try.success(this)
 
     fun <T, U : Throwable> U.toFailure(): Try<T> = Try.failure(this)
+
+    inline fun <T> Try<T>.ionSuccess(action: (T) -> Unit): Try<T> {
+        if (isSuccess) {
+            action(get())
+        }
+        return this
+    }
 
 }

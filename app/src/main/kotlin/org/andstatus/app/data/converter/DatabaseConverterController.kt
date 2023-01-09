@@ -96,8 +96,8 @@ object DatabaseConverterController {
             skip = true
         }
         if (!skip && acquireUpgradeLock(requestorName)) {
-            val asyncUpgrade = AsyncUpgrade(upgradeRequestorIn, myContextHolder.isOnRestore())
-            if (myContextHolder.isOnRestore()) {
+            val asyncUpgrade = AsyncUpgrade(upgradeRequestorIn, myContextHolder.isRestoring)
+            if (myContextHolder.isRestoring) {
                 // TODO: Make restore async also...
                 val job: Job = CoroutineScope(Dispatchers.Default).launch {
                     asyncUpgrade.syncUpgrade()

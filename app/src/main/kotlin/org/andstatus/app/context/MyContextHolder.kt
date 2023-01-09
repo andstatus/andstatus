@@ -32,6 +32,7 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TamperingDetector
+import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -47,15 +48,11 @@ class MyContextHolder private constructor(
     @Volatile
     var isShuttingDown = false
 
-    // TODO: Should be one object for atomic updates. start ---
-    private val contextLock: Any = Any()
+    private var futureContextRef: AtomicReference<MyFutureContext> =
+        AtomicReference(MyFutureContext.completed(MyContextEmpty.EMPTY))
 
     @Volatile
-    private var myFutureContext: MyFutureContext = MyFutureContext.completed(MyContextEmpty.EMPTY)
-    // end ---
-
-    @Volatile
-    private var onRestore = false
+    var isRestoring = false
 
     @Volatile
     var onDeleteApplicationData = false
@@ -88,31 +85,28 @@ class MyContextHolder private constructor(
     /** Immediately get currently available context, even if it's empty,
      * return previous context if current is in error */
     fun getNow(): MyContext {
-        return getFuture().getNow()
+        return future.getNow()
     }
 
     suspend fun getCompleted(): MyContext {
-        return myFutureContext.tryCompleted().getOrElse(myFutureContext.getNow())
+        return futureContextRef.get().tryCompleted().getOrElse(futureContextRef.get().getNow())
     }
 
-    fun getFuture(): MyFutureContext {
-        return myFutureContext
-    }
+    val future: MyFutureContext get() = futureContextRef.get()
 
     /** This is mainly for stubbing / testing
      * @return true if succeeded
      */
     fun trySetCreator(contextCreatorNew: MyContext): Boolean {
-        synchronized(contextLock) {
-            if (!myFutureContext.future.isFinished) return false
-            myFutureContext.getNow().release { "trySetCreator" }
-            myFutureContext = MyFutureContext.completed(contextCreatorNew)
-        }
+        if (!futureContextRef.get().future.isFinished) return false
+
+        futureContextRef.get().getNow().release { "trySetCreator" }
+        futureContextRef.set(MyFutureContext.completed(contextCreatorNew))
         return true
     }
 
     fun needToRestartActivity(): Boolean {
-        return !getFuture().isReady
+        return !future.isReady
     }
 
     fun initialize(context: Context?): MyContextHolder {
@@ -135,9 +129,7 @@ class MyContextHolder private constructor(
         } else if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
             MyLog.d(this, "Skipping initialization: upgrade in progress (called by: $calledBy)")
         } else {
-            synchronized(contextLock) {
-                myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy, duringUpgrade)
-            }
+            futureContextRef.getAndUpdate { MyFutureContext.fromPrevious(it, calledBy, duringUpgrade) }
         }
         return this
     }
@@ -155,7 +147,7 @@ class MyContextHolder private constructor(
     }
 
     fun whenSuccessAsync(mainThread: Boolean, consumer: Consumer<MyContext>): MyContextHolder {
-        myFutureContext.whenSuccessAsync(mainThread) { it -> consumer.accept(it) }
+        futureContextRef.get().whenSuccessAsync(mainThread) { it -> consumer.accept(it) }
         return this
     }
 
@@ -163,7 +155,7 @@ class MyContextHolder private constructor(
         actionName: String,
         mainThread: Boolean = true,
         action: (Try<MyContext>) -> Try<Unit>
-    ) = myFutureContext.with(MyContextAction(actionName, action, mainThread))
+    ) = futureContextRef.get().with(MyContextAction(actionName, action, mainThread))
 
     /**
      * This allows to refer to the context even before myInitializedContext is initialized.
@@ -171,15 +163,15 @@ class MyContextHolder private constructor(
      */
     fun storeContextIfNotPresent(context: Context?, calledBy: Any?): MyContextHolder {
         if (context == null || getNow().nonEmpty) return this
-        synchronized(contextLock) {
-            if (getNow().isEmpty) {
-                val contextCreator = MyContextImpl(MyContextEmpty.EMPTY, context, calledBy)
-                checkNotNull(contextCreator.baseContext) {
-                    "No compatible context" + ", called by " +
-                        Taggable.anyToTag(calledBy)
-                }
-                myFutureContext = MyFutureContext.completed(contextCreator)
+
+        val previousFuture = future
+        if (previousFuture.getNow().isEmpty) {
+            val contextCreator = MyContextImpl(MyContextEmpty.EMPTY, context, calledBy)
+            checkNotNull(contextCreator.baseContext) {
+                "No compatible context" + ", called by " +
+                    Taggable.anyToTag(calledBy)
             }
+            futureContextRef.compareAndSet(previousFuture, MyFutureContext.completed(contextCreator))
         }
         return this
     }
@@ -230,22 +222,13 @@ class MyContextHolder private constructor(
         return builder.toString()
     }
 
-    fun setOnRestore(onRestore: Boolean): MyContextHolder {
-        this.onRestore = onRestore
-        return this
-    }
-
-    fun isOnRestore(): Boolean {
-        return onRestore
-    }
-
     suspend fun onShutDown() {
         isShuttingDown = true
         release { "onShutDown" }
     }
 
     suspend fun release(reason: Supplier<String>) {
-        myFutureContext.release(reason)
+        futureContextRef.get().release(reason)
     }
 
     companion object {

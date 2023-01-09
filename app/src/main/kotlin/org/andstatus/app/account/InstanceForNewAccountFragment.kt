@@ -28,7 +28,6 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
-import org.andstatus.app.os.AsyncResult
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UrlUtils
@@ -115,15 +114,12 @@ class InstanceForNewAccountFragment : Fragment() {
             }
             activity.verifyCredentials(true)
         } else {
-            // TODO: fewer logging below
-            val future1: AsyncResult<MyContext, MyContext> = myContextHolder.initialize(activity).getFuture().future
-            MyLog.d(this, "onNewOrigin After 'initialize' $future1")
-            val future2: AsyncResult<MyContext, MyContext> =
-                myContextHolder.whenSuccessAsync(true) { myContext: MyContext ->
+            myContextHolder.initialize(activity)
+                .whenSuccessAsync(true) { myContext: MyContext ->
+                    MyLog.d(this, "onNewOrigin After 'initialize'")
                     activity.finish()
                     AccountSettingsActivity.startAddingNewAccount(myContext.context, originNew.name, true)
-                }.getFuture().future
-            MyLog.d(this, "onNewOrigin After 'whenSuccessAsync' $future2")
+                }
         }
     }
 }

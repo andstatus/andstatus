@@ -303,9 +303,8 @@ class MyBackupAgent : BackupAgent() {
             databasesRestored += restoreFile(data, file)
         }
         myContextHolder.release { "doRestore, database restored" }
-        myContextHolder
-            .setOnRestore(true)
-            .initialize(this).getCompleted()
+        myContextHolder.isRestoring = true
+        myContextHolder.initialize(this).getCompleted()
         if (activity != null) {
             myContextHolder.upgradeIfNeeded(activity)
         }
@@ -319,7 +318,7 @@ class MyBackupAgent : BackupAgent() {
         assertNextHeader(data, KEY_ACCOUNT)
         accountsRestored += data.getMyContext().accounts.onRestore(data, backupDescriptor!!)
         myContextHolder.release { "doRestore, accounts restored" }
-        myContextHolder.setOnRestore(false)
+        myContextHolder.isRestoring = false
         myContextHolder.initialize(this).getCompleted()
     }
 

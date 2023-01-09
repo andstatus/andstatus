@@ -80,29 +80,25 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
                 finish()
             }
             MyAction.CLOSE_ALL_ACTIVITIES -> finish()
-            else ->
-                if (myContextHolder.getFuture().isReady || myContextHolder.getNow().state == MyContextState.UPGRADING) {
-                    startNextActivitySync(myContextHolder.getNow(), intent)
-                    finish()
-                } else {
-                    myContextHolder.initialize(this)
-                        .with("startNextActivity", true) { tryMyContext: Try<MyContext> ->
-                            tryMyContext.flatMap { myContext ->
-                                val msg = "Launching next activity from $instanceIdString"
-                                if ((myContext.isReady || myContext.state == MyContextState.UPGRADING) && !myContext.isExpired) {
-                                    try {
-                                        startNextActivitySync(myContext, intent)
-                                        TryUtils.SUCCESS
-                                    } catch (e: Exception) {
-                                        MyLog.w(instanceTag, msg, e)
-                                        TryUtils.failure<Unit>(msg, e)
-                                    }
-                                } else TryUtils.failure<Unit>("$msg, MyContext is not ready: ${myContext.state}")
-                            }
-                        }.also {
-                            finish()
+            else -> {
+                myContextHolder.initialize(this)
+                    .with("startNextActivity", true) { tryMyContext: Try<MyContext> ->
+                        tryMyContext.flatMap { myContext ->
+                            val msg = "Launching next activity from $instanceIdString"
+                            if ((myContext.isReady || myContext.state == MyContextState.UPGRADING) && !myContext.isExpired) {
+                                try {
+                                    startNextActivitySync(myContext, intent)
+                                    TryUtils.SUCCESS
+                                } catch (e: Exception) {
+                                    // TODO: Add task failure logging deeper, for all tasks
+                                    MyLog.w(instanceTag, msg, e)
+                                    TryUtils.failure<Unit>(msg, e)
+                                }
+                            } else TryUtils.failure<Unit>("$msg, MyContext is not ready: ${myContext.state}")
                         }
-                }
+                    }
+                finish()
+            }
         }
     }
 

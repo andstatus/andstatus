@@ -139,7 +139,7 @@ open class MyContextImpl internal constructor(
             MyContextState.DATABASE_READY -> state =
                 if (!origins.initialize()) {
                     MyContextState.DATABASE_UNAVAILABLE
-                } else if (myContextHolder.isOnRestore()) {
+                } else if (myContextHolder.isRestoring) {
                     MyContextState.RESTORING
                 } else {
                     users.initialize()
