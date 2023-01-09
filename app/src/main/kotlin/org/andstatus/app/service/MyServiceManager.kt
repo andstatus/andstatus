@@ -23,6 +23,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
@@ -49,7 +52,9 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                 MyLog.d(this, "onReceive $instanceId ShutDown")
                 setServiceUnavailable()
                 stopService()
-                myContextHolder.onShutDown()
+                CoroutineScope(Dispatchers.Default).launch {
+                    myContextHolder.onShutDown()
+                }
             }
             else -> {
                 if (serviceAvailability.get().isAvailable() && !myContextHolder.getNow().isReady) {

@@ -22,9 +22,6 @@ import android.content.pm.PackageManager
 import android.os.SystemClock
 import android.provider.Settings
 import io.vavr.control.Try
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.graphics.ImageCaches
@@ -242,11 +239,9 @@ class MyContextHolder private constructor(
         return onRestore
     }
 
-    fun onShutDown() {
+    suspend fun onShutDown() {
         isShuttingDown = true
-        CoroutineScope(Dispatchers.Main).launch {
-            myFutureContext.release { "onShutDown" }
-        }
+        release { "onShutDown" }
     }
 
     suspend fun release(reason: Supplier<String>) {
