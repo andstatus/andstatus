@@ -19,11 +19,11 @@ import android.content.Intent
 import android.util.AndroidRuntimeException
 import io.vavr.control.Try
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.HelpActivity
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
-import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.http.TlsSniSocketFactory
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncResult
@@ -149,78 +149,83 @@ class MyFutureContext private constructor(
     companion object {
         private val TAG: String = MyFutureContext::class.simpleName!!
 
-        fun fromPrevious(previousFuture: MyFutureContext, calledByIn: Any?, duringUpgrade: Boolean): MyFutureContext {
-            val previousContext = previousFuture.getNow()
-            val calledBy: Any = calledByIn ?: previousContext
-            var willInitialize = true;
-            val reason: String = (
-                if (myContextHolder.onDeleteApplicationData) {
-                    willInitialize = false
-                    "On delete application data"
-                } else if (duringUpgrade) {
-                    "During upgrade"
-                } else if (previousContext.state == MyContextState.UPGRADING) {
-                    willInitialize = false
-                    "Is upgrading"
-                } else if (previousContext.state == MyContextState.RESTORING) {
-                    willInitialize = false
-                    "Is restoring"
-                } else if (previousFuture.future.isRunning) {
-                    willInitialize = false
-                    "Previous is running"
-                } else if (!previousFuture.future.isFinished) {
-                    willInitialize = false
-                    "Previous didn't finish"
-                } else if (!previousContext.isReady) {
-                    "Previous not ready"
-                } else if (previousContext.isExpired) {
-                    "Previous expired"
-                } else if (previousContext.isPreferencesChanged) {
-                    "Preferences changed"
-                } else {
-                    willInitialize = false
-                    "Is Ready"
-                }) +
-                ", previous in ${previousFuture.instanceTag}: " + previousContext +
-                ", called by: " + Taggable.anyToTag(calledBy) +
-                "\n${AsyncTaskLauncher.threadPoolInfo}"
+        fun fromPrevious(previousFuture: MyFutureContext, calledByIn: Any?, duringUpgrade: Boolean): MyFutureContext =
+            runBlocking {
+                val previousContext = previousFuture.getNow()
+                val calledBy: Any = calledByIn ?: previousContext
+                var willInitialize = true;
+                val reason: String = (
+                    if (myContextHolder.onDeleteApplicationData) {
+                        willInitialize = false
+                        "On delete application data"
+                    } else if (duringUpgrade) {
+                        "During upgrade"
+                    } else if (previousContext.state == MyContextState.UPGRADING) {
+                        willInitialize = false
+                        "Is upgrading"
+                    } else if (previousContext.state == MyContextState.RESTORING) {
+                        willInitialize = false
+                        "Is restoring"
+                    } else if (previousFuture.future.isRunning) {
+                        willInitialize = false
+                        "Previous is running"
+                    } else if (!previousFuture.future.isFinished) {
+                        willInitialize = false
+                        "Previous didn't finish"
+                    } else if (!previousContext.isReady) {
+                        "Previous not ready"
+                    } else if (previousContext.isExpired) {
+                        "Previous expired"
+                    } else if (previousContext.isPreferencesChanged) {
+                        "Preferences changed"
+                    } else {
+                        willInitialize = false
+                        "Is Ready"
+                    }) +
+                    ", previous in ${previousFuture.instanceTag}: " + previousContext +
+                    ", called by: " + Taggable.anyToTag(calledBy) +
+                    "\n${AsyncTaskLauncher.threadPoolInfo}"
 
-            if (!willInitialize) {
-                MyLog.d(previousFuture, "ShouldInitialize: no, $reason")
-                return previousFuture
-            }
+                if (!willInitialize) {
+                    MyLog.d(previousFuture, "ShouldInitialize: no, $reason")
+                    return@runBlocking previousFuture
+                }
 
-            val future = AsyncResult<MyContext, MyContext>("futureContext", AsyncEnum.DEFAULT_POOL, false)
-                .also { future ->
-                    future.doInBackground {
-                        TryUtils.ofS {
-                            MyLog.v(previousFuture) { "Preparing for initialization of ${future.instanceTag}" }
-                            release2(previousFuture, previousContext) { "Initialization of ${future.instanceTag}" }
-                            previousContext.newInstance(calledBy).also { myContext ->
-                                myContext.initialize()
-                                SyncInitiator.register(myContext)
-                                MyServiceManager.registerReceiver(myContext.context)
+                val future = AsyncResult<MyContext, MyContext>("futureContext", AsyncEnum.DEFAULT_POOL, false)
+                    .also { future ->
+                        future.doInBackground {
+                            TryUtils.ofS {
+                                MyLog.v(previousFuture) { "Preparing for initialization of ${future.instanceTag}" }
+                                release2(previousFuture, previousContext) { "Initialization of ${future.instanceTag}" }
+                                previousContext.newInstance(calledBy).also { myContext ->
+                                    myContext.initialize()
+                                    SyncInitiator.register(myContext)
+                                    MyServiceManager.registerReceiver(myContext.context)
+                                }
+                            }.also {
+                                MyLog.v(previousFuture) { "Initialization of ${future.instanceTag} result: $it" }
                             }
-                        }.also {
-                            MyLog.v(previousFuture) { "Initialization of ${future.instanceTag} result: $it" }
                         }
                     }
-                }
 
-            return MyFutureContext(previousContext, future)
-                .also { futureContext ->
-                    MyLog.d(futureContext, "ShouldInitialize: yes, $reason")
+                return@runBlocking MyFutureContext(previousContext, future)
+                    .also { futureContext ->
+                        MyLog.d(futureContext, "ShouldInitialize: yes, $reason")
 
-                    future.onPostExecute { _, _ ->
-                        futureContext.checkQueueExecutor(null, true)
+                        future.onPostExecute { _, _ ->
+                            futureContext.checkQueueExecutor(null, true)
+                        }
+                        if (future.isPending) {
+                            future.execute(futureContext.previousContext)
+                        }
                     }
-                    if (future.isPending) {
-                        future.execute(futureContext.previousContext)
-                    }
-                }
-        }
+            }
 
-        private fun release2(previousFuture: MyFutureContext, previousContext: MyContext, reason: Supplier<String>) {
+        private suspend fun release2(
+            previousFuture: MyFutureContext,
+            previousContext: MyContext,
+            reason: Supplier<String>
+        ) {
             MyLog.d(previousFuture, "Release started, " + reason.get())
             SyncInitiator.unregister(previousContext)
             TlsSniSocketFactory.forget()
@@ -232,7 +237,7 @@ class MyFutureContext private constructor(
             FirstActivity.isFirstrun.set(true)
             previousContext.release(reason)
             // There is InterruptedException after above..., so we catch it below:
-            DbUtils.waitMs(previousFuture, 10)
+            delay(10)
             MyLog.d(previousFuture, "Release completed, " + reason.get())
         }
 

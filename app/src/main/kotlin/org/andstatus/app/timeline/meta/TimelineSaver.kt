@@ -16,9 +16,10 @@
 package org.andstatus.app.timeline.meta
 
 import android.provider.BaseColumns
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.TimelineTable
 import org.andstatus.app.net.social.Actor
@@ -56,17 +57,17 @@ class TimelineSaver {
                 .doInBackground { TryUtils.ofS { executeSynchronously(myContext) } }
                 .onPostExecute { unit, ok -> postExecute(ok.isSuccess) }
                 .execute(Unit)
-        } else {
+        } else runBlocking {
             executeSynchronously(myContext).let(postExecute)
         }
     }
 
-    private fun executeSynchronously(myContext: MyContext): Boolean {
+    private suspend fun executeSynchronously(myContext: MyContext): Boolean {
         for (count in 30 downTo 1) {
             if (executing.compareAndSet(false, true)) {
                 executeSequentially(myContext)
             }
-            DbUtils.waitMs(this, 50)
+            delay(5)
         }
         return true
     }

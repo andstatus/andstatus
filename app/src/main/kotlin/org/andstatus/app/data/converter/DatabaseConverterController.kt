@@ -16,13 +16,8 @@
 package org.andstatus.app.data.converter
 
 import android.app.Activity
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
-import org.andstatus.app.data.DbUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.Taggable
 import java.util.concurrent.TimeUnit
@@ -96,18 +91,7 @@ object DatabaseConverterController {
             skip = true
         }
         if (!skip && acquireUpgradeLock(requestorName)) {
-            val asyncUpgrade = AsyncUpgrade(upgradeRequestorIn, myContextHolder.isRestoring)
-            if (myContextHolder.isRestoring) {
-                // TODO: Make restore async also...
-                val job: Job = CoroutineScope(Dispatchers.Default).launch {
-                    asyncUpgrade.syncUpgrade()
-                }
-                while (!job.isCompleted) {
-                    DbUtils.waitMs(TAG, 1000)
-                }
-            } else {
-                asyncUpgrade.execute(TAG, Unit)
-            }
+            AsyncUpgrade(upgradeRequestorIn, myContextHolder.isRestoring).execute(TAG, Unit)
         }
     }
 

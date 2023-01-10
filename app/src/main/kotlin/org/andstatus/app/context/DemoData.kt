@@ -17,11 +17,11 @@ package org.andstatus.app.context
 
 import android.database.sqlite.SQLiteDiskIOException
 import android.net.Uri
+import kotlinx.coroutines.delay
 import org.andstatus.app.account.CredentialsVerificationStatus
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
-import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.DemoConversationInserter
 import org.andstatus.app.data.checker.CheckConversations
 import org.andstatus.app.net.http.LOGO_URI
@@ -116,20 +116,15 @@ class DemoData {
         demoData = DemoData()
     }
 
-    fun add(myContext: MyContext, dataPathIn: String) {
+    suspend fun add(dataPathIn: String) {
         val method = "add"
         dataPath = dataPathIn
         MyLog.v(TAG, "$method; started")
         val asyncTask = addAsync(ProgressLogger.EMPTY_LISTENER)
-        var count: Long = 200
+        var count: Long = 2000
         while (count > 0) {
-            MyLog.v(
-                this,
-                "$method; " + (if (asyncTask.isFinished) "Task completed " else "Waiting for task completion ") + count
-            )
-            if (asyncTask.isFinished || DbUtils.waitMs(method, 5000)) {
-                break
-            }
+            if (asyncTask.isFinished) break
+            delay(100)
             count--
         }
         if (ExceptionsCounter.firstError.get() != null) {

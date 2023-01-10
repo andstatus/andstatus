@@ -24,13 +24,15 @@ import android.os.Bundle
 import android.util.AndroidRuntimeException
 import androidx.appcompat.app.AppCompatActivity
 import io.vavr.control.Try
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsGroup
-import org.andstatus.app.data.DbUtils
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.InstanceId
@@ -232,23 +234,25 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
             context.startActivity(intent)
         }
 
+        private val mutexSetDefaultValues = Mutex()
+
         /** @return success
          */
-        fun setDefaultValues(context: Context?): Boolean {
+        suspend fun setDefaultValues(context: Context?): Boolean {
             if (context == null) {
                 MyLog.e(FirstActivity::class, SET_DEFAULT_VALUES + " no context")
                 return false
             }
-            synchronized(resultOfSettingDefaults) {
+            mutexSetDefaultValues.withLock {
                 resultOfSettingDefaults.set(TriState.UNKNOWN)
                 try {
                     if (context is Activity) {
-                        context.runOnUiThread(Runnable { setDefaultValuesOnUiThread(context) })
+                        context.runOnUiThread { setDefaultValuesOnUiThread(context) }
                     } else {
                         startMeAsync(context, MyAction.SET_DEFAULT_VALUES)
                     }
                     for (i in 0..99) {
-                        DbUtils.waitMs(FirstActivity::class, 50)
+                        delay(50)
                         if (resultOfSettingDefaults.get().known) break
                     }
                 } catch (e: Exception) {

@@ -43,7 +43,7 @@ class GenerateDemoData constructor(
     val progressListener: ProgressLogger.ProgressListener,
     val demoData: DemoData
 ) :
-    AsyncRunnable(GenerateDemoData::class, AsyncEnum.DEFAULT_POOL) {
+    AsyncRunnable("GenerateDemoData", AsyncEnum.DEFAULT_POOL) {
     private val logTag: String = progressListener.getLogTag()
     override val cancelable: Boolean = false
 

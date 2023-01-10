@@ -70,7 +70,8 @@ class DataUpdaterTest {
         val noteOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB"
         DemoNoteInserter.Companion.deleteOldNote(accountActor.origin, noteOid)
         val executionContext = CommandExecutionContext(
-                myContext, CommandData.Companion.newAccountCommand(CommandEnum.EMPTY, ma))
+            myContext, CommandData.Companion.newAccountCommand(CommandEnum.EMPTY, ma)
+        )
         val dataUpdater = DataUpdater(executionContext)
         val username = "somebody" + DemoData.demoData.testRunUid + "@identi.ca"
         val actorOid: String = OriginPumpio.Companion.ACCOUNT_PREFIX + username
@@ -83,8 +84,10 @@ class DataUpdaterTest {
         somebody.actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, accountActor.origin.id, actorOid)
         assertTrue("Actor $username added", somebody.actorId != 0L)
         DemoConversationInserter.Companion.assertIfActorIsMyFriend(somebody, false, ma)
-        val activity: AActivity = AActivity.Companion.newPartialNote(accountActor, somebody, noteOid, System.currentTimeMillis(),
-                DownloadStatus.LOADED)
+        val activity: AActivity = AActivity.Companion.newPartialNote(
+            accountActor, somebody, noteOid, System.currentTimeMillis(),
+            DownloadStatus.LOADED
+        )
         val note = activity.getNote()
         note.setContentPosted("The test note by Somebody at run " + DemoData.demoData.testRunUid)
         note.via = "MyCoolClient"
@@ -95,15 +98,24 @@ class DataUpdaterTest {
         Assert.assertNotEquals("Activity added", 0, activity.id)
         val data = TestSuite.getMyContextForTest().getAssertionData(DataUpdater.Companion.MSG_ASSERTION_KEY)
         assertTrue("Data put", data.nonEmpty)
-        Assert.assertEquals("Note Oid", noteOid, data.values
-                .getAsString(NoteTable.NOTE_OID))
-        Assert.assertEquals("Note is loaded", DownloadStatus.LOADED,
-                DownloadStatus.Companion.load(data.values.getAsInteger(NoteTable.NOTE_STATUS).toLong()))
-        Assert.assertEquals("Note permalink before storage", note.url,
-                data.values.getAsString(NoteTable.URL))
+        Assert.assertEquals(
+            "Note Oid", noteOid, data.values
+                .getAsString(NoteTable.NOTE_OID)
+        )
+        Assert.assertEquals(
+            "Note is loaded", DownloadStatus.LOADED,
+            DownloadStatus.Companion.load(data.values.getAsInteger(NoteTable.NOTE_STATUS).toLong())
+        )
+        Assert.assertEquals(
+            "Note permalink before storage", note.url,
+            data.values.getAsString(NoteTable.URL)
+        )
         Assert.assertEquals("Note permalink", note.url, accountActor.origin.getNotePermalink(noteId))
-        Assert.assertEquals("Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.Companion.load(
-                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)))
+        Assert.assertEquals(
+            "Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.Companion.load(
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)
+            )
+        )
         val authorId = MyQuery.noteIdToLongColumnValue(ActivityTable.AUTHOR_ID, noteId)
         Assert.assertEquals("Author of the note", somebody.actorId, authorId)
         var url = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId)
@@ -112,25 +124,33 @@ class DataUpdaterTest {
         Assert.assertEquals("Sender of the note", somebody.actorId, senderId)
         url = MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_PAGE, senderId)
         Assert.assertEquals("Url of the author " + somebody.getUsername(), somebody.getProfileUrl(), url)
-        Assert.assertEquals("Latest activity of $somebody", activity.id,
-                MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId))
-        val contentUri = myContext.timelines[TimelineType.FRIENDS, ma.actor,  Origin.EMPTY].getUri()
+        Assert.assertEquals(
+            "Latest activity of $somebody", activity.id,
+            MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId)
+        )
+        val contentUri = myContext.timelines[TimelineType.FRIENDS, ma.actor, Origin.EMPTY].getUri()
         val sa = SelectionAndArgs()
         val sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.FRIENDS, false)
         sa.addSelection(ActivityTable.ACTOR_ID + "=?", somebody.actorId.toString())
         val projection = arrayOf<String?>(BaseColumns._ID)
-        var cursor = context.contentResolver.query(contentUri, projection, sa.selection,
-                sa.selectionArgs, sortOrder)  ?: throw IllegalStateException("No cursor of Friends timeline")
+        var cursor = context.contentResolver.query(
+            contentUri, projection, sa.selection,
+            sa.selectionArgs, sortOrder
+        ) ?: throw IllegalStateException("No cursor of Friends timeline")
         Assert.assertEquals("Should be no notes of this actor in the Friends timeline", 0, cursor.count.toLong())
         cursor.close()
         somebody.isMyFriend = TriState.TRUE
         somebody.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         dataUpdater.onActivity(accountActor.update(somebody))
         DemoConversationInserter.Companion.assertIfActorIsMyFriend(somebody, true, ma)
-        cursor = context.contentResolver.query(contentUri, projection, sa.selection,
-                sa.selectionArgs, sortOrder) ?: throw IllegalStateException("No cursor")
-        assertTrue("Note by actor=$somebody is not in the Friends timeline of $ma",
-                cursor.count > 0)
+        cursor = context.contentResolver.query(
+            contentUri, projection, sa.selection,
+            sa.selectionArgs, sortOrder
+        ) ?: throw IllegalStateException("No cursor")
+        assertTrue(
+            "Note by actor=$somebody is not in the Friends timeline of $ma",
+            cursor.count > 0
+        )
         cursor.close()
     }
 
@@ -140,14 +160,16 @@ class DataUpdaterTest {
         val accountActor = ma.actor
         val noteOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + DemoData.demoData.testRunUid
         val username = "t131t@pumpity.net"
-        val author: Actor = Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + username)
+        val author: Actor =
+            Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + username)
         author.setUsername(username)
         author.build()
         val noteName = "For You only"
         val activity = DemoNoteInserter(accountActor).buildActivity(
-                author,
-                noteName, "Hello, this is a test Private note by your namesake from http://pumpity.net",
-                null, noteOid, DownloadStatus.LOADED)
+            author,
+            noteName, "Hello, this is a test Private note by your namesake from http://pumpity.net",
+            null, noteOid, DownloadStatus.LOADED
+        )
         val note = activity.getNote()
         note.via = "AnyOtherClient"
         note.audience().add(accountActor)
@@ -160,8 +182,10 @@ class DataUpdaterTest {
         DemoNoteInserter.Companion.assertInteraction(activity, NotificationEventType.PRIVATE, TriState.TRUE)
         val audience: Audience = fromNoteId(accountActor.origin, noteId)
         Assert.assertNotEquals("No audience for $activity", 0, audience.getNonSpecialActors().size.toLong())
-        Assert.assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getNonSpecialActors(),
-                ma.actorId, audience.getFirstNonSpecial().actorId)
+        Assert.assertEquals(
+            "Recipient " + ma.getAccountName() + "; " + audience.getNonSpecialActors(),
+            ma.actorId, audience.getFirstNonSpecial().actorId
+        )
         Assert.assertEquals("Number of audience for $activity", 1, audience.getNonSpecialActors().size.toLong())
         DemoNoteInserter.Companion.assertVisibility(audience, Visibility.PRIVATE)
     }
@@ -171,18 +195,22 @@ class DataUpdaterTest {
         val ma: MyAccount = DemoData.demoData.getPumpioConversationAccount()
         val accountActor = ma.actor
         val authorUsername = "anybody@pumpity.net"
-        val author: Actor = Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + authorUsername)
+        val author: Actor =
+            Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + authorUsername)
         author.setUsername(authorUsername)
         author.build()
-        val activity: AActivity = AActivity.Companion.newPartialNote(accountActor,
-                author, "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" + DemoData.demoData.testRunUid,
-                13312697000L, DownloadStatus.LOADED)
+        val activity: AActivity = AActivity.Companion.newPartialNote(
+            accountActor,
+            author, "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" + DemoData.demoData.testRunUid,
+            13312697000L, DownloadStatus.LOADED
+        )
         val note = activity.getNote()
         note.setContentPosted("This test note will be favorited by First Reader from http://pumpity.net")
         note.via = "SomeOtherClient"
         note.audience().visibility = Visibility.PUBLIC_AND_TO_FOLLOWERS
         val otherUsername = "firstreader@identi.ca"
-        val otherActor: Actor = Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + otherUsername)
+        val otherActor: Actor =
+            Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + otherUsername)
         otherActor.setUsername(otherUsername)
         otherActor.build()
         val likeActivity: AActivity = AActivity.Companion.fromInner(otherActor, ActivityType.LIKE, activity)
@@ -204,15 +232,23 @@ class DataUpdaterTest {
                 Assert.fail("Note is favorited by unexpected actor $actor - $note")
             }
         }
-        Assert.assertEquals("Note is not favorited by $otherActor: $stargazers",
-                true, favoritedByOtherActor)
-        Assert.assertNotEquals("Note is favorited (by some my account)", TriState.TRUE,
-                MyQuery.noteIdToTriState(NoteTable.FAVORITED, noteId))
-        Assert.assertEquals("Activity is subscribed $likeActivity", TriState.UNKNOWN,
-                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, likeActivity.id))
+        Assert.assertEquals(
+            "Note is not favorited by $otherActor: $stargazers",
+            true, favoritedByOtherActor
+        )
+        Assert.assertNotEquals(
+            "Note is favorited (by some my account)", TriState.TRUE,
+            MyQuery.noteIdToTriState(NoteTable.FAVORITED, noteId)
+        )
+        Assert.assertEquals(
+            "Activity is subscribed $likeActivity", TriState.UNKNOWN,
+            MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, likeActivity.id)
+        )
         DemoNoteInserter.Companion.assertInteraction(likeActivity, NotificationEventType.EMPTY, TriState.FALSE)
-        Assert.assertEquals("Note is reblogged", TriState.UNKNOWN,
-                MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId))
+        Assert.assertEquals(
+            "Note is reblogged", TriState.UNKNOWN,
+            MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId)
+        )
         val audience: Audience = fromNoteId(accountActor.origin, noteId)
         DemoNoteInserter.Companion.assertVisibility(audience, Visibility.PUBLIC_AND_TO_FOLLOWERS)
 
@@ -222,23 +258,28 @@ class DataUpdaterTest {
         val sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.EVERYTHING, false)
         sa.addSelection(NoteTable.NOTE_ID + " = ?", noteId.toString())
         val PROJECTION = arrayOf<String?>(
-                ActivityTable.ACTIVITY_ID,
-                ActivityTable.ACTOR_ID,
-                ActivityTable.SUBSCRIBED,
-                ActivityTable.INS_DATE,
-                NoteTable.NOTE_ID,
-                NoteTable.FAVORITED,
-                NoteTable.UPDATED_DATE,
-                ActivityTable.ACCOUNT_ID)
-        val cursor = context.contentResolver.query(contentUri, PROJECTION, sa.selection,
-                sa.selectionArgs, sortOrder) ?: throw IllegalStateException("No cursor")
+            ActivityTable.ACTIVITY_ID,
+            ActivityTable.ACTOR_ID,
+            ActivityTable.SUBSCRIBED,
+            ActivityTable.INS_DATE,
+            NoteTable.NOTE_ID,
+            NoteTable.FAVORITED,
+            NoteTable.UPDATED_DATE,
+            ActivityTable.ACCOUNT_ID
+        )
+        val cursor = context.contentResolver.query(
+            contentUri, PROJECTION, sa.selection,
+            sa.selectionArgs, sortOrder
+        ) ?: throw IllegalStateException("No cursor")
         var noteFound = false
         while (cursor.moveToNext()) {
             Assert.assertEquals("Note with other id returned", noteId, DbUtils.getLong(cursor, NoteTable.NOTE_ID))
             noteFound = true
             Assert.assertNotEquals("Note is favorited", TriState.TRUE, DbUtils.getTriState(cursor, NoteTable.FAVORITED))
-            Assert.assertNotEquals("Activity is subscribed", TriState.TRUE,
-                    DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED))
+            Assert.assertNotEquals(
+                "Activity is subscribed", TriState.TRUE,
+                DbUtils.getTriState(cursor, ActivityTable.SUBSCRIBED)
+            )
         }
         cursor.close()
         assertTrue("Note is not in Everything timeline, noteId=$noteId", noteFound)
@@ -255,23 +296,31 @@ class DataUpdaterTest {
         val ma: MyAccount = DemoData.demoData.getPumpioConversationAccount()
         val accountActor = ma.actor
         val authorUsername = "example@pumpity.net"
-        val author: Actor = Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + authorUsername)
+        val author: Actor =
+            Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + authorUsername)
         author.setUsername(authorUsername)
         author.build()
-        val activity: AActivity = AActivity.Companion.newPartialNote(accountActor, author,
-                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + DemoData.demoData.testRunUid,
-                13312795000L, DownloadStatus.LOADED)
+        val activity: AActivity = AActivity.Companion.newPartialNote(
+            accountActor, author,
+            "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + DemoData.demoData.testRunUid,
+            13312795000L, DownloadStatus.LOADED
+        )
         val note = activity.getNote()
         note.setContentPosted("The test note by Example\n from the http://pumpity.net $iterationId")
         note.via = "UnknownClient"
         if (favorited) note.addFavoriteBy(accountActor, TriState.TRUE)
-        val inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId + DemoData.demoData.testRunUid
-        val inReplyTo: AActivity = AActivity.Companion.newPartialNote(accountActor,
-                Actor.Companion.fromOid(accountActor.origin,
-                        "irtUser" + iterationId + DemoData.demoData.testRunUid)
-                        .setUsername("irt$authorUsername$iterationId")
-                        .build(),
-                inReplyToOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN)
+        val inReplyToOid =
+            "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId + DemoData.demoData.testRunUid
+        val inReplyTo: AActivity = AActivity.Companion.newPartialNote(
+            accountActor,
+            Actor.Companion.fromOid(
+                accountActor.origin,
+                "irtUser" + iterationId + DemoData.demoData.testRunUid
+            )
+                .setUsername("irt$authorUsername$iterationId")
+                .build(),
+            inReplyToOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN
+        )
         note.setInReplyTo(inReplyTo)
         val noteId = DataUpdater(ma).onActivity(activity).getNote().noteId
         Assert.assertNotEquals("Note added " + activity.getNote(), 0, noteId)
@@ -292,30 +341,47 @@ class DataUpdaterTest {
             }
         }
         if (favorited) {
-            Assert.assertEquals("""Note ${note.noteId} is not favorited by $accountActor: $stargazers
+            Assert.assertEquals(
+                """Note ${note.noteId} is not favorited by $accountActor: $stargazers
 $activity""",
-                    true, favoritedByMe)
-            Assert.assertEquals("Note should be favorited (by some my account) $activity", TriState.TRUE,
-                    MyQuery.noteIdToTriState(NoteTable.FAVORITED, noteId))
+                true, favoritedByMe
+            )
+            Assert.assertEquals(
+                "Note should be favorited (by some my account) $activity", TriState.TRUE,
+                MyQuery.noteIdToTriState(NoteTable.FAVORITED, noteId)
+            )
         }
-        Assert.assertEquals("Activity is subscribed", TriState.UNKNOWN,
-                MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, activity.id))
+        Assert.assertEquals(
+            "Activity is subscribed", TriState.UNKNOWN,
+            MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, activity.id)
+        )
         DemoNoteInserter.Companion.assertInteraction(activity, NotificationEventType.EMPTY, TriState.FALSE)
-        Assert.assertEquals("Note is reblogged", TriState.UNKNOWN,
-                MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId))
-        Assert.assertEquals("Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.Companion.load(
-                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)))
-        val inReplyToId = MyQuery.oidToId(OidEnum.NOTE_OID, accountActor.origin.id,
-                inReplyToOid)
+        Assert.assertEquals(
+            "Note is reblogged", TriState.UNKNOWN,
+            MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId)
+        )
+        Assert.assertEquals(
+            "Note stored as loaded", DownloadStatus.LOADED, DownloadStatus.Companion.load(
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)
+            )
+        )
+        val inReplyToId = MyQuery.oidToId(
+            OidEnum.NOTE_OID, accountActor.origin.id,
+            inReplyToOid
+        )
         assertTrue("In reply to note added", inReplyToId != 0L)
-        Assert.assertEquals("Note reply status is unknown", DownloadStatus.UNKNOWN, DownloadStatus.Companion.load(
-                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, inReplyToId)))
+        Assert.assertEquals(
+            "Note reply status is unknown", DownloadStatus.UNKNOWN, DownloadStatus.Companion.load(
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, inReplyToId)
+            )
+        )
     }
 
     @Test
     fun testNoteWithAttachment() {
         val activity: AActivity = ConnectionGnuSocialTest.getNoteWithAttachment(
-                InstrumentationRegistry.getInstrumentation().context)
+            InstrumentationRegistry.getInstrumentation().context
+        )
         val ma = myContext.accounts.getFirstPreferablySucceededForOrigin(activity.getActor().origin)
         assertTrue("Account is valid $ma", ma.isValid)
         val noteId = DataUpdater(ma).onActivity(activity).getNote().noteId
@@ -330,17 +396,26 @@ $activity""",
         val method = "testUnsentNoteWithAttachment"
         val ma = myContext.accounts.getFirstSucceeded()
         val accountActor = ma.actor
-        val activity: AActivity = AActivity.Companion.newPartialNote(accountActor, accountActor, "",
-                System.currentTimeMillis(), DownloadStatus.SENDING)
+        val activity: AActivity = AActivity.Companion.newPartialNote(
+            accountActor, accountActor, "",
+            System.currentTimeMillis(), DownloadStatus.SENDING
+        )
         activity.getNote().setContentPosted("Unsent note with an attachment " + DemoData.demoData.testRunUid)
-        activity.addAttachment(Attachment.Companion.fromUriAndMimeType(DemoData.demoData.localImageTestUri,
-                MyContentType.VIDEO.generalMimeType))
+        activity.addAttachment(
+            Attachment.Companion.fromUriAndMimeType(
+                DemoData.demoData.localImageTestUri,
+                MyContentType.VIDEO.generalMimeType
+            )
+        )
         DataUpdater(ma).onActivity(activity)
         val note1 = activity.getNote()
         Assert.assertNotEquals("Note added $activity", 0, note1.noteId)
         Assert.assertNotEquals("Activity added $activity", 0, activity.id)
-        Assert.assertEquals("Status of unsent note", DownloadStatus.SENDING, DownloadStatus.Companion.load(
-                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note1.noteId)))
+        Assert.assertEquals(
+            "Status of unsent note", DownloadStatus.SENDING, DownloadStatus.Companion.load(
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note1.noteId)
+            )
+        )
         DbUtils.waitMs(method, 1000)
 
         val dd: DownloadData = DownloadData.Companion.getSingleAttachment(note1.noteId)
@@ -349,18 +424,25 @@ $activity""",
 
         // Emulate receiving of note
         val oid = "sentMsgOid" + DemoData.demoData.testRunUid
-        val activity2: AActivity = AActivity.Companion.newPartialNote(accountActor, activity.getAuthor(), oid,
-                System.currentTimeMillis(), DownloadStatus.LOADED)
+        val activity2: AActivity = AActivity.Companion.newPartialNote(
+            accountActor, activity.getAuthor(), oid,
+            System.currentTimeMillis(), DownloadStatus.LOADED
+        )
         activity2.getNote().setContentPosted("Just sent: " + note1.content)
         activity2.getNote().noteId = note1.noteId
         activity2.addAttachment(Attachment.Companion.fromUri(DemoData.demoData.image1Url))
         DataUpdater(ma).onActivity(activity2)
         val note2 = activity2.getNote()
         Assert.assertEquals("Row id didn't change", note1.noteId, note2.noteId)
-        Assert.assertEquals("Note content updated", note2.content,
-                MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note1.noteId))
-        Assert.assertEquals("Status of loaded note", DownloadStatus.LOADED, DownloadStatus.Companion.load(
-                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note1.noteId)))
+        Assert.assertEquals(
+            "Note content updated", note2.content,
+            MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note1.noteId)
+        )
+        Assert.assertEquals(
+            "Status of loaded note", DownloadStatus.LOADED, DownloadStatus.Companion.load(
+                MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note1.noteId)
+            )
+        )
         val dd2: DownloadData = DownloadData.Companion.getSingleAttachment(note2.noteId)
         Assert.assertEquals("New image URI stored", note2.attachments.list[0].uri, dd2.getUri())
         Assert.assertEquals("Not loaded yet. $dd2", DownloadStatus.ABSENT, dd2.getStatus())
@@ -379,47 +461,70 @@ $activity""",
         val dataUpdater = DataUpdater(ma)
         val actorId1 = dataUpdater.onActivity(accountActor.update(actor1)).getObjActor().actorId
         assertTrue("Actor added", actorId1 != 0L)
-        Assert.assertEquals("username stored", actor1.getUsername(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1))
+        Assert.assertEquals(
+            "username stored", actor1.getUsername(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1)
+        )
         val actor1partial: Actor = Actor.Companion.fromOid(actor1.origin, actor1.oid)
         Assert.assertFalse("Should be partially defined", actor1partial.isFullyDefined())
         val actorId1partial = dataUpdater.onActivity(accountActor.update(actor1partial)).getObjActor().actorId
         Assert.assertEquals("Same Actor", actorId1, actorId1partial)
-        Assert.assertEquals("Partially defined Actor shouldn't change Username", actor1.getUsername(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1))
-        Assert.assertEquals("Partially defined Actor shouldn't change WebfingerId", actor1.getWebFingerId(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, actorId1))
-        Assert.assertEquals("Partially defined Actor shouldn't change Real name", actor1.getRealName(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, actorId1))
+        Assert.assertEquals(
+            "Partially defined Actor shouldn't change Username", actor1.getUsername(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1)
+        )
+        Assert.assertEquals(
+            "Partially defined Actor shouldn't change WebfingerId", actor1.getWebFingerId(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, actorId1)
+        )
+        Assert.assertEquals(
+            "Partially defined Actor shouldn't change Real name", actor1.getRealName(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, actorId1)
+        )
         actor1.setUsername(actor1.getUsername() + "renamed")
         actor1.build()
         val actorId1Renamed = dataUpdater.onActivity(accountActor.update(actor1)).getObjActor().actorId
         Assert.assertEquals("Same Actor renamed", actorId1, actorId1Renamed)
-        Assert.assertEquals("Actor should not be renamed, if updatedDate didn't change", username,
-                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1))
+        Assert.assertEquals(
+            "Actor should not be renamed, if updatedDate didn't change", username,
+            MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1)
+        )
         actor1.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
         val actorId2Renamed = dataUpdater.onActivity(accountActor.update(actor1)).getObjActor().actorId
         Assert.assertEquals("Same Actor renamed", actorId1, actorId2Renamed)
-        Assert.assertEquals("Same Actor renamed", actor1.getUsername(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1))
-        val actor2SameOldUsername = DemoNoteInserter(ma).buildActorFromOid("34805"
-                + DemoData.demoData.testRunUid)
+        Assert.assertEquals(
+            "Same Actor renamed", actor1.getUsername(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1)
+        )
+        val actor2SameOldUsername = DemoNoteInserter(ma).buildActorFromOid(
+            "34805"
+                + DemoData.demoData.testRunUid
+        )
         actor2SameOldUsername.setUsername(username)
         actor2SameOldUsername.build()
         val actorId2 = dataUpdater.onActivity(accountActor.update(actor2SameOldUsername)).getObjActor().actorId
         assertTrue("Other Actor with the same Actor name as old name of Actor", actorId1 != actorId2)
-        Assert.assertEquals("Username stored", actor2SameOldUsername.getUsername(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId2))
-        val actor3SameNewUsername = DemoNoteInserter(ma).buildActorFromOid("34806"
-                + DemoData.demoData.testRunUid)
+        Assert.assertEquals(
+            "Username stored", actor2SameOldUsername.getUsername(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId2)
+        )
+        val actor3SameNewUsername = DemoNoteInserter(ma).buildActorFromOid(
+            "34806"
+                + DemoData.demoData.testRunUid
+        )
         actor3SameNewUsername.setUsername(actor1.getUsername())
         actor3SameNewUsername.setProfileUrl("https://" + DemoData.demoData.gnusocialTestOriginName + ".other.example.com/")
         actor3SameNewUsername.build()
         val actorId3 = dataUpdater.onActivity(accountActor.update(actor3SameNewUsername)).getObjActor().actorId
         assertTrue("Actor added $actor3SameNewUsername", actorId3 != 0L)
-        assertTrue("Other Actor with the same username as the new name of actor1, but different WebFingerId", actorId1 != actorId3)
-        Assert.assertEquals("username stored for actorId=$actorId3", actor3SameNewUsername.getUsername(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId3))
+        assertTrue(
+            "Other Actor with the same username as the new name of actor1, but different WebFingerId",
+            actorId1 != actorId3
+        )
+        Assert.assertEquals(
+            "username stored for actorId=$actorId3", actor3SameNewUsername.getUsername(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId3)
+        )
     }
 
     @Test
@@ -428,14 +533,15 @@ $activity""",
         val actor1 = DemoNoteInserter(ma).buildActorFromOid("34807" + DemoData.demoData.testRunUid)
         updateActor(ma, actor1)
         val actor2: Actor = Actor.Companion.fromOid(ma.origin, "98023493" + DemoData.demoData.testRunUid)
-                .setUsername("someuser" + DemoData.demoData.testRunUid)
+            .setUsername("someuser" + DemoData.demoData.testRunUid)
         updateActor(ma, actor2)
     }
 
     @Test
     fun addActivityPubActor() {
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName)
-        val actor: Actor = Actor.Companion.fromOid(ma.origin, "https://example.com/users/ApTester" + DemoData.demoData.testRunUid)
+        val actor: Actor =
+            Actor.Companion.fromOid(ma.origin, "https://example.com/users/ApTester" + DemoData.demoData.testRunUid)
         updateActor(ma, actor)
     }
 
@@ -444,36 +550,59 @@ $activity""",
         val id = DataUpdater(ma).onActivity(accountActor.update(actor)).getObjActor().actorId
         assertTrue("Actor added", id != 0L)
         DemoNoteInserter.Companion.checkStoredActor(actor)
-        Assert.assertEquals("Location", actor.location,
-                MyQuery.actorIdToStringColumnValue(ActorTable.LOCATION, id))
-        Assert.assertEquals("profile image URL", actor.getAvatarUrl(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, id))
-        Assert.assertEquals("profile URL", actor.getProfileUrl(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_PAGE, id))
+        Assert.assertEquals(
+            "Location", actor.location,
+            MyQuery.actorIdToStringColumnValue(ActorTable.LOCATION, id)
+        )
+        Assert.assertEquals(
+            "profile image URL", actor.getAvatarUrl(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, id)
+        )
+        Assert.assertEquals(
+            "profile URL", actor.getProfileUrl(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_PAGE, id)
+        )
         Assert.assertEquals("Endpoints", actor.endpoints, ActorEndpoints.Companion.from(myContext, id).initialize())
-        Assert.assertEquals("Homepage", actor.getHomepage(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.HOMEPAGE, id))
-        Assert.assertEquals("Description", actor.getSummary(),
-                MyQuery.actorIdToStringColumnValue(ActorTable.SUMMARY, id))
-        Assert.assertEquals("Notes count", actor.notesCount,
-                MyQuery.actorIdToLongColumnValue(ActorTable.NOTES_COUNT, id))
-        Assert.assertEquals("Favorites count", actor.favoritesCount,
-                MyQuery.actorIdToLongColumnValue(ActorTable.FAVORITES_COUNT, id))
-        Assert.assertEquals("Following (friends) count", actor.followingCount,
-                MyQuery.actorIdToLongColumnValue(ActorTable.FOLLOWING_COUNT, id))
-        Assert.assertEquals("Followers count", actor.followersCount,
-                MyQuery.actorIdToLongColumnValue(ActorTable.FOLLOWERS_COUNT, id))
-        Assert.assertEquals("Created at", actor.getCreatedDate(),
-                MyQuery.actorIdToLongColumnValue(ActorTable.CREATED_DATE, id))
-        Assert.assertEquals("Created at", actor.getUpdatedDate(),
-                MyQuery.actorIdToLongColumnValue(ActorTable.UPDATED_DATE, id))
+        Assert.assertEquals(
+            "Homepage", actor.getHomepage(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.HOMEPAGE, id)
+        )
+        Assert.assertEquals(
+            "Description", actor.getSummary(),
+            MyQuery.actorIdToStringColumnValue(ActorTable.SUMMARY, id)
+        )
+        Assert.assertEquals(
+            "Notes count", actor.notesCount,
+            MyQuery.actorIdToLongColumnValue(ActorTable.NOTES_COUNT, id)
+        )
+        Assert.assertEquals(
+            "Favorites count", actor.favoritesCount,
+            MyQuery.actorIdToLongColumnValue(ActorTable.FAVORITES_COUNT, id)
+        )
+        Assert.assertEquals(
+            "Following (friends) count", actor.followingCount,
+            MyQuery.actorIdToLongColumnValue(ActorTable.FOLLOWING_COUNT, id)
+        )
+        Assert.assertEquals(
+            "Followers count", actor.followersCount,
+            MyQuery.actorIdToLongColumnValue(ActorTable.FOLLOWERS_COUNT, id)
+        )
+        Assert.assertEquals(
+            "Created at", actor.getCreatedDate(),
+            MyQuery.actorIdToLongColumnValue(ActorTable.CREATED_DATE, id)
+        )
+        Assert.assertEquals(
+            "Created at", actor.getUpdatedDate(),
+            MyQuery.actorIdToLongColumnValue(ActorTable.UPDATED_DATE, id)
+        )
     }
 
     @Test
     fun addMastodonList() {
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
-        val actor: Actor = Actor.Companion.fromTwoIds(ma.origin, GroupType.LIST_MEMBERS, 0, DemoData.demoData.testRunUid)
-            .setUsername("List" + DemoData.demoData.testRunUid)
+        val actor: Actor =
+            Actor.Companion.fromTwoIds(ma.origin, GroupType.LIST_MEMBERS, 0, DemoData.demoData.testRunUid)
+                .setUsername("List" + DemoData.demoData.testRunUid)
 
         val accountActor = ma.actor
         val id0 = DataUpdater(ma).onActivity(accountActor.update(actor)).getObjActor().actorId
@@ -493,41 +622,62 @@ $activity""",
         val ma: MyAccount = DemoData.demoData.getPumpioConversationAccount()
         val buddyName = "buddy" + DemoData.demoData.testRunUid + "@example.com"
         val content = ("@" + buddyName + " I'm replying to you in a note's body."
-                + " Hope you will see this as a real reply!")
+            + " Hope you will see this as a real reply!")
         addOneNote4testReplyInContent(ma, buddyName, content, true)
         addOneNote4testReplyInContent(ma, buddyName, "Oh, $content", true)
         val actorId1 = MyQuery.webFingerIdToId(myContext, ma.originId, buddyName, false)
-        Assert.assertEquals("Actor should have temp Oid", Actor.Companion.toTempOid(buddyName, ""),
-                MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId1, 0))
+        Assert.assertEquals(
+            "Actor should have temp Oid", Actor.Companion.toTempOid(buddyName, ""),
+            MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId1, 0)
+        )
         val realBuddyOid = "acc:$buddyName"
         val actor: Actor = Actor.Companion.fromOid(ma.origin, realBuddyOid)
         actor.withUniqueName(buddyName)
         val actorId2 = DataUpdater(ma).onActivity(ma.actor.update(actor)).getObjActor().actorId
         Assert.assertEquals(actorId1, actorId2)
-        Assert.assertEquals("TempOid should be replaced with real", realBuddyOid,
-                MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId1, 0))
-        addOneNote4testReplyInContent(ma, buddyName, "<a href=\"http://example.com/a\">@" +
-                buddyName + "</a>, this is an HTML <i>formatted</i> note", true)
+        Assert.assertEquals(
+            "TempOid should be replaced with real", realBuddyOid,
+            MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId1, 0)
+        )
+        addOneNote4testReplyInContent(
+            ma, buddyName, "<a href=\"http://example.com/a\">@" +
+                buddyName + "</a>, this is an HTML <i>formatted</i> note", true
+        )
         val buddyName3: String = DemoData.demoData.conversationAuthorThirdUniqueName
-        addOneNote4testReplyInContent(ma, buddyName3,
-                "@$buddyName3 I know you are already in our cache", true)
+        addOneNote4testReplyInContent(
+            ma, buddyName3,
+            "@$buddyName3 I know you are already in our cache", true
+        )
         val buddyName4 = ma.actor.uniqueName
-        addOneNote4testReplyInContent(ma, buddyName4,
-                "Reply to myaccount @$buddyName4 should add me as a recipient", true)
-        addOneNote4testReplyInContent(ma, buddyName3,
-                "Reply to myaccount @$buddyName4 should not add other buddy as a recipient", false)
+        addOneNote4testReplyInContent(
+            ma, buddyName4,
+            "Reply to myaccount @$buddyName4 should add me as a recipient", true
+        )
+        addOneNote4testReplyInContent(
+            ma, buddyName3,
+            "Reply to myaccount @$buddyName4 should not add other buddy as a recipient", false
+        )
         val groupName1 = "gnutestgroup"
-        addOneNote4testReplyInContent(ma, groupName1,
-                "Sending a note to the !$groupName1 group", false)
+        addOneNote4testReplyInContent(
+            ma, groupName1,
+            "Sending a note to the !$groupName1 group", false
+        )
     }
 
-    private fun addOneNote4testReplyInContent(ma: MyAccount, buddyUniqueName: String?, content: String?, isReply: Boolean) {
+    private fun addOneNote4testReplyInContent(
+        ma: MyAccount,
+        buddyUniqueName: String?,
+        content: String?,
+        isReply: Boolean
+    ) {
         val actorUniqueName = "somebody" + DemoData.demoData.testRunUid + "@somewhere.net"
         val actor: Actor = Actor.Companion.fromOid(ma.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + actorUniqueName)
         actor.withUniqueName(actorUniqueName)
         actor.setProfileUrl("https://somewhere.net/$actorUniqueName")
-        val activityIn: AActivity = AActivity.Companion.newPartialNote(ma.actor, actor, System.nanoTime().toString(),
-                System.currentTimeMillis(), DownloadStatus.LOADED)
+        val activityIn: AActivity = AActivity.Companion.newPartialNote(
+            ma.actor, actor, System.nanoTime().toString(),
+            System.currentTimeMillis(), DownloadStatus.LOADED
+        )
         val noteIn = activityIn.getNote()
         noteIn.setContentPosted(content)
         noteIn.via = "MyCoolClient"
@@ -544,8 +694,10 @@ $activity""",
             }
         }
         if (isReply) {
-            Assert.assertNotEquals("'" + buddyUniqueName + "' should be a recipient " + activity.audience().getNonSpecialActors(),
-                    Actor.EMPTY, buddy)
+            Assert.assertNotEquals(
+                "'" + buddyUniqueName + "' should be a recipient " + activity.audience().getNonSpecialActors(),
+                Actor.EMPTY, buddy
+            )
             Assert.assertNotEquals("'$buddyUniqueName' is not added $buddy", 0, buddy.actorId)
         } else {
             assertTrue("Note is a reply to '$buddyUniqueName': $note", buddy.isEmpty)
@@ -562,12 +714,14 @@ $activity""",
         author1.setUsername("samBrook")
         author1.build()
         val groupname = "gnutestgroup"
-        val activity1 = newLoadedNote(accountActor, author1,
-                "@" + myMentionedActor.getUsername() + " I'm mentioning your another account" +
-                        " and sending the content to !" + groupname + " group" +
-                        " But Hello! is not a group name" +
-                        " and!thisisnot also" +
-                        " " + DemoData.demoData.testRunUid)
+        val activity1 = newLoadedNote(
+            accountActor, author1,
+            "@" + myMentionedActor.getUsername() + " I'm mentioning your another account" +
+                " and sending the content to !" + groupname + " group" +
+                " But Hello! is not a group name" +
+                " and!thisisnot also" +
+                " " + DemoData.demoData.testRunUid
+        )
         val activity2: AActivity = AActivity.Companion.from(accountActor, ActivityType.UPDATE)
         activity2.setActor(author1)
         activity2.setActivity(activity1)
@@ -575,8 +729,13 @@ $activity""",
         val noteId = DataUpdater(ma).onActivity(activity2).getNote().noteId
         assertTrue("Note should be added", noteId != 0L)
         val audience = activity1.audience()
-        Assert.assertEquals("Audience should contain two actors: $audience", 2, audience.getNonSpecialActors().size.toLong())
-        val group = audience.getNonSpecialActors().stream().filter { a: Actor -> groupname == a.getUsername() }.findAny()
+        Assert.assertEquals(
+            "Audience should contain two actors: $audience",
+            2,
+            audience.getNonSpecialActors().size.toLong()
+        )
+        val group =
+            audience.getNonSpecialActors().stream().filter { a: Actor -> groupname == a.getUsername() }.findAny()
         assertTrue("Group should be in audience: $audience", group.isPresent)
         Assert.assertEquals("Group type: $group", GroupType.GENERIC, group.get().groupType)
         Assert.assertNotEquals("Group id: $group", 0, group.get().actorId)
@@ -590,7 +749,8 @@ $activity""",
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.gnusocialTestAccount2Name)
         val dataUpdater = DataUpdater(ma)
         val accountActor = ma.actor
-        val actorFromAnotherOrigin: Actor = DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName).actor
+        val actorFromAnotherOrigin: Actor =
+            DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName).actor
         Assert.assertEquals(DemoData.demoData.t131tUsername, actorFromAnotherOrigin.getUsername())
         val myAuthor1: Actor = Actor.Companion.fromOid(accountActor.origin, actorFromAnotherOrigin.oid + "22")
         myAuthor1.setUsername(actorFromAnotherOrigin.getUsername())
@@ -598,26 +758,34 @@ $activity""",
         assertTrue("Should be unknown if it's mine$myAuthor1", myAuthor1.user.isMyUser.unknown)
         myAuthor1.build()
         assertTrue("After build should be unknown if it's mine$myAuthor1", myAuthor1.user.isMyUser.unknown)
-        val activity1 = newLoadedNote(accountActor, myAuthor1,
-                "My account's first note from another Social Network " + DemoData.demoData.testRunUid)
+        val activity1 = newLoadedNote(
+            accountActor, myAuthor1,
+            "My account's first note from another Social Network " + DemoData.demoData.testRunUid
+        )
         assertTrue("Activity should be added", dataUpdater.onActivity(activity1).id != 0L)
         assertTrue("Author should be mine " + activity1.getAuthor(), activity1.getAuthor().user.isMyUser.isTrue)
         val author2: Actor = Actor.Companion.fromOid(accountActor.origin, "replier" + DemoData.demoData.testRunUid)
         author2.setUsername("replier@anotherdoman.com")
         author2.build()
-        val activity2 = newLoadedNote(accountActor, author2,
-                "@" + DemoData.demoData.t131tUsername + " Replying to my user from another instance")
+        val activity2 = newLoadedNote(
+            accountActor, author2,
+            "@" + DemoData.demoData.t131tUsername + " Replying to my user from another instance"
+        )
         activity2.getNote().setInReplyTo(activity1)
         assertTrue("Activity should be added", dataUpdater.onActivity(activity2).id != 0L)
-        Assert.assertEquals("Audience should contain one actor " + activity2.getNote().audience(),
-                1, activity2.getNote().audience().getNonSpecialActors().size.toLong())
+        Assert.assertEquals(
+            "Audience should contain one actor " + activity2.getNote().audience(),
+            1, activity2.getNote().audience().getNonSpecialActors().size.toLong()
+        )
         Assert.assertEquals("Audience", myAuthor1, activity2.getNote().audience().getFirstNonSpecial())
         Assert.assertEquals("Notified actor $activity2", actorFromAnotherOrigin, activity2.getNotifiedActor())
     }
 
     private fun newLoadedNote(accountActor: Actor, author: Actor, content: String?): AActivity {
-        val activity1: AActivity = AActivity.Companion.newPartialNote(accountActor, author, System.nanoTime().toString(),
-                System.currentTimeMillis(), DownloadStatus.LOADED)
+        val activity1: AActivity = AActivity.Companion.newPartialNote(
+            accountActor, author, System.nanoTime().toString(),
+            System.currentTimeMillis(), DownloadStatus.LOADED
+        )
         val note = activity1.getNote()
         note.setContentPosted(content)
         note.via = "AndStatus"
@@ -630,8 +798,10 @@ $activity""",
         val dataUpdater = DataUpdater(ma)
         val accountActor = ma.actor
         val content = "My note from ActivityPub " + DemoData.demoData.testRunUid
-        val activity0: AActivity = AActivity.Companion.newPartialNote(accountActor, accountActor, "",
-                System.currentTimeMillis(), DownloadStatus.SENDING)
+        val activity0: AActivity = AActivity.Companion.newPartialNote(
+            accountActor, accountActor, "",
+            System.currentTimeMillis(), DownloadStatus.SENDING
+        )
         activity0.getNote().setContentPosted(content)
         val activity1 = dataUpdater.onActivity(activity0)
         val note1 = activity1.getNote()
@@ -648,9 +818,11 @@ $activity""",
         activity2.setUpdatedDate(MyLog.uniqueCurrentTimeMS)
 
         // No content in the response, just oid of the note
-        val note2: Note = Note.Companion.fromOriginAndOid(accountActor.origin,
-                "https://" + DemoData.demoData.activityPubMainHost + "/objects/" + MyLog.uniqueCurrentTimeMS,
-                DownloadStatus.UNKNOWN)
+        val note2: Note = Note.Companion.fromOriginAndOid(
+            accountActor.origin,
+            "https://" + DemoData.demoData.activityPubMainHost + "/objects/" + MyLog.uniqueCurrentTimeMS,
+            DownloadStatus.UNKNOWN
+        )
         activity2.setNote(note2)
 
         // This is what is done in org.andstatus.app.service.CommandExecutorOther.updateNote to link the notes
@@ -659,7 +831,11 @@ $activity""",
         val activity3 = dataUpdater.onActivity(activity2)
         val note3 = activity3.getNote()
         Assert.assertEquals("The same note should be updated $activity3", note1.noteId, note3.noteId)
-        Assert.assertEquals("Note oid $activity3", note2.oid, MyQuery.idToOid(myContext, OidEnum.NOTE_OID, note3.noteId, 0))
+        Assert.assertEquals(
+            "Note oid $activity3",
+            note2.oid,
+            MyQuery.idToOid(myContext, OidEnum.NOTE_OID, note3.noteId, 0)
+        )
         assertTrue("Activity should be added $activity3", activity3.id != 0L)
         Assert.assertEquals("Note $note3", DownloadStatus.SENT, note3.getStatus())
     }
@@ -669,12 +845,15 @@ $activity""",
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName)
         val accountActor = ma.actor
         val authorUsername = "author101"
-        val author: Actor = Actor.Companion.fromOid(accountActor.origin, "https://activitypub.org/users/$authorUsername")
+        val author: Actor =
+            Actor.Companion.fromOid(accountActor.origin, "https://activitypub.org/users/$authorUsername")
         author.setUsername(authorUsername)
         author.build()
-        val activity: AActivity = AActivity.Companion.newPartialNote(accountActor,
-                author, "https://activitypub.org/note/sdajklsdkiewwpdsldkfsdasdjWED" + DemoData.demoData.testRunUid,
-                System.currentTimeMillis(), DownloadStatus.LOADED)
+        val activity: AActivity = AActivity.Companion.newPartialNote(
+            accountActor,
+            author, "https://activitypub.org/note/sdajklsdkiewwpdsldkfsdasdjWED" + DemoData.demoData.testRunUid,
+            System.currentTimeMillis(), DownloadStatus.LOADED
+        )
         val note = activity.getNote()
         note.setContentPosted("This test note was sent to Followers only")
         note.via = "SomeApClient"

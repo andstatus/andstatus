@@ -62,22 +62,25 @@ object TestSuite {
     @Volatile
     private var dataAdded = false
 
-    fun initializeWithAccounts(testCase: Any): MyContextTestImpl {
-        initialize(testCase)
+    fun initializeWithAccounts(testCase: Any): MyContextTestImpl = runBlocking {
+        initializeInner(testCase)
         if (myContextHolder.getNow().accounts.fromAccountName(DemoData.demoData.activityPubTestAccountName).isEmpty) {
             ensureDataAdded()
         }
-        return getMyContextForTest()
+        getMyContextForTest()
     }
 
-    fun initializeWithData(testCase: Any): MyContextTestImpl {
-        initialize(testCase)
+    fun initializeWithData(testCase: Any): MyContextTestImpl = runBlocking {
+        initializeInner(testCase)
         ensureDataAdded()
-        return getMyContextForTest()
+        getMyContextForTest()
     }
 
-    @Synchronized
     fun initialize(testCase: Any, forget: Boolean = false): Context = runBlocking {
+        initializeInner(testCase, forget)
+    }
+
+    private suspend fun initializeInner(testCase: Any, forget: Boolean = false): Context = runBlocking {
         if (forget) {
             forget()
         }
@@ -107,7 +110,7 @@ object TestSuite {
             if (myContextHolder.getNow().state == MyContextState.NO_PERMISSIONS) {
                 Permissions.setAllGranted(true)
             }
-            waitUntilContextIsReady()
+            waitUntilContextCompleted()
         }
         MyLog.d(TAG, "Before check isReady " + myContextHolder.getNow())
         initialized = myContextHolder.getNow().isReady
@@ -174,28 +177,18 @@ object TestSuite {
         initialized = false
     }
 
-    fun waitUntilContextIsReady() {
+    private suspend fun waitUntilContextCompleted() {
         val method = "waitUntilContextIsReady"
         var intent = Intent(myContextHolder.getNow().context, HelpActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         myContextHolder.getNow().context.startActivity(intent)
-        var i = 100
-        while (i > 0) {
-            DbUtils.waitMs(method, 2000)
-            MyLog.d(TAG, "Waiting for context " + i + " " + myContextHolder.getNow().state)
-            when (myContextHolder.getNow().state) {
-                MyContextState.READY, MyContextState.ERROR -> i = 0
-                else -> {
-                }
-            }
-            i--
-        }
-        Assert.assertEquals("Is Not ready", MyContextState.READY, myContextHolder.getNow().state)
+        val tryContext = myContextHolder.future.tryCompleted()
+        Assert.assertEquals("Is Not ready $tryContext", MyContextState.READY, myContextHolder.getNow().state)
         intent = Intent(myContextHolder.getNow().context, HelpActivity::class.java)
         intent.putExtra(HelpActivity.Companion.EXTRA_CLOSE_ME, true)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         myContextHolder.getNow().context.startActivity(intent)
-        DbUtils.waitMs(method, 2000)
+        delay(2000)
     }
 
     fun clearAssertions() {
@@ -226,14 +219,14 @@ object TestSuite {
         dataAdded = false
     }
 
-    private fun ensureDataAdded() {
+    private suspend fun ensureDataAdded() {
         if (dataAdded) return
         val method = "ensureDataAdded"
         MyLog.v(method, "$method; started")
         if (!dataAdded) {
             dataAdded = true
             DemoData.demoData.createNewInstance()
-            DemoData.demoData.add(getMyContextForTest(), dataPath ?: "")
+            DemoData.demoData.add(dataPath ?: "")
         }
         MyLog.v(method, "$method; ended")
     }

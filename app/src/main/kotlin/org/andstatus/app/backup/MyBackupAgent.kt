@@ -22,6 +22,7 @@ import android.app.backup.BackupDataOutput
 import android.content.Context
 import android.os.ParcelFileDescriptor
 import android.text.format.Formatter
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.R
@@ -29,7 +30,6 @@ import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MyStorage
 import org.andstatus.app.data.DataPruner
-import org.andstatus.app.data.DbUtils
 import org.andstatus.app.database.DatabaseHolder
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.service.MyServiceState
@@ -119,7 +119,7 @@ class MyBackupAgent : BackupAgent() {
         }
     }
 
-    private fun checkAndSetServiceUnavailable(): Boolean {
+    private suspend fun checkAndSetServiceUnavailable(): Boolean {
         val isServiceAvailableStored: Boolean = MyServiceManager.isServiceAvailable()
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
@@ -134,7 +134,7 @@ class MyBackupAgent : BackupAgent() {
             if (ind > 5) {
                 throw IOException(getString(R.string.system_is_busy_try_later))
             }
-            DbUtils.waitMs("checkAndSetServiceUnavailable", 5000)
+            delay(1000)
             ind++
         }
         return isServiceAvailableStored

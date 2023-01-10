@@ -202,15 +202,16 @@ object FileUtils {
         return ok
     }
 
-    @JvmOverloads
     fun newFileOutputStreamWithRetry(file: File?, append: Boolean = false): FileOutputStream? {
         if (file == null) return null
 
         return try {
             FileOutputStream(file, append)
         } catch (e: FileNotFoundException) {
-            MyLog.i(FileUtils::class.java, "Retrying to create FileOutputStream for " +
-                    file.getAbsolutePath() + " : " + e.message)
+            MyLog.i(
+                FileUtils::class.java, "Retrying to create FileOutputStream for " +
+                    file.getAbsolutePath() + " : " + e.message
+            )
             DbUtils.waitMs(FileUtils::class.java, 100)
             FileOutputStream(file, append)
         }
@@ -219,8 +220,10 @@ object FileUtils {
     fun isFileInsideFolder(file: File, folder: File): Boolean = try {
         file.canonicalPath.startsWith(folder.canonicalPath)
     } catch (e: Exception) {
-        MyLog.d(FileUtils::class.java, "Failed to check path of the file: " + file.absolutePath +
-                ". Error message:" + e.message)
+        MyLog.d(
+            FileUtils::class.java, "Failed to check path of the file: " + file.absolutePath +
+                ". Error message:" + e.message
+        )
         false
     }
 }
