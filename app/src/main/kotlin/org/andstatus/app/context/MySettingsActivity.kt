@@ -184,6 +184,7 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
             activity.finish()
             myContextHolder.initialize(activity)
                 .thenStartActivity(
+                    "",
                     MySettingsGroup.ACCOUNTS.addTo(
                         Intent(
                             activity.applicationContext,

@@ -74,7 +74,7 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
     private fun parseNewIntent(intent: Intent?) {
         when (MyAction.fromIntent(intent)) {
             MyAction.INITIALIZE_APP -> myContextHolder.initialize(this)
-                .whenSuccessAsync(true) { myContext: MyContext? -> finish() }
+                .then("finishFirstActivity", true) { myContext: MyContext? -> finish() }
             MyAction.SET_DEFAULT_VALUES -> {
                 setDefaultValuesOnUiThread(this)
                 finish()
@@ -82,18 +82,12 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
             MyAction.CLOSE_ALL_ACTIVITIES -> finish()
             else -> {
                 myContextHolder.initialize(this)
-                    .with("startNextActivity", true) { tryMyContext: Try<MyContext> ->
+                    .thenTry("startNextActivity", true) { tryMyContext: Try<MyContext> ->
                         tryMyContext.flatMap { myContext ->
                             val msg = "Launching next activity from $instanceIdString"
                             if ((myContext.isReady || myContext.state == MyContextState.UPGRADING) && !myContext.isExpired) {
-                                try {
-                                    startNextActivitySync(myContext, intent)
-                                    TryUtils.SUCCESS
-                                } catch (e: Exception) {
-                                    // TODO: Add task failure logging deeper, for all tasks
-                                    MyLog.w(instanceTag, msg, e)
-                                    TryUtils.failure<Unit>(msg, e)
-                                }
+                                startNextActivitySync(myContext, intent)
+                                TryUtils.SUCCESS
                             } else TryUtils.failure<Unit>("$msg, MyContext is not ready: ${myContext.state}")
                         }
                     }
@@ -171,7 +165,7 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
                 startApp(activity)
             } catch (e: Exception) {
                 MyLog.v(activity.instanceTag, "goHome", e)
-                myContextHolder.thenStartApp()
+                myContextHolder.thenStartApp("goHome")
             }
         }
 

@@ -115,8 +115,7 @@ class InstanceForNewAccountFragment : Fragment() {
             activity.verifyCredentials(true)
         } else {
             myContextHolder.initialize(activity)
-                .whenSuccessAsync(true) { myContext: MyContext ->
-                    MyLog.d(this, "onNewOrigin After 'initialize'")
+                .then("onNewOrigin", true) { myContext: MyContext ->
                     activity.finish()
                     AccountSettingsActivity.startAddingNewAccount(myContext.context, originNew.name, true)
                 }

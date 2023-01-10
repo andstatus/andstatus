@@ -80,8 +80,6 @@ class MyFutureContext private constructor(
         }
     }
 
-    val isCompletedExceptionally: Boolean get() = future.isFinished && future.result.isFailure
-
     val isReady: Boolean get() = getNow().isReady
 
     fun getNow(): MyContext {
@@ -92,18 +90,14 @@ class MyFutureContext private constructor(
      * failure if not completed yet or if completed exceptionally */
     val tryCurrent: Try<MyContext> get() = future.result
 
-    fun whenSuccessAsync(mainThread: Boolean, consumer: (MyContext) -> Unit) =
-        with("whenSuccessAsync", mainThread) { tryMyContext -> tryMyContext.map { consumer(it) } }
+    fun then(actionName: String, mainThread: Boolean, consumer: (MyContext) -> Unit) =
+        thenTry(MyContextAction(
+            actionName,
+            mainThread
+        ) { tryMyContext: Try<MyContext> -> tryMyContext.map { consumer(it) } })
 
-    fun with(
-        actionName: String,
-        mainThread: Boolean = true,
-        action: (Try<MyContext>) -> Try<Unit>
-    ) = with(MyContextAction(actionName, action, mainThread))
-
-    fun with(myContextAction: MyContextAction) {
+    fun thenTry(myContextAction: MyContextAction) {
         queue.put(myContextAction)
-        MyLog.d(instanceTag, "with: $myContextAction")
         checkQueueExecutor(null, false)
     }
 
@@ -126,16 +120,19 @@ class MyFutureContext private constructor(
                     queue.poll()?.let { action ->
                         action.newTask(this).let { task ->
                             actionTaskRef.set(task)
+                            MyLog.d(this, "Launching: $action")
                             task.execute(Unit)
                         }
                     }
                 }
             } else if (taskThatEnded === actionTaskRef.get()) {
                 queue.poll()?.let { action ->
-                    action.newTask(this).let { task ->
-                        actionTaskRef.set(task)
-                        task.execute(Unit)
-                    }
+                    action.newTask(this)
+                        .let { task ->
+                            actionTaskRef.set(task)
+                            MyLog.d(this, "Launching: $action")
+                            task.execute(Unit)
+                        }
                 }
             }
         }

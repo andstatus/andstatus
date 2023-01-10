@@ -30,7 +30,8 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TryUtils
 
-class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) : AsyncRunnable(AsyncEnum.DEFAULT_POOL) {
+class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) :
+    AsyncRunnable("AsyncUpgrade", AsyncEnum.DEFAULT_POOL) {
     var progressLogger: ProgressLogger = ProgressLogger.getEmpty(DatabaseConverterController.TAG)
     override val cancelable: Boolean = false
 

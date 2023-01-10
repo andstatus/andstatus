@@ -120,8 +120,8 @@ class HelpActivity : MyActivity(HelpActivity::class) {
         val getStarted = findViewById<Button?>(R.id.button_help_get_started)
         getStarted.visibility = if (generatingDemoData) View.GONE else View.VISIBLE
         getStarted.setOnClickListener { v: View? ->
-            if (myContextHolder.future.isCompletedExceptionally) {
-                myContextHolder.initialize(this).thenStartApp()
+            if (myContextHolder.future.tryCurrent.isFailure) {
+                myContextHolder.initialize(this).thenStartApp("onClickGetStarted")
                 return@setOnClickListener
             }
             when (myContextHolder.getNow().state) {

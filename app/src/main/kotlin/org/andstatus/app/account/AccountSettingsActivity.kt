@@ -800,8 +800,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
     private fun returnToOurActivity() {
         myContextHolder
             .initialize(this)
-            .whenSuccessAsync(false) { myContext: MyContext ->
-                MyLog.v(this, "Returning to $activityOnFinish")
+            .then("returnTo$activityOnFinish", false) { myContext: MyContext ->
                 val myAccount = myContext.accounts.fromAccountName(state.myAccount.getAccountName())
                 if (myAccount.isValid) {
                     myContext.accounts.setCurrentAccount(myAccount)
@@ -939,7 +938,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                     state.builder.myAccount.myContext.setExpired { "Client registered" }
                     myContextHolder
                         .initialize(this@AccountSettingsActivity, this)
-                        .whenSuccessAsync(true) { myContext: MyContext ->
+                        .then("acquireRequestToken", true) { myContext: MyContext ->
                             state.builder.rebuildMyAccount(myContext)
                             updateScreen()
                             OAuthAcquireRequestTokenTask(this@AccountSettingsActivity)

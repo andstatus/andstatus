@@ -138,17 +138,17 @@ open class AsyncTask<Params, Progress, Result>(
                     onCancel1()
                 }
                 yield()
+            } catch (e: AssertionError) {
+                ExceptionsCounter.logSystemInfo(e)
+                yield()
             } catch (e: Exception) {
-                when(e) {
+                when (e) {
                     is SQLiteDiskIOException -> {
                         ExceptionsCounter.onDiskIoException(e)
                     }
                     is SQLiteDatabaseLockedException -> {
                         // see also https://github.com/greenrobot/greenDAO/issues/191
                         logError("Database lock error, probably related to the application re-initialization", e)
-                    }
-                    is AssertionError -> {
-                        ExceptionsCounter.logSystemInfo(e)
                     }
                     else -> ExceptionsCounter.logSystemInfo(e)
                 }
@@ -161,6 +161,7 @@ open class AsyncTask<Params, Progress, Result>(
         }
         return this
     }
+
     private val paramsRef: AtomicReference<Try<Params>> = AtomicReference(TryUtils.notFound())
 
     /**
@@ -172,7 +173,8 @@ open class AsyncTask<Params, Progress, Result>(
      * @see doInBackground
      */
     @MainThread
-    protected open suspend fun onPreExecute() {}
+    protected open suspend fun onPreExecute() {
+    }
 
     private suspend fun doInBackground1(params: Params): Try<Result> {
         backgroundStartedAt.set(System.currentTimeMillis())
@@ -186,7 +188,8 @@ open class AsyncTask<Params, Progress, Result>(
         }
     }
 
-    var result: Try<Result> get() = resultRef.get()
+    var result: Try<Result>
+        get() = resultRef.get()
         set(value) {
             startedAt.set(System.currentTimeMillis())
             backgroundStartedAt.set(System.currentTimeMillis())
@@ -205,6 +208,7 @@ open class AsyncTask<Params, Progress, Result>(
     }
 
     private val cancelCalled = AtomicBoolean()
+
     /**
      * <p>Attempts to cancel execution of this task.  This attempt will
      * fail if the task has already completed, already been cancelled,
@@ -250,7 +254,8 @@ open class AsyncTask<Params, Progress, Result>(
     }
 
     @MainThread
-    protected open suspend fun onCancel() {}
+    protected open suspend fun onCancel() {
+    }
 
     private val onPostExecuteCalled = AtomicBoolean()
     private suspend fun onPostExecute1(result: Try<Result>) {
@@ -265,17 +270,27 @@ open class AsyncTask<Params, Progress, Result>(
                 ExceptionsCounter.showErrorDialogIfErrorsPresent()
             } finally {
                 finishedAt.set(System.currentTimeMillis())
+                afterFinishFun.get()?.let { it(this) }
             }
         }
     }
 
     /** If the task was started, this method should be called, before changing status to FINISH */
     @MainThread
-    protected open suspend fun onPostExecute(result: Try<Result>) {}
+    protected open suspend fun onPostExecute(result: Try<Result>) {
+    }
 
     private val postExecuteFun: AtomicReference<suspend (Params, Try<Result>) -> Unit> = AtomicReference()
     fun onPostExecute(postExecuteFun: suspend (Params, Try<Result>) -> Unit): AsyncTask<Params, Progress, Result> {
         this.postExecuteFun.set(postExecuteFun)
+        return this
+    }
+
+    private val afterFinishFun: AtomicReference<suspend AsyncTask<Params, Progress, Result>.() -> Unit> =
+        AtomicReference()
+
+    fun afterFinish(postExecuteFun: suspend AsyncTask<Params, Progress, Result>.() -> Unit): AsyncTask<Params, Progress, Result> {
+        this.afterFinishFun.set(postExecuteFun)
         return this
     }
 
@@ -304,7 +319,7 @@ open class AsyncTask<Params, Progress, Result>(
 
     private val stateSummary: String
         get() = (if (isCancelled) "Cancelled " + RelativeTime.secMsAgo(cancelledAt) + ", " else "") +
-                stateSummary2()
+            stateSummary2()
 
     private fun stateSummary2() = when {
         isPending -> "PENDING: " + RelativeTime.secMsAgo(createdAt)
@@ -317,7 +332,7 @@ open class AsyncTask<Params, Progress, Result>(
             }
             else -> {
                 "FINISHED: " + RelativeTime.secMsAgo(finishedAt) +
-                        ", worked: " + RelativeTime.secMs(finishedAt.get() - startedAt.get())
+                    ", worked: " + RelativeTime.secMs(finishedAt.get() - startedAt.get())
                 ", in background: " + RelativeTime.secMs(
                     backgroundEndedAt.get() - backgroundStartedAt.get()
                 )
@@ -332,9 +347,9 @@ open class AsyncTask<Params, Progress, Result>(
             }
             !isBackgroundEnded ->
                 "RUNNING in background: " + RelativeTime.secMsAgo(backgroundStartedAt.get()) +
-                        if (currentlyExecutingSince.get() > backgroundEndedAt.get()) {
-                            ", Currently executing: " + RelativeTime.secMsAgo(currentlyExecutingSince.get())
-                        } else ""
+                    if (currentlyExecutingSince.get() > backgroundEndedAt.get()) {
+                        ", Currently executing: " + RelativeTime.secMsAgo(currentlyExecutingSince.get())
+                    } else ""
             else -> {
                 "FINISHING: " + RelativeTime.secMsAgo(backgroundEndedAt.get())
             }
@@ -345,10 +360,10 @@ open class AsyncTask<Params, Progress, Result>(
 
     private val expectedToBeFinishedNow: Boolean
         get() = (RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt.get(), DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
-                || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince.get(), maxCommandExecutionSeconds)
-                || cancelledLongAgo
-                || isPending
-                && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS))
+            || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince.get(), maxCommandExecutionSeconds)
+            || cancelledLongAgo
+            || isPending
+            && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS))
 
     val cancelledLongAgo: Boolean
         get() = RelativeTime.wasButMoreSecondsAgoThan(cancelledAt.get(), MAX_EXECUTION_AFTER_CANCEL_SECONDS)

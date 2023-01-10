@@ -250,8 +250,8 @@ open class MyActivity(
             super.finish()
         }
         when (actionToDo) {
-            OnFinishAction.RESTART_ME -> myContextHolder.initialize(this).thenStartActivity(this.intent)
-            OnFinishAction.RESTART_APP -> myContextHolder.initialize(this).thenStartApp()
+            OnFinishAction.RESTART_ME -> myContextHolder.initialize(this).thenStartActivity("restart$instanceIdString", this.intent)
+            OnFinishAction.RESTART_APP -> myContextHolder.initialize(this).thenStartApp("restartApp$instanceIdString")
             else -> {}
         }
     }

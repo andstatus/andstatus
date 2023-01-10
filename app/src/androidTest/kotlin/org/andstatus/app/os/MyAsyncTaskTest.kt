@@ -49,7 +49,12 @@ class MyAsyncTaskTest {
 
     @Test
     fun cancelBeforeBackground() = runBlocking {
-        val task = TestTask().apply { executeInContext(Dispatchers.Default, "") }
+        var afterFinishVal = false
+        val task = TestTask()
+            .apply {
+                afterFinish { afterFinishVal = true }
+                executeInContext(Dispatchers.Default, "")
+            }
         MyLog.i(this, "Executing $task")
         StopWatch.tillPassedSeconds(5) {
             task.onPreExecuteVal.get()
@@ -60,6 +65,7 @@ class MyAsyncTaskTest {
         assertFalse("inBackground $task", task.inBackgroundVal.get())
         assertTrue("onCancel $task", task.onCancelVal.get())
         assertNotNull("onPostExecute $task", task.onPostExecuteVal.get())
+        assertTrue("afterFinish $task", afterFinishVal)
     }
 
     @Test
