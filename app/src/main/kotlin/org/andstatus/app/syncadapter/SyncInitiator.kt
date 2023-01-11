@@ -53,9 +53,7 @@ class SyncInitiator : BroadcastReceiver() {
 
     private fun initializeApp(context: Context) {
         myContextHolder.initialize(context, this)
-            .then("checkConnectionState", false) { myContext: MyContext ->
-                checkConnectionState(myContext)
-            }
+            .then("checkConnectionState", false, ::checkConnectionState)
     }
 
     private fun checkConnectionState(myContext: MyContext) {

@@ -15,7 +15,7 @@ class MyContextAction(
 
     private fun newTask(futureContext: MyFutureContext, contextAction: MyContextAction) =
         AsyncResult<Unit, Unit>(
-            "action$actionName",
+            "${actionName}Action",
             AsyncEnum.DEFAULT_POOL,
             false
         ).apply {

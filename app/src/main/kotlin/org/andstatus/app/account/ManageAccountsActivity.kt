@@ -98,7 +98,7 @@ class ManageAccountsActivity : MyActivity(ManageAccountsActivity::class) {
         super.onResume()
         if (myContextHolder.needToRestartActivity()) {
             FirstActivity.closeAllActivities(this)
-            myContextHolder.initialize(this).thenStartActivity("start$instanceIdString", intent)
+            myContextHolder.initialize(this).thenStartActivity("${instanceTag}Start", intent)
         }
     }
 

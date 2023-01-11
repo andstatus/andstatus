@@ -90,15 +90,16 @@ class MyFutureContext private constructor(
      * failure if not completed yet or if completed exceptionally */
     val tryCurrent: Try<MyContext> get() = future.result
 
-    fun then(actionName: String, mainThread: Boolean, consumer: (MyContext) -> Unit) =
+    fun then(actionName: String, mainThread: Boolean, consumer: (MyContext) -> Unit): MyFutureContext =
         thenTry(MyContextAction(
             actionName,
             mainThread
         ) { tryMyContext: Try<MyContext> -> tryMyContext.map { consumer(it) } })
 
-    fun thenTry(myContextAction: MyContextAction) {
+    fun thenTry(myContextAction: MyContextAction): MyFutureContext {
         queue.put(myContextAction)
         checkQueueExecutor(null, false)
+        return this
     }
 
     private fun checkQueueExecutor(taskThatEnded: AsyncResult<Unit, Unit>?, futureFinishing: Boolean) {

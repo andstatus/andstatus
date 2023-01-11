@@ -132,7 +132,7 @@ abstract class OriginList(clazz: KClass<*>) : MyListActivity(clazz) {
         super.onResume()
         if (myContextHolder.needToRestartActivity()) {
             FirstActivity.closeAllActivities(this)
-            myContextHolder.initialize(this).thenStartActivity("start$instanceIdString", intent)
+            myContextHolder.initialize(this).thenStartActivity("${instanceTag}Start", intent)
         }
     }
 

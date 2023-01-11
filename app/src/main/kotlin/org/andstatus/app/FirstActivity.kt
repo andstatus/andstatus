@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2023 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.AndroidRuntimeException
 import androidx.appcompat.app.AppCompatActivity
 import io.vavr.control.Try
 import kotlinx.coroutines.delay
@@ -42,7 +41,6 @@ import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.BiConsumer
 
 /** Activity to be started, when Application is not initialised yet (or needs re-initialization).
  * It allows to avoid "Application not responding" errors.
@@ -76,73 +74,55 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
     private fun parseNewIntent(intent: Intent?) {
         when (MyAction.fromIntent(intent)) {
             MyAction.INITIALIZE_APP -> myContextHolder.initialize(this)
-                .then("finishFirstActivity", true) { myContext: MyContext? -> finish() }
+                .then("finishFirstActivity", true) {
+                    finish()
+                }
             MyAction.SET_DEFAULT_VALUES -> {
                 setDefaultValuesOnUiThread(this)
-                finish()
+                myContextHolder.then("finishFirstActivity", true) {
+                    finish()
+                }
             }
             MyAction.CLOSE_ALL_ACTIVITIES -> finish()
             else -> {
                 myContextHolder.initialize(this)
                     .thenTry("startNextActivity", true) { tryMyContext: Try<MyContext> ->
-                        tryMyContext.flatMap { myContext ->
-                            val msg = "Launching next activity from $instanceIdString"
-                            if ((myContext.isReady || myContext.state == MyContextState.UPGRADING) && !myContext.isExpired) {
-                                startNextActivitySync(myContext, intent)
-                                TryUtils.SUCCESS
-                            } else TryUtils.failure<Unit>("$msg, MyContext is not ready: ${myContext.state}")
-                        }
+                        startNextActivity(tryMyContext, intent)
                     }
-                finish()
+                    .then("finishFirstActivity", true) {
+                        finish()
+                    }
             }
         }
     }
 
-    private val startNextActivity: BiConsumer<MyContext?, Throwable?> =
-        BiConsumer { myContext: MyContext?, throwable: Throwable? ->
-            var launched = false
-            if (myContext != null && myContext.isReady && !myContext.isExpired) {
-                try {
-                    startNextActivitySync(myContext, intent)
-                    launched = true
-                } catch (e: AndroidRuntimeException) {
-                    MyLog.w(instanceTag, "Launching next activity from firstActivity", e)
-                } catch (e: SecurityException) {
-                    MyLog.d(instanceTag, "Launching activity", e)
+    private fun startNextActivity(tryMyContext: Try<MyContext>, intent: Intent?) = tryMyContext.flatMap { myContext ->
+        val msg = "startNextActivity by $instanceIdString"
+        if ((myContext.isReady || myContext.state == MyContextState.UPGRADING) && !myContext.isExpired) {
+            when (needToStartNext(this, myContext)) {
+                NeedToStart.HELP -> HelpActivity.startMe(this, true, HelpActivity.PAGE_LOGO)
+                NeedToStart.CHANGELOG -> HelpActivity.startMe(this, true, HelpActivity.PAGE_CHANGELOG)
+                else -> {
+                    val intent2 = Intent(this, TimelineActivity::class.java)
+                    if (intent != null) {
+                        val action = intent.action
+                        if (!action.isNullOrEmpty()) {
+                            intent2.action = action
+                        }
+                        val data = intent.data
+                        if (data != null) {
+                            intent2.data = data
+                        }
+                        val extras = intent.extras
+                        if (extras != null) {
+                            intent2.putExtras(extras)
+                        }
+                    }
+                    startActivity(intent2)
                 }
             }
-            if (!launched) {
-                HelpActivity.startMe(
-                    if (myContext == null) myContextHolder.getNow().context else myContext.context,
-                    true, HelpActivity.PAGE_LOGO
-                )
-            }
-            finish()
-        }
-
-    private fun startNextActivitySync(myContext: MyContext, myIntent: Intent?) {
-        when (needToStartNext(this, myContext)) {
-            NeedToStart.HELP -> HelpActivity.startMe(this, true, HelpActivity.PAGE_LOGO)
-            NeedToStart.CHANGELOG -> HelpActivity.startMe(this, true, HelpActivity.PAGE_CHANGELOG)
-            else -> {
-                val intent = Intent(this, TimelineActivity::class.java)
-                if (myIntent != null) {
-                    val action = myIntent.action
-                    if (!action.isNullOrEmpty()) {
-                        intent.action = action
-                    }
-                    val data = myIntent.data
-                    if (data != null) {
-                        intent.data = data
-                    }
-                    val extras = myIntent.extras
-                    if (extras != null) {
-                        intent.putExtras(extras)
-                    }
-                }
-                startActivity(intent)
-            }
-        }
+            TryUtils.SUCCESS
+        } else TryUtils.failure("$msg, MyContext is not ready: ${myContext.state}")
     }
 
     companion object {

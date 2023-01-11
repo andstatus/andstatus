@@ -134,28 +134,26 @@ class MyContextHolder private constructor(
         return this
     }
 
-    fun thenStartActivity(actionName: String, intent: Intent?): MyContextHolder {
+    fun thenStartActivity(actionName: String, intent: Intent?): MyFutureContext {
         return then(actionName, true) { myContext: MyContext ->
             MyFutureContext.startActivity(myContext, intent)
         }
     }
 
-    fun thenStartApp(actionName: String): MyContextHolder {
+    fun thenStartApp(actionName: String): MyFutureContext {
         return then(actionName, true) { myContext: MyContext ->
             FirstActivity.startApp(myContext)
         }
     }
 
-    fun then(actionName: String, mainThread: Boolean, consumer: Consumer<MyContext>): MyContextHolder {
+    fun then(actionName: String, mainThread: Boolean, consumer: Consumer<MyContext>): MyFutureContext =
         futureContextRef.get().then(actionName, mainThread) { it -> consumer.accept(it) }
-        return this
-    }
 
     fun thenTry(
         actionName: String,
         mainThread: Boolean = true,
         action: (Try<MyContext>) -> Try<Unit>
-    ) = futureContextRef.get().thenTry(MyContextAction(actionName, mainThread, action))
+    ): MyFutureContext = futureContextRef.get().thenTry(MyContextAction(actionName, mainThread, action))
 
     /**
      * This allows to refer to the context even before myInitializedContext is initialized.
