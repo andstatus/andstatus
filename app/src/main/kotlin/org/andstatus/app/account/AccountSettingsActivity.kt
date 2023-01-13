@@ -890,7 +890,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
      * Needed in a case we don't have the AndStatus Client keys for this Microblogging system
      */
     private inner class OAuthRegisterClientTask() :
-        AsyncResult<Unit, Boolean>("OAuthRegisterClientTask", AsyncEnum.QUICK_UI) {
+        AsyncResult<Unit, Boolean>("oauthRegisterClient", AsyncEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -938,7 +938,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                     state.builder.myAccount.myContext.setExpired { "Client registered" }
                     myContextHolder
                         .initialize(this@AccountSettingsActivity, this)
-                        .then("acquireRequestToken", true) { myContext: MyContext ->
+                        .then("beforeAcquireRequestToken", true) { myContext: MyContext ->
                             state.builder.rebuildMyAccount(myContext)
                             updateScreen()
                             OAuthAcquireRequestTokenTask(this@AccountSettingsActivity)
@@ -985,7 +985,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
      * ProgressDialog and to get rid of any "Black blank screens"
      */
     private class OAuthAcquireRequestTokenTask(private val activity: AccountSettingsActivity) :
-        AsyncResult<Unit, TaskResult>(AsyncEnum.QUICK_UI) {
+        AsyncResult<Unit, TaskResult>("acquireRequestToken", AsyncEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
@@ -1114,7 +1114,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
      * for "Access Token".
      * 2. Stores the Access token for all future interactions with Twitter.
      */
-    private inner class OAuthAcquireAccessTokenTask() : AsyncResult<Uri?, TaskResult>(AsyncEnum.QUICK_UI) {
+    private inner class OAuthAcquireAccessTokenTask() : AsyncResult<Uri?, TaskResult>("acquireAccessToken", AsyncEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(
