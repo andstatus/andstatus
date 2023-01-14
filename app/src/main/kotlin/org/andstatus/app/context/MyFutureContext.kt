@@ -90,14 +90,18 @@ class MyFutureContext private constructor(
      * failure if not completed yet or if completed exceptionally */
     val tryCurrent: Try<MyContext> get() = future.result
 
-    fun then(actionName: String, mainThread: Boolean, consumer: (MyContext) -> Unit): MyFutureContext =
-        thenTry(MyContextAction(
-            actionName,
-            mainThread
-        ) { tryMyContext: Try<MyContext> -> tryMyContext.map { consumer(it) } })
+    fun thenStartActivity(actionName: String, intent: Intent): MyFutureContext =
+        then(actionName, true) { startActivity(it, intent) }
 
-    fun thenTry(myContextAction: MyContextAction): MyFutureContext {
-        queue.put(myContextAction)
+    fun then(actionName: String, mainThread: Boolean, consumer: (MyContext) -> Unit): MyFutureContext =
+        thenTry(actionName, mainThread) { tryMyContext: Try<MyContext> -> tryMyContext.map { consumer(it) } }
+
+    fun thenTry(
+        actionName: String,
+        mainThread: Boolean = true,
+        action: (Try<MyContext>) -> Try<Unit>
+    ): MyFutureContext {
+        queue.put(MyContextAction(actionName, mainThread, action))
         checkQueueExecutor(null, false)
         return this
     }
@@ -137,6 +141,10 @@ class MyFutureContext private constructor(
                 }
             }
         }
+    }
+
+    suspend fun getCompleted(): MyContext {
+        return tryCompleted().getOrElse(getNow())
     }
 
     suspend fun tryCompleted(): Try<MyContext> {

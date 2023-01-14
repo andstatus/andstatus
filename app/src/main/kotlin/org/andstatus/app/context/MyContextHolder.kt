@@ -17,12 +17,9 @@ package org.andstatus.app.context
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.SystemClock
 import android.provider.Settings
-import io.vavr.control.Try
-import org.andstatus.app.FirstActivity
 import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.os.AsyncTaskLauncher
@@ -33,7 +30,6 @@ import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TaggedInstance
 import org.andstatus.app.util.TamperingDetector
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 import java.util.function.Supplier
 
 /**
@@ -109,20 +105,20 @@ class MyContextHolder private constructor(
         return !future.isReady
     }
 
-    fun initialize(context: Context?): MyContextHolder {
+    fun initialize(context: Context?): MyFutureContext {
         return initializeInner(context, context, false)
     }
 
     /** Reinitialize in a case preferences have been changed  */
-    fun initialize(context: Context?, calledBy: Any?): MyContextHolder {
+    fun initialize(context: Context?, calledBy: Any?): MyFutureContext {
         return initializeInner(context, calledBy, false)
     }
 
-    fun initializeDuringUpgrade(upgradeRequestor: Context?): MyContextHolder {
+    fun initializeDuringUpgrade(upgradeRequestor: Context?): MyFutureContext {
         return initializeInner(upgradeRequestor, upgradeRequestor, true)
     }
 
-    private fun initializeInner(context: Context?, calledBy: Any?, duringUpgrade: Boolean): MyContextHolder {
+    private fun initializeInner(context: Context?, calledBy: Any?, duringUpgrade: Boolean): MyFutureContext {
         storeContextIfNotPresent(context, calledBy)
         if (isShuttingDown) {
             MyLog.d(this, "Skipping initialization: device is shutting down (called by: $calledBy)")
@@ -131,29 +127,8 @@ class MyContextHolder private constructor(
         } else {
             futureContextRef.getAndUpdate { MyFutureContext.fromPrevious(it, calledBy, duringUpgrade) }
         }
-        return this
+        return futureContextRef.get()
     }
-
-    fun thenStartActivity(actionName: String, intent: Intent?): MyFutureContext {
-        return then(actionName, true) { myContext: MyContext ->
-            MyFutureContext.startActivity(myContext, intent)
-        }
-    }
-
-    fun thenStartApp(actionName: String): MyFutureContext {
-        return then(actionName, true) { myContext: MyContext ->
-            FirstActivity.startApp(myContext)
-        }
-    }
-
-    fun then(actionName: String, mainThread: Boolean, consumer: Consumer<MyContext>): MyFutureContext =
-        futureContextRef.get().then(actionName, mainThread) { it -> consumer.accept(it) }
-
-    fun thenTry(
-        actionName: String,
-        mainThread: Boolean = true,
-        action: (Try<MyContext>) -> Try<Unit>
-    ): MyFutureContext = futureContextRef.get().thenTry(MyContextAction(actionName, mainThread, action))
 
     /**
      * This allows to refer to the context even before myInitializedContext is initialized.

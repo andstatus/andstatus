@@ -1114,7 +1114,8 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
      * for "Access Token".
      * 2. Stores the Access token for all future interactions with Twitter.
      */
-    private inner class OAuthAcquireAccessTokenTask() : AsyncResult<Uri?, TaskResult>("acquireAccessToken", AsyncEnum.QUICK_UI) {
+    private inner class OAuthAcquireAccessTokenTask() :
+        AsyncResult<Uri?, TaskResult>("acquireAccessToken", AsyncEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override suspend fun onPreExecute() {
             dlg = ProgressDialog.show(

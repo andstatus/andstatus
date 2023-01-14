@@ -79,9 +79,7 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
                 }
             MyAction.SET_DEFAULT_VALUES -> {
                 setDefaultValuesOnUiThread(this)
-                myContextHolder.then("finishFirstActivity", true) {
-                    finish()
-                }
+                myContextHolder.future.then("finishFirstActivity", true) { finish() }
             }
             MyAction.CLOSE_ALL_ACTIVITIES -> finish()
             else -> {
@@ -143,11 +141,11 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
 
         fun goHome(activity: MyActivity) {
             try {
-                MyLog.v(activity.instanceTag) { "goHome" }
+                MyLog.v(activity.instanceTag) { "goHome1" }
                 startApp(activity)
             } catch (e: Exception) {
-                MyLog.v(activity.instanceTag, "goHome", e)
-                myContextHolder.thenStartApp("goHome")
+                MyLog.v(activity.instanceTag, "goHome1", e)
+                myContextHolder.future.then("goHome", true, ::startApp)
             }
         }
 
