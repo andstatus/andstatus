@@ -819,7 +819,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                         startActivity(intent)
                     } else {
-                        FirstActivity.goHome(this@AccountSettingsActivity)
+                        FirstActivity.startApp(this@AccountSettingsActivity)
                     }
                 }
             }

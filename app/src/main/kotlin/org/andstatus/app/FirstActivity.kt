@@ -139,25 +139,24 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
             )
         }
 
-        fun goHome(activity: MyActivity) {
+        fun startApp(myContext: MyContext) = startApp(myContext.context)
+
+        fun startApp(context: Context) {
             try {
-                MyLog.v(activity.instanceTag) { "goHome1" }
-                startApp(activity)
+                MyLog.i(context, "startApp")
+                val intent = Intent(context, FirstActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
             } catch (e: Exception) {
-                MyLog.v(activity.instanceTag, "goHome1", e)
-                myContextHolder.future.then("goHome", true, ::startApp)
+                val contextNow = myContextHolder.getNow().context
+                // To avoid cycling
+                if (contextNow == context) {
+                    MyLog.w(context, "startApp failed with $context, same as now", e)
+                } else {
+                    MyLog.i(context, "startApp failed with $context, trying with $contextNow", e)
+                    myContextHolder.initialize(contextNow).then("startAppAlt", true, ::startApp)
+                }
             }
-        }
-
-        fun startApp(myContext: MyContext) {
-            myContext.context.let { startApp(it) }
-        }
-
-        private fun startApp(context: Context) {
-            MyLog.i(context, "startApp")
-            val intent = Intent(context, FirstActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
         }
 
         fun needToStartNext(context: Context, myContext: MyContext): NeedToStart {

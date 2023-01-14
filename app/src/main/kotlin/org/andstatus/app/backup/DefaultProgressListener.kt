@@ -136,7 +136,7 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
             try {
                 activity.runOnUiThread {
                     freeResources()
-                    FirstActivity.goHome(activity)
+                    FirstActivity.startApp(activity)
                     activity.finish()
                 }
             } catch (e: Exception) {

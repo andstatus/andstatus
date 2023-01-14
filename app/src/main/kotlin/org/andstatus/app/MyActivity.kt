@@ -93,7 +93,7 @@ open class MyActivity(
                     previousErrorInflatingTime = System.currentTimeMillis()
                     finish()
                     myContextHolder.getNow().setExpired { logMsg }
-                    FirstActivity.goHome(this)
+                    FirstActivity.startApp(this)
                 } else {
                     throw IllegalStateException(logMsg, e)
                 }
