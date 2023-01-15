@@ -105,29 +105,31 @@ class MyContextHolder private constructor(
         return !future.isReady
     }
 
+    fun reInitialize(context: Context, calledBy: Any): MyFutureContext {
+        return initializeInner(context, calledBy, false, true)
+    }
+
     fun initialize(context: Context?): MyFutureContext {
-        return initializeInner(context, context, false)
+        return initializeInner(context, context, false, false)
     }
 
     /** Reinitialize in a case preferences have been changed  */
     fun initialize(context: Context?, calledBy: Any?): MyFutureContext {
-        return initializeInner(context, calledBy, false)
+        return initializeInner(context, calledBy, false, false)
     }
 
     fun initializeDuringUpgrade(upgradeRequestor: Context?): MyFutureContext {
-        return initializeInner(upgradeRequestor, upgradeRequestor, true)
+        return initializeInner(upgradeRequestor, upgradeRequestor, true, false)
     }
 
-    private fun initializeInner(context: Context?, calledBy: Any?, duringUpgrade: Boolean): MyFutureContext {
+    private fun initializeInner(
+        context: Context?,
+        calledBy: Any?,
+        duringUpgrade: Boolean,
+        reinitialize: Boolean
+    ): MyFutureContext {
         storeContextIfNotPresent(context, calledBy)
-        if (isShuttingDown) {
-            MyLog.d(this, "Skipping initialization: device is shutting down (called by: $calledBy)")
-        } else if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
-            MyLog.d(this, "Skipping initialization: upgrade in progress (called by: $calledBy)")
-        } else {
-            futureContextRef.getAndUpdate { MyFutureContext.fromPrevious(it, calledBy, duringUpgrade) }
-        }
-        return futureContextRef.get()
+        return futureContextRef.updateAndGet { MyFutureContext.fromPrevious(it, calledBy, duringUpgrade, reinitialize) }
     }
 
     /**

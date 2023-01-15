@@ -29,6 +29,7 @@ import kotlinx.coroutines.sync.withLock
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyContextState
+import org.andstatus.app.context.MyFutureContext
 import org.andstatus.app.context.MyLocale
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsGroup
@@ -53,12 +54,13 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
         HELP, CHANGELOG, OTHER
     }
 
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(MyLocale.onAttachBaseContext(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
-            if (isFirstrun.compareAndSet(true, false)) {
-                MyLocale.onAttachBaseContext(this)
-            }
             setContentView(R.layout.loading)
         } catch (e: Throwable) {
             MyLog.w(this, "Couldn't setContentView", e)
@@ -128,22 +130,14 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
         private val resultOfSettingDefaults: AtomicReference<TriState> = AtomicReference(TriState.UNKNOWN)
         var isFirstrun: AtomicBoolean = AtomicBoolean(true)
 
-        /**
-         * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
-         */
-        fun closeAllActivities(context: Context) {
-            context.startActivity(
-                MyAction.CLOSE_ALL_ACTIVITIES.newIntent()
-                    .setClass(context, FirstActivity::class.java)
-                    .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        }
+        fun restartApp(context: Context, calledBy: Any): MyFutureContext =
+            myContextHolder.reInitialize(context, calledBy)
+                .then("goHomeOnRestart", true) { goHome(context) }
 
-        fun startApp(myContext: MyContext) = startApp(myContext.context)
-
-        fun startApp(context: Context) {
+        fun goHome(context: Context) {
+            val method = "goHome with $context"
             try {
-                MyLog.i(context, "startApp")
+                MyLog.i(context, "Starting $method")
                 val intent = Intent(context, FirstActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
@@ -151,10 +145,10 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
                 val contextNow = myContextHolder.getNow().context
                 // To avoid cycling
                 if (contextNow == context) {
-                    MyLog.w(context, "startApp failed with $context, same as now", e)
+                    MyLog.w(context, "Failed $method, same as now", e)
                 } else {
-                    MyLog.i(context, "startApp failed with $context, trying with $contextNow", e)
-                    myContextHolder.initialize(contextNow).then("startAppAlt", true, ::startApp)
+                    MyLog.i(context, "Failed $method, trying with $contextNow", e)
+                    goHome(contextNow)
                 }
             }
         }

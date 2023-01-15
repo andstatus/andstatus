@@ -24,6 +24,7 @@ import kotlinx.coroutines.withContext
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.HelpActivity
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
+import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.net.http.TlsSniSocketFactory
 import org.andstatus.app.os.AsyncEnum
 import org.andstatus.app.os.AsyncResult
@@ -110,7 +111,7 @@ class MyFutureContext private constructor(
         if (!futureFinishing && !future.isFinished) {
             MyLog.v(
                 this,
-                "CheckQueue; Future is not finished:$future Task ended: $taskThatEnded, actions in queue:${queue.size}"
+                "CheckQueue; Future is not finished:$future Task ended: $taskThatEnded; ${queue.size} actions in queue: $queue"
             )
             return
         }
@@ -158,23 +159,36 @@ class MyFutureContext private constructor(
     companion object {
         private val TAG: String = MyFutureContext::class.simpleName!!
 
-        fun fromPrevious(previousFuture: MyFutureContext, calledByIn: Any?, duringUpgrade: Boolean): MyFutureContext =
+        fun fromPrevious(
+            previousFuture: MyFutureContext,
+            calledByIn: Any?,
+            duringUpgrade: Boolean,
+            reinitialize: Boolean
+        ): MyFutureContext =
             runBlocking {
                 val previousContext = previousFuture.getNow()
                 val calledBy: Any = calledByIn ?: previousContext
                 var willInitialize = true;
                 val reason: String = (
-                    if (myContextHolder.onDeleteApplicationData) {
+                    if (myContextHolder.isShuttingDown) {
+                        willInitialize = false
+                        "Shutting down"
+                    } else if (myContextHolder.onDeleteApplicationData) {
                         willInitialize = false
                         "On delete application data"
                     } else if (duringUpgrade) {
                         "During upgrade"
+                    } else if (DatabaseConverterController.isUpgrading()) {
+                        willInitialize = false
+                        "DatabaseConverterController is upgrading"
                     } else if (previousContext.state == MyContextState.UPGRADING) {
                         willInitialize = false
                         "Is upgrading"
                     } else if (previousContext.state == MyContextState.RESTORING) {
                         willInitialize = false
                         "Is restoring"
+                    } else if (reinitialize) {
+                        "Reinitialize"
                     } else if (previousFuture.future.isRunning) {
                         willInitialize = false
                         "Previous is running"
@@ -204,15 +218,19 @@ class MyFutureContext private constructor(
                     .also { future ->
                         future.doInBackground {
                             TryUtils.ofS {
-                                MyLog.v(previousFuture) { "Preparing for initialization of ${future.instanceTag}" }
-                                release2(previousFuture, previousContext) { "Initialization of ${future.instanceTag}" }
+                                MyLog.v(previousFuture) { "Preparing initialization of ${future.instanceTag}" }
+                                if (reinitialize) {
+                                    previousFuture.release { "Reinitialization of ${future.instanceTag}" }
+                                } else {
+                                    release2(previousFuture, previousContext) { "Initialization of ${future.instanceTag}" }
+                                }
                                 previousContext.newInstance(calledBy).also { myContext ->
                                     myContext.initialize()
                                     SyncInitiator.register(myContext)
                                     MyServiceManager.registerReceiver(myContext.context)
                                 }
                             }.also {
-                                MyLog.v(previousFuture) { "Initialization of ${future.instanceTag} result: $it" }
+                                MyLog.v(previousFuture) { "Completed initialization of ${future.instanceTag}, result: $it" }
                             }
                         }
                     }

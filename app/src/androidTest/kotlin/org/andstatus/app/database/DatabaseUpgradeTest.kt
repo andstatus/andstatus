@@ -2,6 +2,7 @@ package org.andstatus.app.database
 
 import kotlinx.coroutines.delay
 import org.andstatus.app.FirstActivity
+import org.andstatus.app.HelpActivityTest.Companion.closeAllActivities
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyStorage
@@ -37,14 +38,13 @@ object DatabaseUpgradeTest {
                 }.onSuccessS { dbFile ->
                     assertEquals("Created ${dbFile.absolutePath}", 147456, dbFile.length())
                     MyLog.i(TAG, "before FirstActivity.startApp")
-                    var myContext = myContextHolder.initialize(context).getNow()
-                    FirstActivity.startApp(myContext)
+                    var myContext = FirstActivity.restartApp(context, this).getNow()
 
                     MyLog.i(TAG, "before repeat 120 times")
-                    for(i in 1..120) {
+                    for (i in 1..120) {
                         if (myContext.isReady) break;
                         delay(500)
-                        myContext = myContextHolder.initialize(context).getNow()
+                        myContext = myContextHolder.future.getNow()
                         when (myContext.state) {
                             MyContextState.ERROR -> fail("Error $myContext")
                             MyContextState.DATABASE_UNAVAILABLE -> fail("Database unavailable $myContext")
@@ -62,7 +62,7 @@ object DatabaseUpgradeTest {
                     myContext = myContextHolder.initialize(context).getCompleted()
                     assertTrue(myContext.toString(), myContext.isReady)
                     MyLog.i(TAG, "before FirstActivity.closeAllActivities")
-                    FirstActivity.closeAllActivities(context)
+                    closeAllActivities(context)
                     delay(1000)
                     MyLog.i(TAG, "after FirstActivity.closeAllActivities")
                 }

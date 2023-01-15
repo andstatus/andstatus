@@ -222,7 +222,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             TapOnATimelineTitleBehaviour.SWITCH_TO_DEFAULT_TIMELINE -> if (getParamsLoaded().isAtHome()) {
                 onTimelineTypeButtonClick(item)
             } else {
-                FirstActivity.startApp(this)
+                FirstActivity.goHome(this)
             }
             TapOnATimelineTitleBehaviour.GO_TO_THE_TOP -> onGoToTheTopButtonClick(item)
             TapOnATimelineTitleBehaviour.SELECT_TIMELINE -> onTimelineTypeButtonClick(item)
@@ -233,7 +233,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     fun onSwitchToDefaultTimelineButtonClick(item: View?) {
         closeDrawer()
-        FirstActivity.startApp(this)
+        FirstActivity.goHome(this)
     }
 
     fun onGoToTheTopButtonClick(item: View?) {
@@ -310,7 +310,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                 }
             } else {
                 MyLog.v(this) { "$method; Finishing this Activity and going Home because there is no Account selected" }
-                FirstActivity.startApp(this)
+                FirstActivity.goHome(this)
                 finish()
             }
         }

@@ -91,9 +91,7 @@ open class MyActivity(
                 MyLog.e(this, logMsg, e)
                 if (previousErrorInflatingTime == 0L) {
                     previousErrorInflatingTime = System.currentTimeMillis()
-                    finish()
-                    myContextHolder.getNow().setExpired { logMsg }
-                    FirstActivity.startApp(this)
+                    FirstActivity.restartApp(this, "errorInflating")
                 } else {
                     throw IllegalStateException(logMsg, e)
                 }
@@ -252,8 +250,7 @@ open class MyActivity(
         when (actionToDo) {
             OnFinishAction.RESTART_ME -> myContextHolder.initialize(this)
                 .thenStartActivity("${instanceTag}Restart", intent)
-            OnFinishAction.RESTART_APP -> myContextHolder.initialize(this)
-                .then("${instanceTag}AppRestart", true, FirstActivity::startApp)
+            OnFinishAction.RESTART_APP -> FirstActivity.restartApp(this, "${instanceTag}AppRestart")
             else -> {}
         }
     }

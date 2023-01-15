@@ -121,8 +121,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
         getStarted.visibility = if (generatingDemoData) View.GONE else View.VISIBLE
         getStarted.setOnClickListener { v: View? ->
             if (myContextHolder.future.tryCurrent.isFailure) {
-                myContextHolder.initialize(this)
-                    .then("onClickGetStarted", true, FirstActivity::startApp)
+                FirstActivity.restartApp(this, "onClickGetStarted")
                 return@setOnClickListener
             }
             when (myContextHolder.getNow().state) {

@@ -15,6 +15,7 @@
  */
 package org.andstatus.app
 
+import android.content.Context
 import android.content.Intent
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ViewActions
@@ -48,7 +49,7 @@ class HelpActivityTest : ActivityTest<HelpActivity>() {
 
     @After
     fun tearDown() {
-        FirstActivity.Companion.closeAllActivities(InstrumentationRegistry.getInstrumentation().targetContext)
+        closeAllActivities(InstrumentationRegistry.getInstrumentation().targetContext)
     }
 
     @Test
@@ -87,5 +88,19 @@ class HelpActivityTest : ActivityTest<HelpActivity>() {
         val nextActivity = helper.waitForNextActivity("Clicking on Settings menu item", 10000)
         DbUtils.waitMs("test", 500)
         nextActivity.finish()
+    }
+
+    companion object {
+
+        /**
+         * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
+         */
+        fun closeAllActivities(context: Context) {
+            context.startActivity(
+                MyAction.CLOSE_ALL_ACTIVITIES.newIntent()
+                    .setClass(context, FirstActivity::class.java)
+                    .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
     }
 }

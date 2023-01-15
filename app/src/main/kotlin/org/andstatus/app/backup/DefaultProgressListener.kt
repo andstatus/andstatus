@@ -136,8 +136,7 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
             try {
                 activity.runOnUiThread {
                     freeResources()
-                    FirstActivity.startApp(activity)
-                    activity.finish()
+                    FirstActivity.restartApp(activity, "onBackupComplete")
                 }
             } catch (e: Exception) {
                 MyLog.d(logTag, "onComplete $success", e)

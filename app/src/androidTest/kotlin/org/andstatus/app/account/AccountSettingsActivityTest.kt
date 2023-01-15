@@ -19,7 +19,7 @@ import android.content.Intent
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-import org.andstatus.app.FirstActivity
+import org.andstatus.app.HelpActivityTest.Companion.closeAllActivities
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.ActivityTest
@@ -71,14 +71,18 @@ open class AccountSettingsActivityTest() : ActivityTest<AccountSettingsActivity>
         DbUtils.waitMs(method, 500)
         activity.finish()
         DbUtils.waitMs(method, 500)
-        FirstActivity.Companion.closeAllActivities(getInstrumentation().targetContext)
+        closeAllActivities(getInstrumentation().targetContext)
         DbUtils.waitMs(method, 500)
     }
 
     open fun assertUniqueNameTextField(viewId: Int) {
         val uniqueNameText = activity.findViewById<View?>(viewId) as TextView?
         assertTrue(uniqueNameText != null)
-        assertEquals("Unique name of selected account $ma", ma.getOAccountName().getUniqueName(), uniqueNameText?.text.toString())
+        assertEquals(
+            "Unique name of selected account $ma",
+            ma.getOAccountName().getUniqueName(),
+            uniqueNameText?.text.toString()
+        )
     }
 
     private fun openingOriginList() {
@@ -93,8 +97,10 @@ open class AccountSettingsActivityTest() : ActivityTest<AccountSettingsActivity>
         MyLog.v(this, "$method-Log before run clicker 1")
         activity.runOnUiThread(clicker)
         val nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000)
-        MyLog.v(this, method + "-Log after waitForMonitor: "
-                + nextActivity)
+        MyLog.v(
+            this, method + "-Log after waitForMonitor: "
+                + nextActivity
+        )
         assertNotNull("Next activity is opened and captured", nextActivity)
         TestSuite.waitForListLoaded(nextActivity, 6)
         DbUtils.waitMs(method, 500)

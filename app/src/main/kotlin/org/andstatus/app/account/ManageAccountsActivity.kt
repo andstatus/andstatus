@@ -97,8 +97,9 @@ class ManageAccountsActivity : MyActivity(ManageAccountsActivity::class) {
     override fun onResume() {
         super.onResume()
         if (myContextHolder.needToRestartActivity()) {
-            FirstActivity.closeAllActivities(this)
-            myContextHolder.initialize(this).thenStartActivity("${instanceTag}Start", intent)
+            FirstActivity.restartApp(this, "restartManageAccounts")
+                .thenStartActivity("openSettings", Intent(this, MySettingsActivity::class.java))
+                .thenStartActivity("${instanceTag}Start", intent)
         }
     }
 

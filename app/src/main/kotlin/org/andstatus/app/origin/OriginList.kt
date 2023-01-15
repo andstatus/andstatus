@@ -131,8 +131,9 @@ abstract class OriginList(clazz: KClass<*>) : MyListActivity(clazz) {
     override fun onResume() {
         super.onResume()
         if (myContextHolder.needToRestartActivity()) {
-            FirstActivity.closeAllActivities(this)
-            myContextHolder.initialize(this).thenStartActivity("${instanceTag}Start", intent)
+            FirstActivity.restartApp(this, "restartOriginList")
+                .thenStartActivity("openSettings", Intent(this, MySettingsActivity::class.java))
+                .thenStartActivity("${instanceTag}Start", intent)
         }
     }
 

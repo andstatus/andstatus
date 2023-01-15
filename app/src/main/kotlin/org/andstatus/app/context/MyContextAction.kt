@@ -44,6 +44,6 @@ class MyContextAction(
         }
 
     override fun toString(): String {
-        return "$actionName, mainThread=$mainThread"
+        return "{$actionName, mainThread=$mainThread}"
     }
 }
