@@ -1142,11 +1142,15 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
                 try {
                     if (oauthHttp.isOAuth2()) {
+                        // We got here after redirect to e.g.
+                        // http://oauth-redirect.andstatus.org/?code=3d88b8378591679dd63b1bfbd88efb330a95b346d90b160d5c6c17db93b35a5b&state=state_37_1673842432921
                         val authorizationCode = params.getQueryParameter("code")
                         val stateParameter = params.getQueryParameter("state")
                         MyLog.d(this, "Auth response, code:$authorizationCode, state:$stateParameter")
                         if (state.oauthStateParameter == stateParameter) {
                             val service = oauthHttp.getService(true)
+                            // This is a call to ScribeJava that does Access token request e.g.
+                            // ScribeJava  V  created access token request with body params [code=3d88b8378591679dd63b1bfbd88efb330a95b346d90b160d5c6c17db93b35a5b&redirect_uri=http%3A%2F%2Foauth-redirect.andstatus.org&scope=read%20write%20follow&grant_type=authorization_code], query string params []
                             val token = service?.getAccessToken(authorizationCode)
                             accessToken = token?.accessToken ?: ""
                             accessSecret = token?.rawResponse ?: ""

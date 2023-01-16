@@ -20,7 +20,7 @@ class MyOAuth2Service(
     override fun createAccessTokenRequest(params: AccessTokenRequestParams?): OAuthRequest {
         return super.createAccessTokenRequest(params).apply {
             // Required as per https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
-            addBodyParameter(OAuthConstants.CLIENT_ID, apiKey);
+            addParameter(OAuthConstants.CLIENT_ID, apiKey);
         }
     }
 }
