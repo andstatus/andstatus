@@ -91,6 +91,7 @@ import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.ViewUtils
 import org.andstatus.app.view.MyContextMenu
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * @author yvolk@yurivolkov.com
@@ -567,14 +568,18 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             WhichPage.load(intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT)
         val searchQuery = intentNew.getStringExtra(IntentExtra.SEARCH_QUERY.key)
         val parsedUri: ParsedUri = ParsedUri.fromUri(intentNew.getData())
-        val timeline: Timeline = Timeline.fromParsedUri(myContext, parsedUri, searchQuery)
-        setParamsNew(
-            TimelineParameters(
-                myContext,
-                if (timeline.isEmpty) myContext.timelines.getDefault() else timeline,
-                whichPage
-            )
-        )
+        val timeline: Timeline = Timeline.fromParsedUri(myContext, parsedUri, searchQuery).let {
+            if (it.isEmpty) myContext.timelines.getDefault().also {
+                myContext.accounts.setCurrentAccount(it.myAccountToSync)
+            } else it
+        }
+        if (onAppStart.compareAndSet(true, false)) {
+            MyLog.i(this, "onAppStart")
+            myContext.accounts.setCurrentAccount(timeline.myAccountToSync)
+        } else {
+            correctCurrentAccount(timeline)
+        }
+        setParamsNew(TimelineParameters(myContext, timeline, whichPage))
         actorProfileViewer?.ensureView(getParamsNew().timeline.hasActorProfile())
         if (Intent.ACTION_SEND == intentNew.getAction()) {
             sharedNote = SharedNote.fromIntent(intentNew)
@@ -1138,6 +1143,8 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     fun switchView(timeline: Timeline) {
         timeline.save(myContext)
+        correctCurrentAccount(timeline)
+
         if (isFinishing || timeline != getParamsLoaded().timeline) {
             MyLog.v(this) { "switchTimelineActivity; $timeline" }
             if (isFinishing) {
@@ -1148,6 +1155,16 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             }
         } else {
             showList(WhichPage.CURRENT)
+        }
+    }
+
+    private fun correctCurrentAccount(timeline: Timeline) {
+        if (!timeline.isCombined && timeline.preferredOrigin() != myContext.accounts.currentAccount.origin) {
+            MyLog.d(
+                this,
+                "Correcting account ${myContext.accounts.currentAccount.getAccountName()} -> ${timeline.myAccountToSync.getAccountName()}"
+            )
+            myContext.accounts.setCurrentAccount(timeline.myAccountToSync)
         }
     }
 
@@ -1168,6 +1185,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     companion object {
         val HORIZONTAL_ELLIPSIS: String = "\u2026"
+        val onAppStart: AtomicBoolean = AtomicBoolean(true)
 
         @JvmOverloads
         fun startForTimeline(

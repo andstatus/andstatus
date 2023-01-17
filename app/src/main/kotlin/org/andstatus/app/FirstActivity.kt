@@ -132,7 +132,10 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
 
         fun restartApp(context: Context, calledBy: Any): MyFutureContext =
             myContextHolder.reInitialize(context, calledBy)
-                .then("goHomeOnRestart", true) { goHome(context) }
+                .then("goHomeOnRestart", true) {
+                    TimelineActivity.onAppStart.set(true)
+                    goHome(context)
+                }
 
         fun goHome(context: Context) {
             val method = "goHome with $context"

@@ -23,6 +23,7 @@ import android.view.MenuItem
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
+import org.andstatus.app.FirstActivity
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
@@ -181,8 +182,8 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
 
     companion object {
         fun goToMySettingsAccounts(activity: Activity) {
-            activity.finish()
-            myContextHolder.initialize(activity)
+            FirstActivity.restartApp(activity, "goToMySettingsAccounts")
+                .thenStartActivity("openSettings", Intent(activity, MySettingsActivity::class.java))
                 .thenStartActivity(
                     "startSettingsAccounts",
                     MySettingsGroup.ACCOUNTS.addTo(

@@ -111,7 +111,8 @@ class MyFutureContext private constructor(
         if (!futureFinishing && !future.isFinished) {
             MyLog.v(
                 this,
-                "CheckQueue; Future is not finished:$future Task ended: $taskThatEnded; ${queue.size} actions in queue: $queue"
+                "CheckQueue; Future is not finished:$future " +
+                    "Task ended: $taskThatEnded, ${queue.size} actions in queue: $queue"
             )
             return
         }
@@ -119,7 +120,7 @@ class MyFutureContext private constructor(
             MyLog.v(
                 this, "CheckQueue; " + (if (futureFinishing) "Future finishing, " else "") +
                     (if (taskThatEnded != null) "Task ended: $taskThatEnded, " else "") +
-                    "actions in queue:${queue.size}"
+                    "${queue.size} actions in queue: $queue"
             )
             if (taskThatEnded == null) {
                 if (actionTaskRef.get()?.isFinished ?: true) {
@@ -222,7 +223,10 @@ class MyFutureContext private constructor(
                                 if (reinitialize) {
                                     previousFuture.release { "Reinitialization of ${future.instanceTag}" }
                                 } else {
-                                    release2(previousFuture, previousContext) { "Initialization of ${future.instanceTag}" }
+                                    release2(
+                                        previousFuture,
+                                        previousContext
+                                    ) { "Initialization of ${future.instanceTag}" }
                                 }
                                 previousContext.newInstance(calledBy).also { myContext ->
                                     myContext.initialize()

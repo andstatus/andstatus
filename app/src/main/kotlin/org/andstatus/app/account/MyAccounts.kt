@@ -225,11 +225,6 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
             ?: myAccounts.firstOrNull()
             ?: MyAccount.EMPTY
 
-    /**
-     * @return 0 if no valid persistent accounts exist
-     */
-    val currentAccountActorId: Long get() = currentAccount.actorId
-
     fun getFirstSucceeded(): MyAccount {
         return getFirstPreferablySucceededForOrigin(Origin.EMPTY)
     }
