@@ -846,6 +846,8 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         return isSyncableForOrigins
     }
 
+    val isForMyAccount: Boolean get() = actor.nonEmpty && actor.isSame(myAccountToSync.actor)
+
     fun isSyncedByOtherUser(): Boolean {
         return actor.isEmpty || myAccountToSync.actor.notSameUser(actor)
     }

@@ -303,6 +303,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     override fun onResume() {
         val method = "onResume"
         if (!isFinishing) {
+            correctCurrentAccount(getParamsLoaded().timeline)
             if (myContext.accounts.currentAccount.isValid) {
                 if (isContextNeedsUpdate()) {
                     MyLog.v(this) { "$method; Restarting this Activity to apply all new changes of configuration" }
@@ -595,13 +596,17 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         invalidateOptionsMenu()
         getNoteEditor()?.updateScreen()
         updateTitle(mRateLimitText)
-        mDrawerToggle?.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome())
-        if (getParamsLoaded().isAtHome()) {
-            myContext.accounts.currentAccount.actor.avatarFile
-                .loadDrawable({ drawable: Drawable? -> scaleDrawableForToolbar(drawable) })
-                { indicator: Drawable? -> mDrawerToggle?.setHomeAsUpIndicator(indicator) }
-        } else {
-            mDrawerToggle?.setHomeAsUpIndicator(null)
+        mDrawerToggle?.let { toggle ->
+            val currentActor = myContext.accounts.currentAccount.actor
+            if (getParamsLoaded().timeline.let { it.isForMyAccount && it.actor.isSame(currentActor) }) {
+                toggle.isDrawerIndicatorEnabled = false
+                currentActor.avatarFile
+                    .loadDrawable({ drawable: Drawable? -> scaleDrawableForToolbar(drawable) })
+                    { indicator: Drawable? -> toggle.setHomeAsUpIndicator(indicator) }
+            } else {
+                toggle.isDrawerIndicatorEnabled = true
+                toggle.setHomeAsUpIndicator(null)
+            }
         }
         showRecentAccounts()
         ViewUtils.showView(

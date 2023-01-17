@@ -29,6 +29,18 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="60.01" android:versionCode="361"
+        versionDate="2023-01-17"
+        versionTitle="Avoid confusing current account">
+        <changes>
+            <change>Current account should always correspond to the selected timeline. I.e. it cannot be from
+                another Social Network. On app start current account should be the one that belongs to current
+                timeline (i.e. to the Default timeline).<br/>
+                Show my account's avatar on an Action bar of a timeline in a case the timeline is for current account.
+                <a href="https://github.com/andstatus/andstatus/issues/566">#566</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="59.15" android:versionCode="360"
         versionDate="2022-12-30"
         versionTitle="Improve OAuth 2.0 and ActivityPub C2S support">

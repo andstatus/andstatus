@@ -26,10 +26,8 @@ import android.os.Build
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
-import org.andstatus.app.os.AsyncUtil
 import org.andstatus.app.syncadapter.SyncInitiator
 import org.andstatus.app.util.Identifiable
 import org.andstatus.app.util.InstanceId
@@ -211,15 +209,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
             AtomicReference(ServiceAvailability.AVAILABLE)
 
         fun isServiceAvailable(): Boolean {
-            var myContext = myContextHolder.getNow()
-            if (!myContext.isReady) {
-                if (serviceAvailability.get().isAvailable()
-                    && AsyncUtil.nonUiThread // Don't block on UI thread
-                    && !myContextHolder.getNow().initialized
-                ) runBlocking {
-                    myContext = myContextHolder.initialize(null, TAG).getCompleted()
-                }
-            }
+            val myContext = myContextHolder.getNow()
             return if (myContext.isReady) {
                 val availableInMillis = serviceAvailability.updateAndGet { it.checkAndGet() }
                     .willBeAvailableInMillis()
