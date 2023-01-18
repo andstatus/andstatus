@@ -1,1 +1,1 @@
-v.59.15 Improve OAuth 2.0 and ActivityPub C2S support
+v.60.01 Avoid confusing current account
