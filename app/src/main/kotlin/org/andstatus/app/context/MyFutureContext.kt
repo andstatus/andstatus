@@ -21,7 +21,6 @@ import io.vavr.control.Try
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.andstatus.app.FirstActivity
 import org.andstatus.app.HelpActivity
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.data.converter.DatabaseConverterController
@@ -265,7 +264,6 @@ class MyFutureContext private constructor(
             ExceptionsCounter.forget()
             MyLog.forget()
             SharedPreferencesUtil.forget()
-            FirstActivity.isFirstrun.set(true)
             previousContext.release(reason)
             // There is InterruptedException after above..., so we catch it below:
             delay(10)

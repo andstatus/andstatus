@@ -40,7 +40,6 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 /** Activity to be started, when Application is not initialised yet (or needs re-initialization).
@@ -128,7 +127,6 @@ class FirstActivity() : AppCompatActivity(), Identifiable {
     companion object {
         private val SET_DEFAULT_VALUES: String = "setDefaultValues"
         private val resultOfSettingDefaults: AtomicReference<TriState> = AtomicReference(TriState.UNKNOWN)
-        var isFirstrun: AtomicBoolean = AtomicBoolean(true)
 
         fun restartApp(context: Context, calledBy: Any): MyFutureContext =
             myContextHolder.reInitialize(context, calledBy)
