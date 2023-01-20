@@ -44,7 +44,7 @@ class TimelineSyncTrackerTest {
         val timeline = findTimeline(myContext, timelineType, ma)
         if (timeline === Timeline.EMPTY) return
         if (timelineType.isAtOrigin()) {
-            if (timeline.getOrigin().originType.isTimelineTypeSyncable(timelineType)) {
+            if (timeline.origin.originType.isTimelineTypeSyncable(timelineType)) {
                 assertDefaultTimelinePersistence(
                     message, TimelineType.Companion.getDefaultOriginTimelineTypes().contains(timelineType), timeline
                 )
@@ -66,7 +66,7 @@ class TimelineSyncTrackerTest {
         val timeline2 = findTimeline(myContext, timelineType, ma)
         syncTracker = TimelineSyncTracker(timeline2, true)
         val time2 = System.currentTimeMillis()
-        if (timeline2.isValid()) {
+        if (timeline2.isValid) {
             Assert.assertTrue(
                 "$timeline2 was downloaded $syncTracker",
                 syncTracker.getPreviousSyncedDate() >= time1
@@ -93,7 +93,7 @@ class TimelineSyncTrackerTest {
         Assert.assertEquals("$message; Is added by default\n$timeline\n", isAddedByDefault, timeline.isAddedByDefault())
         Assert.assertEquals(
             "$message; Timeline persistence\n$timeline\n", isAddedByDefault,
-            timeline.isValid() && timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER
+            timeline.isValid && timeline.isDisplayedInSelector != DisplayedInSelector.NEVER
         )
     }
 

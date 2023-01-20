@@ -110,8 +110,8 @@ class DemoOriginInserter(private val myContext: MyContext) {
                 for (timelineType in TimelineType.getDefaultOriginTimelineTypes()) {
                     var count = 0
                     for (timeline in myContext.timelines.values()) {
-                        if (timeline.getOrigin() == origin && timeline.timelineType == timelineType &&
-                            timeline.getSearchQuery().isEmpty()
+                        if (timeline.origin == origin && timeline.timelineType == timelineType &&
+                            timeline.searchQuery.isEmpty()
                         ) count++
                     }
                     if (myAccount.isValid && origin.originType.isTimelineTypeSyncable(timelineType)) {

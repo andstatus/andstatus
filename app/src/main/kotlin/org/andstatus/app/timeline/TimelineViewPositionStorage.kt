@@ -31,15 +31,16 @@ internal class TimelineViewPositionStorage<T : ViewItem<T>>(private val activity
     private val listView: ListView? = activity.listView
 
     fun save() {
-        val method = "save" + params.timeline.getId()
+        val method = "save" + params.timeline.id
         if (isEmpty()) {
             MyLog.v(TAG) { "$method; skipped" }
             return
         }
         val itemCount = adapter.count
         val firstVisibleAdapterPosition = Integer.min(
-                Integer.max(listView?.firstVisiblePosition ?: 0, 0),
-                itemCount - 1)
+            Integer.max(listView?.firstVisiblePosition ?: 0, 0),
+            itemCount - 1
+        )
         val pos = activity.getCurrentListPosition()
         val lastPosition = Integer.min((listView?.lastVisiblePosition ?: 0) + 10, itemCount - 1)
         val minDate = adapter.getItem(lastPosition).getDate()
@@ -50,14 +51,14 @@ internal class TimelineViewPositionStorage<T : ViewItem<T>>(private val activity
         }
         if (pos.itemId <= 0 || MyLog.isVerboseEnabled()) {
             val msgLog = ("id:" + pos.itemId
-                    + ", y:" + pos.y
-                    + " at pos=" + firstVisibleAdapterPosition
-                    + (if (pos.position != firstVisibleAdapterPosition) " found pos=" + pos.position else "")
-                    + (if (!pos.description.isNullOrEmpty()) ", description=" + pos.description else "")
-                    + ", minDate=" + MyLog.formatDateTime(minDate)
-                    + " at pos=" + lastPosition + " of " + itemCount
-                    + ", listViews=" + (listView?.count ?: "??")
-                    + "; " + params.timeline)
+                + ", y:" + pos.y
+                + " at pos=" + firstVisibleAdapterPosition
+                + (if (pos.position != firstVisibleAdapterPosition) " found pos=" + pos.position else "")
+                + (if (!pos.description.isNullOrEmpty()) ", description=" + pos.description else "")
+                + ", minDate=" + MyLog.formatDateTime(minDate)
+                + " at pos=" + lastPosition + " of " + itemCount
+                + ", listViews=" + (listView?.count ?: "??")
+                + "; " + params.timeline)
             if (pos.itemId <= 0) {
                 MyLog.i(TAG, "$method; failed $msgLog")
             } else {
@@ -88,13 +89,13 @@ internal class TimelineViewPositionStorage<T : ViewItem<T>>(private val activity
      * see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
      */
     fun restore() {
-        val method = "restore" + params.timeline.getId()
+        val method = "restore" + params.timeline.id
         if (isEmpty()) {
             MyLog.v(TAG) { "$method; skipped" }
             return
         }
         val pos = loadListPosition(params)
-        val restored: Boolean = listView?.let { LoadableListPosition.restore(it, adapter, pos)} ?: false
+        val restored: Boolean = listView?.let { LoadableListPosition.restore(it, adapter, pos) } ?: false
         if (MyLog.isVerboseEnabled()) {
             pos.logV(method + "; stored " + (if (restored) "succeeded" else "failed") + " " + params.timeline)
             activity.getCurrentListPosition().logV(method + "; actual " + if (restored) "succeeded" else "failed")

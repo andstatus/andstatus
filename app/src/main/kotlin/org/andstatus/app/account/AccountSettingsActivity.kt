@@ -1266,7 +1266,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                         myContextHolder.initialize(this@AccountSettingsActivity, instanceIdString).getCompleted()
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
                     val timeline = myContext.timelines.forUser(TimelineType.HOME, myAccount.actor)
-                    if (timeline.isTimeToAutoSync()) {
+                    if (timeline.isTimeToAutoSync) {
                         initialSyncNeeded = true
                         activityOnFinish = ActivityOnFinish.HOME
                     }

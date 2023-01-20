@@ -36,7 +36,7 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
     val individualCollapsedStateIds: MutableSet<Long> = Collections.newSetFromMap(ConcurrentHashMap())
 
     @Volatile
-    var preferredOrigin: Origin = Origin.EMPTY
+    var homeOrigin: Origin = Origin.EMPTY
 
     private class GroupToCollapse<T : ViewItem<T>>(var parent: ItemWithPage<T>) {
         var children: MutableSet<ItemWithPage<T>> = HashSet()
@@ -56,7 +56,7 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
         if (maxDistanceBetweenDuplicates < 1) return false
         val item: T = data.getItem(position)
         for (i in Math.max(position - maxDistanceBetweenDuplicates, 0)..position + maxDistanceBetweenDuplicates) {
-            if (i != position && item.duplicates(data.params.timeline, preferredOrigin, data.getItem(i)).exists()) return true
+            if (i != position && item.duplicates(data.params.timeline, homeOrigin, data.getItem(i)).exists()) return true
         }
         return false
     }
@@ -72,7 +72,7 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
     fun restoreCollapsedStates(oldCollapser: DuplicatesCollapser<T>) {
         oldCollapser.individualCollapsedStateIds.forEach { id: Long ->
             collapseDuplicates(
-                    LoadableListViewParameters(TriState.fromBoolean(!collapseDuplicates), id, Optional.of(preferredOrigin)))
+                    LoadableListViewParameters(TriState.fromBoolean(!collapseDuplicates), id, Optional.of(homeOrigin)))
         }
     }
 
@@ -82,7 +82,7 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
             collapseDuplicates = viewParameters.collapseDuplicates.toBoolean(false)
             individualCollapsedStateIds.clear()
         }
-        viewParameters.preferredOrigin.ifPresent { o: Origin -> preferredOrigin = o }
+        viewParameters.preferredOrigin.ifPresent { o: Origin -> homeOrigin = o }
         when (viewParameters.collapseDuplicates) {
             TriState.TRUE -> collapseDuplicates(viewParameters.collapsedItemId)
             TriState.FALSE -> showDuplicates(viewParameters.collapsedItemId)
@@ -114,7 +114,7 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
                 val itemPair = ItemWithPage(page, item)
                 var found = false
                 for (group in groups) {
-                    when (item.duplicates(data.params.timeline, preferredOrigin, group.parent.item)) {
+                    when (item.duplicates(data.params.timeline, homeOrigin, group.parent.item)) {
                         DuplicationLink.DUPLICATES -> {
                             found = true
                             group.children.add(itemPair)
@@ -214,17 +214,17 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
             when (timeline.timelineType) {
                 TimelineType.UNKNOWN, TimelineType.UNREAD_NOTIFICATIONS -> {
                     collapseDuplicates = false
-                    preferredOrigin =  Origin.EMPTY
+                    homeOrigin =  Origin.EMPTY
                 }
                 else -> {
                     collapseDuplicates = MyPreferences.isCollapseDuplicates()
-                    preferredOrigin = timeline.preferredOrigin()
+                    homeOrigin = timeline.homeOrigin
                 }
             }
         } else {
             collapseDuplicates = oldDuplicatesCollapser.collapseDuplicates
             individualCollapsedStateIds.addAll(oldDuplicatesCollapser.individualCollapsedStateIds)
-            preferredOrigin = oldDuplicatesCollapser.preferredOrigin
+            homeOrigin = oldDuplicatesCollapser.homeOrigin
         }
     }
 }

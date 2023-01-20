@@ -30,7 +30,7 @@ object TimelineTable : BaseColumns {
     val TIMELINE_ID: String = "timeline_id"
     val TIMELINE_TYPE: String = "timeline_type"
     val ACTOR_ID: String = ActorTable.ACTOR_ID
-    val ACTOR_IN_TIMELINE: String = "actor_in_timeline"
+    val ACTOR_IN_TIMELINE: String = "actor_in_timeline"  // TODO: Delete it as unused
     val ORIGIN_ID: String = OriginTable.ORIGIN_ID
     val SEARCH_QUERY: String = "search_query"
 
@@ -96,7 +96,8 @@ object TimelineTable : BaseColumns {
     val LAST_CHANGED_DATE: String = "last_changed_date"
 
     fun create(db: SQLiteDatabase) {
-        DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
+        DbUtils.execSQL(
+            db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + TIMELINE_TYPE + " TEXT NOT NULL,"
                 + ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
@@ -128,6 +129,7 @@ object TimelineTable : BaseColumns {
                 + VISIBLE_Y + " INTEGER NOT NULL DEFAULT 0,"
                 + VISIBLE_OLDEST_DATE + " INTEGER NOT NULL DEFAULT 0,"
                 + LAST_CHANGED_DATE + " INTEGER NOT NULL DEFAULT 0"
-                + ")")
+                + ")"
+        )
     }
 }

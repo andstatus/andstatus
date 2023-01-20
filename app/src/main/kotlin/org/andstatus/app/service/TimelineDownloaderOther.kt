@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit
 
 internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : TimelineDownloader(execContext) {
     override suspend fun download(): Try<Boolean> {
-        if (!getTimeline().isSyncable()) {
+        if (!getTimeline().isSyncable) {
             return Try.failure(IllegalArgumentException("Timeline cannot be synced: ${getTimeline()}"))
         }
         val syncTracker = TimelineSyncTracker(getTimeline(), isSyncYounger())
@@ -69,10 +69,12 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
             syncTracker.onPositionRequested(positionToRequest)
             var tryPage: Try<InputTimelinePage>
             tryPage = when (getTimeline().timelineType) {
-                TimelineType.SEARCH -> getConnection().searchNotes(isSyncYounger(),
-                        if (isSyncYounger()) positionToRequest else TimelinePosition.EMPTY,
-                        if (isSyncYounger()) TimelinePosition.EMPTY else positionToRequest,
-                        limit, getTimeline().getSearchQuery())
+                TimelineType.SEARCH -> getConnection().searchNotes(
+                    isSyncYounger(),
+                    if (isSyncYounger()) positionToRequest else TimelinePosition.EMPTY,
+                    if (isSyncYounger()) TimelinePosition.EMPTY else positionToRequest,
+                    limit, getTimeline().searchQuery
+                )
                 else -> {
                     val positionToRequest2 = positionToRequest
                     tryActor.flatMap { actor: Actor ->

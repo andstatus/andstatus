@@ -123,12 +123,12 @@ enum class MatchedUri(private val code: Int) {
         fun getTimelineUri(timeline: Timeline): Uri {
             var uri = getBaseAccountUri(timeline.myAccountToSync.actorId, NoteTable.TABLE_NAME)
             uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + timeline.timelineType.save())
-            uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().id)
+            uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.origin.id)
             uri = Uri.withAppendedPath(uri, ACTOR_SEGMENT)
-            uri = ContentUris.withAppendedId(uri, timeline.getActorId())
-            if (timeline.getSearchQuery().isNotEmpty()) {
+            uri = ContentUris.withAppendedId(uri, timeline.actorId)
+            if (timeline.searchQuery.isNotEmpty()) {
                 uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT)
-                uri = Uri.withAppendedPath(uri, Uri.encode(timeline.getSearchQuery()))
+                uri = Uri.withAppendedPath(uri, Uri.encode(timeline.searchQuery))
             }
             return uri
         }

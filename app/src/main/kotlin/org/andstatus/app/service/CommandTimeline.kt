@@ -56,7 +56,7 @@ class CommandTimeline(val myContext: MyContext,
     }
 
     private fun getId(): Long {
-        return if (timeline.isEvaluated()) timeline.get().getId() else id
+        return if (timeline.isEvaluated()) timeline.get().id else id
     }
 
     fun isValid(): Boolean {
@@ -102,11 +102,11 @@ class CommandTimeline(val myContext: MyContext,
 
     companion object {
         fun of(timeline: Timeline): CommandTimeline {
-            val data = CommandTimeline(timeline.myContext, timeline.getOrigin(), LazyVal.of<Timeline>(timeline))
-            data.id = timeline.getId()
+            val data = CommandTimeline(timeline.myContext, timeline.origin, LazyVal.of<Timeline>(timeline))
+            data.id = timeline.id
             data.timelineType = timeline.timelineType
-            data.actorId = timeline.getActorId()
-            data.searchQuery = timeline.getSearchQuery()
+            data.actorId = timeline.actorId
+            data.searchQuery = timeline.searchQuery
             return data
         }
 

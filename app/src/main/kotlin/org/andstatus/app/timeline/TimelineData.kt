@@ -24,7 +24,6 @@ import org.andstatus.app.origin.Origin
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.TryUtils
-import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
@@ -83,7 +82,8 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
                 while (ind < pages.size) {
                     val p: TimelinePage<*> = pages.get(ind)
                     if (p.params.maxDate == page.params.maxDate
-                            && p.params.minDate == page.params.minDate) {
+                        && p.params.minDate == page.params.minDate
+                    ) {
                         found = ind
                         break
                     }
@@ -216,7 +216,9 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
 
     private fun setActorViewItem(preferredOrigin: Origin) {
         if (params.timeline.hasActorProfile()) {
-            findActorViewItem(params.timeline.actor, preferredOrigin).onSuccess { a: ActorViewItem -> actorViewItem = a }
+            findActorViewItem(params.timeline.actor, preferredOrigin).onSuccess { a: ActorViewItem ->
+                actorViewItem = a
+            }
         }
     }
 
@@ -250,20 +252,34 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         } else if (item is ActivityViewItem) {
             val activityViewItem = item
             return filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.getObjActorItem())
-                    .recoverWith(NoSuchElementException::class.java) { e: NoSuchElementException -> filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.noteViewItem.author) }
-                    .recoverWith(NoSuchElementException::class.java) { e: NoSuchElementException -> filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.actor) }
+                .recoverWith(NoSuchElementException::class.java) { e: NoSuchElementException ->
+                    filterSameActorAtOrigin(
+                        actor,
+                        preferredOrigin,
+                        activityViewItem.noteViewItem.author
+                    )
+                }
+                .recoverWith(NoSuchElementException::class.java) { e: NoSuchElementException ->
+                    filterSameActorAtOrigin(
+                        actor,
+                        preferredOrigin,
+                        activityViewItem.actor
+                    )
+                }
         }
         return TryUtils.notFound()
     }
 
-    private fun filterSameActorAtOrigin(actor: Actor, origin: Origin, actorViewItem: ActorViewItem): Try<ActorViewItem> {
+    private fun filterSameActorAtOrigin(
+        actor: Actor,
+        origin: Origin,
+        actorViewItem: ActorViewItem
+    ): Try<ActorViewItem> {
         val otherActor = actorViewItem.actor
         return if (otherActor.origin == origin && otherActor.isSame(actor)) Try.success(actorViewItem) else TryUtils.notFound()
     }
 
-    fun getPreferredOrigin(): Origin {
-        return duplicatesCollapser.preferredOrigin
-    }
+    val homeOrigin: Origin get() = duplicatesCollapser.homeOrigin
 
     companion object {
         private const val MAX_PAGES_COUNT = 5
@@ -285,8 +301,8 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         }
         dropExcessivePage(thisPage)
         actorViewItem = thisPage.actorViewItem
-        if (getPreferredOrigin().nonEmpty && getPreferredOrigin() != actorViewItem.actor.origin) {
-            setActorViewItem(getPreferredOrigin())
+        if (homeOrigin.nonEmpty && homeOrigin != actorViewItem.actor.origin) {
+            setActorViewItem(homeOrigin)
         }
         if (oldCollapser != null && collapsed == oldCollapser.collapseDuplicates && !oldCollapser.individualCollapsedStateIds.isEmpty()) {
             duplicatesCollapser.restoreCollapsedStates(oldCollapser)

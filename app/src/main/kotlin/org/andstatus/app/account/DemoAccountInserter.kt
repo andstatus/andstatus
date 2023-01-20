@@ -234,10 +234,10 @@ class DemoAccountInserter(private val myContext: MyContext) {
         fun getAutomaticallySyncableTimeline(myContext: MyContext, myAccount: MyAccount): Timeline {
             val timelineToSync = myContext.timelines
                 .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor, Origin.EMPTY)
-                .filter { obj: Timeline -> obj.isSyncedAutomatically() }.findFirst().orElse(Timeline.EMPTY)
+                .filter { obj: Timeline -> obj.isSyncedAutomatically }.findFirst().orElse(Timeline.EMPTY)
             assertTrue(
                 "No syncable automatically timeline for $myAccount" +
-                    "\n${myContext.timelines.values()}", timelineToSync.isSyncableAutomatically()
+                    "\n${myContext.timelines.values()}", timelineToSync.isSyncableAutomatically
             )
             return timelineToSync
         }
@@ -250,8 +250,8 @@ class DemoAccountInserter(private val myContext: MyContext) {
                     val logMsg: StringBuilder = StringBuilder(myAccount.toString())
                     MyStringBuilder.appendWithSpace(logMsg, timelineType.toString())
                     for (timeline in myContextHolder.getNow().timelines.values()) {
-                        if (timeline.getActorId() == myAccount.actorId && timeline.timelineType == timelineType &&
-                            !timeline.hasSearchQuery()
+                        if (timeline.actorId == myAccount.actorId && timeline.timelineType == timelineType &&
+                            !timeline.hasSearchQuery
                         ) {
                             count++
                             MyStringBuilder.appendWithSpace(logMsg, timeline.toString())

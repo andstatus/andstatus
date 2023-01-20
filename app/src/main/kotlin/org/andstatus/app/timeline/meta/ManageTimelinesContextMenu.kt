@@ -37,10 +37,10 @@ class ManageTimelinesContextMenu(listActivity: LoadableListActivity<ManageTimeli
         try {
             val title: TimelineTitle = from(getMyContext(), viewItem.timeline)
             ContextMenuHeader(getActivity(), menu)
-                    .setTitle(title.title)
-                    .setSubtitle(title.subTitle)
+                .setTitle(title.title)
+                .setSubtitle(title.subTitle)
             ManageTimelinesContextMenuItem.OPEN_TIMELINE.addTo(menu, ++order, R.string.show_timeline_messages)
-            if (viewItem.timeline.isSyncable()) {
+            if (viewItem.timeline.isSyncable) {
                 ManageTimelinesContextMenuItem.SYNC_NOW.addTo(menu, ++order, R.string.options_menu_sync)
             }
             if (!viewItem.timeline.isRequired()) {

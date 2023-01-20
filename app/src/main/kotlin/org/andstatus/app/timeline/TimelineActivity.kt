@@ -388,7 +388,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
         val ma = myContext.accounts.currentAccount
         val enableSync = ((getParamsLoaded().timeline.isCombined || ma.isValidAndSucceeded())
-            && getParamsLoaded().timeline.isSynableSomehow())
+            && getParamsLoaded().timeline.isSyncableSomehow)
         val item = menu.findItem(R.id.sync_menu_item)
         if (item != null) {
             item.isEnabled = enableSync
@@ -544,7 +544,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     private fun checkForInitialSync(intent: Intent) {
         val timeline = getParamsNew().timeline
-        if (timeline.isTimeToAutoSync() && timeline.getLastSyncedDate() == RelativeTime.DATETIME_MILLIS_NEVER) {
+        if (timeline.isTimeToAutoSync && timeline.getLastSyncedDate() == RelativeTime.DATETIME_MILLIS_NEVER) {
             if (intent.hasExtra(IntentExtra.INITIAL_ACCOUNT_SYNC.key)) {
                 timeline.setSyncSucceededDate(System.currentTimeMillis()) // To avoid repetition
                 MyServiceManager.setServiceAvailable()
@@ -857,7 +857,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             disableHeaderSyncButton(R.string.loading)
             return
         }
-        if (!getParamsLoaded().timeline.isSynableSomehow()) {
+        if (!getParamsLoaded().timeline.isSyncableSomehow) {
             disableHeaderSyncButton(R.string.not_syncable)
             return
         }
@@ -900,7 +900,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             disableFooterButton(R.string.loading)
             return
         }
-        if (!getParamsLoaded().timeline.isSynableSomehow()) {
+        if (!getParamsLoaded().timeline.isSyncableSomehow) {
             disableFooterButton(R.string.no_more_messages)
             return
         }
@@ -941,7 +941,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     private fun onNoRowsLoaded(timeline: Timeline) {
         val ma = timeline.myAccountToSync
-        if (!timeline.isSyncable() || !timeline.isTimeToAutoSync() || !ma.isValidAndSucceeded()) {
+        if (!timeline.isSyncable || !timeline.isTimeToAutoSync || !ma.isValidAndSucceeded()) {
             return
         }
         timeline.setSyncSucceededDate(System.currentTimeMillis()) // To avoid repetition
@@ -955,7 +955,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     private fun syncOneTimeline(timeline: Timeline, syncYounger: Boolean, manuallyLaunched: Boolean) {
         val method = "syncOneTimeline"
-        if (timeline.isSyncable()) {
+        if (timeline.isSyncable) {
             setCircularSyncIndicator(method, true)
             showSyncing(method, getText(R.string.options_menu_sync))
             MyServiceManager.sendForegroundCommand(
@@ -977,8 +977,8 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         super.onSaveInstanceState(outState)
         getParamsNew().saveState(outState)
         outState.putBoolean(IntentExtra.COLLAPSE_DUPLICATES.key, getListData().isCollapseDuplicates())
-        if (getListData().getPreferredOrigin().nonEmpty) {
-            outState.putLong(IntentExtra.ORIGIN_ID.key, getListData().getPreferredOrigin().id)
+        if (getListData().homeOrigin.nonEmpty) {
+            outState.putLong(IntentExtra.ORIGIN_ID.key, getListData().homeOrigin.id)
         }
         contextMenu?.saveState(outState)
     }
@@ -1008,7 +1008,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             ActivityRequestCode.SELECT_TIMELINE -> {
                 val timeline = myContext.timelines
                     .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0))
-                if (timeline.isValid()) {
+                if (timeline.isValid) {
                     switchView(timeline)
                 }
             }
@@ -1164,7 +1164,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     }
 
     private fun correctCurrentAccount(timeline: Timeline) {
-        if (!timeline.isCombined && timeline.preferredOrigin() != myContext.accounts.currentAccount.origin) {
+        if (!timeline.isCombined && timeline.origin != myContext.accounts.currentAccount.origin) {
             MyLog.d(
                 this,
                 "Correcting account ${myContext.accounts.currentAccount.getAccountName()} -> ${timeline.myAccountToSync.getAccountName()}"
@@ -1219,7 +1219,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         private fun <T : ViewItem<T>> clearNotifications(timelineActivity: TimelineActivity<T>) {
             val timeline = timelineActivity.getParamsLoaded().timeline
             object : AsyncRunnable(
-                "clearNotifications" + timeline.getId(),
+                "clearNotifications" + timeline.id,
                 AsyncEnum.QUICK_UI
             ) {
                 override suspend fun doInBackground(params: Unit): Try<Unit> {

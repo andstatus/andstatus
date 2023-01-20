@@ -182,7 +182,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
                     when (execContext.commandData.command) {
                         CommandEnum.GET_TIMELINE,
                         CommandEnum.GET_OLDER_TIMELINE ->
-                            if (execContext.commandData.getTimeline().isSyncable()) {
+                            if (execContext.commandData.getTimeline().isSyncable) {
                                 when (execContext.commandData.getTimelineType()) {
                                     TimelineType.FOLLOWERS, TimelineType.FRIENDS -> TimelineDownloaderFollowers(
                                         execContext

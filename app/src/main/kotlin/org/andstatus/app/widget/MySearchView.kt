@@ -173,7 +173,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
         }
         val intent = Intent(Intent.ACTION_SEARCH, getUri(), context, getSearchObjects().getActivityClass())
         intent.putExtra(IntentExtra.SEARCH_QUERY.key, query)
-        if (timeline?.hasSearchQuery() == true
+        if (timeline?.hasSearchQuery == true
                 && getSearchObjects() == SearchObjects.NOTES &&
                 parentActivity?.myContext?.timelines?.getDefault() != timeline) {
             // Send intent to existing activity
@@ -208,7 +208,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
     }
 
     private fun getOrigin(): Origin {
-        return if (timeline?.getOrigin()?.isValid == true) timeline?.getOrigin() ?: Origin.EMPTY
+        return if (timeline?.origin?.isValid == true) timeline?.origin ?: Origin.EMPTY
         else parentActivity?.myContext?.accounts?.currentAccount?.origin ?: Origin.EMPTY
     }
 

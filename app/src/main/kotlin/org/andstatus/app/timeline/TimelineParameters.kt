@@ -85,7 +85,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
         return MyStringBuilder.formatKeyValue(this,
                 toSummary()
                         + ", account=" + timeline.myAccountToSync.getAccountName()
-                        + (if (timeline.getActorId() == 0L) "" else ", selectedActorId=" + timeline.getActorId()) //    + ", projection=" + Arrays.toString(mProjection)
+                        + (if (timeline.actorId == 0L) "" else ", selectedActorId=" + timeline.actorId) //    + ", projection=" + Arrays.toString(mProjection)
                         + (if (minDate > 0) ", minDate=" + MyLog.formatDateTime(minDate) else "")
                         + (if (maxDate > 0) ", maxDate=" + MyLog.formatDateTime(maxDate) else "")
                         + (if (selectionAndArgs.isEmpty()) "" else ", sa=$selectionAndArgs")
@@ -100,7 +100,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
     }
 
     fun getSelectedActorId(): Long {
-        return timeline.getActorId()
+        return timeline.actorId
     }
 
     fun isTimelineCombined(): Boolean {

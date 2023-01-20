@@ -41,7 +41,7 @@ internal class CheckTimelines : DataChecker() {
             MyQuery.getSet(myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME,
                 { cursor: Cursor -> Timeline.fromCursor(myContext, cursor) })
                     .forEach(Consumer { timeline: Timeline ->
-                if (!timeline.isValid()) {
+                if (!timeline.isValid) {
                     logger.logProgress("Invalid timeline: $timeline")
                     pauseToShowCount(this, 0)
                     toDelete.add(timeline)

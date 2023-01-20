@@ -121,7 +121,7 @@ class MyServiceTests : IgnoredInTravis2() {
             false, TriState.FALSE,
             TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY
         )
-            .filter { obj: Timeline -> obj.isSyncedAutomatically() }
+            .filter { obj: Timeline -> obj.isSyncedAutomatically }
             .forEach { timeline: Timeline -> timeline.onSyncEnded(myContext, CommandResult()) }
         var syncResult = SyncResult()
         var runner = MyServiceCommandsRunner(myContext)

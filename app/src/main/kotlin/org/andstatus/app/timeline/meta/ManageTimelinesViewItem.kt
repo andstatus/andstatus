@@ -28,7 +28,7 @@ class ManageTimelinesViewItem(myContext: MyContext, val timeline: Timeline,
             TimelineTitle.Destination.DEFAULT)
     val countSince: Long = timeline.getCountSince()
     override fun getId(): Long {
-        return timeline.getId()
+        return timeline.id
     }
 
     override fun getDate(): Long {

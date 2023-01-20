@@ -100,8 +100,8 @@ class TimelineSelector : SelectorDialog() {
         for (viewItem in listData) {
             val map: MutableMap<String, String> = HashMap()
             map[KEY_VISIBLE_NAME] = viewItem.timelineTitle.toString()
-            map[KEY_SYNC_AUTO] = if (viewItem.timeline.isSyncedAutomatically()) syncText else ""
-            map[BaseColumns._ID] = viewItem.timeline.getId().toString()
+            map[KEY_SYNC_AUTO] = if (viewItem.timeline.isSyncedAutomatically) syncText else ""
+            map[BaseColumns._ID] = viewItem.timeline.id.toString()
             list.add(map)
         }
         return MySimpleAdapter(activity ?: throw IllegalStateException("No activity"),
@@ -110,7 +110,7 @@ class TimelineSelector : SelectorDialog() {
     }
 
     private fun returnSelectedTimeline(timeline: Timeline) {
-        returnSelected(Intent().putExtra(IntentExtra.TIMELINE_ID.key, timeline.getId()))
+        returnSelected(Intent().putExtra(IntentExtra.TIMELINE_ID.key, timeline.id))
     }
 
     companion object {
@@ -120,7 +120,7 @@ class TimelineSelector : SelectorDialog() {
                            timeline: Timeline, currentMyAccount: MyAccount) {
             val selector: SelectorDialog = TimelineSelector()
             selector.setRequestCode(requestCode)
-            selector.arguments?.putLong(IntentExtra.TIMELINE_ID.key, timeline.getId())
+            selector.arguments?.putLong(IntentExtra.TIMELINE_ID.key, timeline.id)
             selector.arguments?.putString(IntentExtra.ACCOUNT_NAME.key, currentMyAccount.getAccountName())
             selector.show(activity)
         }

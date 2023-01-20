@@ -152,11 +152,13 @@ internal class ManageTimelinesViewItemComparator(private val sortByField: Int, p
         var result = compareLongDescending(lhs.timeline.getLastSyncedDate(),
                 rhs.timeline.getLastSyncedDate())
         if (result == 0) {
-            result = compareCheckbox(lhs.timeline.isSyncedAutomatically(),
-                    rhs.timeline.isSyncedAutomatically())
+            result = compareCheckbox(
+                lhs.timeline.isSyncedAutomatically,
+                rhs.timeline.isSyncedAutomatically
+            )
         }
         if (result == 0) {
-            result = compareCheckbox(lhs.timeline.isSyncableAutomatically(), rhs.timeline.isSyncableAutomatically())
+            result = compareCheckbox(lhs.timeline.isSyncableAutomatically, rhs.timeline.isSyncableAutomatically)
         }
         return result
     }

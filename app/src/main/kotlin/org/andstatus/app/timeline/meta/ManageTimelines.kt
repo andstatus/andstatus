@@ -83,7 +83,7 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
                 val displayedInSelector: DisplayedInSelector = DisplayedInSelector.load(
                     data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key)
                 )
-                item.timeline.setDisplayedInSelector(displayedInSelector)
+                item.timeline.isDisplayedInSelector = displayedInSelector
                 MyLog.v("isDisplayedInSelector") {
                     displayedInSelector.save() + " " +
                         item.timeline
@@ -166,9 +166,9 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
                 MyUrlSpan.showText(view, R.id.account, item.timelineTitle.accountName, false, true)
                 MyUrlSpan.showText(view, R.id.origin, item.timelineTitle.originName, false, true)
                 showDisplayedInSelector(view, item)
-                MyCheckBox.set(view, R.id.synced, item.timeline.isSyncedAutomatically(),
-                    if (item.timeline.isSyncableAutomatically()) CompoundButton.OnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
-                        item.timeline.setSyncedAutomatically(isChecked)
+                MyCheckBox.set(view, R.id.synced, item.timeline.isSyncedAutomatically,
+                    if (item.timeline.isSyncableAutomatically) CompoundButton.OnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
+                        item.timeline.isSyncedAutomatically = isChecked
                         MyLog.v("isSyncedAutomatically") { (if (isChecked) "+ " else "- ") + item.timeline }
                     } else null)
                 MyUrlSpan.showText(
@@ -211,7 +211,7 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
                 MyCheckBox.set(
                     parentView,
                     R.id.displayedInSelector,
-                    item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER
+                    item.timeline.isDisplayedInSelector != DisplayedInSelector.NEVER
                 ) { buttonView: CompoundButton, isChecked: Boolean ->
                     if (isChecked) {
                         selectedItem = item
@@ -220,13 +220,13 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
                             DisplayedInSelector::class.java
                         ).show(this@ManageTimelines)
                     } else {
-                        item.timeline.setDisplayedInSelector(DisplayedInSelector.NEVER)
+                        item.timeline.isDisplayedInSelector = DisplayedInSelector.NEVER
                         buttonView.setText("")
                     }
                     MyLog.v("isDisplayedInSelector") { (if (isChecked) "+ " else "- ") + item.timeline }
                 }
                 view.text =
-                    if (item.timeline == defaultTimeline) "D" else if (item.timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS) "*" else ""
+                    if (item.timeline == defaultTimeline) "D" else if (item.timeline.isDisplayedInSelector == DisplayedInSelector.ALWAYS) "*" else ""
             }
 
             private fun newView(): View {

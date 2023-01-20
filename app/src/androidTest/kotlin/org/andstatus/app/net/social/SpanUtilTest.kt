@@ -111,7 +111,7 @@ class SpanUtilTest {
         Assert.assertEquals("Region $index should be a hashtag $region\n$message", hashTag,
                 urlSpan.flatMap { u: MyUrlSpan -> u.data.searchQuery }.orElse(""))
         val timeline = urlSpan.map { u: MyUrlSpan -> u.data.getTimeline() }.orElse(Timeline.EMPTY)
-        Assert.assertEquals(message, hashTag, timeline.getSearchQuery())
+        Assert.assertEquals(message, hashTag, timeline.searchQuery)
         val onClickUrl = urlSpan.map { obj: MyUrlSpan -> obj.getURL() }.orElse("")
         Assert.assertEquals(message, url, onClickUrl)
         val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(Uri.parse(onClickUrl))

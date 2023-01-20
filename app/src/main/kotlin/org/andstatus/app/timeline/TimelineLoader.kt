@@ -113,8 +113,10 @@ class TimelineLoader<T : ViewItem<T>>(
 
     private fun loadActors(items: MutableList<T>): MutableList<T> {
         if (items.isEmpty() && !params.timeline.hasActorProfile()) return items
-        val loader = ActorsLoader(params.getMyContext(), ActorsScreenType.ACTORS_AT_ORIGIN,
-            params.timeline.getOrigin(), 0, "")
+        val loader = ActorsLoader(
+            params.getMyContext(), ActorsScreenType.ACTORS_AT_ORIGIN,
+            params.timeline.origin, 0, ""
+        )
         items.forEach(Consumer { item: T -> item.addActorsToLoad(loader) })
         if (params.timeline.timelineType.hasActorProfile()) loader.addActorToList(params.timeline.actor)
         if (loader.getList().isEmpty()) return items

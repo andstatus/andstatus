@@ -33,7 +33,7 @@ class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext) : Co
     }
 
     private fun saveDiscoveredOrigins(result: List<Server>): Boolean {
-        val execOrigin = execContext.commandData.getTimeline().getOrigin()
+        val execOrigin = execContext.commandData.getTimeline().origin
         val newOrigins: MutableList<Origin> = ArrayList()
         for (mbOrigin in result) {
             execContext.getResult().incrementDownloadedCount()

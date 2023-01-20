@@ -207,7 +207,7 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
     private fun pruneTimelines(latestTimestamp: Long) {
         myContext.timelines.stream().filter { t: Timeline ->
             (!t.isRequired()
-                    && t.isDisplayedInSelector() == DisplayedInSelector.NEVER && t.getLastChangedDate() < latestTimestamp)
+                && t.isDisplayedInSelector == DisplayedInSelector.NEVER && t.getLastChangedDate() < latestTimestamp)
         }.forEach { t: Timeline -> t.delete(myContext) }
     }
 

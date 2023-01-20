@@ -46,8 +46,8 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
             "SELECT * FROM " + TimelineTable.TABLE_NAME,
             { cursor: Cursor -> Timeline.fromCursor(myContext, cursor) })
             .forEach(Consumer { timeline: Timeline ->
-                if (timeline.isValid()) {
-                    timelines[timeline.getId()] = timeline
+                if (timeline.isValid) {
+                    timelines[timeline.id] = timeline
                     if (MyLog.isVerboseEnabled() && timelines.size < 5) {
                         MyLog.v(PersistentTimelines::class.java, "$method; $timeline")
                     }
@@ -64,7 +64,7 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
     fun getDefault(): Timeline {
         var defaultTimeline: Timeline = Timeline.EMPTY
         for (timeline in values()) {
-            if (defaultTimeline.compareTo(timeline) > 0 || !defaultTimeline.isValid()) {
+            if (defaultTimeline.compareTo(timeline) > 0 || !defaultTimeline.isValid) {
                 defaultTimeline = timeline
             }
         }
@@ -73,8 +73,8 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
 
     fun setDefault(timelineIn: Timeline) {
         val prevDefault = getDefault()
-        if (timelineIn != prevDefault && timelineIn.getSelectorOrder() >= prevDefault.getSelectorOrder()) {
-            timelineIn.setSelectorOrder(Math.min(prevDefault.getSelectorOrder() - 1, -1))
+        if (timelineIn != prevDefault && timelineIn.selectorOrder >= prevDefault.selectorOrder) {
+            timelineIn.selectorOrder = Math.min(prevDefault.selectorOrder - 1, -1)
         }
     }
 
@@ -116,10 +116,10 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
         val timelines: MutableList<Timeline> = ArrayList()
         if (ma.isValidAndSucceeded()) {
             for (timeline in values()) {
-                if (timeline.isSyncedAutomatically() &&
+                if (timeline.isSyncedAutomatically &&
                     (!timeline.timelineType.isAtOrigin() && timeline.myAccountToSync == ma ||
-                        timeline.timelineType.isAtOrigin() && timeline.getOrigin() == ma.origin) &&
-                    timeline.isTimeToAutoSync()
+                        timeline.timelineType.isAtOrigin() && timeline.origin == ma.origin) &&
+                    timeline.isTimeToAutoSync
                 ) {
                     timelines.add(timeline)
                 }
@@ -130,17 +130,17 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
 
     fun toTimelinesToSync(timelineToSync: Timeline): Stream<Timeline> {
         return when {
-            timelineToSync.isSyncableForOrigins() -> {
+            timelineToSync.isSyncableForOrigins -> {
                 myContext.origins.originsToSync(
-                    timelineToSync.myAccountToSync.origin, true, timelineToSync.hasSearchQuery()
+                    timelineToSync.myAccountToSync.origin, true, timelineToSync.hasSearchQuery
                 )
                     .stream().map { origin: Origin -> timelineToSync.cloneForOrigin(myContext, origin) }
             }
-            timelineToSync.isSyncableForAccounts() -> {
+            timelineToSync.isSyncableForAccounts -> {
                 myContext.accounts.accountsToSync()
                     .stream().map { account: MyAccount -> timelineToSync.cloneForAccount(myContext, account) }
             }
-            timelineToSync.isSyncable() -> {
+            timelineToSync.isSyncable -> {
                 Stream.of(timelineToSync)
             }
             else -> {
@@ -176,14 +176,14 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
             }
         }
         for (timeline in toRemove) {
-            timelines.remove(timeline.getId())
+            timelines.remove(timeline.id)
         }
     }
 
     fun delete(timeline: Timeline) {
         if (myContext.isReady) {
             timeline.delete(myContext)
-            timelines.remove(timeline.getId())
+            timelines.remove(timeline.id)
         }
     }
 
@@ -192,8 +192,8 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
     }
 
     fun addNew(timeline: Timeline): Timeline {
-        if (timeline.isValid() && timeline.getId() != 0L) timelines.putIfAbsent(timeline.getId(), timeline)
-        return timelines.getOrDefault(timeline.getId(), timeline)
+        if (timeline.isValid && timeline.id != 0L) timelines.putIfAbsent(timeline.id, timeline)
+        return timelines.getOrDefault(timeline.id, timeline)
     }
 
     fun resetCounters(all: Boolean) {
@@ -204,7 +204,7 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
 
     fun resetDefaultSelectorOrder() {
         for (timeline in values()) {
-            timeline.setSelectorOrder(timeline.getDefaultSelectorOrder())
+            timeline.selectorOrder = timeline.getDefaultSelectorOrder()
         }
     }
 
