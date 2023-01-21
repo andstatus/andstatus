@@ -10,6 +10,7 @@ import org.andstatus.app.data.ApplicationDataUtil.deleteApplicationData
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RawResourceUtils
+import org.andstatus.app.util.TryUtils.getOrElseRecover
 import org.andstatus.app.util.TryUtils.onSuccessS
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -37,19 +38,26 @@ object DatabaseUpgradeTest {
                     fail("Failed to create database. " + it.message)
                 }.onSuccessS { dbFile ->
                     assertEquals("Created ${dbFile.absolutePath}", 147456, dbFile.length())
+                    MyServiceManager.setServiceUnavailable()
                     MyLog.i(TAG, "before FirstActivity.startApp")
-                    var myContext = FirstActivity.restartApp(context, this).getNow()
-
-                    MyLog.i(TAG, "before repeat 120 times")
+                    FirstActivity.restartApp(context, this).tryCompleted().getOrElseRecover {
+                        throw it
+                    }
+                    MyLog.i(TAG, "before waiting for database upgrade completion")
                     for (i in 1..120) {
-                        if (myContext.isReady) break;
                         delay(500)
-                        myContext = myContextHolder.future.getNow()
+                        val myContext = myContextHolder.future.getNow()
+                        if (myContext.isReady) break;
                         when (myContext.state) {
                             MyContextState.ERROR -> fail("Error $myContext")
                             MyContextState.DATABASE_UNAVAILABLE -> fail("Database unavailable $myContext")
                             else -> {
                             }
+                        }
+                    }
+                    myContextHolder.future.getNow().let {
+                        if (!it.isReady) {
+                            fail("MyContext is not ready $it")
                         }
                     }
 
@@ -59,8 +67,9 @@ object DatabaseUpgradeTest {
                     }
 
                     MyLog.i(TAG, "before myContextHolder.initialize")
-                    myContext = myContextHolder.initialize(context).getCompleted()
-                    assertTrue(myContext.toString(), myContext.isReady)
+                    myContextHolder.initialize(context).getCompleted().let {
+                        assertTrue(it.toString(), it.isReady)
+                    }
                     MyLog.i(TAG, "before FirstActivity.closeAllActivities")
                     closeAllActivities(context)
                     delay(1000)

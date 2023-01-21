@@ -103,8 +103,8 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) :
         if (isRestoring) return
         DataChecker.fixData(progressLogger, false, false)
         myContextHolder.release { "onUpgradeSucceeded2" }
-        myContextHolder.initialize(upgradeRequester)
-        myContextHolder.getCompleted()
+        myContextHolder.initialize(upgradeRequester).tryCompleted()
+        MyLog.v("onUpgradeSucceeded3", "Set service available")
         MyServiceManager.setServiceAvailable()
     }
 
