@@ -42,7 +42,7 @@ class CommandResult : Parcelable {
     private var lastExecutedDate: Long = 0
     private var executionCount = 0
     private var retriesLeft = 0
-    private var executed = false
+    var executed = false
     private var numAuthExceptions: Long = 0
     private var numIoExceptions: Long = 0
     private var numParseExceptions: Long = 0

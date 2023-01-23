@@ -29,21 +29,22 @@ import org.andstatus.app.util.TryUtils
  *
  * @author yvolk@yurivolkov.com
  */
-internal abstract class TimelineDownloader(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
+internal abstract class TimelineDownloader(execContext: CommandExecutionContext) :
+    CommandExecutorStrategy(execContext) {
 
     override suspend fun execute(): Try<Boolean> {
         if (!isApiSupported(execContext.getTimeline().timelineType.connectionApiRoutine)) {
             MyLog.v(this) {
                 (execContext.getTimeline().toString() + " is not supported for "
-                        + execContext.getMyAccount().getAccountName())
+                    + execContext.getMyAccount().getAccountName())
             }
             return TryUtils.TRUE
         }
-        MyLog.d(this, "Getting " + execContext.commandData.toCommandSummary(execContext.myContext) +
-                " by " + execContext.getMyAccount().getAccountName())
+        MyLog.d(
+            this, "Getting " + execContext.commandData.toCommandSummary(execContext.myContext) +
+                " by " + execContext.getMyAccount().getAccountName()
+        )
         return download()
-                .onSuccess { b: Boolean? -> onSyncEnded() }
-                .onFailure { e: Throwable? -> onSyncEnded() }
     }
 
     abstract suspend fun download(): Try<Boolean>
@@ -51,14 +52,16 @@ internal abstract class TimelineDownloader(execContext: CommandExecutionContext)
         return execContext.getTimeline()
     }
 
-    fun onSyncEnded() {
-        getTimeline().onSyncEnded(execContext.myContext, execContext.commandData.getResult())
-        if (execContext.getResult().getDownloadedCount() > 0) {
-            if (!execContext.getResult().hasError() && !isStopping()) {
-                DataPruner(execContext.myContext).prune()
+    override fun onResultIsReady() {
+        execContext.getResult().takeIf { it.executed }?.let { result ->
+            getTimeline().onSyncEnded(execContext.myContext, result)
+            if (result.getDownloadedCount() > 0) {
+                if (!result.hasError() && !isStopping()) {
+                    DataPruner(execContext.myContext).prune()
+                }
+                MyLog.v(this, "Notifying of timeline changes")
+                execContext.myContext.notifier.update()
             }
-            MyLog.v(this, "Notifying of timeline changes")
-            execContext.myContext.notifier.update()
         }
     }
 

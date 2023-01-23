@@ -122,6 +122,8 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
 
     override val classTag: String get() = TAG
 
+    open fun onResultIsReady() {}
+
     companion object {
         private val TAG: String = CommandExecutorStrategy::class.simpleName!!
         protected const val MIN_PROGRESS_BROADCAST_PERIOD_SECONDS: Long = 1
@@ -156,6 +158,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
                     }
                 }
             commandData.getResult().afterExecutionEnded()
+            strategy.onResultIsReady()
             logEnd(strategy)
         }
 
