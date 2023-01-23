@@ -33,30 +33,30 @@ internal abstract class TimelineDownloader(execContext: CommandExecutionContext)
     CommandExecutorStrategy(execContext) {
 
     override suspend fun execute(): Try<Boolean> {
-        if (!isApiSupported(execContext.getTimeline().timelineType.connectionApiRoutine)) {
+        if (!isApiSupported(execContext.timeline.timelineType.connectionApiRoutine)) {
             MyLog.v(this) {
-                (execContext.getTimeline().toString() + " is not supported for "
-                    + execContext.getMyAccount().getAccountName())
+                (execContext.timeline.toString() + " is not supported for "
+                    + execContext.myAccount.getAccountName())
             }
             return TryUtils.TRUE
         }
         MyLog.d(
             this, "Getting " + execContext.commandData.toCommandSummary(execContext.myContext) +
-                " by " + execContext.getMyAccount().getAccountName()
+                " by " + execContext.myAccount.getAccountName()
         )
         return download()
     }
 
     abstract suspend fun download(): Try<Boolean>
     protected fun getTimeline(): Timeline {
-        return execContext.getTimeline()
+        return execContext.timeline
     }
 
     override fun onResultIsReady() {
-        execContext.getResult().takeIf { it.executed }?.let { result ->
+        execContext.result.takeIf { it.executed }?.let { result ->
             getTimeline().onSyncEnded(execContext.myContext, result)
-            if (result.getDownloadedCount() > 0) {
-                if (!result.hasError() && !isStopping()) {
+            if (result.downloadedCount > 0) {
+                if (!result.hasError && !isStopping()) {
                     DataPruner(execContext.myContext).prune()
                 }
                 MyLog.v(this, "Notifying of timeline changes")

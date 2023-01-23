@@ -237,16 +237,16 @@ class AvatarDownloaderTest {
         val data: DownloadData = AvatarData.Companion.getDisplayedForActor(actor)
         val logMsg = "${description.toString()} Expecting load status: $loadStatus, displayed: $displayedStatus\n" +
             "  for $actor\n" +
-            "  (loaded $data, error message:'" + commandData.getResult().getMessage() + "')" +
+            "  (loaded $data, error message:'" + commandData.result.message + "')" +
             if (imitateNetworkError) " imitated the error" else ""
         if (imitateNetworkError || loadStatus == DownloadStatus.HARD_ERROR) {
             assertTrue("Load should be a failure: $logMsg", loaded.isFailure)
         }
         Assert.assertEquals("Checking load status: $logMsg", loadStatus, loader.getStatus())
         if (DownloadStatus.LOADED == loadStatus) {
-            Assert.assertFalse("Should be no errors: $logMsg", commandData.getResult().hasError())
+            Assert.assertFalse("Should be no errors: $logMsg", commandData.result.hasError)
         } else {
-            assertTrue("Should be an error: $logMsg", commandData.getResult().hasError())
+            assertTrue("Should be an error: $logMsg", commandData.result.hasError)
         }
         Assert.assertEquals(logMsg, loadStatus, loader.getStatus())
         if (DownloadStatus.LOADED == displayedStatus) {

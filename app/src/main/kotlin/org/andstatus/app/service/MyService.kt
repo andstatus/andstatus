@@ -134,7 +134,7 @@ class MyService(
     }
 
     fun broadcastBeforeExecutingCommand(commandData: CommandData) {
-        if (commandData.getResult().hasError()) failedCommands.incrementAndGet()
+        if (commandData.result.hasError) failedCommands.incrementAndGet()
         else succeededCommands.incrementAndGet()
         MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
             .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast()

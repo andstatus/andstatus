@@ -461,7 +461,7 @@ class ConnectionActivityPubTest {
                 CommandEnum.GET_ACTOR, partial, "", stub.data.getOrigin()
             )
         )
-        val activity = executionContext.getMyAccount().actor.update(received)
+        val activity = executionContext.myAccount.actor.update(received)
         DataUpdater(executionContext).onActivity(activity)
         val stored: Actor = Actor.Companion.load(executionContext.myContext, received.actorId, true, { Actor.EMPTY })
         assertEquals("Actor's oid $stored", actorOid, stored.oid)

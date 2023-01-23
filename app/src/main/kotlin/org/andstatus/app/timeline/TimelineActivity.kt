@@ -1092,9 +1092,9 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
 
     override fun onReceiveAfterExecutingCommand(commandData: CommandData) {
         when (commandData.command) {
-            CommandEnum.RATE_LIMIT_STATUS -> if (commandData.getResult().getHourlyLimit() > 0) {
-                mRateLimitText = (commandData.getResult().getRemainingHits().toString() + "/"
-                    + commandData.getResult().getHourlyLimit())
+            CommandEnum.RATE_LIMIT_STATUS -> if (commandData.result.hourlyLimit > 0) {
+                mRateLimitText = (commandData.result.remainingHits.toString() + "/"
+                    + commandData.result.hourlyLimit)
                 updateTitle(mRateLimitText)
             }
             else -> {
@@ -1121,7 +1121,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                     || getParamsLoaded().getTimelineType() != commandData.getTimelineType()
                 ) {
                     // Nothing
-                } else if (commandData.getResult().getDownloadedCount() > 0) {
+                } else if (commandData.result.downloadedCount > 0) {
                     needed = true
                 } else {
                     showSyncListButtons()

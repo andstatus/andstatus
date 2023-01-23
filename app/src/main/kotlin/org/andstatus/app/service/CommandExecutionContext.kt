@@ -8,38 +8,27 @@ import org.andstatus.app.timeline.meta.Timeline
 
 class CommandExecutionContext(val myContext: MyContext, val commandData: CommandData) {
 
-    fun getConnection(): Connection {
-        return getMyAccount().connection
-    }
+    val connection: Connection get() = myAccount.connection
 
-    fun getMyAccount(): MyAccount {
-        if (commandData.myAccount.isValid) return commandData.myAccount
-        return if (getTimeline().myAccountToSync.isValid) getTimeline().myAccountToSync
-        else myContext.accounts.getFirstSucceeded()
-    }
+    val myAccount: MyAccount
+        get() {
+            if (commandData.myAccount.isValid) return commandData.myAccount
+            return if (timeline.myAccountToSync.isValid) timeline.myAccountToSync
+            else myContext.accounts.getFirstSucceeded()
+        }
 
-    fun getContext(): Context {
-        return myContext.context
-    }
+    val context: Context get() = myContext.context
 
-    fun getTimeline(): Timeline {
-        return commandData.getTimeline()
-    }
+    val timeline: Timeline get() = commandData.timeline
 
-    fun getResult(): CommandResult {
-        return commandData.getResult()
-    }
+    val result: CommandResult get() = commandData.result
 
     override fun toString(): String {
         return commandData.toString()
     }
 
     // TODO: Do we need this?
-    fun toExceptionContext(): String {
-        return toString()
-    }
+    val toExceptionContext: String get() = toString()
 
-    fun getCommandSummary(): String {
-        return commandData.toCommandSummary(myContext)
-    }
- }
+    val commandSummary: String get() = commandData.toCommandSummary(myContext)
+}

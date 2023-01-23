@@ -106,7 +106,7 @@ class LargeImageTest {
         val data: DownloadData = DownloadData.Companion.fromId(dd.downloadId)
         Assert.assertFalse(
             "Failed to load stubbed image " + data.getUri() + "\n$commandData",
-            commandData.getResult().hasError()
+            commandData.result.hasError
         )
         Assert.assertTrue("File exists " + data.getUri(), data.file.existed)
         DemoData.demoData.assertConversations()

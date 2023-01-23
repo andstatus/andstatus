@@ -726,10 +726,10 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     private fun onSyncEnded(result: CommandResult): Timeline {
-        if (result.hasError()) {
+        if (result.hasError) {
             syncFailedDate.set(System.currentTimeMillis())
-            if (result.getMessage().isNotEmpty()) {
-                errorMessage = result.getMessage()
+            if (result.message.isNotEmpty()) {
+                errorMessage = result.message
             }
             syncFailedTimesCount.incrementAndGet()
             syncFailedTimesCountTotal.incrementAndGet()
@@ -738,13 +738,13 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
             syncedTimesCount.incrementAndGet()
             syncedTimesCountTotal.incrementAndGet()
         }
-        if (result.getNewCount() > 0) {
-            newItemsCount.addAndGet(result.getNewCount())
-            newItemsCountTotal.addAndGet(result.getNewCount())
+        if (result.newCount > 0) {
+            newItemsCount.addAndGet(result.newCount)
+            newItemsCountTotal.addAndGet(result.newCount)
         }
-        if (result.getDownloadedCount() > 0) {
-            downloadedItemsCount.addAndGet(result.getDownloadedCount())
-            downloadedItemsCountTotal.addAndGet(result.getDownloadedCount())
+        if (result.downloadedCount > 0) {
+            downloadedItemsCount.addAndGet(result.downloadedCount)
+            downloadedItemsCountTotal.addAndGet(result.downloadedCount)
         }
         setChanged()
         return this

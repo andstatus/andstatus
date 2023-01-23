@@ -433,7 +433,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
             CommandEnum.GET_NOTE,
             CommandEnum.GET_CONVERSATION,
             CommandEnum.GET_FOLLOWERS,
-            CommandEnum.GET_FRIENDS -> commandData.getResult().getDownloadedCount() > 0
+            CommandEnum.GET_FRIENDS -> commandData.result.downloadedCount > 0
             CommandEnum.GET_ACTOR,
             CommandEnum.UPDATE_NOTE,
             CommandEnum.UPDATE_MEDIA,
@@ -445,7 +445,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
             CommandEnum.UNDO_ANNOUNCE,
             CommandEnum.DELETE_NOTE,
             CommandEnum.GET_ATTACHMENT,
-            CommandEnum.GET_AVATAR -> !commandData.getResult().hasError()
+            CommandEnum.GET_AVATAR -> !commandData.result.hasError
             else -> false
         }
 

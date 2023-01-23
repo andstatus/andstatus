@@ -40,9 +40,9 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
 
     fun logSoftErrorIfStopping(): Boolean {
         if (isStopping()) {
-            if (!execContext.getResult().hasError()) {
-                execContext.getResult().incrementNumIoExceptions()
-                execContext.getResult().setMessage("Service is stopping")
+            if (!execContext.result.hasError) {
+                execContext.result.incrementNumIoExceptions()
+                execContext.result.message = "Service is stopping"
             }
             return true
         }
@@ -50,7 +50,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
     }
 
     protected fun <T> onParseException(message: String?): Try<T> {
-        execContext.getResult().incrementParseExceptions()
+        execContext.result.incrementParseExceptions()
         MyLog.w(this, message)
         return TryUtils.failure(message)
     }
@@ -64,9 +64,9 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
         MyLog.v(this) { "Progress: $progress" }
         lastProgressBroadcastAt = System.currentTimeMillis()
         MyServiceEventsBroadcaster.newInstance(execContext.commandData.myContext, MyServiceState.RUNNING)
-                .setCommandData(execContext.commandData)
-                .setProgress(progress)
-                .setEvent(MyServiceEvent.PROGRESS_EXECUTING_COMMAND).broadcast()
+            .setCommandData(execContext.commandData)
+            .setProgress(progress)
+            .setEvent(MyServiceEvent.PROGRESS_EXECUTING_COMMAND).broadcast()
     }
 
     private fun setParent(parent: CommandExecutorParent?): CommandExecutorStrategy {
@@ -86,13 +86,13 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
 
     fun <T> logExecutionError(isHard: Boolean, detailedMessage: String?): Try<T> {
         if (isHard) {
-            execContext.getResult().incrementParseExceptions()
+            execContext.result.incrementParseExceptions()
         } else {
-            execContext.getResult().incrementNumIoExceptions()
+            execContext.result.incrementNumIoExceptions()
         }
         val builder: MyStringBuilder = MyStringBuilder.of(detailedMessage)
-            .atNewLine(execContext.toExceptionContext())
-        execContext.getResult().setMessage(builder.toString())
+            .atNewLine(execContext.toExceptionContext)
+        execContext.result.message = builder.toString()
         MyLog.w(this, builder.toString())
         return TryUtils.failure(detailedMessage)
     }
@@ -105,11 +105,11 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
     }
 
     fun noErrors(): Boolean {
-        return !execContext.getResult().hasError()
+        return !execContext.result.hasError
     }
 
     fun getActor(): Actor {
-        return execContext.commandData.getTimeline().actor
+        return execContext.commandData.timeline.actor
     }
 
     open fun isApiSupported(routine: ApiRoutineEnum): Boolean {
@@ -117,7 +117,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
     }
 
     fun getConnection(): Connection {
-        return execContext.getConnection()
+        return execContext.connection
     }
 
     override val classTag: String get() = TAG
@@ -130,34 +130,35 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
 
         suspend fun executeCommand(commandData: CommandData, parent: CommandExecutorParent?) {
             val strategy = getStrategy(
-                    CommandExecutionContext(commandData.myContext, commandData)).setParent(parent)
-            commandData.getResult().prepareForLaunch()
+                CommandExecutionContext(commandData.myContext, commandData)
+            ).setParent(parent)
+            commandData.result.prepareForLaunch()
             logLaunch(strategy)
             // This may cause recursive calls to executors...
             strategy.execute()
                 .onSuccess { ok: Boolean ->
-                    strategy.execContext.getResult().setSoftErrorIfNotOk(ok)
+                    strategy.execContext.result.setSoftErrorIfNotOk(ok)
                     MyLog.d(
-                        strategy, strategy.execContext.getCommandSummary() +
+                        strategy, strategy.execContext.commandSummary +
                             if (ok) " succeeded" else " soft errors"
                     )
                 }
                 .onFailureAsConnectionException { ce: ConnectionException ->
-                    strategy.logConnectionException(ce, strategy.execContext.getCommandSummary())
+                    strategy.logConnectionException(ce, strategy.execContext.commandSummary)
                 }
                 .also {
-                    it.toHttpReadResult() ?.let { result ->
-                        with(commandData.getResult()) {
+                    it.toHttpReadResult()?.let { result ->
+                        with(commandData.result) {
                             delayedTill = result.delayedTill
                             delayedTill?.let { millis ->
-                                if (getMessage().isEmpty()) {
-                                    setMessage("Delayed till ${Date(millis)}")
+                                if (message.isEmpty()) {
+                                    message = "Delayed till ${Date(millis)}"
                                 }
                             }
                         }
                     }
                 }
-            commandData.getResult().afterExecutionEnded()
+            commandData.result.afterExecutionEnded()
             strategy.onResultIsReady()
             logEnd(strategy)
         }
@@ -173,7 +174,8 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
 
         fun getStrategy(commandData: CommandData, parent: CommandExecutorParent?): CommandExecutorStrategy {
             return getStrategy(
-                    CommandExecutionContext(commandData.myContext, commandData)).setParent(parent)
+                CommandExecutionContext(commandData.myContext, commandData)
+            ).setParent(parent)
         }
 
         private fun getStrategy(execContext: CommandExecutionContext): CommandExecutorStrategy =
@@ -181,11 +183,11 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
                 CommandEnum.GET_ATTACHMENT,
                 CommandEnum.GET_AVATAR -> CommandExecutorOther(execContext)
                 CommandEnum.GET_OPEN_INSTANCES -> CommandExecutorGetOpenInstances(execContext)
-                else -> if (execContext.getMyAccount().isValidAndSucceeded()) {
+                else -> if (execContext.myAccount.isValidAndSucceeded()) {
                     when (execContext.commandData.command) {
                         CommandEnum.GET_TIMELINE,
                         CommandEnum.GET_OLDER_TIMELINE ->
-                            if (execContext.commandData.getTimeline().isSyncable) {
+                            if (execContext.commandData.timeline.isSyncable) {
                                 when (execContext.commandData.getTimelineType()) {
                                     TimelineType.FOLLOWERS, TimelineType.FRIENDS -> TimelineDownloaderFollowers(
                                         execContext
@@ -195,7 +197,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
                             } else {
                                 MyLog.v(CommandExecutorStrategy::class.java) {
                                     "Dummy commandExecutor for " +
-                                        execContext.commandData.getTimeline()
+                                        execContext.commandData.timeline
                                 }
                                 CommandExecutorStrategy(execContext)
                             }
@@ -205,7 +207,7 @@ open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : C
                     }
                 } else {
                     MyLog.v(CommandExecutorStrategy::class.java) {
-                        ("Dummy commandExecutor for " + execContext.getMyAccount())
+                        ("Dummy commandExecutor for " + execContext.myAccount)
                     }
                     CommandExecutorStrategy(execContext)
                 }

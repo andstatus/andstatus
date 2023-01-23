@@ -39,13 +39,13 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
             .onFailureAsConnectionException { ce ->
                 if (ce.isHardError) {
                     data.hardErrorLogged("load", ce)
-                    commandData.getResult().incrementParseExceptions()
+                    commandData.result.incrementParseExceptions()
                 } else {
                     data.softErrorLogged("load", ce)
-                    commandData.getResult().incrementNumIoExceptions()
+                    commandData.result.incrementNumIoExceptions()
                 }
                 ce.message?.let { message ->
-                    commandData.getResult().setMessage(message)
+                    commandData.result.message = message
                 }
             }
             .also { data.saveToDatabase() }

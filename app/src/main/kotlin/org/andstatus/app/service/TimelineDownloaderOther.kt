@@ -93,8 +93,8 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
                     syncTracker.onNewActivity(activity.getUpdatedDate(), activity.getPrevTimelinePosition(),
                             activity.getNextTimelinePosition())
                     if (activity.isSubscribedByMe() != TriState.FALSE
-                            && activity.getUpdatedDate() > 0 && execContext.getTimeline().timelineType.isSubscribedByMe()
-                            && execContext.myContext.users.isMe(execContext.getTimeline().actor)) {
+                            && activity.getUpdatedDate() > 0 && execContext.timeline.timelineType.isSubscribedByMe()
+                            && execContext.myContext.users.isMe(execContext.timeline.actor)) {
                         activity.setSubscribedByMe(TriState.TRUE)
                     }
                     dataUpdater.onActivity(activity, false)

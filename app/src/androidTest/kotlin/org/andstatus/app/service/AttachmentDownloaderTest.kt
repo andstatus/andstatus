@@ -87,10 +87,10 @@ class AttachmentDownloaderTest {
             loader.load(commandData)
             val data: DownloadData = DownloadData.Companion.fromId(dataIn.downloadId)
             if (DownloadStatus.LOADED == status) {
-                Assert.assertFalse("Has error $data\n$commandData", commandData.getResult().hasError())
+                Assert.assertFalse("Has error $data\n$commandData", commandData.result.hasError)
                 Assert.assertEquals("Status $data", status, loader.getStatus())
             } else {
-                Assert.assertTrue("Error loading " + data.getUri(), commandData.getResult().hasError())
+                Assert.assertTrue("Error loading " + data.getUri(), commandData.result.hasError)
             }
             if (DownloadStatus.LOADED == status) {
                 Assert.assertTrue("File exists " + data.getUri(), data.file.existed)

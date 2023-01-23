@@ -151,8 +151,8 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
             if (!isServiceAvailable()) {
                 if (commandData != CommandData.EMPTY) {
                     // Imitate a soft service error
-                    commandData.getResult().incrementNumIoExceptions()
-                    commandData.getResult().setMessage("Service is not available")
+                    commandData.result.incrementNumIoExceptions()
+                    commandData.result.message = "Service is not available"
                     MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.STOPPED)
                         .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
                 }

@@ -39,7 +39,6 @@ import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.RateLimitStatus
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
@@ -65,8 +64,8 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             CommandEnum.GET_CONVERSATION -> getConversation(execContext.commandData.itemId)
             CommandEnum.GET_ACTIVITY -> getActivity(execContext.commandData.itemId)
             CommandEnum.GET_NOTE -> getNote(execContext.commandData.itemId)
-            CommandEnum.GET_ACTOR -> getActorCommand(getActor(), execContext.commandData.getUsername())
-            CommandEnum.SEARCH_ACTORS -> searchActors(execContext.commandData.getUsername())
+            CommandEnum.GET_ACTOR -> getActorCommand(getActor(), execContext.commandData.username)
+            CommandEnum.SEARCH_ACTORS -> searchActors(execContext.commandData.username)
             CommandEnum.GET_LISTS -> getListsOfUser(getActor())
             CommandEnum.GET_LIST_MEMBERS -> getListMembers(getActor())
             CommandEnum.ANNOUNCE -> reblog(execContext.commandData.itemId)
@@ -91,7 +90,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             .searchActors(ACTORS_LIMIT, searchQuery)
             .map { actors: List<Actor> ->
                 val dataUpdater = DataUpdater(execContext)
-                val myAccountActor = execContext.getMyAccount().actor
+                val myAccountActor = execContext.myAccount.actor
                 for (actor in actors) {
                     dataUpdater.onActivity(myAccountActor.update(actor))
                 }
@@ -165,7 +164,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                     if (CheckConversations().setNoteIdsOfOneConversation(noteIds)
                             .setMyContext(execContext.myContext).fix() > 0
                     ) {
-                        execContext.commandData.getResult().incrementNewCount()
+                        execContext.result.incrementNewCount()
                     }
                 }
             }
@@ -194,7 +193,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             .getActor(actorIn2)
             .flatMap { actor: Actor -> failIfActorIsEmpty(msgLog2, actor) }
             .map { actor: Actor ->
-                val activity = execContext.getMyAccount().actor.update(actor)
+                val activity = execContext.myAccount.actor.update(actor)
                 DataUpdater(execContext).onActivity(activity)
                 true
             }
@@ -293,7 +292,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             return TryUtils.TRUE
         }
         val author: Actor = Actor.load(execContext.myContext, MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId))
-        return (if (execContext.getMyAccount().actor.isSame(author)) deleteNoteAtServer(
+        return (if (execContext.myAccount.actor.isSame(author)) deleteNoteAtServer(
             noteId,
             method
         ) else TryUtils.TRUE)
@@ -325,7 +324,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
 
     private fun undoAnnounce(noteId: Long): Try<Boolean> {
         val method = "destroyReblog"
-        val actorId = execContext.getMyAccount().actorId
+        val actorId = execContext.myAccount.actorId
         val reblogAndType = MyQuery.noteIdToLastReblogging(
             execContext.myContext.database, noteId, actorId
         )
@@ -333,7 +332,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             return logExecutionError(
                 true, "No local Reblog of "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId) +
-                    " by " + execContext.getMyAccount()
+                    " by " + execContext.myAccount
             )
         }
         val reblogOid = MyQuery.idToOid(execContext.myContext, OidEnum.REBLOG_OID, noteId, actorId)
@@ -382,7 +381,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             }
             .onFailure { e: Throwable ->
                 if (ConnectionException.of(e).statusCode == StatusCode.NOT_FOUND) {
-                    execContext.getResult().incrementParseExceptions()
+                    execContext.result.incrementParseExceptions()
                 }
             }
     }
@@ -411,7 +410,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             }
             .onFailure { e: Throwable ->
                 if (ConnectionException.of(e).statusCode == StatusCode.NOT_FOUND) {
-                    execContext.getResult().incrementParseExceptions()
+                    execContext.result.incrementParseExceptions()
                 }
             }
     }
@@ -424,7 +423,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         getNoteOid(method, MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId), false)
             .map { inReplyToNoteOid: String? ->
                 AActivity.newPartialNote(
-                    execContext.getMyAccount().actor,
+                    execContext.myAccount.actor,
                     Actor.EMPTY, inReplyToNoteOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN
                 )
                     .setOid(inReplyToNoteOid)
@@ -452,7 +451,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 activity.id = activityId
                 activity.getNote().takeIf(Note::nonEmpty)?.noteId = noteId
                 DataUpdater(execContext).onActivity(activity).also {
-                    execContext.getResult().setItemId(it.id)
+                    execContext.result.itemId = it.id
                 }
             }
             .onFailure { execContext.myContext.notifier.onUnsentActivity(activityId) }
@@ -484,8 +483,8 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         return getConnection().rateLimitStatus()
             .map { rateLimitStatus: RateLimitStatus ->
                 if (rateLimitStatus.nonEmpty) {
-                    execContext.getResult().setRemainingHits(rateLimitStatus.remaining)
-                    execContext.getResult().setHourlyLimit(rateLimitStatus.limit)
+                    execContext.result.remainingHits = rateLimitStatus.remaining
+                    execContext.result.hourlyLimit = rateLimitStatus.limit
                 }
                 rateLimitStatus.nonEmpty
             }

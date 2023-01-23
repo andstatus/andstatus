@@ -34,32 +34,33 @@ import java.util.function.Consumer
  * See also [android.content.SyncStats]
  * @author yvolk@yurivolkov.com
  */
-class CommandResult : Parcelable {
+class CommandResult() : Parcelable {
     var delayedTill: Long? = null
         set(value) {
             field = value?.let { if (it > 0) it else null }
         }
-    private var lastExecutedDate: Long = 0
-    private var executionCount = 0
-    private var retriesLeft = 0
+    var lastExecutedDate: Long = 0
+    var executionCount = 0
+        private set
+    var retriesLeft = 0
     var executed = false
-    private var numAuthExceptions: Long = 0
-    private var numIoExceptions: Long = 0
+    var numAuthExceptions: Long = 0
+        private set
+    var numIoExceptions: Long = 0
+        private set
     private var numParseExceptions: Long = 0
-    private var mMessage: String = ""
-    private var progress: String = ""
-    private var itemId: Long = 0
+    var message: String = ""
+    var progress: String = ""
+    var itemId: Long = 0
 
     // 0 means these values were not set
-    private var hourlyLimit = 0
-    private var remainingHits = 0
+    var hourlyLimit = 0
+    var remainingHits = 0
 
     // Counters for user notifications
-    private var downloadedCount: Long = 0
-    private var newCount: Long = 0
+    var downloadedCount: Long = 0
+    var newCount: Long = 0
     val notificationEventCounts: MutableMap<NotificationEventType, AtomicLong> = HashMap()
-
-    constructor() {}
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeLong(delayedTill ?: 0)
@@ -69,7 +70,7 @@ class CommandResult : Parcelable {
         dest.writeLong(numAuthExceptions)
         dest.writeLong(numIoExceptions)
         dest.writeLong(numParseExceptions)
-        dest.writeString(mMessage)
+        dest.writeString(message)
         dest.writeLong(itemId)
         dest.writeInt(hourlyLimit)
         dest.writeInt(remainingHits)
@@ -77,7 +78,7 @@ class CommandResult : Parcelable {
         dest.writeString(progress)
     }
 
-    constructor(parcel: Parcel) {
+    constructor(parcel: Parcel) : this() {
         delayedTill = parcel.readLong()
         lastExecutedDate = parcel.readLong()
         executionCount = parcel.readInt()
@@ -85,7 +86,7 @@ class CommandResult : Parcelable {
         numAuthExceptions = parcel.readLong()
         numIoExceptions = parcel.readLong()
         numParseExceptions = parcel.readLong()
-        mMessage = parcel.readString() ?: ""
+        message = parcel.readString() ?: ""
         itemId = parcel.readLong()
         hourlyLimit = parcel.readInt()
         remainingHits = parcel.readInt()
@@ -101,26 +102,16 @@ class CommandResult : Parcelable {
         values.put(CommandTable.NUM_AUTH_EXCEPTIONS, numAuthExceptions)
         values.put(CommandTable.NUM_IO_EXCEPTIONS, numIoExceptions)
         values.put(CommandTable.NUM_PARSE_EXCEPTIONS, numParseExceptions)
-        values.put(CommandTable.ERROR_MESSAGE, mMessage)
+        values.put(CommandTable.ERROR_MESSAGE, message)
         values.put(CommandTable.DOWNLOADED_COUNT, downloadedCount)
         values.put(CommandTable.PROGRESS_TEXT, progress)
     }
 
-    fun getExecutionCount(): Int {
-        return executionCount
-    }
+    val hasError: Boolean get() = hasSoftError || hasHardError
 
-    fun hasError(): Boolean {
-        return hasSoftError() || hasHardError()
-    }
+    val hasHardError: Boolean get() = numAuthExceptions > 0 || numParseExceptions > 0
 
-    fun hasHardError(): Boolean {
-        return numAuthExceptions > 0 || numParseExceptions > 0
-    }
-
-    fun hasSoftError(): Boolean {
-        return numIoExceptions > 0
-    }
+    val hasSoftError: Boolean get() = numIoExceptions > 0
 
     override fun describeContents(): Int {
         return 0
@@ -149,56 +140,28 @@ class CommandResult : Parcelable {
                 "last", RelativeTime.getDifference(myContextHolder.getNow().context, lastExecutedDate)
             )
             if (retriesLeft > 0) sb.withComma("retriesLeft", retriesLeft)
-            if (!hasError()) sb.withComma("error", "none")
+            if (!hasError) sb.withComma("error", "none")
         }
-        if (hasError()) sb.withComma("error", if (hasHardError()) "Hard" else "Soft")
+        if (hasError) sb.withComma("error", if (hasHardError) "Hard" else "Soft")
         if (downloadedCount > 0) sb.withComma("downloaded", downloadedCount)
         if (newCount > 0) sb.withComma("new", newCount)
         notificationEventCounts.forEach { event: NotificationEventType, count: AtomicLong ->
             if (count.get() > 0) sb.withComma(event.name, count.get())
         }
-        if (mMessage.isNotEmpty()) sb.append("\n$mMessage")
+        if (message.isNotEmpty()) sb.append("\n$message")
         return sb
     }
 
-    fun getNumAuthExceptions(): Long {
-        return numAuthExceptions
-    }
-
-    protected fun incrementNumAuthExceptions() {
+    fun incrementNumAuthExceptions() {
         numAuthExceptions++
-    }
-
-    fun getNumIoExceptions(): Long {
-        return numIoExceptions
     }
 
     fun incrementNumIoExceptions() {
         numIoExceptions++
     }
 
-    fun getNumParseExceptions(): Long {
-        return numParseExceptions
-    }
-
     fun incrementParseExceptions() {
         numParseExceptions++
-    }
-
-    fun getHourlyLimit(): Int {
-        return hourlyLimit
-    }
-
-    fun setHourlyLimit(hourlyLimit: Int) {
-        this.hourlyLimit = hourlyLimit
-    }
-
-    fun getRemainingHits(): Int {
-        return remainingHits
-    }
-
-    fun setRemainingHits(remainingHits: Int) {
-        this.remainingHits = remainingHits
     }
 
     fun incrementNewCount() {
@@ -214,18 +177,6 @@ class CommandResult : Parcelable {
 
     fun incrementDownloadedCount() {
         downloadedCount++
-    }
-
-    fun getDownloadedCount(): Long {
-        return downloadedCount
-    }
-
-    fun getNewCount(): Long {
-        return newCount
-    }
-
-    fun getRetriesLeft(): Int {
-        return retriesLeft
     }
 
     fun resetRetries(command: CommandEnum?) {
@@ -244,7 +195,7 @@ class CommandResult : Parcelable {
         numAuthExceptions = 0
         numIoExceptions = 0
         numParseExceptions = 0
-        mMessage = ""
+        message = ""
         itemId = 0
         hourlyLimit = 0
         remainingHits = 0
@@ -265,37 +216,7 @@ class CommandResult : Parcelable {
         }
     }
 
-    fun shouldWeRetry(): Boolean {
-        return (!executed || hasError()) && !hasHardError() && retriesLeft > 0
-    }
-
-    fun getItemId(): Long {
-        return itemId
-    }
-
-    fun setItemId(itemId: Long) {
-        this.itemId = itemId
-    }
-
-    fun getLastExecutedDate(): Long {
-        return lastExecutedDate
-    }
-
-    fun getMessage(): String {
-        return mMessage
-    }
-
-    fun setMessage(message: String) {
-        mMessage = message
-    }
-
-    fun getProgress(): String {
-        return progress
-    }
-
-    fun setProgress(progress: String) {
-        this.progress = progress
-    }
+    val shouldWeRetry: Boolean get() = (!executed || hasError) && !hasHardError && retriesLeft > 0
 
     companion object {
         const val INITIAL_NUMBER_OF_RETRIES = 10
@@ -320,7 +241,7 @@ class CommandResult : Parcelable {
             result.numAuthExceptions = DbUtils.getLong(cursor, CommandTable.NUM_AUTH_EXCEPTIONS)
             result.numIoExceptions = DbUtils.getLong(cursor, CommandTable.NUM_IO_EXCEPTIONS)
             result.numParseExceptions = DbUtils.getLong(cursor, CommandTable.NUM_PARSE_EXCEPTIONS)
-            result.mMessage = DbUtils.getString(cursor, CommandTable.ERROR_MESSAGE)
+            result.message = DbUtils.getString(cursor, CommandTable.ERROR_MESSAGE)
             result.downloadedCount = DbUtils.getInt(cursor, CommandTable.DOWNLOADED_COUNT).toLong()
             result.progress = DbUtils.getString(cursor, CommandTable.PROGRESS_TEXT)
             return result

@@ -56,10 +56,10 @@ class QueueExecutor(myService: MyService, val accessorType: AccessorType) :
             myService.broadcastBeforeExecutingCommand(commandData)
             CommandExecutorStrategy.executeCommand(commandData, this)
             when {
-                commandData.getResult().shouldWeRetry() -> {
+                commandData.result.shouldWeRetry -> {
                     myService.myContext.queues.addToQueue(QueueType.RETRY, commandData)
                 }
-                commandData.getResult().hasError() -> {
+                commandData.result.hasError -> {
                     myService.myContext.queues.addToQueue(QueueType.ERROR, commandData)
                 }
                 else -> addSyncAfterNoteWasSent(myService, commandData)
@@ -74,7 +74,7 @@ class QueueExecutor(myService: MyService, val accessorType: AccessorType) :
     }
 
     private fun addSyncAfterNoteWasSent(myService: MyService, cdExecuted: CommandData) {
-        if (cdExecuted.getResult().hasError() ||
+        if (cdExecuted.result.hasError ||
             (cdExecuted.command != CommandEnum.UPDATE_NOTE && cdExecuted.command != CommandEnum.UPDATE_MEDIA) ||
             !SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)
         ) {
@@ -82,7 +82,7 @@ class QueueExecutor(myService: MyService, val accessorType: AccessorType) :
         }
 
         myService.myContext.queues.addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                cdExecuted.getTimeline().myAccountToSync, TimelineType.SENT)
+                cdExecuted.timeline.myAccountToSync, TimelineType.SENT)
                 .setInForeground(cdExecuted.isInForeground()))
     }
 

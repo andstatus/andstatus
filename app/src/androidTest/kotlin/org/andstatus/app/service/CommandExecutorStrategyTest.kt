@@ -88,60 +88,60 @@ class CommandExecutorStrategyTest {
         var commandData = getCommandDataForUnsentNote("1")
         httpStub.sameResponse = true
         httpStub.addResponse(org.andstatus.app.test.R.raw.quitter_update_note_response)
-        Assert.assertEquals(0, commandData.getResult().getExecutionCount().toLong())
+        Assert.assertEquals(0, commandData.result.executionCount)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
+        Assert.assertEquals(1, commandData.result.executionCount)
         Assert.assertEquals(
             commandData.toString(),
-            (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1).toLong(),
-            commandData.getResult().getRetriesLeft().toLong()
+            CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1,
+            commandData.result.retriesLeft
         )
-        Assert.assertFalse(commandData.toString(), commandData.getResult().hasSoftError())
-        Assert.assertFalse(commandData.toString(), commandData.getResult().hasHardError())
-        val noteId = commandData.getResult().getItemId()
+        Assert.assertFalse(commandData.toString(), commandData.result.hasSoftError)
+        Assert.assertFalse(commandData.toString(), commandData.result.hasHardError)
+        val noteId = commandData.result.itemId
         Assert.assertTrue(noteId != 0L)
         commandData = getCommandDataForUnsentNote("2")
         var errorMessage = "Request was bad"
         httpStub.addException(ConnectionException(StatusCode.UNKNOWN, errorMessage))
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
+        Assert.assertEquals(1, commandData.result.executionCount)
         Assert.assertEquals(
-            (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1).toLong(),
-            commandData.getResult().getRetriesLeft().toLong()
+            CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1,
+            commandData.result.retriesLeft
         )
-        Assert.assertTrue(commandData.toString(), commandData.getResult().hasSoftError())
-        Assert.assertFalse(commandData.toString(), commandData.getResult().hasHardError())
-        Assert.assertTrue(commandData.toString(), commandData.getResult().shouldWeRetry())
+        Assert.assertTrue(commandData.toString(), commandData.result.hasSoftError)
+        Assert.assertFalse(commandData.toString(), commandData.result.hasHardError)
+        Assert.assertTrue(commandData.toString(), commandData.result.shouldWeRetry)
         Assert.assertTrue(
-            "Error message: '" + commandData.getResult().getMessage() + "' should contain '"
-                + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage)
+            "Error message: '" + commandData.result.message + "' should contain '"
+                + errorMessage + "'", commandData.result.message.contains(errorMessage)
         )
         httpStub.addResponse(org.andstatus.app.test.R.raw.quitter_update_note_response)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(commandData.toString(), 2, commandData.getResult().getExecutionCount().toLong())
+        Assert.assertEquals(commandData.toString(), 2, commandData.result.executionCount.toLong())
         Assert.assertEquals(
             commandData.toString(),
             (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 2).toLong(),
-            commandData.getResult().getRetriesLeft().toLong()
+            commandData.result.retriesLeft.toLong()
         )
-        Assert.assertFalse(commandData.toString(), commandData.getResult().hasSoftError())
-        Assert.assertFalse(commandData.toString(), commandData.getResult().hasHardError())
-        Assert.assertFalse(commandData.toString(), commandData.getResult().shouldWeRetry())
+        Assert.assertFalse(commandData.toString(), commandData.result.hasSoftError)
+        Assert.assertFalse(commandData.toString(), commandData.result.hasHardError)
+        Assert.assertFalse(commandData.toString(), commandData.result.shouldWeRetry)
         errorMessage = "some text"
         httpStub.addException(ConnectionException(StatusCode.AUTHENTICATION_ERROR, errorMessage))
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(3, commandData.getResult().getExecutionCount().toLong())
+        Assert.assertEquals(3, commandData.result.executionCount.toLong())
         Assert.assertEquals(
             commandData.toString(),
             (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 3).toLong(),
-            commandData.getResult().getRetriesLeft().toLong()
+            commandData.result.retriesLeft.toLong()
         )
-        Assert.assertFalse(commandData.toString(), commandData.getResult().hasSoftError())
-        Assert.assertTrue(commandData.toString(), commandData.getResult().hasHardError())
-        Assert.assertFalse(commandData.toString(), commandData.getResult().shouldWeRetry())
+        Assert.assertFalse(commandData.toString(), commandData.result.hasSoftError)
+        Assert.assertTrue(commandData.toString(), commandData.result.hasHardError)
+        Assert.assertFalse(commandData.toString(), commandData.result.shouldWeRetry)
         Assert.assertTrue(
-            "Error message: '" + commandData.getResult().getMessage() + "' should contain '"
-                + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage)
+            "Error message: '" + commandData.result.message + "' should contain '"
+                + errorMessage + "'", commandData.result.message.contains(errorMessage)
         )
         httpStub.addResponse(org.andstatus.app.test.R.raw.quitter_update_note_response)
         commandData = CommandData.Companion.newItemCommand(
@@ -150,7 +150,7 @@ class CommandExecutorStrategyTest {
             noteId
         )
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertFalse(commandData.toString(), commandData.getResult().hasError())
+        Assert.assertFalse(commandData.toString(), commandData.result.hasError)
         val INEXISTENT_MSG_ID: Long = -1
         commandData = CommandData.Companion.newItemCommand(
             CommandEnum.DELETE_NOTE,
@@ -158,7 +158,7 @@ class CommandExecutorStrategyTest {
             INEXISTENT_MSG_ID
         )
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertFalse(commandData.toString(), commandData.getResult().hasError())
+        Assert.assertFalse(commandData.toString(), commandData.result.hasError)
     }
 
     private suspend fun getCommandDataForUnsentNote(suffix: String?): CommandData {
@@ -177,9 +177,9 @@ class CommandExecutorStrategyTest {
                 DemoData.demoData.getGnuSocialOrigin())
         DiscoveredOrigins.clear()
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
-        Assert.assertFalse(commandData.getResult().hasError())
-        Assert.assertTrue(commandData.getResult().getDownloadedCount() > 0)
+        Assert.assertEquals(1, commandData.result.executionCount.toLong())
+        Assert.assertFalse(commandData.result.hasError)
+        Assert.assertTrue(commandData.result.downloadedCount > 0)
         Assert.assertFalse(DiscoveredOrigins.get().isEmpty())
     }
 

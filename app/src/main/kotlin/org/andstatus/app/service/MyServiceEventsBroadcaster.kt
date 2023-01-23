@@ -46,7 +46,7 @@ class MyServiceEventsBroadcaster private constructor(
 
     fun broadcast() {
         if (mCommandData !== CommandData.EMPTY) {
-            mCommandData.getResult().setProgress(progress)
+            mCommandData.result.progress = progress
         }
         MyLog.v(this) {
             "state:" + mState + ", event:" + mEvent +

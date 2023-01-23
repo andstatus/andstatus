@@ -61,28 +61,28 @@ class CommandDataTest {
 
     private fun testQueueOneCommandData(commandData: CommandData, time0: Long) {
         val method = "testQueueOneCommandData"
-        Assert.assertEquals(0, commandData.getResult().getExecutionCount().toLong())
-        Assert.assertEquals(0, commandData.getResult().getLastExecutedDate())
+        Assert.assertEquals(0, commandData.result.executionCount)
+        Assert.assertEquals(0, commandData.result.lastExecutedDate)
         Assert.assertEquals(
-            CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES.toLong(),
-            commandData.getResult().getRetriesLeft().toLong()
+            CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES,
+            commandData.result.retriesLeft
         )
-        commandData.getResult().prepareForLaunch()
+        commandData.result.prepareForLaunch()
         val hasSoftError = true
-        commandData.getResult().incrementNumIoExceptions()
-        commandData.getResult().setMessage("Error in " + commandData.hashCode())
-        commandData.getResult().afterExecutionEnded()
+        commandData.result.incrementNumIoExceptions()
+        commandData.result.message = "Error in " + commandData.hashCode()
+        commandData.result.afterExecutionEnded()
         DbUtils.waitMs(method, 50)
         val time1 = System.currentTimeMillis()
-        Assert.assertTrue(commandData.getResult().getLastExecutedDate() >= time0)
-        Assert.assertTrue(commandData.getResult().getLastExecutedDate() < time1)
-        Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
+        Assert.assertTrue(commandData.result.lastExecutedDate >= time0)
+        Assert.assertTrue(commandData.result.lastExecutedDate < time1)
+        Assert.assertEquals(1, commandData.result.executionCount)
         Assert.assertEquals(
-            (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1).toLong(),
-            commandData.getResult().getRetriesLeft().toLong()
+            (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1),
+            commandData.result.retriesLeft
         )
-        Assert.assertEquals(hasSoftError, commandData.getResult().hasSoftError())
-        Assert.assertFalse(commandData.getResult().hasHardError())
+        Assert.assertEquals(hasSoftError, commandData.result.hasSoftError)
+        Assert.assertFalse(commandData.result.hasHardError)
         val queues: CommandQueue = myContextHolder.getNow().queues
         queues.clear()
         queues[QueueType.ERROR].addToQueue(commandData)
@@ -97,22 +97,16 @@ class CommandDataTest {
         Assert.assertEquals(commandData, commandData2)
         // Below fields are not included in equals
         Assert.assertEquals(commandData.commandId, commandData2.commandId)
-        Assert.assertEquals(commandData.getCreatedDate(), commandData2.getCreatedDate())
+        Assert.assertEquals(commandData.createdDate, commandData2.createdDate)
         Assert.assertEquals(
-            commandData.getResult().getLastExecutedDate(),
-            commandData2.getResult().getLastExecutedDate()
+            commandData.result.lastExecutedDate,
+            commandData2.result.lastExecutedDate
         )
-        Assert.assertEquals(
-            commandData.getResult().getExecutionCount().toLong(),
-            commandData2.getResult().getExecutionCount().toLong()
-        )
-        Assert.assertEquals(
-            commandData.getResult().getRetriesLeft().toLong(),
-            commandData2.getResult().getRetriesLeft().toLong()
-        )
-        Assert.assertEquals(commandData.getResult().hasError(), commandData2.getResult().hasError())
-        Assert.assertEquals(commandData.getResult().hasSoftError(), commandData2.getResult().hasSoftError())
-        Assert.assertEquals(commandData.getResult().getMessage(), commandData2.getResult().getMessage())
+        Assert.assertEquals(commandData.result.executionCount, commandData2.result.executionCount)
+        Assert.assertEquals(commandData.result.retriesLeft, commandData2.result.retriesLeft)
+        Assert.assertEquals(commandData.result.hasError, commandData2.result.hasError)
+        Assert.assertEquals(commandData.result.hasSoftError, commandData2.result.hasSoftError)
+        Assert.assertEquals(commandData.result.message, commandData2.result.message)
     }
 
     @Test
@@ -126,10 +120,10 @@ class CommandDataTest {
             data1.hashCode() != data2.hashCode()
         )
         Assert.assertFalse(data1 == data2)
-        data1.getResult().prepareForLaunch()
-        data1.getResult().incrementNumIoExceptions()
-        data1.getResult().afterExecutionEnded()
-        Assert.assertFalse(data1.getResult().shouldWeRetry())
+        data1.result.prepareForLaunch()
+        data1.result.incrementNumIoExceptions()
+        data1.result.afterExecutionEnded()
+        Assert.assertFalse(data1.result.shouldWeRetry)
         val data3: CommandData =
             CommandData.Companion.newSearch(SearchObjects.NOTES, myContextHolder.getNow(), Origin.EMPTY, "andstatus")
         Assert.assertTrue(data1 == data3)

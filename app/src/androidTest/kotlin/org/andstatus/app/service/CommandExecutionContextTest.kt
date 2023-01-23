@@ -25,22 +25,22 @@ class CommandExecutionContextTest {
             myContextHolder.getNow(),
             CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS)
         )
-        Assert.assertEquals(TimelineType.INTERACTIONS, execContext.getTimeline().timelineType)
+        Assert.assertEquals(TimelineType.INTERACTIONS, execContext.timeline.timelineType)
         val noteCount = 4
         val mentionCount = 2
         for (ind in 0 until noteCount) {
-            execContext.getResult().incrementNewCount()
+            execContext.result.incrementNewCount()
         }
         for (ind in 0 until mentionCount) {
-            execContext.getResult().onNotificationEvent(NotificationEventType.MENTION)
+            execContext.result.onNotificationEvent(NotificationEventType.MENTION)
         }
-        Assert.assertEquals(noteCount.toLong(), execContext.getResult().getNewCount())
+        Assert.assertEquals(noteCount.toLong(), execContext.result.newCount)
         Assert.assertEquals(
             mentionCount.toLong(),
-            execContext.getResult().notificationEventCounts[NotificationEventType.MENTION]?.get()
+            execContext.result.notificationEventCounts[NotificationEventType.MENTION]?.get()
         )
         Assert.assertEquals(
-            0, execContext.getResult().notificationEventCounts.getOrDefault(
+            0, execContext.result.notificationEventCounts.getOrDefault(
                 NotificationEventType.PRIVATE, AtomicLong(0)
             ).get()
         )
@@ -54,17 +54,17 @@ class CommandExecutionContextTest {
         )
         val privateCount = 4
         for (ind in 0 until privateCount) {
-            execContext.getResult().onNotificationEvent(NotificationEventType.PRIVATE)
+            execContext.result.onNotificationEvent(NotificationEventType.PRIVATE)
         }
-        Assert.assertEquals(0, execContext.getResult().getNewCount())
+        Assert.assertEquals(0, execContext.result.newCount)
         Assert.assertEquals(
-            0, execContext.getResult().notificationEventCounts.getOrDefault(
+            0, execContext.result.notificationEventCounts.getOrDefault(
                 NotificationEventType.MENTION, AtomicLong(0)
             ).get()
         )
         Assert.assertEquals(
             privateCount.toLong(),
-            execContext.getResult().notificationEventCounts[NotificationEventType.PRIVATE]?.get()
+            execContext.result.notificationEventCounts[NotificationEventType.PRIVATE]?.get()
         )
     }
 }

@@ -88,7 +88,7 @@ class CommandQueue(val myContext: MyContext) {
                 }
             }
             if (queueType == QueueType.CURRENT || queueType == QueueType.DOWNLOADS) {
-                commandData.getResult().prepareForLaunch()
+                commandData.result.prepareForLaunch()
             }
             MyLog.v(TAG) { "Adding to $queueType queue $commandData" }
             if (offer(commandData)) {
@@ -277,11 +277,11 @@ class CommandQueue(val myContext: MyContext) {
         for (queue in queues.values) {
             commandData.deleteFromQueue(queue)
         }
-        if (commandData.getResult().getDownloadedCount() == 0L) {
-            commandData.getResult().incrementParseExceptions()
-            commandData.getResult().setMessage("Didn't delete command #" + commandData.itemId)
+        if (commandData.result.downloadedCount == 0L) {
+            commandData.result.incrementParseExceptions()
+            commandData.result.message = "Didn't delete command #" + commandData.itemId
         }
-        commandData.getResult().afterExecutionEnded()
+        commandData.result.afterExecutionEnded()
         return TryUtils.SUCCESS
     }
 

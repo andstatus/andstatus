@@ -27,16 +27,16 @@ import java.net.URL
 
 class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
     override suspend fun execute(): Try<Boolean> {
-        return ConnectionFactory.fromMyAccount(execContext.getMyAccount(), TriState.UNKNOWN)
+        return ConnectionFactory.fromMyAccount(execContext.myAccount, TriState.UNKNOWN)
             .getOpenInstances()
             .map { result -> saveDiscoveredOrigins(result) }
     }
 
     private fun saveDiscoveredOrigins(result: List<Server>): Boolean {
-        val execOrigin = execContext.commandData.getTimeline().origin
+        val execOrigin = execContext.commandData.timeline.origin
         val newOrigins: MutableList<Origin> = ArrayList()
         for (mbOrigin in result) {
-            execContext.getResult().incrementDownloadedCount()
+            execContext.result.incrementDownloadedCount()
             val origin = Origin.Builder(execContext.myContext, execOrigin.originType).setName(mbOrigin.name)
                 .setHostOrUrl(mbOrigin.urlString)
                 .build()

@@ -22,14 +22,14 @@ import org.andstatus.app.timeline.ViewItem
  * @author yvolk@yurivolkov.com
  */
 class QueueData constructor(val queueType: QueueType, val commandData: CommandData) :
-    ViewItem<QueueData>(false, commandData.getCreatedDate()), Comparable<QueueData> {
+    ViewItem<QueueData>(false, commandData.createdDate), Comparable<QueueData> {
 
     override fun getId(): Long {
         return commandData.hashCode().toLong()
     }
 
     override fun getDate(): Long {
-        return commandData.getCreatedDate()
+        return commandData.createdDate
     }
 
     fun toSharedSubject(): String {
@@ -50,12 +50,12 @@ class QueueData constructor(val queueType: QueueType, val commandData: CommandDa
         if (other == null || javaClass != other.javaClass) return false
         val queueData = other as QueueData
         return if (queueType != queueData.queueType) false
-        else commandData.getCreatedDate() == queueData.commandData.getCreatedDate()
+        else commandData.createdDate == queueData.commandData.createdDate
     }
 
     override fun hashCode(): Int {
         var result = queueType.hashCode()
-        result = 31 * result + (commandData.getCreatedDate() xor (commandData.getCreatedDate() ushr 32)).toInt()
+        result = 31 * result + (commandData.createdDate xor (commandData.createdDate ushr 32)).toInt()
         return result
     }
 

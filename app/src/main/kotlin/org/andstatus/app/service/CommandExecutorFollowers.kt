@@ -48,7 +48,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
     var commandSummary: String = ""
 
     override suspend fun execute(): Try<Boolean> {
-        commandSummary = execContext.getCommandSummary()
+        commandSummary = execContext.commandSummary
         if (getActor().oid.isEmpty()) {
             return onParseException("No actorOid not for: ${getActor()}")
         }
@@ -56,7 +56,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
         return getNewActors(command)
             .onSuccess { actorsNew: List<Actor> -> updateGroupMemberships(command, actorsNew) }
             .map { actorsNew: List<Actor> ->
-                val syncTracker = TimelineSyncTracker(execContext.getTimeline(), true)
+                val syncTracker = TimelineSyncTracker(execContext.timeline, true)
                 syncTracker.onTimelineDownloaded()
                 MyLog.d(this, commandSummary + " ended, " + actorsNew.size + " actors")
                 true
@@ -115,22 +115,22 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
         val actorsNew: MutableList<Actor> = ArrayList()
         val count = AtomicLong()
         for (actorOidNew in actorOidsNew) {
-            getConnection().getActor(Actor.fromOid(execContext.getMyAccount().origin, actorOidNew))
+            getConnection().getActor(Actor.fromOid(execContext.myAccount.origin, actorOidNew))
                 .map { actor: Actor ->
                     count.incrementAndGet()
-                    execContext.getResult().incrementDownloadedCount()
+                    execContext.result.incrementDownloadedCount()
                     actor
                 }.recover(Exception::class.java) { e: Exception? ->
                     val actorId = MyQuery.oidToId(
                         OidEnum.ACTOR_OID,
-                        execContext.getMyAccount().originId, actorOidNew
+                        execContext.myAccount.originId, actorOidNew
                     )
                     if (actorId == 0L) {
                         MyLog.i(this, "Failed to identify an Actor for oid=$actorOidNew", e)
                         return@recover Actor.EMPTY
                     } else {
                         val actor: Actor = Actor.fromTwoIds(
-                            execContext.getMyAccount().origin,
+                            execContext.myAccount.origin,
                             GroupType.UNKNOWN, actorId, actorOidNew
                         )
                         getActor().setWebFingerId(MyQuery.actorIdToWebfingerId(execContext.myContext, actorId))
@@ -141,13 +141,13 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
                 .onSuccess { actor: Actor ->
                     broadcastProgress(
                         count.toString() + ". "
-                            + execContext.getContext().getText(R.string.get_user)
+                            + execContext.context.getText(R.string.get_user)
                             + ": " + actor.getUniqueNameWithOrigin(), true
                     )
                     actorsNew.add(actor)
                 }
             if (logSoftErrorIfStopping()) {
-                return Try.failure(Exception(execContext.getResult().getMessage()))
+                return Try.failure(Exception(execContext.result.message))
             }
         }
         return Try.success(actorsNew)
@@ -158,9 +158,9 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
         val actionStringRes = if (groupType == GroupType.FOLLOWERS) R.string.followers else R.string.friends
         val actorIdsOld: MutableSet<Long> =
             GroupMembership.getSingleGroupMemberIds(execContext.myContext, getActor().actorId, groupType)
-        execContext.getResult().incrementDownloadedCount()
+        execContext.result.incrementDownloadedCount()
         broadcastProgress(
-            execContext.getContext().getText(actionStringRes).toString()
+            execContext.context.getText(actionStringRes).toString()
                 + ": " + actorIdsOld.size + " -> " + actorsNew.size, false
         )
         val loadLatestNotes = actorsNew.size < 2 // TODO: This is too long, so we almost disabled this feature...
@@ -169,7 +169,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
         } else {
             val dataUpdater = DataUpdater(execContext)
             for (actor in actorsNew) {
-                val activity = execContext.getMyAccount().actor.update(actor)
+                val activity = execContext.myAccount.actor.update(actor)
                 dataUpdater.onActivity(activity)
             }
         }
@@ -190,11 +190,11 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
         val dataUpdater = DataUpdater(execContext)
         var allNotesLoaded = true
         var count: Long = 0
-        val myAccountActor = execContext.getMyAccount().actor
+        val myAccountActor = execContext.myAccount.actor
         for (actor in actorsNew) {
             count++
             broadcastProgress(
-                count.toString() + ". " + execContext.getContext().getText(R.string.button_save)
+                count.toString() + ". " + execContext.context.getText(R.string.button_save)
                     + ": " + actor.getUniqueNameWithOrigin(), true
             )
             dataUpdater.onActivity(myAccountActor.update(actor), false)
@@ -219,11 +219,11 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
             try {
                 broadcastProgress(
                     count.toString() + ". "
-                        + execContext.getContext().getText(R.string.title_command_get_status)
+                        + execContext.context.getText(R.string.title_command_get_status)
                         + ": " + actor.getUniqueNameWithOrigin(), true
                 )
                 dataUpdater.downloadOneNoteBy(actor)
-                execContext.getResult().incrementDownloadedCount()
+                execContext.result.incrementDownloadedCount()
             } catch (e: Exception) {
                 exception = e
             }

@@ -118,7 +118,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 }
             }
         }
-        AActivity.requestDownload(execContext.getMyAccount(), activity.id, false)
+        AActivity.requestDownload(execContext.myAccount, activity.id, false)
         return activity
     }
 
@@ -146,7 +146,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 )
             )
         }
-        execContext.getResult().onNotificationEvent(activity.getNewNotificationEventType())
+        execContext.result.onNotificationEvent(activity.getNewNotificationEventType())
     }
 
     fun saveLum() {
@@ -285,14 +285,14 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 myContextHolder.getNow().putAssertionData(MSG_ASSERTION_KEY, values)
             }
             if (note.noteId == 0L) {
-                val msgUri = execContext.getContext().contentResolver.insert(
+                val msgUri = execContext.context.contentResolver.insert(
                     MatchedUri.getMsgUri(me.actorId, 0), values
                 ) ?: Uri.EMPTY
                 note.noteId = ParsedUri.fromUri(msgUri).getNoteId()
                 if (note.getConversationId() == 0L) {
                     val values2 = ContentValues()
                     values2.put(NoteTable.CONVERSATION_ID, note.setConversationIdFromNoteId())
-                    execContext.getContext().contentResolver.update(msgUri, values2, null, null)
+                    execContext.context.contentResolver.update(msgUri, values2, null, null)
                 }
                 MyLog.v("Note") { "Added $note" }
                 if (!note.hasSomeContent() && note.getStatus().canBeDownloaded) {
@@ -300,7 +300,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 }
             } else {
                 val msgUri: Uri = MatchedUri.getMsgUri(me.actorId, note.noteId)
-                execContext.getContext().contentResolver.update(msgUri, values, null, null)
+                execContext.context.contentResolver.update(msgUri, values, null, null)
                 MyLog.v("Note") { "Updated $note" }
             }
             if (note.getStatus().mayUpdateContent()) {
@@ -312,8 +312,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                     activity.setNotified(TriState.FALSE)
                 } else {
                     if (note.getStatus() == DownloadStatus.LOADED) {
-                        execContext.getResult().incrementDownloadedCount()
-                        execContext.getResult().incrementNewCount()
+                        execContext.result.incrementDownloadedCount()
+                        execContext.result.incrementNewCount()
                     }
                 }
             }
@@ -463,11 +463,11 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 values.put(ActorTable.ORIGIN_ID, actor.origin.id)
                 values.put(ActorTable.USER_ID, actor.user.userId)
                 actor.actorId = ParsedUri.fromUri(
-                    execContext.getContext().contentResolver.insert(actorUri, values)
+                    execContext.context.contentResolver.insert(actorUri, values)
                 )
                     .getActorId()
             } else if (values.size() > 0) {
-                execContext.getContext().contentResolver.update(actorUri, values, null, null)
+                execContext.context.contentResolver.update(actorUri, values, null, null)
             }
             actor.endpoints.save(actor.actorId)
             updateFriendships(activity, me)
@@ -501,7 +501,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
     }
 
     fun downloadOneNoteBy(actor: Actor): Try<Unit> {
-        return execContext.getConnection()
+        return execContext.connection
             .getTimeline(
                 true, TimelineType.SENT.connectionApiRoutine, TimelinePosition.EMPTY,
                 TimelinePosition.EMPTY, 1, actor
