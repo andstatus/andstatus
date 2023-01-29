@@ -498,8 +498,8 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         val ma = myAccount
         var summary: StringBuilder? = null
         if (isMaPersistent()) {
-            summary = when (ma.credentialsVerified) {
-                CredentialsVerificationStatus.SUCCEEDED -> StringBuilder(
+            summary = when (ma.accessStatus) {
+                AccessStatus.SUCCEEDED -> StringBuilder(
                     getText(R.string.summary_preference_verify_credentials)
                 )
                 else -> if (isMaPersistent()) {
@@ -608,8 +608,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         )
             ?.setOnClickListener {
                 with(state.builder) {
-                    setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
-                    myAccount.connection.clearClientKeys()
+                    logOut()
                     save()
                     MyPreferences.onPreferencesChanged()
                     closeAndGoBack()
@@ -717,7 +716,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
      * @param reVerify true - Verify only if we didn't do this yet
      */
     fun verifyCredentials(reVerify: Boolean) {
-        if (reVerify || myAccount.credentialsVerified == CredentialsVerificationStatus.NEVER) {
+        if (reVerify || myAccount.accessStatus != AccessStatus.SUCCEEDED) {
             MyServiceManager.setServiceUnavailable()
             val state2: MyServiceState = MyServiceManager.getServiceState()
             if (state2 != MyServiceState.STOPPED) {
@@ -948,7 +947,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                         }
                 }.onFailure {
                     appendError(it.message)
-                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
+                    state.builder.onAccessFailure()
                     updateScreen()
                 }
             }
@@ -1088,7 +1087,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                     activity.finish()
                 }.onFailure {
                     activity.appendError(it.message)
-                    activity.state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
+                    activity.state.builder.onAccessFailure()
                     activity.updateScreen()
                 }
             }
@@ -1139,7 +1138,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
             if (params != null && HttpConnection.CALLBACK_URI_PARSED.getHost() != null &&
                 HttpConnection.CALLBACK_URI_PARSED.getHost() == params.host
             ) {
-                state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
+                state.builder.onAccessFailure()
                 try {
                     if (oauthHttp.isOAuth2()) {
                         // We got here after redirect to e.g.
@@ -1214,7 +1213,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                         .getString(R.string.acquiring_an_access_token_failed) +
                         if (!it.message.isNullOrEmpty()) ": " + it.message else ""
                     appendError(stepErrorMessage)
-                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
+                    state.builder.onAccessFailure()
                     updateScreen()
                 }
             }

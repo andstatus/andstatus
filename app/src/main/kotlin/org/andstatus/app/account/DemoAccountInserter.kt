@@ -128,7 +128,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         )
         assertEquals(
             "Account is not successfully verified",
-            CredentialsVerificationStatus.SUCCEEDED, ma.credentialsVerified
+            AccessStatus.SUCCEEDED, ma.accessStatus
         )
         assertAccountIsAddedToAccountManager(ma)
         assertEquals("Oid: " + ma.actor, actor.oid, ma.actor.oid)
@@ -177,7 +177,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         assertTrue("Account is persistent $ma", builder.isPersistent())
         assertEquals(
             "Credentials of " + actor.getUniqueNameWithOrigin() + " successfully verified",
-            CredentialsVerificationStatus.SUCCEEDED, ma.credentialsVerified
+            AccessStatus.SUCCEEDED, ma.accessStatus
         )
         val actorId = ma.actorId
         assertTrue("Account " + actor.getUniqueNameWithOrigin() + " has ActorId", actorId != 0L)

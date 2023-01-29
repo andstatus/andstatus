@@ -18,7 +18,7 @@ package org.andstatus.app.context
 import android.database.sqlite.SQLiteDiskIOException
 import android.net.Uri
 import kotlinx.coroutines.delay
-import org.andstatus.app.account.CredentialsVerificationStatus
+import org.andstatus.app.account.AccessStatus
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
@@ -164,23 +164,23 @@ class DemoData {
 
     fun setSuccessfulAccountAsCurrent() {
         MyLog.i(TAG, "Persistent accounts: " + myContextHolder.getNow().accounts.size())
-        var found = (myContextHolder.getNow().accounts.currentAccount.credentialsVerified
-            == CredentialsVerificationStatus.SUCCEEDED)
+        var found = (myContextHolder.getNow().accounts.currentAccount.accessStatus
+            == AccessStatus.SUCCEEDED)
         if (!found) {
             for (ma in myContextHolder.getNow().accounts.get()) {
                 MyLog.i(TAG, ma.toString())
-                if (ma.credentialsVerified == CredentialsVerificationStatus.SUCCEEDED) {
+                if (ma.accessStatus == AccessStatus.SUCCEEDED) {
                     found = true
                     myContextHolder.getNow().accounts.setCurrentAccount(ma)
                     break
                 }
             }
         }
-        Assert.assertTrue("Found account, which is successfully verified", found)
+        Assert.assertTrue("Found account with access", found)
         Assert.assertTrue(
-            "Current account is successfully verified",
-            myContextHolder.getNow().accounts.currentAccount.credentialsVerified
-                == CredentialsVerificationStatus.SUCCEEDED
+            "Current account has access",
+            myContextHolder.getNow().accounts.currentAccount.accessStatus
+                == AccessStatus.SUCCEEDED
         )
     }
 

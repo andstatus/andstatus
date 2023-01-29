@@ -458,19 +458,19 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
                     .onSuccess { jso: JSONObject ->
                         val accountData: AccountData = AccountData.fromJson(myContext, jso, false)
                         val builder: MyAccountBuilder = MyAccountBuilder.loadFromAccountData(accountData, "fromJson")
-                        val verified = builder.myAccount.credentialsVerified
-                        if (verified != CredentialsVerificationStatus.SUCCEEDED) {
+                        val accessStatus = builder.myAccount.accessStatus
+                        if (accessStatus != AccessStatus.SUCCEEDED) {
                             newDescriptor.getLogger().logProgress(
                                 "Account " + builder.myAccount.getAccountName() +
                                     " was not successfully verified"
                             )
-                            builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED)
+                            builder.onSuccessfulAccess()
                         }
                         builder.saveSilently().onSuccess { r: Boolean? ->
                             MyLog.v(this, "$method; restored $order: $builder")
                             restoredCount.incrementAndGet()
-                            if (verified != CredentialsVerificationStatus.SUCCEEDED) {
-                                builder.setCredentialsVerificationStatus(verified)
+                            if (accessStatus != AccessStatus.SUCCEEDED) {
+                                builder.setAccessStatus(accessStatus)
                                 builder.saveSilently()
                             }
                         }.onFailure { e: Throwable? -> MyLog.e(this, "$method; failed to restore $order: $builder") }

@@ -65,9 +65,9 @@ class MyAccount internal constructor(
         private set
 
     /** Was this account authenticated last time _current_ credentials were verified?
-     * CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
+     *  [AccessStatus.NEVER] - after changes of "credentials": password/OAuth...
      */
-    internal var credentialsVerified: CredentialsVerificationStatus = CredentialsVerificationStatus.NEVER
+    internal var accessStatus: AccessStatus = AccessStatus.NEVER
 
     /** Is this account authenticated with OAuth?  */
     private var isOAuth = true
@@ -113,7 +113,7 @@ class MyAccount internal constructor(
     }
 
     fun isValidAndSucceeded(): Boolean {
-        return isValid && credentialsVerified == CredentialsVerificationStatus.SUCCEEDED
+        return isValid && accessStatus == AccessStatus.SUCCEEDED
     }
 
     fun isPersistent(): Boolean {
@@ -277,8 +277,8 @@ class MyAccount internal constructor(
             if (isOAuth()) {
                 members += "OAuth,"
             }
-            if (credentialsVerified != CredentialsVerificationStatus.SUCCEEDED) {
-                members += "verified:" + credentialsVerified.name + ","
+            if (accessStatus != AccessStatus.SUCCEEDED) {
+                members += "access:" + accessStatus.name + ","
             }
             if (getCredentialsPresent()) {
                 members += "credentialsPresent,"
@@ -416,7 +416,7 @@ class MyAccount internal constructor(
         isSyncedAutomatically = data.getDataBoolean(KEY_IS_SYNCED_AUTOMATICALLY, true)
         setOAuth(TriState.fromBoolean(data.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault())))
         setConnection()
-        credentialsVerified = CredentialsVerificationStatus.load(data)
+        accessStatus = AccessStatus.load(data)
         order = data.getDataInt(KEY_ORDER, 1)
     }
 }

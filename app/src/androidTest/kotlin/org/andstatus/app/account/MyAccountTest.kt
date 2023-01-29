@@ -77,11 +77,11 @@ class MyAccountTest {
         private fun fixAccountByName(myContext: MyContext, accountName: String?) {
             val ma = myContext.accounts.fromAccountName(accountName)
             Assert.assertTrue("Account $accountName is valid", ma.isValid)
-            if (ma.credentialsVerified == CredentialsVerificationStatus.SUCCEEDED) {
+            if (ma.accessStatus == AccessStatus.SUCCEEDED) {
                 return
             }
             val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(ma.getOAccountName())
-            builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED)
+            builder.onSuccessfulAccess()
             builder.saveSilently()
         }
     }

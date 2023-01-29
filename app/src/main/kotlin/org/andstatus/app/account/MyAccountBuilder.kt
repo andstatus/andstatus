@@ -56,11 +56,9 @@ class MyAccountBuilder private constructor(
                     + "' was not connected to the Actor table. actorId=" + myAccount.actor.actorId
             )
         }
-        if (!myAccount.getCredentialsPresent()
-            && myAccount.credentialsVerified == CredentialsVerificationStatus.SUCCEEDED
-        ) {
+        if (!myAccount.getCredentialsPresent() && myAccount.accessStatus == AccessStatus.SUCCEEDED) {
             MyLog.i(this, "Account's credentials were lost?! Fixing...")
-            setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
+            onAccessFailure()
             changed = true
         }
         if (changed && isPersistent()) {
@@ -208,7 +206,7 @@ class MyAccountBuilder private constructor(
             credentialsOfOtherAccount = true
         }
         if (ok) {
-            setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED)
+            onSuccessfulAccess()
             actor.lookupActorId()
             actor.lookupUser()
             actor.user.isMyUser = TriState.TRUE
@@ -238,7 +236,7 @@ class MyAccountBuilder private constructor(
             }
         }
         if (!ok || !myAccount.getCredentialsPresent()) {
-            setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
+            onAccessFailure()
         }
         save()
         if (credentialsOfOtherAccount) {
@@ -268,11 +266,28 @@ class MyAccountBuilder private constructor(
         getConnection().setUserTokenWithSecret(token, secret)
     }
 
-    fun setCredentialsVerificationStatus(cv: CredentialsVerificationStatus) {
-        myAccount.credentialsVerified = cv
-        if (cv != CredentialsVerificationStatus.SUCCEEDED) {
-            getConnection().clearAuthInformation()
+    fun onSuccessfulAccess() {
+        if (myAccount.accessStatus != AccessStatus.SUCCEEDED) {
+            myAccount.accessStatus = AccessStatus.SUCCEEDED
+            MyLog.i(this, "MyAccount succeeded $myAccount")
         }
+    }
+
+    fun onAccessFailure() {
+        if (myAccount.accessStatus == AccessStatus.SUCCEEDED) {
+            myAccount.accessStatus = AccessStatus.FAILED
+            MyLog.w(this, "MyAccount failed $myAccount")
+        }
+    }
+
+    fun setAccessStatus(cv: AccessStatus) {
+        myAccount.accessStatus = cv
+    }
+
+    fun logOut() {
+        myAccount.accessStatus = AccessStatus.NEVER
+        myAccount.connection.clearAuthInformation()
+        myAccount.connection.clearClientKeys()
     }
 
     fun registerClient(): Try<Unit> {
@@ -292,7 +307,7 @@ class MyAccountBuilder private constructor(
 
     fun setPassword(password: String?) {
         if (StringUtil.notEmpty(password, "").compareTo(getConnection().getPassword()) != 0) {
-            setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
+            onAccessFailure()
             getConnection().setPassword(password)
         }
     }

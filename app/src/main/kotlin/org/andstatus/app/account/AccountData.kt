@@ -71,7 +71,7 @@ class AccountData : Parcelable, AccountDataWriter, Identifiable {
 
     fun updateFrom(myAccount: MyAccount): AccountData {
         setDataString(MyAccount.KEY_ACTOR_OID, myAccount.actor.oid)
-        myAccount.credentialsVerified.put(this)
+        myAccount.accessStatus.put(this)
         setDataBoolean(MyAccount.KEY_OAUTH, myAccount.isOAuth())
         setDataLong(MyAccount.KEY_ACTOR_ID, myAccount.actor.actorId)
         myAccount.connection.saveTo(this)

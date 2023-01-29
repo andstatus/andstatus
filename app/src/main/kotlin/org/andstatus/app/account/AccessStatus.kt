@@ -6,12 +6,14 @@ import org.json.JSONObject
 /**
  *
  */
-enum class CredentialsVerificationStatus(private val id: Int) {
+enum class AccessStatus(private val id: Int) {
     /**
      * NEVER - means that the Account was never successfully authenticated with current credentials.
      * This is why we reset the state to NEVER every time credentials have been changed.
      */
-    NEVER(1), FAILED(2),
+    NEVER(1),
+    /** Access failed after being successful */
+    FAILED(2),
 
     /**
      * The Account was successfully authenticated
@@ -28,13 +30,13 @@ enum class CredentialsVerificationStatus(private val id: Int) {
 
     companion object {
         val KEY: String = "credentials_verified"
-        fun load(sp: SharedPreferences): CredentialsVerificationStatus {
+        fun load(sp: SharedPreferences): AccessStatus {
             val id = sp.getInt(KEY, NEVER.id)
             return fromId(id.toLong())
         }
 
-        fun fromId(id: Long): CredentialsVerificationStatus {
-            var status: CredentialsVerificationStatus = NEVER
+        fun fromId(id: Long): AccessStatus {
+            var status: AccessStatus = NEVER
             for (status1 in values()) {
                 if (status1.id.toLong() == id) {
                     status = status1
@@ -44,12 +46,12 @@ enum class CredentialsVerificationStatus(private val id: Int) {
             return status
         }
 
-        fun load(dr: AccountDataReader): CredentialsVerificationStatus {
+        fun load(dr: AccountDataReader): AccessStatus {
             val id = dr.getDataInt(KEY, NEVER.id)
             return fromId(id.toLong())
         }
 
-        fun load(jso: JSONObject): CredentialsVerificationStatus {
+        fun load(jso: JSONObject): AccessStatus {
             val id = jso.optInt(KEY, NEVER.id)
             return fromId(id.toLong())
         }
