@@ -17,6 +17,7 @@ package org.andstatus.app.net.http
 
 import android.net.Uri
 import com.github.scribejava.core.builder.ServiceBuilder
+import com.github.scribejava.core.extractors.OAuth2AccessTokenJsonExtractor
 import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig
 import com.github.scribejava.core.model.OAuth2AccessToken
 import com.github.scribejava.core.model.OAuthConstants
@@ -27,6 +28,7 @@ import com.github.scribejava.core.oauth.OAuth20Service
 import io.vavr.control.Try
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.OAuthProvider
+import org.andstatus.app.account.MyAccountBuilder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.social.ApiRoutineEnum
@@ -39,6 +41,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.nio.charset.StandardCharsets
+import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
@@ -61,7 +64,7 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
     private fun registerClient(forMastodon: Boolean): Try<Unit> {
         val uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT)
         val logMsg: String = "registerClient;" + (if (forMastodon) " Mastodon specific," else "") +
-                " origin: " + data.originUrl + ", url: " + uri
+            " origin: " + data.originUrl + ", url: " + uri
         MyLog.v(this) { logMsg }
         oauthClientKeys?.clear()
         return try {
@@ -119,8 +122,29 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
     }
 
     override fun refreshAccess(): Try<Unit> {
-        // TODO
-        return super.refreshAccess()
+        MyLog.d(this, "About to refresh Access token for ${data.getAccountName()}, old response:$accessSecret")
+        if (accessSecret.isEmpty()) {
+            return TryUtils.failure("No access token response")
+        }
+        val oldToken: OAuth2AccessToken = OAuth2AccessTokenJsonExtractor.instance()
+            .extract(Response(200, "", Collections.emptyMap(), accessSecret))
+        if (oldToken.refreshToken.isNullOrBlank()) {
+            return TryUtils.failure("No refreshToken in access token response")
+        }
+        val service = getService(false)
+        val newToken = service.refreshAccessToken(oldToken.refreshToken)
+
+        MyLog.d(
+            this, "Refreshed Access token for " + data.getAccountName() +
+                ": " + accessToken + ", " + accessSecret
+        )
+        if (newToken.accessToken.isNullOrBlank()) {
+            return TryUtils.failure("No accessToken in access token response")
+        }
+
+        val builder = MyAccountBuilder.fromAccountName(data.getAccountName())
+        builder.setAccessTokenWithSecret(newToken.accessToken, newToken.rawResponse)
+        return builder.saveSilently().map {}
     }
 
     override fun postRequest(result: HttpReadResult): HttpReadResult {
@@ -272,7 +296,7 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
                     request.addParameter("token", accessToken)
                     MyLog.v(this) {
                         ("Dialback authorization at " + originUrl
-                                + "; tokenUrl=" + tokenUrl + "; token=" + accessToken)
+                            + "; tokenUrl=" + tokenUrl + "; token=" + accessToken)
                     }
                     val token = OAuth2AccessToken(accessToken, null)
                     service.signRequest(token, request)
@@ -301,7 +325,7 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
                     conn.setRequestProperty("token", accessToken)
                     MyLog.v(this) {
                         ("Dialback authorization at " + originUrl + "; tokenUrl="
-                                + tokenUrl + "; token=" + accessToken)
+                            + tokenUrl + "; token=" + accessToken)
                     }
                     OAuth2AccessToken(accessToken, null)
                 }
