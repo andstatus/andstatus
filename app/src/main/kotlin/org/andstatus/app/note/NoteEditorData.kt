@@ -92,7 +92,7 @@ class NoteEditorData private constructor(
                 inReplyToActorId = MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, inReplyToNoteId)
             }
             val inReplyTo: AActivity = AActivity.newPartialNote(
-                getMyAccount().actor,
+                myAccount.actor,
                 Actor.load(myContext, inReplyToActorId),
                 MyQuery.idToOid(myContext, OidEnum.NOTE_OID, inReplyToNoteId, 0),
                 RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN
@@ -189,13 +189,11 @@ class NoteEditorData private constructor(
 
     fun save() {
         recreateKnownAudience(activity)
-        DataUpdater(getMyAccount()).onActivity(activity)
+        DataUpdater(myAccount).onActivity(activity)
         // TODO: Delete previous draft activities of this note
     }
 
-    fun getMyAccount(): MyAccount {
-        return ma
-    }
+    val myAccount: MyAccount get() = ma
 
     override val isEmpty: Boolean
         get() {

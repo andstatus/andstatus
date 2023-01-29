@@ -185,9 +185,9 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             ConversationActivity::class.java
         )
         val listItemId = helper.findListItemId(
-            "My loaded note, actorId:" + data.getMyAccount().actorId
+            "My loaded note, actorId:" + data.myAccount.actorId
         ) { item: BaseNoteViewItem<*> ->
-            (item.author.getActorId() == data.getMyAccount().actorId
+            (item.author.getActorId() == data.myAccount.actorId
                 && item.noteStatus == DownloadStatus.LOADED)
         }
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)
@@ -241,7 +241,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         val viewItem = helper.findListItem(
             "Some others loaded note"
         ) { item: BaseNoteViewItem<*> ->
-            (item.author.getActorId() != data.getMyAccount().actorId
+            (item.author.getActorId() != data.myAccount.actorId
                 && item.noteStatus == DownloadStatus.LOADED)
         } as ActivityViewItem
         val listItemId = viewItem.getId()
@@ -277,7 +277,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             "Wrong id of inReplyTo note of '$content': $logMsg", noteId,
             MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, draftNoteId)
         )
-        val audience: Audience = fromNoteId(data.getMyAccount().origin, draftNoteId)
+        val audience: Audience = fromNoteId(data.myAccount.origin, draftNoteId)
         assertTrue(
             "Audience of a reply to $viewItem\n $audience",
             audience.findSame(viewItem.noteViewItem.author.actor).isSuccess

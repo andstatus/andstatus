@@ -35,10 +35,10 @@ import java.util.concurrent.TimeUnit
 
 internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : TimelineDownloader(execContext) {
     override suspend fun download(): Try<Boolean> {
-        if (!getTimeline().isSyncable) {
-            return Try.failure(IllegalArgumentException("Timeline cannot be synced: ${getTimeline()}"))
+        if (!timeline.isSyncable) {
+            return Try.failure(IllegalArgumentException("Timeline cannot be synced: ${timeline}"))
         }
-        val syncTracker = TimelineSyncTracker(getTimeline(), isSyncYounger())
+        val syncTracker = TimelineSyncTracker(timeline, isSyncYounger())
         val hours = MyPreferences.getDontSynchronizeOldNotes()
         var downloadingLatest = false
         if (hours > 0 && RelativeTime.moreSecondsAgoThan(
@@ -70,23 +70,23 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
         val dataUpdater = DataUpdater(execContext)
         for (loopCounter in 0..99) {
             val limit = getConnection().fixedDownloadLimit(
-                toDownload, getTimeline().timelineType.connectionApiRoutine
+                toDownload, timeline.timelineType.connectionApiRoutine
             )
             syncTracker.onPositionRequested(positionToRequest)
             var tryPage: Try<InputTimelinePage>
-            tryPage = when (getTimeline().timelineType) {
+            tryPage = when (timeline.timelineType) {
                 TimelineType.SEARCH -> getConnection().searchNotes(
                     isSyncYounger(),
                     if (isSyncYounger()) positionToRequest else TimelinePosition.EMPTY,
                     if (isSyncYounger()) TimelinePosition.EMPTY else positionToRequest,
-                    limit, getTimeline().searchQuery
+                    limit, timeline.searchQuery
                 )
                 else -> {
                     val positionToRequest2 = positionToRequest
                     tryActor.flatMap { actor: Actor ->
                         getConnection().getTimeline(
                             isSyncYounger(),
-                            getTimeline().timelineType.connectionApiRoutine,
+                            timeline.timelineType.connectionApiRoutine,
                             if (isSyncYounger()) positionToRequest2 else TimelinePosition.EMPTY,
                             if (isSyncYounger()) TimelinePosition.EMPTY else positionToRequest2,
                             limit, actor
@@ -116,21 +116,34 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
                 }
                 positionToRequest = optPositionToRequest.get()
             }
-            if (tryPage.isFailure()) {
-                if (ConnectionException.of(tryPage.getCause()).statusCode != StatusCode.NOT_FOUND) {
-                    return Try.failure(tryPage.getCause())
+            if (tryPage.isFailure) {
+                val cause = tryPage.getCause()
+                when (ConnectionException.of(cause).statusCode) {
+                    StatusCode.NOT_FOUND -> {
+                        val optPositionToRequest = syncTracker.onNotFound()
+                        if (!optPositionToRequest.isPresent) {
+                            return Try.failure(
+                                ConnectionException.fromStatusCode(
+                                    StatusCode.NOT_FOUND,
+                                    "Timeline was not found at " + syncTracker.requestedPositions
+                                )
+                            )
+                        }
+                        MyLog.d(TAG, "Trying default timeline position")
+                        positionToRequest = optPositionToRequest.get()
+                    }
+                    StatusCode.UNAUTHORIZED -> {
+                        if (timeline.isSyncableAutomatically) {
+                            MyServiceManager.sendCommand(
+                                CommandData.newAccountCommand(CommandEnum.REFRESH_ACCESS, timeline.myAccountToSync)
+                            )
+                        }
+                        return Try.failure(cause)
+                    }
+                    else -> {
+                        return Try.failure(cause)
+                    }
                 }
-                val optPositionToRequest = syncTracker.onNotFound()
-                if (!optPositionToRequest.isPresent) {
-                    return Try.failure(
-                        ConnectionException.fromStatusCode(
-                            StatusCode.NOT_FOUND,
-                            "Timeline was not found at " + syncTracker.requestedPositions
-                        )
-                    )
-                }
-                MyLog.d(TAG, "Trying default timeline position")
-                positionToRequest = optPositionToRequest.get()
             }
         }
         dataUpdater.saveLum()
@@ -139,17 +152,17 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
 
     private fun getActorWithOid(): Try<Actor> {
         if (getActor().actorId == 0L) {
-            if (getTimeline().myAccountToSync.isValid) {
-                return Try.success(getTimeline().myAccountToSync.actor)
+            if (timeline.myAccountToSync.isValid) {
+                return Try.success(timeline.myAccountToSync.actor)
             }
         } else {
             val actor: Actor = Actor.load(execContext.myContext, getActor().actorId)
             return if (!actor.oid.isRealOid) {
-                Try.failure(hardConnectionException("No real ActorOid for $actor, timeline:${getTimeline()}"))
+                Try.failure(hardConnectionException("No real ActorOid for $actor, timeline:${timeline}"))
             } else Try.success(actor)
         }
-        return if (getTimeline().timelineType.isForUser()) {
-            Try.failure(hardConnectionException("No actor for the timeline:${getTimeline()}"))
+        return if (timeline.timelineType.isForUser()) {
+            Try.failure(hardConnectionException("No actor for the timeline:${timeline}"))
         } else Try.success(Actor.EMPTY)
     }
 

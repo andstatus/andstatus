@@ -1187,7 +1187,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                     message = e.message ?: ""
                     MyLog.i(this, e)
                 } finally {
-                    state.builder.setUserTokenWithSecret(accessToken, accessSecret)
+                    state.builder.setAccessTokenWithSecret(accessToken, accessSecret)
                     MyLog.d(
                         this, "Access token for " + myAccount.getAccountName() +
                             ": " + accessToken + ", " + accessSecret

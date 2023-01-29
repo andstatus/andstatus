@@ -48,7 +48,7 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
             oauthClientKeys?.getConsumerSecret()
         )
         if (credentialsPresent) {
-            consumer.setTokenWithSecret(userToken, userSecret)
+            consumer.setTokenWithSecret(accessToken, accessSecret)
         }
         return consumer
     }

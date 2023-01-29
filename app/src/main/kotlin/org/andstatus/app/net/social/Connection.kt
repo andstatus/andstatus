@@ -123,6 +123,10 @@ abstract class Connection protected constructor() : IsEmpty {
         return Try.success(RateLimitStatus())
     }
 
+    open fun refreshAccess(): Try<Boolean> {
+        return Try.success(false)
+    }
+
     /**
      * Do we need password to be set?
      * By default password is not needed and is ignored
@@ -349,9 +353,9 @@ abstract class Connection protected constructor() : IsEmpty {
         http.clearAuthInformation()
     }
 
-    fun setUserTokenWithSecret(token: String?, secret: String?) {
+    fun setAccessTokenWithSecret(token: String?, secret: String?) {
         http.apply {
-            if (this is HttpConnectionOAuth) this.setUserTokenWithSecret(token, secret)
+            if (this is HttpConnectionOAuth) this.setAccessTokenWithSecret(token, secret)
         }
     }
 

@@ -37,8 +37,8 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
 
     init {
         isStub = true
-        userToken = "token"
-        userSecret = "secret"
+        accessToken = "token"
+        accessSecret = "secret"
         MyLog.v(this, "Created, instanceId:$instanceId")
     }
 
@@ -229,8 +229,8 @@ class HttpConnectionOAuthStub : HttpConnectionOAuth() {
         results.forEach { builder.atNewLine("Result", it) }
         builder.atNewLine("Responses", responses.size)
         responses.forEach(builder::atNewLine)
-        builder.atNewLine("userToken", userToken)
-        builder.append("userSecret", userSecret)
+        builder.atNewLine("accessToken", accessToken)
+        builder.append("accessSecret", accessSecret)
         builder.append("networkDelayMs", networkDelayMs)
         builder.append("instanceId", instanceId)
         return builder.toKeyValue("HttpConnectionStub")

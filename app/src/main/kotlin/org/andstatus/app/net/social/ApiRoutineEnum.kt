@@ -70,6 +70,7 @@ enum class ApiRoutineEnum constructor(private val isNotePrivate: Boolean = false
      */
     AUTHORIZATION_SERVER_METADATA,
     OAUTH_ACCESS_TOKEN, OAUTH_AUTHORIZE, OAUTH_REQUEST_TOKEN,
+    OAUTH_REFRESH_TOKEN,
 
     /** For the "OAuth Dynamic Client Registration",
      * is the link proper?: http://hdknr.github.io/docs/identity/oauth_reg.html   */

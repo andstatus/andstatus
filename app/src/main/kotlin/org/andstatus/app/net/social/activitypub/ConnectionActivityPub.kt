@@ -21,6 +21,7 @@ import org.andstatus.app.account.AccountConnectionData
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.HttpConnectionOAuth
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.net.social.AActivity
@@ -238,7 +239,7 @@ class ConnectionActivityPub : Connection() {
     ): Try<InputTimelinePage> {
         val requestedPosition = if (syncYounger) youngestPosition else oldestPosition
 
-            // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
+        // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
         return ConnectionAndUrl.fromActor(this, apiRoutine, requestedPosition, actor)
             .map { conu: ConnectionAndUrl -> conu.withSyncDirection(syncYounger) }
             .flatMap { conu: ConnectionAndUrl -> getActivities(conu) }
@@ -294,7 +295,7 @@ class ConnectionActivityPub : Connection() {
         }
     }
 
-    fun activityFromOid(oid: String?): AActivity {
+    private fun activityFromOid(oid: String?): AActivity {
         return if (StringUtil.isEmptyOrTemp(oid)) AActivity.EMPTY
         else AActivity.from(data.getAccountActor(), ActivityType.UPDATE)
     }
@@ -380,7 +381,7 @@ class ConnectionActivityPub : Connection() {
         return Actor.fromOid(data.getOrigin(), id)
     }
 
-    fun updatedOrCreatedDate(jso: JSONObject?): Long {
+    private fun updatedOrCreatedDate(jso: JSONObject?): Long {
         val dateUpdated = dateFromJson(jso, "updated")
         return if (dateUpdated > RelativeTime.SOME_TIME_AGO) dateUpdated else dateFromJson(jso, "published")
     }
@@ -483,6 +484,11 @@ class ConnectionActivityPub : Connection() {
         .flatMap { conu: ConnectionAndUrl -> conu.newRequest().let(conu::execute) }
         .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
         .map { jso: JSONObject -> actorFromJson(jso) }
+
+    override fun refreshAccess(): Try<Boolean> =
+        ConnectionAndUrl.getConnection(this, ApiRoutineEnum.OAUTH_REFRESH_TOKEN, data.getAccountActor())
+            .map(HttpConnectionOAuth::refreshAccess)
+            .map { true }
 
     companion object {
         private val TAG: String = ConnectionActivityPub::class.simpleName!!

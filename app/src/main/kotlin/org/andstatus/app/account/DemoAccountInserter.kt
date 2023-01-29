@@ -159,9 +159,9 @@ class DemoAccountInserter(private val myContext: MyContext) {
         }
         val builder: MyAccountBuilder = MyAccountBuilder.fromAccountName(accountName).setOAuth(true)
         if (builder.myAccount.isOAuth()) {
-            builder.setUserTokenWithSecret(
-                "sampleUserTokenFor" + actor.uniqueName,
-                "sampleUserSecretFor" + actor.uniqueName
+            builder.setAccessTokenWithSecret(
+                "sampleAccessTokenFor" + actor.uniqueName,
+                "sampleAccessSecretFor" + actor.uniqueName
             )
         } else {
             builder.setPassword("samplePasswordFor" + actor.uniqueName)

@@ -48,13 +48,11 @@ internal abstract class TimelineDownloader(execContext: CommandExecutionContext)
     }
 
     abstract suspend fun download(): Try<Boolean>
-    protected fun getTimeline(): Timeline {
-        return execContext.timeline
-    }
+    protected val timeline: Timeline get() = execContext.timeline
 
     override fun onResultIsReady() {
         execContext.result.takeIf { it.executed }?.let { result ->
-            getTimeline().onSyncEnded(execContext.myContext, result)
+            timeline.onSyncEnded(execContext.myContext, result)
             if (result.downloadedCount > 0) {
                 if (!result.hasError && !isStopping()) {
                     DataPruner(execContext.myContext).prune()

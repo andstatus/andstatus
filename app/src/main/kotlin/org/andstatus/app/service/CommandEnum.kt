@@ -29,24 +29,30 @@ import org.andstatus.app.util.MyLog
  */
 enum class CommandEnum constructor(
     /** code of the enum that is used in notes  */
-    private val code: String?,
+    private val code: String,
     /** The id of the string resource with the localized name of this enum to use in UI  */
     private val titleResId: Int = 0,
     /** less value of the  priority means higher priority  */
-    private val priority: Int = 0,
-    private val connectionRequired: ConnectionRequired = ConnectionRequired.ANY
+    val priority: Int = 1,
+    val connectionRequired: ConnectionRequired = ConnectionRequired.ANY
 ) {
     /** The action is unknown  */
     UNKNOWN("unknown"),
 
     /** There is no action  */
     EMPTY("empty"),
+    REFRESH_ACCESS("refresh-access", 0, 5, ConnectionRequired.SYNC),
     GET_TIMELINE("fetch-timeline", 0, 24, ConnectionRequired.SYNC),
     GET_OLDER_TIMELINE("get-older-timeline", 0, 24, ConnectionRequired.SYNC),
 
     /** Fetch avatar for the specified actor  */
     GET_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, 29, ConnectionRequired.SYNC),
-    GET_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, 31, ConnectionRequired.DOWNLOAD_ATTACHMENT),
+    GET_ATTACHMENT(
+        "fetch-attachment",
+        R.string.title_command_fetch_attachment,
+        31,
+        ConnectionRequired.DOWNLOAD_ATTACHMENT
+    ),
     LIKE("create-favorite", R.string.menu_item_favorite, 20, ConnectionRequired.SYNC),
     UNDO_LIKE("destroy-favorite", R.string.menu_item_destroy_favorite, 20, ConnectionRequired.SYNC),
     GET_ACTOR("get-user", R.string.get_user, 15, ConnectionRequired.SYNC),
@@ -60,6 +66,7 @@ enum class CommandEnum constructor(
 
     /** This command is for sending both public and private notes  */
     UPDATE_NOTE("update-status", R.string.button_create_message, 10, ConnectionRequired.SYNC),
+
     /** The same as #UPDATE_NOTE but is used to show that some attachment needs to be uploaded */
     UPDATE_MEDIA("update-media", R.string.button_create_message, 11, ConnectionRequired.DOWNLOAD_ATTACHMENT),
     DELETE_NOTE("destroy-status", R.string.menu_item_destroy_status, 17, ConnectionRequired.SYNC),
@@ -77,14 +84,14 @@ enum class CommandEnum constructor(
     /**
      * String code for the Command to be used in notes
      */
-    fun save(): String? {
+    fun save(): String {
         return code
     }
 
     /** Localized title for UI
      * @param accountName
      */
-    fun getTitle(myContext: MyContext?, accountName: String?): CharSequence? {
+    fun getTitle(myContext: MyContext?, accountName: String?): CharSequence {
         if (titleResId == 0 || myContext == null || myContext.isEmpty) {
             return this.code
         }
@@ -94,14 +101,6 @@ enum class CommandEnum constructor(
             resId = ma.origin.alternativeTermForResourceId(titleResId)
         }
         return myContext.context.getText(resId)
-    }
-
-    fun getPriority(): Int {
-        return priority
-    }
-
-    fun getConnectionRequired(): ConnectionRequired {
-        return connectionRequired
     }
 
     fun isGetTimeline(): Boolean {

@@ -32,25 +32,25 @@ import java.net.URL
 
 abstract class HttpConnectionOAuth : HttpConnection() {
     private var logMe = false
-    private fun userTokenKey(): String {
+    private fun accessTokenKey(): String {
         return "user_token"
     }
 
-    private fun userSecretKey(): String {
+    private fun accessSecretKey(): String {
         return "user_secret"
     }
 
     var oauthClientKeys: OAuthClientKeys? = null
-    var urlForUserToken: URL? = null
+    var urlForAccessToken: URL? = null
 
     @Volatile
     var authorizationServerMetadata: AuthorizationServerMetadata? = null
 
     @Volatile
-    var userToken: String = ""
+    var accessToken: String = ""
 
     @Volatile
-    var userSecret: String = ""
+    var accessSecret: String = ""
 
     override var data: HttpConnectionData
         get() = super.data
@@ -60,10 +60,10 @@ abstract class HttpConnectionOAuth : HttpConnection() {
             authorizationServerMetadata = AuthorizationServerMetadata.load(connectionData)
             // We look for saved user keys
             connectionData.dataReader?.let { dataReader ->
-                if (dataReader.dataContains(userTokenKey()) && dataReader.dataContains(userSecretKey())) {
-                    userToken = dataReader.getDataString(userTokenKey())
-                    userSecret = dataReader.getDataString(userSecretKey())
-                    setUserTokenWithSecret(userToken, userSecret)
+                if (dataReader.dataContains(accessTokenKey()) && dataReader.dataContains(accessSecretKey())) {
+                    accessToken = dataReader.getDataString(accessTokenKey())
+                    accessSecret = dataReader.getDataString(accessSecretKey())
+                    setAccessTokenWithSecret(accessToken, accessSecret)
                 }
             }
         }
@@ -107,15 +107,19 @@ abstract class HttpConnectionOAuth : HttpConnection() {
         return TryUtils.SUCCESS
     }
 
+    open fun refreshAccess(): Try<Unit> {
+        return TryUtils.SUCCESS
+    }
+
     override val credentialsPresent: Boolean
         get() {
             val yes = areClientKeysPresent()
-                    && userToken.isNotEmpty()
-                    && userSecret.isNotEmpty()
+                    && accessToken.isNotEmpty()
+                    && accessSecret.isNotEmpty()
             if (!yes && logMe) {
                 MyLog.v(this) {
                     ("Credentials presence: clientKeys:" + oauthClientKeys?.areKeysPresent()
-                            + "; userKeys:" + userToken.isNotEmpty() + "," + userSecret.isNotEmpty())
+                            + "; accessToken:" + accessToken.isNotEmpty() + ", accessSecret:" + accessSecret.isNotEmpty())
                 }
             }
             return yes
@@ -179,10 +183,10 @@ abstract class HttpConnectionOAuth : HttpConnection() {
      * @param token empty value means to clear the old values
      * @param secret
      */
-    fun setUserTokenWithSecret(token: String?, secret: String?) {
+    fun setAccessTokenWithSecret(token: String?, secret: String?) {
         synchronized(this) {
-            userToken = token ?: ""
-            userSecret = secret ?: ""
+            accessToken = token ?: ""
+            accessSecret = secret ?: ""
         }
         if (logMe) {
             MyLog.v(this) {
@@ -194,30 +198,30 @@ abstract class HttpConnectionOAuth : HttpConnection() {
 
     override fun saveTo(dw: AccountDataWriter): Boolean {
         var changed = super.saveTo(dw)
-        if (!TextUtils.equals(userToken, dw.getDataString(userTokenKey())) ||
-            !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))
+        if (!TextUtils.equals(accessToken, dw.getDataString(accessTokenKey())) ||
+            !TextUtils.equals(accessSecret, dw.getDataString(accessSecretKey()))
         ) {
             changed = true
-            if (userToken.isEmpty()) {
-                dw.setDataString(userTokenKey(), "")
+            if (accessToken.isEmpty()) {
+                dw.setDataString(accessTokenKey(), "")
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Token")
                 }
             } else {
-                dw.setDataString(userTokenKey(), userToken)
+                dw.setDataString(accessTokenKey(), accessToken)
                 if (logMe) {
-                    MyLog.d(TAG, "Saving OAuth Token: $userToken")
+                    MyLog.d(TAG, "Saving OAuth Token: $accessToken")
                 }
             }
-            if (userSecret.isEmpty()) {
-                dw.setDataString(userSecretKey(), "")
+            if (accessSecret.isEmpty()) {
+                dw.setDataString(accessSecretKey(), "")
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Secret")
                 }
             } else {
-                dw.setDataString(userSecretKey(), userSecret)
+                dw.setDataString(accessSecretKey(), accessSecret)
                 if (logMe) {
-                    MyLog.d(TAG, "Saving OAuth Secret: $userSecret")
+                    MyLog.d(TAG, "Saving OAuth Secret: $accessSecret")
                 }
             }
         }
@@ -225,7 +229,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
     }
 
     override fun clearAuthInformation() {
-        setUserTokenWithSecret("", "")
+        setAccessTokenWithSecret("", "")
     }
 
     companion object {

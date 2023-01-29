@@ -262,8 +262,8 @@ class MyAccountBuilder private constructor(
         return Try.success(this)
     }
 
-    fun setUserTokenWithSecret(token: String?, secret: String?) {
-        getConnection().setUserTokenWithSecret(token, secret)
+    fun setAccessTokenWithSecret(token: String?, secret: String?) {
+        getConnection().setAccessTokenWithSecret(token, secret)
     }
 
     fun onSuccessfulAccess() {

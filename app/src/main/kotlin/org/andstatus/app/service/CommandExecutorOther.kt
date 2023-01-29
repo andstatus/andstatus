@@ -16,6 +16,7 @@
 package org.andstatus.app.service
 
 import io.vavr.control.Try
+import org.andstatus.app.account.MyAccountBuilder
 import org.andstatus.app.actor.Group
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
@@ -78,6 +79,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                 .setConnectionRequired(ConnectionRequired.DOWNLOAD_ATTACHMENT)
                 .load(execContext.commandData)
             CommandEnum.GET_AVATAR -> AvatarDownloader(getActor()).load(execContext.commandData)
+            CommandEnum.REFRESH_ACCESS -> refreshAccess()
             else -> TryUtils.failure("Unexpected command here " + execContext.commandData)
         }
     }
@@ -487,15 +489,29 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             }
     }
 
-    private fun rateLimitStatus(): Try<Boolean> {
-        return getConnection().rateLimitStatus()
-            .map { rateLimitStatus: RateLimitStatus ->
-                if (rateLimitStatus.nonEmpty) {
-                    execContext.result.remainingHits = rateLimitStatus.remaining
-                    execContext.result.hourlyLimit = rateLimitStatus.limit
-                }
-                rateLimitStatus.nonEmpty
+    private fun rateLimitStatus(): Try<Boolean> = getConnection().rateLimitStatus()
+        .map { rateLimitStatus: RateLimitStatus ->
+            if (rateLimitStatus.nonEmpty) {
+                execContext.result.remainingHits = rateLimitStatus.remaining
+                execContext.result.hourlyLimit = rateLimitStatus.limit
             }
+            rateLimitStatus.nonEmpty
+        }
+
+    private fun refreshAccess(): Try<Boolean> = getConnection().refreshAccess()
+
+    override fun onResultIsReady() {
+        when (execContext.commandData.command) {
+            CommandEnum.REFRESH_ACCESS -> {
+                if (execContext.result.hasError && !execContext.result.shouldWeRetry) {
+                    MyAccountBuilder.fromMyAccount(execContext.myAccount).apply {
+                        onAccessFailure()
+                        save()
+                    }
+                }
+            }
+            else -> {}
+        }
     }
 
     companion object {

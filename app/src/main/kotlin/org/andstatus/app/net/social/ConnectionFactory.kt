@@ -53,7 +53,7 @@ object ConnectionFactory {
                 }
             }
 
-        if (http is HttpConnectionOAuth) http.urlForUserToken = acData.getOriginUrl()
+        if (http is HttpConnectionOAuth) http.urlForAccessToken = acData.getOriginUrl()
         http.data = HttpConnectionData.fromAccountConnectionData(acData)
         return http
     }

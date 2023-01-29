@@ -206,10 +206,10 @@ class CommandData private constructor(
         }
         greater = if (commandId == other.commandId) {
             return 0
-        } else if (command.getPriority() == other.command.getPriority()) {
+        } else if (command.priority == other.command.priority) {
             if (commandId > other.commandId) 1 else -1
         } else {
-            if (command.getPriority() > other.command.getPriority()) 1 else -1
+            if (command.priority > other.command.priority) 1 else -1
         }
         return greater
     }

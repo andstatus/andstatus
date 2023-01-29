@@ -183,7 +183,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
             oauthClientKeys?.getConsumerSecret()
         )
         if (credentialsPresent) {
-            consumer.setTokenWithSecret(userToken, userSecret)
+            consumer.setTokenWithSecret(accessToken, accessSecret)
         }
         return consumer
     }
@@ -232,7 +232,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
 
     protected open fun signConnection(conn: HttpURLConnection, consumer: OAuthConsumer, redirected: Boolean) {
         val originUrl = data.originUrl
-        val tokenUrl = urlForUserToken
+        val tokenUrl = urlForAccessToken
         if (!credentialsPresent || originUrl == null || tokenUrl == null) {
             return
         }
@@ -247,10 +247,10 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                 } else {
                     conn.setRequestProperty("Authorization", "Dialback")
                     conn.setRequestProperty("host", tokenUrl.host)
-                    conn.setRequestProperty("token", userToken)
+                    conn.setRequestProperty("token", accessToken)
                     MyLog.v(this) {
                         ("Dialback authorization at " + originUrl
-                            + "; urlForUserToken=" + tokenUrl + "; token=" + userToken)
+                            + "; tokenUrl=" + tokenUrl + "; token=" + accessToken)
                     }
                     consumer.sign(conn)
                 }

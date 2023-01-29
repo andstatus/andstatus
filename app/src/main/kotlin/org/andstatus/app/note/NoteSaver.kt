@@ -82,7 +82,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
             }
             if (currentData.activity.getNote().getStatus() == DownloadStatus.SENDING) {
                 val commandData: CommandData = CommandData.newUpdateStatus(
-                    currentData.getMyAccount(),
+                    currentData.myAccount,
                     currentData.activity.id, currentData.getNoteId()
                 )
                 MyServiceManager.sendManualForegroundCommand(commandData)
@@ -96,8 +96,8 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
             return
         }
         val commandData: CommandData = if (data.activity.getNote().getStatus() == DownloadStatus.DELETED)
-            CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId())
-        else CommandData.newUpdateStatus(data.getMyAccount(), data.activity.id, data.getNoteId())
+            CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.myAccount, data.getNoteId())
+        else CommandData.newUpdateStatus(data.myAccount, data.activity.id, data.getNoteId())
         MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.UNKNOWN)
             .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }

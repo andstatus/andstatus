@@ -118,6 +118,11 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         return params
     }
 
+    override fun refreshAccess(): Try<Unit> {
+        // TODO
+        return super.refreshAccess()
+    }
+
     override fun postRequest(result: HttpReadResult): HttpReadResult {
         return if (doOauthRequest()) {
             postRequestOauth(result)
@@ -248,13 +253,13 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
 
     private fun signRequest(request: OAuthRequest, service: OAuth20Service, redirected: Boolean) {
         val originUrl = data.originUrl
-        val urlForUserToken = urlForUserToken
-        if (!credentialsPresent || originUrl == null || urlForUserToken == null) {
+        val tokenUrl = urlForAccessToken
+        if (!credentialsPresent || originUrl == null || tokenUrl == null) {
             return
         }
         try {
-            if (originUrl.host == urlForUserToken.host) {
-                val token = OAuth2AccessToken(userToken, userSecret)
+            if (originUrl.host == tokenUrl.host) {
+                val token = OAuth2AccessToken(accessToken, accessSecret)
                 service.signRequest(token, request)
             } else {
                 // See http://tools.ietf.org/html/draft-prodromou-dialback-00
@@ -263,13 +268,13 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
                     service.signRequest(token, request)
                 } else {
                     request.addParameter("Authorization", "Dialback")
-                    request.addParameter("host", urlForUserToken.host)
-                    request.addParameter("token", userToken)
+                    request.addParameter("host", tokenUrl.host)
+                    request.addParameter("token", accessToken)
                     MyLog.v(this) {
                         ("Dialback authorization at " + originUrl
-                                + "; urlForUserToken=" + urlForUserToken + "; token=" + userToken)
+                                + "; tokenUrl=" + tokenUrl + "; token=" + accessToken)
                     }
-                    val token = OAuth2AccessToken(userToken, null)
+                    val token = OAuth2AccessToken(accessToken, null)
                     service.signRequest(token, request)
                 }
             }
@@ -280,25 +285,25 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
 
     override fun signConnection(conn: HttpURLConnection, consumer: OAuthConsumer, redirected: Boolean) {
         val originUrl = data.originUrl
-        val tokenUrl = urlForUserToken
+        val tokenUrl = urlForAccessToken
         if (!credentialsPresent || originUrl == null || tokenUrl == null) {
             return
         }
         try {
             val token: OAuth2AccessToken = if (originUrl.host == tokenUrl.host) {
-                OAuth2AccessToken(userToken, userSecret)
+                OAuth2AccessToken(accessToken, accessSecret)
             } else {
                 if (redirected) {
                     OAuth2AccessToken("", null)
                 } else {
                     conn.setRequestProperty("Authorization", "Dialback")
                     conn.setRequestProperty("host", tokenUrl.host)
-                    conn.setRequestProperty("token", userToken)
+                    conn.setRequestProperty("token", accessToken)
                     MyLog.v(this) {
-                        ("Dialback authorization at " + originUrl + "; urlForUserToken="
-                                + tokenUrl + "; token=" + userToken)
+                        ("Dialback authorization at " + originUrl + "; tokenUrl="
+                                + tokenUrl + "; token=" + accessToken)
                     }
-                    OAuth2AccessToken(userToken, null)
+                    OAuth2AccessToken(accessToken, null)
                 }
             }
             conn.setRequestProperty(OAuthConstants.ACCESS_TOKEN, token.accessToken)

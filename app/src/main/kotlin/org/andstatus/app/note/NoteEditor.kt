@@ -114,7 +114,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                 editorData.setContent(s.toString(), editorContentMediaType)
                 MyLog.v(editorData) { "Content updated to '" + editorData.getContent() + "'" }
                 mCharsLeftText.setText(
-                        editorData.getMyAccount().charactersLeftForNote(editorData.getContent()).toString())
+                        editorData.myAccount.charactersLeftForNote(editorData.getContent()).toString())
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -245,7 +245,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
 
     private fun accountForCreateNoteButton(): MyAccount {
         return if (isVisible()) {
-            editorData.getMyAccount()
+            editorData.myAccount
         } else {
             editorContainer.getActivity().myContext.accounts.currentAccount
         }
@@ -256,7 +256,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         if (item != null) {
             val enableAttach = (isVisible()
                     && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true)
-                    && (!editorData.visibility.isPrivate || editorData.getMyAccount().origin.originType
+                    && (!editorData.visibility.isPrivate || editorData.myAccount.origin.originType
                     .allowAttachmentForPrivateNote()))
             item.isEnabled = enableAttach
             item.isVisible = enableAttach
@@ -363,9 +363,9 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         command.showAfterSave = true
         command.beingEdited = true
         saveData(command)
-        if (data.getMyAccount().connection.hasApiEndpoint(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
+        if (data.myAccount.connection.hasApiEndpoint(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             MyServiceManager.sendForegroundCommand(
-                    CommandData.newAccountCommand(CommandEnum.RATE_LIMIT_STATUS, data.getMyAccount()))
+                    CommandData.newAccountCommand(CommandEnum.RATE_LIMIT_STATUS, data.myAccount))
         }
     }
 
@@ -403,12 +403,12 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             bodyView.setSelection(bodyView.getText().toString().length)
         }
         MyUrlSpan.showText(editorView, R.id.note_author, if (shouldShowAccountName())
-            editorData.getMyAccount().getAccountName() else "", false, false)
+            editorData.myAccount.getAccountName() else "", false, false)
         showNoteDetails()
         MyUrlSpan.showText(editorView, R.id.inReplyToBody,
                 editorData.activity.getNote().inReplyTo.getNote().content, TextMediaType.HTML,
                 false, false)
-        mCharsLeftText.setText(editorData.getMyAccount().charactersLeftForNote(editorData.getContent()).toString())
+        mCharsLeftText.setText(editorData.myAccount.charactersLeftForNote(editorData.getContent()).toString())
         showAttachedImages()
     }
 
@@ -417,9 +417,9 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             bodyView.setAdapter(null)
         } else {
             val adapterOld = bodyView.getAdapter() as ActorAutoCompleteAdapter?
-            if (adapterOld == null || adapterOld.getOrigin() != editorData.getMyAccount().origin) {
+            if (adapterOld == null || adapterOld.getOrigin() != editorData.myAccount.origin) {
                 val adapter = ActorAutoCompleteAdapter(getActivity(),
-                        editorData.getMyAccount().origin)
+                        editorData.myAccount.origin)
                 bodyView.setAdapter(adapter)
             }
         }
@@ -476,7 +476,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             discardAndHide()
         } else if (editorData.isEmpty) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message, Toast.LENGTH_SHORT).show()
-        } else if (editorData.getMyAccount().charactersLeftForNote(editorData.getContent()) < 0) {
+        } else if (editorData.myAccount.charactersLeftForNote(editorData.getContent()) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long, Toast.LENGTH_SHORT).show()
         } else if (editorData.getAttachedImageFiles()
                         .tooLargeAttachment(MyPreferences.getMaximumSizeOfAttachmentBytes()).isPresent) {

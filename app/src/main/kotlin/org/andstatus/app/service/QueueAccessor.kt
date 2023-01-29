@@ -90,7 +90,7 @@ class QueueAccessor(private val cq: CommandQueue, val accessorType: CommandQueue
         ) {
             return true
         }
-        return !commandData.command.getConnectionRequired().isConnectionStateOk(cq.myContext.connectionState)
+        return !commandData.command.connectionRequired.isConnectionStateOk(cq.myContext.connectionState)
     }
 
     suspend fun moveCommandsFromPreToMainQueue() {
