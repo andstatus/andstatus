@@ -88,7 +88,7 @@ class MyAccount internal constructor(
     }
 
     fun getWebFingerId(): String {
-        return actor.getWebFingerId()
+        return actor.webFingerId
     }
 
     override val isEmpty: Boolean

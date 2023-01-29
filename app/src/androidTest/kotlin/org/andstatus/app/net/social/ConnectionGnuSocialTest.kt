@@ -73,7 +73,7 @@ class ConnectionGnuSocialTest {
         var author = activity.getAuthor()
         Assert.assertEquals("Oid", "116387", author.oid)
         Assert.assertEquals("Username", "aru", author.getUsername())
-        Assert.assertEquals("WebFinger ID", "aru@status.vinilox.eu", author.getWebFingerId())
+        Assert.assertEquals("WebFinger ID", "aru@status.vinilox.eu", author.webFingerId)
         Assert.assertEquals("Display name", "aru", author.getRealName())
         Assert.assertEquals(
             "Description",
@@ -156,7 +156,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("Actor", author.oid, activity.getActor().oid)
         Assert.assertEquals("Oid", "114973", author.oid)
         Assert.assertEquals("Username", "mmn", author.getUsername())
-        Assert.assertEquals("WebFinger ID", "mmn@social.umeahackerspace.se", author.getWebFingerId())
+        Assert.assertEquals("WebFinger ID", "mmn@social.umeahackerspace.se", author.webFingerId)
         Assert.assertEquals("Display name", "mmn", author.getRealName())
         Assert.assertEquals("Description", "", author.getSummary())
         Assert.assertEquals("Location", "Umeå, Sweden", author.location)
@@ -245,8 +245,8 @@ class ConnectionGnuSocialTest {
         val result = stub.http.getResults()[0]
         assertThat(result.url?.toExternalForm() ?: "", containsString(NOTE_OID))
         Assert.assertEquals("Activity oid; $activity", "10341833", activity.getOid())
-        Assert.assertEquals("Actor; $activity", "andstatus@loadaverage.org", activity.getActor().getWebFingerId())
-        Assert.assertEquals("Author; $activity", "igor@herds.eu", activity.getAuthor().getWebFingerId())
+        Assert.assertEquals("Actor; $activity", "andstatus@loadaverage.org", activity.getActor().webFingerId)
+        Assert.assertEquals("Author; $activity", "igor@herds.eu", activity.getAuthor().webFingerId)
     }
 
     @Test

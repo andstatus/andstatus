@@ -285,7 +285,7 @@ abstract class Connection protected constructor() : IsEmpty {
 
     /**
      * Universal method for several Timeline Types...
-     * @param syncYounger
+     * @param syncYounger Sync younger if true, or older if false
      * @param actor For the [ApiRoutineEnum.ACTOR_TIMELINE], null for the other timelines
      */
     abstract fun getTimeline(

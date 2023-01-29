@@ -31,6 +31,7 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UriUtils.isRealOid
+import org.andstatus.app.util.UriUtils.nonRealOid
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -142,7 +143,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
     }
 
     override fun getConversation(conversationOid: String): Try<List<AActivity>> {
-        if (UriUtils.nonRealOid(conversationOid)) return TryUtils.emptyList()
+        if (conversationOid.nonRealOid) return TryUtils.emptyList()
         val apiRoutine = ApiRoutineEnum.GET_CONVERSATION
         return getApiPathWithNoteId(apiRoutine, conversationOid)
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }

@@ -248,7 +248,7 @@ class CommandData private constructor(
         when (command) {
             CommandEnum.GET_AVATAR -> {
                 builder.withSpace(ListScope.USER.timelinePreposition(myContext))
-                builder.withSpace(timeline.actor.getWebFingerId())
+                builder.withSpace(timeline.actor.webFingerId)
                 if (myContext.accounts.getDistinctOriginsCount() > 1) {
                     builder.withSpace(ListScope.ORIGIN.timelinePreposition(myContext))
                     builder.withSpace(commandTimeline.origin.name)

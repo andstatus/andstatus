@@ -200,7 +200,7 @@ class ConnectionPumpioTest {
         Assert.assertEquals("Activity Object", AObjectType.ACTOR, activity.getObjectType())
         var objActor = activity.getObjActor()
         Assert.assertEquals("objActor followed", "acct:atalsta@microca.st", objActor.oid)
-        Assert.assertEquals("WebFinger ID", "atalsta@microca.st", objActor.getWebFingerId())
+        Assert.assertEquals("WebFinger ID", "atalsta@microca.st", objActor.webFingerId)
         Assert.assertEquals("Actor is my friend", TriState.FALSE, objActor.isMyFriend)
         ind++
         activity = timeline[ind] ?: throw IllegalStateException("No activity")
@@ -208,7 +208,7 @@ class ConnectionPumpioTest {
         Assert.assertEquals("Actor", AObjectType.ACTOR, activity.getObjectType())
         objActor = activity.getObjActor()
         Assert.assertEquals("Url of the actor", "https://identi.ca/t131t", activity.getActor().getProfileUrl())
-        Assert.assertEquals("WebFinger ID", "t131t@identi.ca", activity.getActor().getWebFingerId())
+        Assert.assertEquals("WebFinger ID", "t131t@identi.ca", activity.getActor().webFingerId)
         Assert.assertEquals("Actor is not my friend", TriState.TRUE, objActor.isMyFriend)
         Assert.assertEquals("Url of objActor", "https://fmrl.me/grdryn", objActor.getProfileUrl())
         ind++
@@ -338,7 +338,7 @@ class ConnectionPumpioTest {
         )
         Assert.assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl())
         Assert.assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", actor.getHomepage())
-        Assert.assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.getWebFingerId())
+        Assert.assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.webFingerId)
         Assert.assertEquals("Description", "Does the Pope shit in the woods?", actor.getSummary())
         Assert.assertEquals("Notes count", 0, actor.notesCount)
         Assert.assertEquals("Favorites count", 0, actor.favoritesCount)

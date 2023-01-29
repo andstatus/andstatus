@@ -84,7 +84,7 @@ class ConnectionTwitterTest {
         val author = activity.getAuthor()
         Assert.assertEquals("Oid", "221452291", author.oid)
         Assert.assertEquals("Username", "Know", author.getUsername())
-        Assert.assertEquals("WebFinger ID", "know@$hostName", author.getWebFingerId())
+        Assert.assertEquals("WebFinger ID", "know@$hostName", author.webFingerId)
         Assert.assertEquals("Display name", "Just so you Know", author.getRealName())
         Assert.assertEquals(
             "Description",

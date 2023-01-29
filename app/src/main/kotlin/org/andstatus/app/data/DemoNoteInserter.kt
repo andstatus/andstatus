@@ -283,13 +283,13 @@ class DemoNoteInserter(val accountActor: Actor) {
                 )
             }
             val webFingerIdActual = MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, actor.actorId)
-            if (actor.getWebFingerId().isEmpty()) {
+            if (actor.webFingerId.isEmpty()) {
                 assertTrue(
                     "WebFingerID=$webFingerIdActual for $actor", webFingerIdActual.isEmpty()
                         || Actor.isWebFingerIdValid(webFingerIdActual)
                 )
             } else {
-                assertEquals("WebFingerID=$webFingerIdActual for $actor", actor.getWebFingerId(), webFingerIdActual)
+                assertEquals("WebFingerID=$webFingerIdActual for $actor", actor.webFingerId, webFingerIdActual)
                 assertTrue("Invalid WebFingerID $actor", Actor.isWebFingerIdValid(webFingerIdActual))
             }
             if (actor.getRealName().isNotEmpty()) {

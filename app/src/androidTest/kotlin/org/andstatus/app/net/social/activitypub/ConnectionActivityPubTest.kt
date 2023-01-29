@@ -114,7 +114,7 @@ class ConnectionActivityPubTest {
         )
         val actor = activity.getActor()
         assertEquals("Actor's oid $activity", "https://pleroma.site/users/ActivityPubTester", actor.oid)
-        assertEquals("Actor's Webfinger $activity", "", actor.getWebFingerId())
+        assertEquals("Actor's Webfinger $activity", "", actor.webFingerId)
         assertEquals("Actor is an Author", actor, activity.getAuthor())
         assertEquals("Should be Create $activity", ActivityType.CREATE, activity.type)
         assertEquals(
@@ -137,7 +137,7 @@ class ConnectionActivityPubTest {
             objActor = activity.getObjActor()
             assertEquals("Actor is my friend", TriState.UNKNOWN, objActor.isMyFriend)
             assertEquals("Url of objActor", "https://pleroma.site/users/AndStatus", objActor.getProfileUrl())
-            assertEquals("WebFinger ID", "andstatus@pleroma.site", objActor.getWebFingerId())
+            assertEquals("WebFinger ID", "andstatus@pleroma.site", objActor.webFingerId)
             assertEquals(
                 "Avatar",
                 "https://pleroma.site/media/c5f60f06-6620-46b6-b676-f9f4571b518e/bfa1745b8c221225cc6551805d9eaa8bebe5f36fc1856b4924bcfda5d620334d.png",
@@ -288,7 +288,7 @@ class ConnectionActivityPubTest {
         )
         val actor9 = activity9.getActor()
         assertEquals("Actor's oid $activity9", VerifyCredentialsActivityPubTest.ACTOR_OID, actor9.oid)
-        assertEquals("Actor's Webfinger $activity9", "", actor9.getWebFingerId())
+        assertEquals("Actor's Webfinger $activity9", "", actor9.webFingerId)
         assertEquals("Actor is an Author", actor9, activity9.getAuthor())
         assertEquals("Should be Create $activity9", ActivityType.CREATE, activity9.type)
         assertEquals(

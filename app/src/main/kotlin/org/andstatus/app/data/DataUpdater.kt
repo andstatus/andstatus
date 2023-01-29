@@ -46,6 +46,7 @@ import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UriUtils.isRealOid
+import org.andstatus.app.util.UriUtils.nonRealOid
 import java.util.*
 
 /**
@@ -329,7 +330,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
     private fun updateInReplyTo(activity: AActivity, values: ContentValues) {
         val inReply = activity.getNote().inReplyTo
         if (inReply.getNote().oid.isNotEmpty()) {
-            if (UriUtils.nonRealOid(inReply.getNote().conversationOid)) {
+            if (inReply.getNote().conversationOid.nonRealOid) {
                 inReply.getNote().setConversationOid(activity.getNote().conversationOid)
             }
             DataUpdater(execContext).onActivity(inReply)
@@ -410,7 +411,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                     username = StringUtil.toTempOid(actorOid)
                 }
                 values.put(ActorTable.USERNAME, username)
-                values.put(ActorTable.WEBFINGER_ID, actor.getWebFingerId())
+                values.put(ActorTable.WEBFINGER_ID, actor.webFingerId)
                 var realName = actor.getRealName()
                 if (SharedPreferencesUtil.isEmpty(realName)) {
                     realName = username

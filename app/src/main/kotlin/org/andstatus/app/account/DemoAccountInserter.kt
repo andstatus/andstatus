@@ -124,7 +124,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         assertTrue("Account actorOid", ma.getActorOid().equals(actorOid, ignoreCase = true))
         assertEquals(
             "No WebFingerId stored $actor",
-            actor.getWebFingerId(), MyQuery.actorIdToWebfingerId(myContext, actor.actorId)
+            actor.webFingerId, MyQuery.actorIdToWebfingerId(myContext, actor.actorId)
         )
         assertEquals(
             "Account is not successfully verified",

@@ -73,7 +73,7 @@ class ListMembersTest : ActivityTest<GroupMembersScreen>() {
             val expectedOid = "179473"
             val member: Actor = memberItems.actorByOid(expectedOid)
             Assert.assertTrue("Not found member $expectedOid in $memberItems", member.nonEmpty)
-            Assert.assertEquals("Member of $listOfUser: $member", "andstatus@mstdn.io", member.getWebFingerId())
+            Assert.assertEquals("Member of $listOfUser: $member", "andstatus@mstdn.io", member.webFingerId)
         }
     }
 }

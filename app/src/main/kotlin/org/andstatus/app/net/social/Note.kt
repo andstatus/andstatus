@@ -38,6 +38,7 @@ import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UriUtils.isRealOid
+import org.andstatus.app.util.UriUtils.nonRealOid
 import java.util.*
 
 /**
@@ -210,7 +211,7 @@ class Note : AObject {
     }
 
     override val isEmpty: Boolean
-        get() = !origin.isValid || UriUtils.nonRealOid(oid) && status != DownloadStatus.DELETED &&
+        get() = !origin.isValid || oid.nonRealOid && status != DownloadStatus.DELETED &&
             (status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT || !hasSomeContent())
 
     fun hasSomeContent(): Boolean = name.isNotEmpty() || summary.isNotEmpty() || content.isNotEmpty() ||

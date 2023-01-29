@@ -73,7 +73,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals(logMsg, 3, actors.size.toLong())
         Assert.assertEquals(logMsg, "unknownUser", actors[2].getUsername())
         Assert.assertEquals(logMsg, "unknownUser@example.com", actors[2].uniqueName)
-        Assert.assertEquals(logMsg, "unknownuser@example.com", actors[2].getWebFingerId())
+        Assert.assertEquals(logMsg, "unknownuser@example.com", actors[2].webFingerId)
         val actorsScreen = Try.of { tryToOpenActorsScreen(method, helper, logMsg) }
             .recover(Throwable::class.java) { tryToOpenActorsScreen(method, helper, logMsg) }
             .getOrElseThrow { it }
@@ -132,7 +132,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
     private fun compareAttributes(expected: Actor, actual: Actor, forActorsScreen: Boolean) {
         Assert.assertEquals("Oid", expected.oid, actual.oid)
         Assert.assertEquals("Username", expected.getUsername(), actual.getUsername())
-        Assert.assertEquals("WebFinger ID", expected.getWebFingerId(), actual.getWebFingerId())
+        Assert.assertEquals("WebFinger ID", expected.webFingerId, actual.webFingerId)
         Assert.assertEquals("Display name", expected.getRealName(), actual.getRealName())
         Assert.assertEquals("Description", expected.getSummary(), actual.getSummary())
         Assert.assertEquals("Location", expected.location, actual.location)

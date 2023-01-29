@@ -77,20 +77,24 @@ object SpanUtil {
             val mentionedByAtWebfingerID = audience.getNonSpecialActors().stream()
                     .filter { actor: Actor ->
                         actor.isWebFingerIdValid() &&
-                                upperText.contains("@" + actor.getWebFingerId().toUpperCase())
+                                upperText.contains("@" + actor.webFingerId.toUpperCase())
                     }.findAny().orElse(Actor.EMPTY)
             if (mentionedByAtWebfingerID.nonEmpty) {
-                return notesByActorSpanAdded(spannable, audience, region,
-                        "@" + mentionedByAtWebfingerID.getWebFingerId(), mentionedByAtWebfingerID)
+                return notesByActorSpanAdded(
+                    spannable, audience, region,
+                    "@" + mentionedByAtWebfingerID.webFingerId, mentionedByAtWebfingerID
+                )
             } else {
                 val mentionedByWebfingerID = audience.getNonSpecialActors().stream()
                         .filter { actor: Actor ->
                             actor.isWebFingerIdValid() &&
-                                    upperText.contains(actor.getWebFingerId().toUpperCase())
+                                    upperText.contains(actor.webFingerId.toUpperCase())
                         }.findAny().orElse(Actor.EMPTY)
                 if (mentionedByWebfingerID.nonEmpty) {
-                    return notesByActorSpanAdded(spannable, audience, region,
-                            mentionedByWebfingerID.getWebFingerId(), mentionedByWebfingerID)
+                    return notesByActorSpanAdded(
+                        spannable, audience, region,
+                        mentionedByWebfingerID.webFingerId, mentionedByWebfingerID
+                    )
                 } else {
                     val mentionedByUsername = audience.getNonSpecialActors().stream()
                             .filter { actor: Actor ->

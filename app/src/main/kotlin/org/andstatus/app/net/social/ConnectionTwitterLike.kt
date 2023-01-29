@@ -30,6 +30,7 @@ import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UriUtils.isRealOid
+import org.andstatus.app.util.UriUtils.nonRealOid
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -618,7 +619,7 @@ abstract class ConnectionTwitterLike : Connection() {
     }
 
     private fun noteAction(apiRoutine: ApiRoutineEnum, noteOid: String, asPost: Boolean): Try<JSONObject> {
-        return if (UriUtils.nonRealOid(noteOid)) Try.success(JsonUtils.EMPTY) else getApiPathWithNoteId(
+        return if (noteOid.nonRealOid) Try.success(JsonUtils.EMPTY) else getApiPathWithNoteId(
             apiRoutine,
             noteOid
         )

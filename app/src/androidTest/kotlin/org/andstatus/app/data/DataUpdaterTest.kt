@@ -474,7 +474,7 @@ $activity""",
             MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1)
         )
         Assert.assertEquals(
-            "Partially defined Actor shouldn't change WebfingerId", actor1.getWebFingerId(),
+            "Partially defined Actor shouldn't change WebfingerId", actor1.webFingerId,
             MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, actorId1)
         )
         Assert.assertEquals(
@@ -754,7 +754,7 @@ $activity""",
         Assert.assertEquals(DemoData.demoData.t131tUsername, actorFromAnotherOrigin.getUsername())
         val myAuthor1: Actor = Actor.Companion.fromOid(accountActor.origin, actorFromAnotherOrigin.oid + "22")
         myAuthor1.setUsername(actorFromAnotherOrigin.getUsername())
-        myAuthor1.setWebFingerId(actorFromAnotherOrigin.getWebFingerId())
+        myAuthor1.setWebFingerId(actorFromAnotherOrigin.webFingerId)
         assertTrue("Should be unknown if it's mine$myAuthor1", myAuthor1.user.isMyUser.unknown)
         myAuthor1.build()
         assertTrue("After build should be unknown if it's mine$myAuthor1", myAuthor1.user.isMyUser.unknown)

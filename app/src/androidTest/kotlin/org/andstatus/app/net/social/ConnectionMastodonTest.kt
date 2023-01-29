@@ -134,7 +134,7 @@ class ConnectionMastodonTest {
             note3.audience().getRecipients().stream()
                 .filter { actor: Actor -> actor.getUsername() == "lanodan" }
                 .findAny()
-                .map { obj: Actor -> obj.getWebFingerId() }
+                .map { obj: Actor -> obj.webFingerId }
                 .orElse("(not found)"))
         val actor3 = activity3.getActor()
         val stringDate = "2016-10-14T08:05:36.581Z"
@@ -206,7 +206,7 @@ class ConnectionMastodonTest {
         var actor = activity.getActor()
         assertEquals("Actor's Oid", "15451", actor.oid)
         assertEquals("Actor's username", "Chaosphere", actor.getUsername())
-        assertEquals("WebfingerId", "chaosphere@mastodon.social", actor.getWebFingerId())
+        assertEquals("WebfingerId", "chaosphere@mastodon.social", actor.webFingerId)
         assertEquals("Author's username$activity", "AndStatus", activity.getAuthor().getUsername())
         assertEquals("Favorited $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
         ind = 2
@@ -224,7 +224,7 @@ class ConnectionMastodonTest {
         actor = activity.getActor()
         assertEquals("Actor's Oid", "48790", actor.oid)
         assertEquals("Actor's Username", "vfrmedia", actor.getUsername())
-        assertEquals("WebfingerId", "vfrmedia@social.tchncs.de", actor.getWebFingerId())
+        assertEquals("WebfingerId", "vfrmedia@social.tchncs.de", actor.webFingerId)
         ind = 17
         activity = timeline[ind] ?: throw IllegalStateException("No activity")
         assertEquals("Is not FOLLOW $activity", ActivityType.FOLLOW, activity.type)
@@ -232,7 +232,7 @@ class ConnectionMastodonTest {
         actor = activity.getActor()
         assertEquals("Actor's Oid", "24853", actor.oid)
         assertEquals("Username", "resir014", actor.getUsername())
-        assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId())
+        assertEquals("WebfingerId", "resir014@icosahedron.website", actor.webFingerId)
         val objActor = activity.getObjActor()
         assertEquals("Not following me$activity", accountActor.oid, objActor.oid)
         ind = 19
@@ -243,7 +243,7 @@ class ConnectionMastodonTest {
         actor = activity.getActor()
         assertEquals("Actor's Oid", "119218", actor.oid)
         assertEquals("Username", "izwx6502", actor.getUsername())
-        assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId())
+        assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.webFingerId)
     }
 
     @Test
@@ -253,7 +253,7 @@ class ConnectionMastodonTest {
         assertTrue(actor.toString(), actor.nonEmpty)
         assertEquals("Actor's Oid", "5962", actor.oid)
         assertEquals("Username", "AndStatus", actor.getUsername())
-        assertEquals("WebfingerId", "andstatus@mastodon.social", actor.getWebFingerId())
+        assertEquals("WebfingerId", "andstatus@mastodon.social", actor.webFingerId)
         MatcherAssert.assertThat("Bio", actor.getSummary(), CoreMatchers.containsString("multiple Social networks"))
         MatcherAssert.assertThat("Fields appended", actor.getSummary(), CoreMatchers.containsString("Website: "))
         MatcherAssert.assertThat("Fields appended", actor.getSummary(), CoreMatchers.containsString("FAQ: "))
@@ -276,7 +276,7 @@ class ConnectionMastodonTest {
         val actor = activity.getActor()
         assertEquals("Actor's Oid", "32", actor.oid)
         assertEquals("Username", "somePettter", actor.getUsername())
-        assertEquals("WebfingerId", "somepettter@social.umeahackerspace.se", actor.getWebFingerId())
+        assertEquals("WebfingerId", "somepettter@social.umeahackerspace.se", actor.webFingerId)
         val note = activity.getNote()
         MatcherAssert.assertThat(note.content, CoreMatchers.containsString("CW should properly"))
         activity.setUpdatedNow(0)
@@ -304,7 +304,7 @@ class ConnectionMastodonTest {
             .filter { a: Actor -> a.getUsername() == username }.findAny().orElse(Actor.EMPTY)
         assertTrue("$username should be mentioned: $activity", actor.nonEmpty)
         assertEquals("Mentioned user: $activity", profileUrl, actor.getProfileUrl())
-        assertEquals("Mentioned user: $activity", webFingerId, actor.getWebFingerId())
+        assertEquals("Mentioned user: $activity", webFingerId, actor.webFingerId)
     }
 
     @Test
@@ -316,13 +316,13 @@ class ConnectionMastodonTest {
         val actor = activity.getActor()
         assertEquals("Actor's Oid", "153111", actor.oid)
         assertEquals("Username", "ZeniorXV", actor.getUsername())
-        assertEquals("WebfingerId", "zeniorxv@mastodon.social", actor.getWebFingerId())
+        assertEquals("WebfingerId", "zeniorxv@mastodon.social", actor.webFingerId)
         val note = activity.getNote()
         MatcherAssert.assertThat(note.content, CoreMatchers.containsString("car of the future"))
         val author = activity.getAuthor()
         assertEquals("Author's Oid", "159379", author.oid)
         assertEquals("Username", "bjoern", author.getUsername())
-        assertEquals("WebfingerId", "bjoern@mastodon.social", author.getWebFingerId())
+        assertEquals("WebfingerId", "bjoern@mastodon.social", author.webFingerId)
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
@@ -425,7 +425,7 @@ class ConnectionMastodonTest {
             assertEquals("username $list0", expectedOid, list0.getUsername())
             assertEquals("$list0", "AndStatus in Fediverse", list0.getRealName())
             assertEquals(
-                "$list0", expectedOid + "@" + accountActor.origin.url?.host, list0.getWebFingerId()
+                "$list0", expectedOid + "@" + accountActor.origin.url?.host, list0.webFingerId
             )
             assertEquals("Parent should be the account actor", accountActor, list0.getParent())
             assertTrue("Should be fully defined: $list0", list0.isFullyDefined())
@@ -456,7 +456,7 @@ class ConnectionMastodonTest {
             assertEquals("oid $member0", expectedOid, member0.oid)
             assertEquals("username $member0", "AndStatus", member0.getUsername())
             assertEquals("$member0", "AndStatus@mstdn.io", member0.getRealName())
-            assertEquals("$member0", "andstatus@mstdn.io", member0.getWebFingerId())
+            assertEquals("$member0", "andstatus@mstdn.io", member0.webFingerId)
             assertEquals("Should be no Parent", Actor.EMPTY, member0.getParent())
             assertTrue("Should be fully defined: $member0", member0.isFullyDefined())
         }.also {

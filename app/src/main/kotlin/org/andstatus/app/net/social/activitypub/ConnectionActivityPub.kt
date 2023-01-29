@@ -238,7 +238,7 @@ class ConnectionActivityPub : Connection() {
     ): Try<InputTimelinePage> {
         val requestedPosition = if (syncYounger) youngestPosition else oldestPosition
 
-        // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
+            // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
         return ConnectionAndUrl.fromActor(this, apiRoutine, requestedPosition, actor)
             .map { conu: ConnectionAndUrl -> conu.withSyncDirection(syncYounger) }
             .flatMap { conu: ConnectionAndUrl -> getActivities(conu) }

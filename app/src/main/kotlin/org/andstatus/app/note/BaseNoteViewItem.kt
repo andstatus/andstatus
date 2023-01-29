@@ -126,7 +126,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
             noteSource = Html.fromHtml(via).toString().trim { it <= ' ' }
         }
         for (actor in MyQuery.getRebloggers(myContextHolder.getNow().database, getOrigin(), getNoteId())) {
-            rebloggers[actor.actorId] = actor.getWebFingerId()
+            rebloggers[actor.actorId] = actor.webFingerId
         }
     }
 

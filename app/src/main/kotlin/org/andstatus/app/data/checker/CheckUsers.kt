@@ -70,7 +70,7 @@ internal class CheckUsers : DataChecker() {
         }
         for (actor in results.actorsToFixWebFingerId) {
             val sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.WEBFINGER_ID + "='"
-                    + actor.getWebFingerId() + "' WHERE " + BaseColumns._ID + "=" + actor.actorId)
+                + actor.webFingerId + "' WHERE " + BaseColumns._ID + "=" + actor.actorId)
             myContext.database?.execSQL(sql)
             changedCount++
         }
@@ -110,11 +110,11 @@ internal class CheckUsers : DataChecker() {
                 rowsCount++
                 val actor: Actor = Actor.fromCursor(myContext, c, false)
                 val webFingerId = DbUtils.getString(c, ActorTable.WEBFINGER_ID)
-                if (actor.isWebFingerIdValid() && actor.getWebFingerId() != webFingerId) {
+                if (actor.isWebFingerIdValid() && actor.webFingerId != webFingerId) {
                     results.actorsToFixWebFingerId.add(actor)
                     results.problems.add("Fix webfingerId: '$webFingerId' $actor")
                 }
-                if (myContext.accounts.fromWebFingerId(actor.getWebFingerId()).isValid
+                if (myContext.accounts.fromWebFingerId(actor.webFingerId).isValid
                     && actor.user.isMyUser.untrue
                 ) {
                     actor.user.isMyUser = TriState.TRUE
@@ -128,12 +128,12 @@ internal class CheckUsers : DataChecker() {
                     results.actorsWithoutOrigin.add(actor)
                     results.problems.add("Fix no Origin: $actor")
                 }
-                if (key.isEmpty() || actor.getWebFingerId() != key) {
+                if (key.isEmpty() || actor.webFingerId != key) {
                     if (shouldMerge(actors)) {
                         results.actorsToMergeUsers[key] = actors
                         results.problems.add("Fix merge users 1 \"$key\": $actors")
                     }
-                    key = actor.getWebFingerId()
+                    key = actor.webFingerId
                     actors = HashSet()
                 }
                 actors.add(actor)

@@ -116,8 +116,8 @@ class ConnectionException : IOException {
             return ConnectionException(statusCode, detailMessage, host2)
         }
 
-        fun hardConnectionException(detailMessage: String?, throwable: Throwable?): ConnectionException {
-            return ConnectionException(StatusCode.OK, detailMessage, throwable, null, true)
+        fun hardConnectionException(detailMessage: String?, throwable: Throwable? = null): ConnectionException {
+            return ConnectionException(StatusCode.UNKNOWN, detailMessage, throwable, null, true)
         }
 
         private fun isHardFromCause(cause: Throwable?): Boolean = when (cause) {

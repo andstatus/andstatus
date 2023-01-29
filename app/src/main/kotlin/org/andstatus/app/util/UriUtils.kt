@@ -70,7 +70,7 @@ object UriUtils {
 
     fun fromString(strUri: String?): Uri {
         return if (strUri == null || SharedPreferencesUtil.isEmpty(strUri)) Uri.EMPTY
-            else Uri.parse(strUri.trim { it <= ' ' })
+        else Uri.parse(strUri.trim { it <= ' ' })
     }
 
     fun notNull(uri: Uri?): Uri {
@@ -96,7 +96,7 @@ object UriUtils {
     fun takePersistableUriPermission(context: Context, uri: Uri, takeFlagsIn: Int) {
         if (takeFlagsIn and Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0) {
             val takeFlags = takeFlagsIn and (Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+                or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             try {
                 context.getContentResolver().takePersistableUriPermission(uri, takeFlags)
             } catch (e: SecurityException) {
@@ -121,11 +121,9 @@ object UriUtils {
         return false
     }
 
-    val String?.isRealOid: Boolean get() = this?.let { !nonRealOid(this) } ?: false
+    val String?.isRealOid: Boolean get() = !this.nonRealOid
 
-    fun nonRealOid(oid: String?): Boolean {
-        return StringUtil.isEmptyOrTemp(oid)
-    }
+    val String?.nonRealOid: Boolean get() = StringUtil.isEmptyOrTemp(this)
 
     fun nonEmptyOid(oid: String?): Boolean {
         return !isEmptyOid(oid)

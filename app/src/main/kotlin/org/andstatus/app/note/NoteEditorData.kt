@@ -143,7 +143,7 @@ class NoteEditorData private constructor(
 
     fun toTestSummary(): String {
         val values = ContentValues()
-        values.put(ActorTable.WEBFINGER_ID, activity.getActor().getWebFingerId())
+        values.put(ActorTable.WEBFINGER_ID, activity.getActor().webFingerId)
         values.put(NoteTable.NAME, activity.getNote().getName())
         values.put(NoteTable.SUMMARY, activity.getNote().summary)
         values.put(NoteTable.SENSITIVE, activity.getNote().isSensitive())

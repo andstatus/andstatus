@@ -144,7 +144,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
             user2 = User.load(myContext, actor.actorId)
         }
         if (user2.isEmpty && actor.isWebFingerIdValid()) {
-            user2 = User.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.getWebFingerId(), false))
+            user2 = User.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.webFingerId, false))
         }
         if (user2.isEmpty) {
             user2 = User.getNew()

@@ -54,6 +54,7 @@ import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UriUtils.isRealOid
+import org.andstatus.app.util.UriUtils.nonRealOid
 import org.andstatus.app.util.UrlUtils
 import org.junit.Assert
 import java.net.URL
@@ -74,7 +75,8 @@ class Actor private constructor(// In our system
     private var parentActorId: Long = 0
     private var parentActor: LazyVal<Actor> = LazyVal.of(::EMPTY)
     private var username: String = ""
-    private var webFingerId: String = ""
+    var webFingerId: String = ""
+        private set
     private var isWebFingerIdValid = false
     private var realName: String = ""
     private var summary: String = ""
@@ -146,7 +148,7 @@ class Actor private constructor(// In our system
             if (this === EMPTY) return true
             if (isConstant()) return false
             if (!origin.isValid) return true
-            return actorId == 0L && UriUtils.nonRealOid(oid) && !isWebFingerIdValid() && !isUsernameValid()
+            return actorId == 0L && oid.nonRealOid && !isWebFingerIdValid() && !isUsernameValid()
         }
 
     fun dontStore(): Boolean {
@@ -161,7 +163,7 @@ class Actor private constructor(// In our system
     }
 
     private fun calcIsFullyDefined(): TriState {
-        if (cannotAdd || UriUtils.nonRealOid(oid)) return TriState.FALSE
+        if (cannotAdd || oid.nonRealOid) return TriState.FALSE
 
         return TriState.fromBoolean(isWebFingerIdValid() && isUsernameValid())
     }
@@ -303,7 +305,7 @@ class Actor private constructor(// In our system
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return if (other !is Actor) false else isSame(other as Actor, true)
+        return if (other is Actor) isSame(other, true) else false
     }
 
     override fun hashCode(): Int {
@@ -314,10 +316,11 @@ class Actor private constructor(// In our system
         if (oid.isRealOid) {
             return 31 * result + oid.hashCode()
         } else if (isWebFingerIdValid) {
-            return 31 * result + getWebFingerId().hashCode()
+            return 31 * result + webFingerId.hashCode()
         } else if (isUsernameValid()) {
             result = 31 * result + getUsername().hashCode()
         }
+        result = 31 * result + groupType.id.hashCode()
         return result
     }
 
@@ -328,7 +331,6 @@ class Actor private constructor(// In our system
 
     fun isSame(other: Actor, sameOriginOnly: Boolean): Boolean {
         if (this === other) return true
-        if (other == null) return false
         if (actorId != 0L) {
             if (actorId == other.actorId) return true
         }
@@ -402,10 +404,6 @@ class Actor private constructor(// In our system
         return this
     }
 
-    fun getWebFingerId(): String {
-        return webFingerId
-    }
-
     fun isWebFingerIdValid(): Boolean {
         return isWebFingerIdValid
     }
@@ -418,7 +416,7 @@ class Actor private constructor(// In our system
             return OriginPumpio.ACCOUNT_PREFIX + getUsername() + "@" + getIdHost()
         }
         return if (isWebFingerIdValid()) {
-            OriginPumpio.ACCOUNT_PREFIX + getWebFingerId()
+            OriginPumpio.ACCOUNT_PREFIX + webFingerId
         } else ""
     }
 
@@ -569,9 +567,9 @@ class Actor private constructor(// In our system
             profileUri.host ?: ""
         } else UrlUtils.getHost(oid).orElseGet {
             if (isWebFingerIdValid) {
-                val pos = getWebFingerId().indexOf('@')
+                val pos = webFingerId.indexOf('@')
                 if (pos >= 0) {
-                    return@orElseGet getWebFingerId().substring(pos + 1)
+                    return@orElseGet webFingerId.substring(pos + 1)
                 }
             }
             ""
@@ -585,9 +583,9 @@ class Actor private constructor(// In our system
     private fun evalIdHost(): String {
         return UrlUtils.getHost(oid).orElseGet {
             if (isWebFingerIdValid) {
-                val pos = getWebFingerId().indexOf('@')
+                val pos = webFingerId.indexOf('@')
                 if (pos >= 0) {
-                    return@orElseGet getWebFingerId().substring(pos + 1)
+                    return@orElseGet webFingerId.substring(pos + 1)
                 }
             }
             if (!profileUri.host.isNullOrEmpty()) {

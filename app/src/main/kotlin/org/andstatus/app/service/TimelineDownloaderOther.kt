@@ -19,6 +19,7 @@ import io.vavr.control.Try
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.ConnectionException.Companion.hardConnectionException
 import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.InputTimelinePage
@@ -28,6 +29,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.UriUtils.isRealOid
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -39,8 +41,11 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
         val syncTracker = TimelineSyncTracker(getTimeline(), isSyncYounger())
         val hours = MyPreferences.getDontSynchronizeOldNotes()
         var downloadingLatest = false
-        if (hours > 0 && RelativeTime.moreSecondsAgoThan(syncTracker.getPreviousSyncedDate(),
-                        TimeUnit.HOURS.toSeconds(hours))) {
+        if (hours > 0 && RelativeTime.moreSecondsAgoThan(
+                syncTracker.getPreviousSyncedDate(),
+                TimeUnit.HOURS.toSeconds(hours)
+            )
+        ) {
             downloadingLatest = true
             syncTracker.clearPosition()
         } else if (syncTracker.getPreviousPosition().isEmpty) {
@@ -52,11 +57,11 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
         var positionToRequest = syncTracker.getPreviousPosition()
         if (MyLog.isDebugEnabled()) {
             var strLog = ("Loading "
-                    + (if (downloadingLatest) "latest " else "")
-                    + execContext.commandData.toCommandSummary(execContext.myContext))
+                + (if (downloadingLatest) "latest " else "")
+                + execContext.commandData.toCommandSummary(execContext.myContext))
             if (syncTracker.getPreviousItemDate() > 0) {
                 strLog += ("; last Timeline item at=" + Date(syncTracker.getPreviousItemDate()).toString()
-                        + "; last time downloaded at=" + Date(syncTracker.getPreviousSyncedDate()).toString())
+                    + "; last time downloaded at=" + Date(syncTracker.getPreviousSyncedDate()).toString())
             }
             strLog += "; Position to request: " + positionToRequest.getPosition()
             MyLog.d(TAG, strLog)
@@ -65,7 +70,8 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
         val dataUpdater = DataUpdater(execContext)
         for (loopCounter in 0..99) {
             val limit = getConnection().fixedDownloadLimit(
-                    toDownload, getTimeline().timelineType.connectionApiRoutine)
+                toDownload, getTimeline().timelineType.connectionApiRoutine
+            )
             syncTracker.onPositionRequested(positionToRequest)
             var tryPage: Try<InputTimelinePage>
             tryPage = when (getTimeline().timelineType) {
@@ -78,11 +84,13 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
                 else -> {
                     val positionToRequest2 = positionToRequest
                     tryActor.flatMap { actor: Actor ->
-                        getConnection().getTimeline(isSyncYounger(),
-                                getTimeline().timelineType.connectionApiRoutine,
-                                if (isSyncYounger()) positionToRequest2 else TimelinePosition.EMPTY,
-                                if (isSyncYounger()) TimelinePosition.EMPTY else positionToRequest2,
-                                limit, actor)
+                        getConnection().getTimeline(
+                            isSyncYounger(),
+                            getTimeline().timelineType.connectionApiRoutine,
+                            if (isSyncYounger()) positionToRequest2 else TimelinePosition.EMPTY,
+                            if (isSyncYounger()) TimelinePosition.EMPTY else positionToRequest2,
+                            limit, actor
+                        )
                     }
                 }
             }
@@ -90,11 +98,14 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
                 val page = tryPage.get()
                 syncTracker.onNewPage(page)
                 for (activity in page.items) {
-                    syncTracker.onNewActivity(activity.getUpdatedDate(), activity.getPrevTimelinePosition(),
-                            activity.getNextTimelinePosition())
+                    syncTracker.onNewActivity(
+                        activity.getUpdatedDate(), activity.getPrevTimelinePosition(),
+                        activity.getNextTimelinePosition()
+                    )
                     if (activity.isSubscribedByMe() != TriState.FALSE
-                            && activity.getUpdatedDate() > 0 && execContext.timeline.timelineType.isSubscribedByMe()
-                            && execContext.myContext.users.isMe(execContext.timeline.actor)) {
+                        && activity.getUpdatedDate() > 0 && execContext.timeline.timelineType.isSubscribedByMe()
+                        && execContext.myContext.users.isMe(execContext.timeline.actor)
+                    ) {
                         activity.setSubscribedByMe(TriState.TRUE)
                     }
                     dataUpdater.onActivity(activity, false)
@@ -111,8 +122,12 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
                 }
                 val optPositionToRequest = syncTracker.onNotFound()
                 if (!optPositionToRequest.isPresent) {
-                    return Try.failure(ConnectionException.fromStatusCode(StatusCode.NOT_FOUND,
-                            "Timeline was not found at " + syncTracker.requestedPositions))
+                    return Try.failure(
+                        ConnectionException.fromStatusCode(
+                            StatusCode.NOT_FOUND,
+                            "Timeline was not found at " + syncTracker.requestedPositions
+                        )
+                    )
                 }
                 MyLog.d(TAG, "Trying default timeline position")
                 positionToRequest = optPositionToRequest.get()
@@ -129,12 +144,12 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
             }
         } else {
             val actor: Actor = Actor.load(execContext.myContext, getActor().actorId)
-            return if (actor.oid.isEmpty()) {
-                Try.failure(ConnectionException("No ActorOid for $actor, timeline:${getTimeline()}"))
+            return if (!actor.oid.isRealOid) {
+                Try.failure(hardConnectionException("No real ActorOid for $actor, timeline:${getTimeline()}"))
             } else Try.success(actor)
         }
         return if (getTimeline().timelineType.isForUser()) {
-            Try.failure(ConnectionException("No actor for the timeline:${getTimeline()}"))
+            Try.failure(hardConnectionException("No actor for the timeline:${getTimeline()}"))
         } else Try.success(Actor.EMPTY)
     }
 

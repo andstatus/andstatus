@@ -41,7 +41,7 @@ class ActorTest {
         assertEquals(msgLog, 6, actors.size.toLong())
         assertEquals(msgLog, DemoData.demoData.gnusocialTestAccountUsername, actors[0].getUsername())
         assertEquals(msgLog, DemoData.demoData.gnusocialTestAccount2Username, actors[1].getUsername())
-        assertEquals(msgLog, anotherUser2.toLowerCase(), actors[2].getWebFingerId())
+        assertEquals(msgLog, anotherUser2.toLowerCase(), actors[2].webFingerId)
         assertEquals(msgLog, GroupType.UNKNOWN, actors[3].groupType)
         assertEquals(msgLog, groupname1, actors[4].getUsername())
         assertEquals(msgLog, GroupType.GENERIC, actors[4].groupType)
@@ -115,7 +115,7 @@ class ActorTest {
         val actors: List<Actor> = Actor.Companion.newUnknown(DemoData.demoData.getPumpioConversationAccount().origin, GroupType.UNKNOWN)
                 .extractActorsFromContent(content, Actor.EMPTY)
         assertEquals("Actors: $actors", 1, actors.size.toLong())
-        assertEquals("Actors: $actors", "mcscx2@quitter.no", actors[0].getWebFingerId())
+        assertEquals("Actors: $actors", "mcscx2@quitter.no", actors[0].webFingerId)
     }
 
     @Test
@@ -140,7 +140,7 @@ class ActorTest {
         val accountActor = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName).actor
         val author2 = DemoNoteInserter(accountActor).buildActorFromOid(DemoData.demoData.conversationAuthorSecondActorOid)
         author2.setAvatarUrl("http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png")
-        assertEquals("$author2", "second@pump1.example.com", author2.getWebFingerId())
+        assertEquals("$author2", "second@pump1.example.com", author2.webFingerId)
     }
 
     fun extractOneUsername(username: String?) {

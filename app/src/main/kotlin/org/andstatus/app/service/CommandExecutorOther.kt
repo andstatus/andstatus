@@ -30,6 +30,7 @@ import org.andstatus.app.data.checker.CheckConversations
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.ConnectionException.Companion.hardConnectionException
 import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.ActivityType
@@ -41,8 +42,8 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
-import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UriUtils.isRealOid
+import org.andstatus.app.util.UriUtils.nonRealOid
 import java.util.stream.Collectors
 
 internal class CommandExecutorOther(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
@@ -179,11 +180,11 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
 
     private fun getActorCommand(actorIn: Actor, username: String?): Try<Boolean> {
         val method = "getActor"
-        var msgLog = "$method;"
-        val actorIn2 = if (UriUtils.nonRealOid(actorIn.oid) && actorIn.origin.isUsernameValid(username)
+        var msgLog = method
+        val actorIn2 = if (actorIn.oid.nonRealOid && actorIn.origin.isUsernameValid(username)
             && !actorIn.isUsernameValid()
         ) Actor.fromId(actorIn.origin, actorIn.actorId).setUsername(username)
-            .setWebFingerId(actorIn.getWebFingerId()) else actorIn
+            .setWebFingerId(actorIn.webFingerId) else actorIn
         if (!actorIn2.canGetActor()) {
             msgLog += ", cannot get Actor"
             return logExecutionError(true, msgLog + actorInfoLogged(actorIn2))
@@ -192,6 +193,13 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         return getConnection()
             .getActor(actorIn2)
             .flatMap { actor: Actor -> failIfActorIsEmpty(msgLog2, actor) }
+            .flatMap { actor ->
+                if (actorIn2.oid.nonRealOid && actorIn2.isWebFingerIdValid() &&
+                    actorIn2.webFingerId != actor.webFingerId
+                ) {
+                    Try.failure(hardConnectionException("$msgLog2, Wrong actor returned for $actorIn2, returned: $actor"))
+                } else Try.success(actor)
+            }
             .map { actor: Actor ->
                 val activity = execContext.myAccount.actor.update(actor)
                 DataUpdater(execContext).onActivity(activity)
