@@ -20,7 +20,16 @@ class MyOAuth2Service(
     override fun createAccessTokenRequest(params: AccessTokenRequestParams?): OAuthRequest {
         return super.createAccessTokenRequest(params).apply {
             // Required as per https://www.rfc-editor.org/rfc/rfc6749#section-4.1.3
-            addParameter(OAuthConstants.CLIENT_ID, apiKey);
+            addParameter(OAuthConstants.CLIENT_ID, apiKey)
+        }
+    }
+
+    override fun createRefreshTokenRequest(refreshToken: String?, scope: String?): OAuthRequest {
+        return super.createRefreshTokenRequest(refreshToken, scope).apply {
+            // https://www.rfc-editor.org/rfc/rfc6749#section-3.2.1
+            // "A client MAY use the "client_id" request parameter to identify itself
+            //   when sending requests to the token endpoint..."
+            addParameter(OAuthConstants.CLIENT_ID, apiKey)
         }
     }
 }
