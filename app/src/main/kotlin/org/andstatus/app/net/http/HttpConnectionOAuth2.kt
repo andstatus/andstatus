@@ -133,14 +133,16 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         }
         val service = getService(false)
         val newToken = service.refreshAccessToken(oldToken.refreshToken)
+        if (newToken.accessToken.isNullOrBlank()) {
+            return TryUtils.failure("No Access token in access token response")
+        }
 
+        accessToken = newToken.accessToken
+        accessSecret = newToken.rawResponse
         MyLog.d(
             this, "Refreshed Access token for " + data.getAccountName() +
                 ": " + accessToken + ", " + accessSecret
         )
-        if (newToken.accessToken.isNullOrBlank()) {
-            return TryUtils.failure("No accessToken in access token response")
-        }
 
         val builder = MyAccountBuilder.fromAccountName(data.getAccountName())
         builder.setAccessTokenWithSecret(newToken.accessToken, newToken.rawResponse)

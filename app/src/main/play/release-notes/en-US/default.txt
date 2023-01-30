@@ -1,1 +1,2 @@
-v.60.01 Avoid confusing current account
+v.60.02 Remember timelines sync errors.
+Refresh Access Token for OAuth 2.0 implemented.
