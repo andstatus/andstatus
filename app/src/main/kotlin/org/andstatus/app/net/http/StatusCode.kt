@@ -24,7 +24,7 @@ enum class StatusCode(val isHard: Boolean) {
     AUTHENTICATION_ERROR(true),
     CREDENTIALS_OF_OTHER_ACCOUNT(true),
     NO_CREDENTIALS_FOR_HOST(true),
-    UNAUTHORIZED(true),
+    UNAUTHORIZED(false),
     FORBIDDEN(true),
     INTERNAL_SERVER_ERROR(true),
     BAD_GATEWAY(true),
