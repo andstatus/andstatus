@@ -179,13 +179,8 @@ class CommandResult() : Parcelable {
         downloadedCount++
     }
 
-    fun resetRetries(command: CommandEnum?) {
-        retriesLeft = INITIAL_NUMBER_OF_RETRIES
-        when (command) {
-            CommandEnum.GET_OLDER_TIMELINE, CommandEnum.RATE_LIMIT_STATUS -> retriesLeft = 0
-            else -> {
-            }
-        }
+    fun resetRetries(command: CommandEnum) {
+        retriesLeft = command.numberOfRetries
         prepareForLaunch()
     }
 

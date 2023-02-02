@@ -103,12 +103,17 @@ enum class CommandEnum constructor(
         return myContext.context.getText(resId)
     }
 
-    fun isGetTimeline(): Boolean {
-        return when (this) {
+    val isGetTimeline: Boolean
+        get() = when (this) {
             GET_TIMELINE, GET_OLDER_TIMELINE -> true
             else -> false
         }
-    }
+
+    val numberOfRetries: Int
+        get() = when (this) {
+            GET_OLDER_TIMELINE, RATE_LIMIT_STATUS -> 0
+            else -> CommandResult.INITIAL_NUMBER_OF_RETRIES
+        }
 
     companion object {
         fun fromBundle(bundle: Bundle?): CommandEnum {

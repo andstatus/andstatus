@@ -1100,7 +1100,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             else -> {
             }
         }
-        if (commandData.command.isGetTimeline()) {
+        if (commandData.command.isGetTimeline) {
             setCircularSyncIndicator("onReceiveAfterExecutingCommand ", false)
         }
         if (!TextUtils.isEmpty(syncingText)) {
