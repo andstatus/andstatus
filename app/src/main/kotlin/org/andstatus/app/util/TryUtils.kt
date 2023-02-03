@@ -94,8 +94,8 @@ object TryUtils {
     val Try<*>.isCancelled: Boolean get() = isFailure && cause is kotlinx.coroutines.CancellationException
 
     fun <T> failure(message: CharSequence?): Try<T> =
-        if (message.isNullOrEmpty()) notFound<T>()
-        else Try.failure<T>(Exception(message.toString()))
+        if (message.isNullOrEmpty()) notFound()
+        else Try.failure(Exception(message.toString()))
 
     fun <T> emptyList(): Try<List<T>> {
         return Try.success(kotlin.collections.emptyList<T>())
@@ -108,7 +108,7 @@ object TryUtils {
      * @param <T>      Component type
      * @return `Success(callable.call())` if no exception occurs, otherwise `Failure(cause)` if a
      * non-fatal error occurs calling `callable.call()`.
-     * @throws Error if the cause of the [Failure] is fatal, i.e. non-recoverable
+     * @throws Error if the cause of the [Try.Failure] is fatal, i.e. non-recoverable
     </T> */
     suspend fun <T> ofS(callable: suspend () -> T): Try<T> {
         Objects.requireNonNull(callable, "callable is null")

@@ -26,13 +26,16 @@ private const val KEY_ISSUER = "issuer"
 private const val KEY_AUTHORIZATION_ENDPOINT = "authorization_endpoint"
 private const val KEY_TOKEN_ENDPOINT = "token_endpoint"
 private const val KEY_REGISTRATION_ENDPOINT = "registration_endpoint"
+/** OAuth 2.0 Token Introspection https://www.rfc-editor.org/rfc/rfc7662 */
+private const val KEY_INTROSPECTION_ENDPOINT = "introspection_endpoint"
 
 /** https://datatracker.ietf.org/doc/html/rfc8414 */
 data class AuthorizationServerMetadata(
     val issuer: URL,
     val authorizationEndpoint: String?,
     val tokenEndpoint: String?,
-    val registrationEndpoint: String?
+    val registrationEndpoint: String?,
+    val introspectionEndpoint: String?
 ) {
     fun save(connectionData: HttpConnectionData) {
         if (connectionData.originUrl == null) {
@@ -44,6 +47,7 @@ data class AuthorizationServerMetadata(
         saveString(KEY_AUTHORIZATION_ENDPOINT + keySuffix, authorizationEndpoint)
         saveString(KEY_TOKEN_ENDPOINT + keySuffix, tokenEndpoint)
         saveString(KEY_REGISTRATION_ENDPOINT + keySuffix, registrationEndpoint)
+        saveString(KEY_INTROSPECTION_ENDPOINT + keySuffix, introspectionEndpoint)
     }
 
     private fun saveString(key: String, value: String?) {
@@ -62,7 +66,8 @@ data class AuthorizationServerMetadata(
                     issuer,
                     JsonUtils.optString(json1, KEY_AUTHORIZATION_ENDPOINT),
                     JsonUtils.optString(json1, KEY_TOKEN_ENDPOINT),
-                    JsonUtils.optString(json1, KEY_REGISTRATION_ENDPOINT)
+                    JsonUtils.optString(json1, KEY_REGISTRATION_ENDPOINT),
+                    JsonUtils.optString(json1, KEY_INTROSPECTION_ENDPOINT)
                 )
             }
         }
@@ -80,7 +85,8 @@ data class AuthorizationServerMetadata(
                 issuer,
                 SharedPreferencesUtil.getString(KEY_AUTHORIZATION_ENDPOINT + keySuffix),
                 SharedPreferencesUtil.getString(KEY_TOKEN_ENDPOINT + keySuffix),
-                SharedPreferencesUtil.getString(KEY_REGISTRATION_ENDPOINT + keySuffix)
+                SharedPreferencesUtil.getString(KEY_REGISTRATION_ENDPOINT + keySuffix),
+                SharedPreferencesUtil.getString(KEY_INTROSPECTION_ENDPOINT + keySuffix)
             )
         }
 

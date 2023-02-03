@@ -43,8 +43,6 @@ open class HttpConnection {
     var isStub: Boolean = false
 
     val oauthHttp: HttpConnectionOAuth? get() = if (this is HttpConnectionOAuth) this else null
-    val oauthHttpOrThrow: HttpConnectionOAuth
-        get() = oauthHttp ?: throw IllegalStateException("Connection is not OAuth")
 
     open fun pathToUrlString(path: String): String {
         // TODO: return Try

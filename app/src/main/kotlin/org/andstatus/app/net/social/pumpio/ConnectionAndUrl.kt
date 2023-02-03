@@ -27,6 +27,7 @@ import org.andstatus.app.net.social.ActorEndpointType.Companion.toActorEndpointT
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.ConnectionFactory
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UrlUtils
 
@@ -76,7 +77,8 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum, val uri: Uri, va
                 val httpData = oauthHttp.data.copy()
                 oauthHttp.oauthClientKeys = null
                 httpData.originUrl = UrlUtils.buildUrl(host, httpData.isSsl())
-                oauthHttp = ConnectionFactory.newHttp(connection.data, oauthHttp).oauthHttpOrThrow
+                oauthHttp = ConnectionFactory.newHttp(connection.data, oauthHttp).oauthHttp
+                    ?: return TryUtils.failure("Connection is not OAuth")
                 oauthHttp.data = httpData
             }
             if (!oauthHttp.areClientKeysPresent()) {

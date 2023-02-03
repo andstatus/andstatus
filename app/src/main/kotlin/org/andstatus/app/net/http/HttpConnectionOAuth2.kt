@@ -131,7 +131,7 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         if (oldToken.refreshToken.isNullOrBlank()) {
             return TryUtils.failure("No refreshToken in access token response")
         }
-        val service = getService(false)
+        val service = getOauth2Service(false)
         val newToken = service.refreshAccessToken(oldToken.refreshToken)
         if (newToken.accessToken.isNullOrBlank()) {
             return TryUtils.failure("No Access token in access token response")
@@ -159,7 +159,7 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
 
     private fun postRequestOauth(result: HttpReadResult): HttpReadResult {
         try {
-            val service = getService(false)
+            val service = getOauth2Service(false)
             val request = OAuthRequest(Verb.POST, result.requiredUrl("PostOauth2")?.toExternalForm() ?: return result)
             if (result.request.mediaUri.isPresent) {
                 val bytes = ApacheHttpClientUtils.buildMultipartFormEntityBytes(result.request)
@@ -213,10 +213,10 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         }
     }
 
-    fun getRequestOAuth(result: HttpReadResult): HttpReadResult {
+    private fun getRequestOAuth(result: HttpReadResult): HttpReadResult {
         var responseCopy: Response? = null
         try {
-            val service = getService(false)
+            val service = getOauth2Service(false)
             var redirected = false
             var stop: Boolean
             do {
@@ -259,7 +259,7 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         result.setHeaders(response.headers.entries.stream(), { it.key }, { it.value })
     }
 
-    override fun getService(redirect: Boolean): OAuth20Service {
+    override fun getOauth2Service(redirect: Boolean): MyOAuth2Service {
         val clientConfig = JDKHttpClientConfig.defaultConfig()
         clientConfig.connectTimeout = MyPreferences.getConnectionTimeoutMs()
         clientConfig.readTimeout = 2 * MyPreferences.getConnectionTimeoutMs()
@@ -274,7 +274,9 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         if (MyPreferences.isLogNetworkLevelMessages() && MyLog.isVerboseEnabled()) {
             serviceBuilder.debugStream(MyLogVerboseStream("ScribeJava"))
         }
-        return serviceBuilder.build(OAuth2Api(this))
+        return serviceBuilder.build(OAuth2Api(this)).let {
+            if (it is MyOAuth2Service) it else throw IllegalStateException("Unexpected OAuth service type: ${it::class}")
+        }
     }
 
     private fun signRequest(request: OAuthRequest, service: OAuth20Service, redirected: Boolean) {

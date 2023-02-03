@@ -25,6 +25,7 @@ import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionBasic
 import org.andstatus.app.net.http.HttpConnectionOAuth
+import org.andstatus.app.net.http.HttpConnectionOAuth2
 import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.net.http.StatusCode
@@ -59,7 +60,9 @@ abstract class Connection protected constructor() : IsEmpty {
     var data: AccountConnectionData by Delegates.notNull()
 
     val oauthHttp: HttpConnectionOAuth? get() = http.oauthHttp
-    val oauthHttpOrThrow: HttpConnectionOAuth get() = http.oauthHttpOrThrow
+    val oauthHttpOrThrow: HttpConnectionOAuth
+        get() = oauthHttp ?: throw IllegalStateException("Connection is not OAuth")
+    val oauth2Http: HttpConnectionOAuth2? get() = oauthHttp?.let { if (it is HttpConnectionOAuth2) it else null }
 
     /**
      * @return an empty string in case the API routine is not supported
@@ -450,7 +453,7 @@ abstract class Connection protected constructor() : IsEmpty {
 
     override fun toString(): String {
         return (if (data == null) "(empty data)" else data.toString()) +
-                ", http: " + if (http == null) "(empty" else http.toString()
+            ", http: " + if (http == null) "(empty" else http.toString()
     }
 
     override val isEmpty: Boolean

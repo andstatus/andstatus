@@ -40,7 +40,13 @@ class ConnectionException : IOException {
 
     constructor(throwable: Throwable?) : this(null, throwable)
     constructor(detailMessage: String?) : this(StatusCode.UNKNOWN, detailMessage)
-    constructor(detailMessage: String?, throwable: Throwable?) : this(StatusCode.OK, detailMessage, throwable, null, false)
+    constructor(detailMessage: String?, throwable: Throwable?) : this(
+        StatusCode.OK,
+        detailMessage,
+        throwable,
+        null,
+        false
+    )
 
     constructor(statusCode: StatusCode, detailMessage: String?, url: URL? = null) :
         this(statusCode, detailMessage, null, url, false)
@@ -61,10 +67,10 @@ class ConnectionException : IOException {
 
     override fun toString(): String {
         return "Status code: $statusCode; " +
-                (if (isHardError) "hard" else "soft") +
-                (if (url == null) "; " else "; URL: $url;\n") +
-                (if (message.isNullOrBlank()) "" else "$message\n") +
-                (if (super.cause != null) "Caused by ${super.cause.toString()}\n" else "")
+            (if (isHardError) "hard" else "soft") +
+            (if (url == null) "; " else "; URL: $url;\n") +
+            (if (message.isNullOrBlank()) "" else "$message\n") +
+            (if (super.cause != null) "Caused by ${super.cause.toString()}\n" else "")
     }
 
     companion object {
@@ -81,7 +87,12 @@ class ConnectionException : IOException {
             return ConnectionException(result)
         }
 
-        fun loggedHardJsonException(anyTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException {
+        fun loggedHardJsonException(
+            anyTag: Any?,
+            detailMessage: String?,
+            e: Exception?,
+            jso: Any?
+        ): ConnectionException {
             return loggedJsonException(anyTag, detailMessage, e, jso, true)
         }
 
@@ -89,8 +100,10 @@ class ConnectionException : IOException {
             return loggedJsonException(anyTag, detailMessage, e, jso, false)
         }
 
-        private fun loggedJsonException(anyTag: Any?, detailMessage: String?, e: Exception?, jso: Any?,
-                                        isHard: Boolean): ConnectionException {
+        private fun loggedJsonException(
+            anyTag: Any?, detailMessage: String?, e: Exception?, jso: Any?,
+            isHard: Boolean
+        ): ConnectionException {
             MyLog.d(anyTag, detailMessage + if (e != null) ": " + e.message else "")
             if (jso != null) {
                 val fileName = MyLog.uniqueDateTimeFormatted()
@@ -108,7 +121,11 @@ class ConnectionException : IOException {
             return fromStatusCodeAndThrowable(statusCode, detailMessage, null)
         }
 
-        fun fromStatusCodeAndThrowable(statusCode: StatusCode, detailMessage: String?, throwable: Throwable?): ConnectionException {
+        fun fromStatusCodeAndThrowable(
+            statusCode: StatusCode,
+            detailMessage: String?,
+            throwable: Throwable?
+        ): ConnectionException {
             return ConnectionException(statusCode, detailMessage, throwable, null, false)
         }
 

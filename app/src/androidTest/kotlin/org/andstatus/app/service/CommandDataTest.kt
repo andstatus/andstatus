@@ -40,7 +40,7 @@ class CommandDataTest {
 
     @Before
     fun setUp() {
-        TestSuite.initializeWithData(this)
+        TestSuite.initializeWithAccounts(this)
     }
 
     @Test
@@ -123,7 +123,7 @@ class CommandDataTest {
         data1.result.prepareForLaunch()
         data1.result.incrementNumIoExceptions()
         data1.result.afterExecutionEnded()
-        Assert.assertFalse(data1.result.shouldWeRetry)
+        Assert.assertTrue(data1.result.shouldWeRetry)
         val data3: CommandData =
             CommandData.Companion.newSearch(SearchObjects.NOTES, myContextHolder.getNow(), Origin.EMPTY, "andstatus")
         Assert.assertTrue(data1 == data3)

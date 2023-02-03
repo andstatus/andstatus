@@ -57,7 +57,6 @@ import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.MyOAuth2AccessTokenJsonExtractor
 import org.andstatus.app.net.http.StatusCode
-import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
@@ -1009,12 +1008,9 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 } else if (!connection.areOAuthClientKeysPresent()) {
                     connectionErrorMessage = "No Client keys for $connection"
                 } else {
-                    if (oauthHttp.isOAuth2()) {
-                        oauthHttp.getService(true)?.let { service ->
-                            authUri =
-                                UriUtils.fromString(service.getAuthorizationUrl(activity.state.oauthStateParameter))
-                        }
-                    } else {
+                    oauthHttp.getOauth2Service(true)?.also { service ->
+                        authUri = UriUtils.fromString(service.getAuthorizationUrl(activity.state.oauthStateParameter))
+                    } ?: run {
                         val consumer = oauthHttp.getConsumer()
 
                         // This is really important. If you were able to register your
@@ -1028,7 +1024,6 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                         )
                         activity.state.setRequestTokenWithSecret(consumer?.token, consumer?.tokenSecret)
                     }
-
                     // This is needed in order to complete the process after redirect
                     // from the Browser to the same activity.
                     activity.state.actionCompleted = false
@@ -1147,10 +1142,9 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                         val stateParameter = params.getQueryParameter("state")
                         MyLog.d(this, "Auth response, code:$authorizationCode, state:$stateParameter")
                         if (state.oauthStateParameter == stateParameter) {
-                            val service = oauthHttp.getService(true)
-                            // This is a call to ScribeJava that does Access token request e.g.
+                            // Below is a call to ScribeJava that does Access token request e.g.
                             // ScribeJava  V  created access token request with body params [code=3d88b8378591679dd63b1bfbd88efb330a95b346d90b160d5c6c17db93b35a5b&redirect_uri=http%3A%2F%2Foauth-redirect.andstatus.org&scope=read%20write%20follow&grant_type=authorization_code], query string params []
-                            val token = service?.getAccessToken(authorizationCode)
+                            val token = oauthHttp.getOauth2Service(true)?.getAccessToken(authorizationCode)
                             accessToken = token?.accessToken ?: ""
                             accessSecret = token?.rawResponse ?: ""
                             whoAmI = MyOAuth2AccessTokenJsonExtractor.extractWhoAmI(accessSecret)
@@ -1253,11 +1247,11 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
 
         override suspend fun doInBackground(params: Unit): Try<TaskResult> {
             return if (skip) Try.success(TaskResult(ResultStatus.NONE))
-            else Try.success(state.builder)
-                .flatMap { it?.getOriginConfig() }
-                .flatMap { b: MyAccountBuilder -> b.getConnection().verifyCredentials(whoAmI) }
-                .flatMap { actor: Actor -> state.builder.onCredentialsVerified(actor) }
-                .map({ it.myAccount })
+            else state.builder.getOriginConfig()
+                .flatMap(this::introspectAndRefreshAccessToken)
+                .flatMap { state.builder.getConnection().verifyCredentials(whoAmI) }
+                .flatMap { actor -> state.builder.onCredentialsVerified(actor) }
+                .map { it.myAccount }
                 .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
                 .onSuccessS { myAccount: MyAccount ->
                     state.forget()
@@ -1265,7 +1259,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                         myContextHolder.initialize(this@AccountSettingsActivity, instanceIdString).getCompleted()
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
                     val timeline = myContext.timelines.forUser(TimelineType.HOME, myAccount.actor)
-                    if (timeline.isTimeToAutoSync) {
+                    if (timeline.getSyncedTimesCount(true) == 0L) {
                         initialSyncNeeded = true
                         activityOnFinish = ActivityOnFinish.HOME
                     }
@@ -1282,6 +1276,25 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 }
                 .recover(Exception::class.java) { e: Exception ->
                     TaskResult(ResultStatus.CONNECTION_EXCEPTION, "${e.message} (${e::class.qualifiedName})")
+                }
+        }
+
+        fun introspectAndRefreshAccessToken(builder: MyAccountBuilder): Try<Unit> {
+            val oauth2 = builder.getConnection().oauth2Http ?: return TryUtils.SUCCESS
+            val introspectionEndpoint =
+                oauth2.authorizationServerMetadata?.introspectionEndpoint ?: return TryUtils.SUCCESS
+
+            return oauth2.getOauth2Service(false)
+                .introspectAccessToken(introspectionEndpoint, oauth2.accessToken)
+                .flatMap { isActive ->
+                    MyLog.d(this, "Access token for ${builder.myAccount.getAccountName()} active:$isActive")
+                    if (isActive) TryUtils.SUCCESS
+                    else oauth2.refreshAccess()
+                }
+                .onFailure {
+                    oauth2.accessToken = ""
+                    builder.onAccessFailure()
+                    builder.save()
                 }
         }
 

@@ -17,7 +17,6 @@ package org.andstatus.app.net.http
 
 import android.net.Uri
 import android.text.TextUtils
-import com.github.scribejava.core.oauth.OAuth20Service
 import io.vavr.control.Try
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.OAuthProvider
@@ -171,7 +170,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
 
     abstract fun getProvider(): OAuthProvider?
 
-    open fun getService(redirect: Boolean): OAuth20Service? {
+    open fun getOauth2Service(redirect: Boolean): MyOAuth2Service? {
         return null
     }
 
