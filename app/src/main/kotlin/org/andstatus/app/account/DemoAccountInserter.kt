@@ -133,7 +133,6 @@ class DemoAccountInserter(private val myContext: MyContext) {
         assertAccountIsAddedToAccountManager(ma)
         assertEquals("Oid: " + ma.actor, actor.oid, ma.actor.oid)
         assertTrue("Should be fully defined: " + ma.actor, ma.actor.isFullyDefined())
-        assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma))
         return ma
     }
 
@@ -243,14 +242,17 @@ class DemoAccountInserter(private val myContext: MyContext) {
             return timelineToSync
         }
 
-        fun assertDefaultTimelinesForAccounts() {
-            for (myAccount in myContextHolder.getNow().accounts.get()) {
+        suspend fun assertDefaultTimelinesForAccounts() {
+            val myContext = myContextHolder.getCompleted()
+            for (myAccount in myContext.accounts.get()) {
+                assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, myAccount))
+
                 for (timelineType in myAccount.defaultTimelineTypes) {
                     if (!myAccount.connection.hasApiEndpoint(timelineType.connectionApiRoutine)) continue
                     var count: Long = 0
                     val logMsg: StringBuilder = StringBuilder(myAccount.toString())
                     MyStringBuilder.appendWithSpace(logMsg, timelineType.toString())
-                    for (timeline in myContextHolder.getNow().timelines.values()) {
+                    for (timeline in myContext.timelines.values()) {
                         if (timeline.actorId == myAccount.actorId && timeline.timelineType == timelineType &&
                             !timeline.hasSearchQuery
                         ) {
@@ -259,7 +261,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
                         }
                     }
                     assertEquals(
-                        "$logMsg\n${myContextHolder.getNow().timelines.values()}",
+                        "$logMsg\n${myContext.timelines.values()}",
                         1, count
                     )
                 }

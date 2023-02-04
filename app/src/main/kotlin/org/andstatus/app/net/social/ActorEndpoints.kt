@@ -55,7 +55,7 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
 
     fun findFirst(type: ActorEndpointType?): Optional<Uri> {
         return if (type == ActorEndpointType.EMPTY) Optional.empty()
-            else initialize().map.getOrDefault(type, emptyList()).stream().findFirst()
+        else initialize().map.getOrDefault(type, emptyList()).stream().findFirst()
     }
 
     fun initialize(): ActorEndpoints {
@@ -65,7 +65,7 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
                 state.set(State.ADDING)
             }
         }
-        while (state.get() == State.LAZYLOAD && myContext.isReady && AsyncUtil.nonUiThread) {
+        while (state.get() == State.LAZYLOAD && AsyncUtil.nonUiThread) {
             if (initialized.compareAndSet(false, true)) {
                 return load()
             }
@@ -80,16 +80,18 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
     private fun load(): ActorEndpoints {
         val map: MutableMap<ActorEndpointType, List<Uri>> = ConcurrentHashMap()
         val sql = "SELECT " + ActorEndpointTable.ENDPOINT_TYPE +
-                "," + ActorEndpointTable.ENDPOINT_INDEX +
-                "," + ActorEndpointTable.ENDPOINT_URI +
-                " FROM " + ActorEndpointTable.TABLE_NAME +
-                " WHERE " + ActorEndpointTable.ACTOR_ID + "=" + actorId +
-                " ORDER BY " + ActorEndpointTable.ENDPOINT_TYPE +
-                "," + ActorEndpointTable.ENDPOINT_INDEX
+            "," + ActorEndpointTable.ENDPOINT_INDEX +
+            "," + ActorEndpointTable.ENDPOINT_URI +
+            " FROM " + ActorEndpointTable.TABLE_NAME +
+            " WHERE " + ActorEndpointTable.ACTOR_ID + "=" + actorId +
+            " ORDER BY " + ActorEndpointTable.ENDPOINT_TYPE +
+            "," + ActorEndpointTable.ENDPOINT_INDEX
         MyQuery.foldLeft(myContext, sql, map, { m: MutableMap<ActorEndpointType, List<Uri>> ->
             Function { cursor: Cursor ->
-                add(m, ActorEndpointType.fromId(DbUtils.getLong(cursor, ActorEndpointTable.ENDPOINT_TYPE)),
-                        UriUtils.fromString(DbUtils.getString(cursor, ActorEndpointTable.ENDPOINT_URI)))
+                add(
+                    m, ActorEndpointType.fromId(DbUtils.getLong(cursor, ActorEndpointTable.ENDPOINT_TYPE)),
+                    UriUtils.fromString(DbUtils.getString(cursor, ActorEndpointTable.ENDPOINT_URI))
+                )
             }
         })
         this.map = map
@@ -130,8 +132,10 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
             return ActorEndpoints(myContext, actorId)
         }
 
-        private fun add(map: MutableMap<ActorEndpointType, List<Uri>>, type: ActorEndpointType,
-                        uri: Uri): MutableMap<ActorEndpointType, List<Uri>> {
+        private fun add(
+            map: MutableMap<ActorEndpointType, List<Uri>>, type: ActorEndpointType,
+            uri: Uri
+        ): MutableMap<ActorEndpointType, List<Uri>> {
             if (UriUtils.isEmpty(uri) || type == ActorEndpointType.EMPTY) return map
             val urisOld = map[type]
             if (urisOld == null) {

@@ -239,9 +239,8 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     private fun calcIsSyncable(myAccountToSync: MyAccount): Boolean = !isCombined &&
         timelineType.isSyncable() &&
         myAccountToSync.isValidAndSucceeded() &&
-        myAccountToSync.origin.originType.isTimelineTypeSyncable(timelineType)
-        // TODO: In a separate change...
-        // && myAccountToSync.connection.hasApiEndpoint(timelineType.connectionApiRoutine)
+        myAccountToSync.origin.originType.isTimelineTypeSyncable(timelineType) &&
+        myAccountToSync.connection.hasApiEndpoint(timelineType.connectionApiRoutine)
 
     private fun calcIsSyncableForAccounts(myContext: MyContext): Boolean = isCombined &&
         timelineType.isSyncable() && timelineType.canBeCombinedForMyAccounts() &&

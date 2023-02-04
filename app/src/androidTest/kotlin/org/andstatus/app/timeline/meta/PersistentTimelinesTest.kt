@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.timeline.meta
 
+import kotlinx.coroutines.runBlocking
 import org.andstatus.app.account.DemoAccountInserter
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
@@ -113,7 +114,7 @@ class PersistentTimelinesTest {
     }
 
     @Test
-    fun testDefaultTimelinesForAccounts() {
+    fun testDefaultTimelinesForAccounts() = runBlocking {
         DemoAccountInserter(myContext)
         DemoAccountInserter.Companion.assertDefaultTimelinesForAccounts()
     }
