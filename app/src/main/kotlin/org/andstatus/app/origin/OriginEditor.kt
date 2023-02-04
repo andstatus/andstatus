@@ -146,7 +146,7 @@ class OriginEditor : MyActivity(OriginEditor::class) {
                         if (builder?.build()?.originType != originTypes[spinner.getSelectedItemPosition()]) {
                             intentNew.putExtra(
                                 IntentExtra.ORIGIN_TYPE.key,
-                                originTypes[spinner.getSelectedItemPosition()].getCode()
+                                originTypes[spinner.getSelectedItemPosition()].code
                             )
                             processNewIntent(intentNew)
                         }

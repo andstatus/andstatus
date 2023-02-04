@@ -153,7 +153,7 @@ class TimelineSaver {
 
     fun addDefaultCombined(myContext: MyContext) {
         for (timelineType in TimelineType.values()) {
-            if (timelineType.isCombinedRequired()) {
+            if (timelineType.isCombinedRequired) {
                 myContext.timelines[timelineType, Actor.EMPTY, Origin.EMPTY].save(myContext)
             }
         }

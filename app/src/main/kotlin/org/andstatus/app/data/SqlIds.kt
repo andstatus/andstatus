@@ -92,7 +92,7 @@ class SqlIds : IsEmpty {
         fun actorIdsOfTimelineActor(timeline: Timeline): SqlIds {
             return if (timeline.isCombined) {
                 myActorsIds()
-            } else if (timeline.timelineType.isAtOrigin()) {
+            } else if (timeline.timelineType.isAtOrigin) {
                 EMPTY
             } else {
                 fromIds(timeline.actor.user.actorIds)
@@ -104,7 +104,7 @@ class SqlIds : IsEmpty {
         }
 
         fun actorIdsOfTimelineAccount(timeline: Timeline): SqlIds {
-            return if (timeline.isCombined || timeline.timelineType.isAtOrigin()) {
+            return if (timeline.isCombined || timeline.timelineType.isAtOrigin) {
                 EMPTY
             } else fromIds(timeline.actor.user.actorIds)
         }

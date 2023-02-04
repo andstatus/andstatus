@@ -130,7 +130,7 @@ class TimelineTitle private constructor(
         }
 
         private fun showOrigin(timeline: Timeline, namesAreHidden: Boolean): Boolean {
-            return timeline.timelineType.isAtOrigin() && !timeline.isCombined && namesAreHidden
+            return timeline.timelineType.isAtOrigin && !timeline.isCombined && namesAreHidden
         }
     }
 }

@@ -305,8 +305,8 @@ class MyBackupAgent : BackupAgent() {
         myContextHolder.release { "doRestore, database restored" }
         myContextHolder.isRestoring = true
         myContextHolder.initialize(this).getCompleted()
-        if (activity != null) {
-            myContextHolder.upgradeIfNeeded(activity)
+        activity?.let {
+            myContextHolder.upgradeIfNeeded(it)
         }
         if (optionalNextHeader(data, LOG_FILES_KEY)) {
             MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS)?.let { folder ->

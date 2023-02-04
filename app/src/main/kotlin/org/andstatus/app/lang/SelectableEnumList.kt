@@ -49,7 +49,7 @@ class SelectableEnumList<E> private constructor(clazz: Class<E>) where E : Enum<
     }
 
     fun getDialogTitleResId(): Int {
-        return list[0].getDialogTitleResId()
+        return list[0].dialogTitleResId
     }
 
     fun getSpinnerArrayAdapter(context: Context): ArrayAdapter<CharSequence?> {
@@ -79,7 +79,7 @@ class SelectableEnumList<E> private constructor(clazz: Class<E>) where E : Enum<
                     "' doesn't implement SelectableEnum"
         }
         for (value in EnumSet.allOf(clazz)) {
-            if (value?.isSelectable() == true) {
+            if (value?.isSelectable == true) {
                 list.add(value)
             }
         }

@@ -48,6 +48,14 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
             .forEach(Consumer { timeline: Timeline ->
                 if (timeline.isValid) {
                     timelines[timeline.id] = timeline
+                    if (!timeline.isCombined && !timeline.isSyncable && timeline.timelineType == TimelineType.HOME) {
+                        MyLog.e(this, "HOME is not syncable: $timeline" +
+                            "\n  ${timeline.myAccountToSync}" +
+                            "\n  ${timeline.myAccountToSync.actor.endpoints}" +
+                            "\n  ${MyLog.currentStackTrace}" +
+                            "\n  $myContext"
+                        )
+                    }
                     if (MyLog.isVerboseEnabled() && timelines.size < 5) {
                         MyLog.v(PersistentTimelines::class.java, "$method; $timeline")
                     }
@@ -117,8 +125,8 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
         if (ma.isValidAndSucceeded()) {
             for (timeline in values()) {
                 if (timeline.isSyncedAutomatically &&
-                    (!timeline.timelineType.isAtOrigin() && timeline.myAccountToSync == ma ||
-                        timeline.timelineType.isAtOrigin() && timeline.origin == ma.origin) &&
+                    (!timeline.timelineType.isAtOrigin && timeline.myAccountToSync == ma ||
+                        timeline.timelineType.isAtOrigin && timeline.origin == ma.origin) &&
                     timeline.isTimeToAutoSync
                 ) {
                     timelines.add(timeline)

@@ -280,7 +280,7 @@ class CommandData private constructor(
     private fun appendScopeName(myContext: MyContext, builder: MyStringBuilder) {
         if (timeline.myAccountToSync.isValid) {
             builder.withSpace(getTimelineType().scope.timelinePreposition(myContext))
-            if (getTimelineType().isAtOrigin()) {
+            if (getTimelineType().isAtOrigin) {
                 builder.withSpace(commandTimeline.origin.name)
             } else {
                 builder.withSpace(timeline.myAccountToSync.accountName)

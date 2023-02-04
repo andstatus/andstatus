@@ -37,6 +37,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
+import java.util.stream.Collectors.toList
 
 class DemoAccountInserter(private val myContext: MyContext) {
     private var firstAccountActorOid: String? = null
@@ -231,21 +232,35 @@ class DemoAccountInserter(private val myContext: MyContext) {
     }
 
     companion object {
-        fun getAutomaticallySyncableTimeline(myContext: MyContext, myAccount: MyAccount): Timeline {
-            val timelineToSync = myContext.timelines
+        fun getSyncableTimelineOrFail(
+            myContext: MyContext,
+            myAccount: MyAccount,
+            syncableAutomaticallyOnly: Boolean
+        ): Timeline =
+            myContext.timelines
                 .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor, Origin.EMPTY)
-                .filter { obj: Timeline -> obj.isSyncedAutomatically }.findFirst().orElse(Timeline.EMPTY)
-            assertTrue(
-                "No syncable automatically timeline for $myAccount" +
-                    "\n${myContext.timelines.values()}", timelineToSync.isSyncableAutomatically
-            )
-            return timelineToSync
-        }
+                .filter { obj: Timeline -> if (syncableAutomaticallyOnly) obj.isSyncableAutomatically else obj.isSyncable }
+                .findFirst()
+                .orElse(Timeline.EMPTY)
+                .also {
+                    if (Timeline.EMPTY == it) {
+                        val allTimelines = myContext.timelines
+                            .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor, Origin.EMPTY)
+                            .map { it.toString() + "\n" }
+                            .collect(toList())
+                        fail(
+                            "No" + (if (syncableAutomaticallyOnly) " automatically" else "") +
+                                " syncable timeline for $myAccount" +
+                                "\n${myAccount.actor.endpoints}" +
+                                "\nTimelines: $allTimelines"
+                        )
+                    }
+                }
 
         suspend fun assertDefaultTimelinesForAccounts() {
             val myContext = myContextHolder.getCompleted()
             for (myAccount in myContext.accounts.get()) {
-                assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, myAccount))
+                getSyncableTimelineOrFail(myContext, myAccount, false)
 
                 for (timelineType in myAccount.defaultTimelineTypes) {
                     if (!myAccount.connection.hasApiEndpoint(timelineType.connectionApiRoutine)) continue

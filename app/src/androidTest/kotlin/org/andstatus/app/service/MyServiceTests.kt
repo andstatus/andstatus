@@ -135,7 +135,7 @@ class MyServiceTests : IgnoredInTravis2() {
         )
 
         val myContext2: MyContext = myContextHolder.getNow()
-        val timelineToSync: Timeline = DemoAccountInserter.getAutomaticallySyncableTimeline(myContext2, myAccount)
+        val timelineToSync: Timeline = DemoAccountInserter.getSyncableTimelineOrFail(myContext2, myAccount, true)
         timelineToSync.setSyncSucceededDate(0)
         runner = MyServiceCommandsRunner(myContext2)
         runner.setIgnoreServiceAvailability(true)

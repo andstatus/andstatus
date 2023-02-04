@@ -62,7 +62,7 @@ class PersistentOriginList : OriginList(PersistentOriginList::class) {
         val intent = Intent(this, OriginEditor::class.java)
         intent.action = Intent.ACTION_INSERT
         intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName)
-        intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.getCode())
+        intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.code)
         startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id)
     }
 

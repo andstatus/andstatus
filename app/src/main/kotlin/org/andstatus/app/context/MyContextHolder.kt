@@ -151,8 +151,8 @@ class MyContextHolder private constructor(
         return this
     }
 
-    fun upgradeIfNeeded(upgradeRequestor: Activity?) {
-        if (getNow().state == MyContextState.UPGRADING && upgradeRequestor != null) {
+    fun upgradeIfNeeded(upgradeRequestor: Activity) {
+        if (getNow().state == MyContextState.UPGRADING) {
             DatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor)
         }
     }

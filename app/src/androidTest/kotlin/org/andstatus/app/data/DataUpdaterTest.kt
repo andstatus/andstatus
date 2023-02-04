@@ -562,7 +562,9 @@ $activity""",
             "profile URL", actor.getProfileUrl(),
             MyQuery.actorIdToStringColumnValue(ActorTable.PROFILE_PAGE, id)
         )
-        Assert.assertEquals("Endpoints", actor.endpoints, ActorEndpoints.Companion.from(myContext, id).initialize())
+        Assert.assertEquals("Endpoints", actor.endpoints, ActorEndpoints.Companion.from(myContext, id)
+            .initialize()
+        )
         Assert.assertEquals(
             "Homepage", actor.getHomepage(),
             MyQuery.actorIdToStringColumnValue(ActorTable.HOMEPAGE, id)

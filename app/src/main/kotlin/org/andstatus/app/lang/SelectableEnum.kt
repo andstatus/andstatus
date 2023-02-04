@@ -18,8 +18,8 @@ package org.andstatus.app.lang
 import android.content.Context
 
 interface SelectableEnum {
-    fun isSelectable(): Boolean
-    fun getCode(): String?
+    val isSelectable: Boolean
+    val code: String
     fun title(context: Context?): CharSequence?
-    fun getDialogTitleResId(): Int
+    val dialogTitleResId: Int
 }

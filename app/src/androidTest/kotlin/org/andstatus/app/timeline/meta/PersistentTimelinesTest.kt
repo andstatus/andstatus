@@ -43,7 +43,7 @@ class PersistentTimelinesTest {
 
     @Before
     fun setUp() {
-        TestSuite.initializeWithData(this)
+        TestSuite.initializeWithAccounts(this)
         myContext = myContextHolder.getNow()
     }
 

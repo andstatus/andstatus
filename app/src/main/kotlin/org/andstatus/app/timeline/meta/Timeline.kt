@@ -21,6 +21,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.BaseColumns
 import org.andstatus.app.IntentExtra
+import org.andstatus.app.account.AccessStatus
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.ActorsScreenType
 import org.andstatus.app.context.MyContext
@@ -237,28 +238,29 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     private fun calcIsSyncable(myAccountToSync: MyAccount): Boolean = !isCombined &&
-        timelineType.isSyncable() &&
-        myAccountToSync.isValidAndSucceeded() &&
+        timelineType.isSyncable &&
+        myAccountToSync.isValid &&
+        myAccountToSync.accessStatus != AccessStatus.NEVER &&
         myAccountToSync.origin.originType.isTimelineTypeSyncable(timelineType) &&
         myAccountToSync.connection.hasApiEndpoint(timelineType.connectionApiRoutine)
 
     private fun calcIsSyncableForAccounts(myContext: MyContext): Boolean = isCombined &&
-        timelineType.isSyncable() && timelineType.canBeCombinedForMyAccounts() &&
+        timelineType.isSyncable && timelineType.canBeCombinedForMyAccounts() &&
         myContext.accounts.getFirstSucceeded().isValidAndSucceeded()
 
     private fun calcIsSyncableForOrigins(myContext: MyContext): Boolean = isCombined &&
-        timelineType.isSyncable() && timelineType.canBeCombinedForOrigins() &&
+        timelineType.isSyncable && timelineType.canBeCombinedForOrigins() &&
         myContext.accounts.getFirstSucceeded().isValidAndSucceeded()
 
     private fun calcIsCombined(timelineType: TimelineType, origin: Origin): Boolean =
-        if (timelineType.isAtOrigin()) origin.isEmpty else actor.isEmpty
+        if (timelineType.isAtOrigin) origin.isEmpty else actor.isEmpty
 
     private fun calcAccountToSync(
         myContext: MyContext,
         timelineType: TimelineType,
         origin: Origin,
         actor: Actor
-    ): MyAccount = if (timelineType.isAtOrigin() && origin.nonEmpty)
+    ): MyAccount = if (timelineType.isAtOrigin && origin.nonEmpty)
         myContext.accounts.getFirstPreferablySucceededForOrigin(origin)
     else myContext.accounts.toSyncThatActor(actor)
 
@@ -266,10 +268,10 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         if (timelineType.isForUser()) actor else Actor.EMPTY
 
     private fun fixedOrigin(timelineType: TimelineType, origin: Origin): Origin =
-        if (timelineType.isAtOrigin()) origin else actor.origin
+        if (timelineType.isAtOrigin) origin else actor.origin
 
     private fun fixedTimelineType(timelineType: TimelineType): TimelineType =
-        if (isCombined || (if (timelineType.isAtOrigin()) origin.isValid
+        if (isCombined || (if (timelineType.isAtOrigin) origin.isValid
             else actor.nonEmpty)
         ) timelineTypeFixEverything(timelineType) else TimelineType.UNKNOWN
 
@@ -325,7 +327,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         if (globalSearch) myContext.timelines.get(TimelineType.SEARCH, actor, origin, searchQuery) else this
 
     fun fromIsCombined(myContext: MyContext, isCombinedNew: Boolean): Timeline =
-        if (isCombined == isCombinedNew || !isCombined && timelineType.isForUser() && !timelineType.isAtOrigin()
+        if (isCombined == isCombinedNew || !isCombined && timelineType.isForUser() && !timelineType.isAtOrigin
             && actor.user.isMyUser != TriState.TRUE
         ) this
         else myContext.timelines.get(
@@ -337,7 +339,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
 
     fun fromMyAccount(myContext: MyContext, myAccountNew: MyAccount): Timeline =
         if (isCombined || myAccountToSync == myAccountNew || timelineType.isForUser() &&
-            !timelineType.isAtOrigin() && actor.user.isMyUser != TriState.TRUE
+            !timelineType.isAtOrigin && actor.user.isMyUser != TriState.TRUE
         ) this
         else myContext.timelines.get(
             timelineType,
@@ -349,7 +351,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
 
     val isValid: Boolean get() = timelineType != TimelineType.UNKNOWN
 
-    val homeOrigin: Origin get() = if (timelineType.isAtOrigin()) origin else actor.toHomeOrigin().origin
+    val homeOrigin: Origin get() = if (timelineType.isAtOrigin) origin else actor.toHomeOrigin().origin
 
     val checkBoxDisplayedInSelector: Boolean get() = isDisplayedInSelector != DisplayedInSelector.NEVER
 
@@ -365,7 +367,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
                 }
                 if (isAddedByDefault()) {
                     isDisplayedInSelector = DisplayedInSelector.IN_CONTEXT
-                    isSyncedAutomatically = timelineType.isSyncedAutomaticallyByDefault()
+                    isSyncedAutomatically = timelineType.isSyncedAutomaticallyByDefault
                 }
             }
             if (selectorOrder == 0L) {
@@ -431,7 +433,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     fun isAddedByDefault(): Boolean {
         if (isRequired()) return true
         if (isCombined || !isValid || hasSearchQuery) return false
-        return if (timelineType.isAtOrigin()) {
+        return if (timelineType.isAtOrigin) {
             (TimelineType.getDefaultOriginTimelineTypes().contains(timelineType)
                 && (origin.originType.isTimelineTypeSyncable(timelineType)
                 || timelineType == TimelineType.EVERYTHING))
@@ -442,12 +444,12 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
 
     /** Required timeline cannot be deleted  */
     fun isRequired(): Boolean {
-        return isCombined && timelineType.isCombinedRequired() && !hasSearchQuery
+        return isCombined && timelineType.isCombinedRequired && !hasSearchQuery
     }
 
     override fun toString(): String {
         val builder = MyStringBuilder()
-        if (timelineType.isAtOrigin()) {
+        if (timelineType.isAtOrigin) {
             builder.withComma(if (origin.isValid) origin.name else "(all origins)")
         }
         if (timelineType.isForUser()) {
@@ -851,7 +853,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         } else if (timelineType == TimelineType.UNKNOWN || timelineType.scope == ListScope.ACTOR_AT_ORIGIN) {
             return ((actor.actorId == 0L || actor.actorId == actorId)
                 && (origin.isEmpty || origin == this.origin))
-        } else if (timelineType.isAtOrigin()) {
+        } else if (timelineType.isAtOrigin) {
             return origin.isEmpty || origin == this.origin
         }
         return actor.actorId == 0L || actor.actorId == actorId

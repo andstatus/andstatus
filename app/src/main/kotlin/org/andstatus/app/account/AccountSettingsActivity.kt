@@ -272,7 +272,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         var originType = OriginType.UNKNOWN
         if (resultCode == RESULT_OK) {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key))
-            if (originType.isSelectable()) {
+            if (originType.isSelectable) {
                 val origins: MutableList<Origin> = myContextHolder.getNow()
                     .origins.originsOfType(originType)
                 when (origins.size) {
@@ -282,7 +282,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 }
             }
         }
-        if (!originType.isSelectable()) {
+        if (!originType.isSelectable) {
             closeAndGoBack()
         }
     }
@@ -290,12 +290,12 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
     fun selectOrigin(originType: OriginType) {
         if (originType === OriginType.MASTODON) {
             val args = Bundle()
-            args.putString(IntentExtra.ORIGIN_TYPE.key, originType.getCode())
+            args.putString(IntentExtra.ORIGIN_TYPE.key, originType.code)
             showFragment(InstanceForNewAccountFragment::class.java, args)
         } else {
             val intent = Intent(this@AccountSettingsActivity, PersistentOriginList::class.java)
             intent.action = Intent.ACTION_INSERT
-            intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.getCode())
+            intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.code)
             startActivityForResult(intent, ActivityRequestCode.SELECT_ORIGIN.id)
         }
     }

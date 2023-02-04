@@ -107,9 +107,7 @@ enum class OriginType(
         PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO,
         ShortUrlLength.of(0)
     ) {
-        override fun isSelectable(): Boolean {
-            return false
-        }
+        override val isSelectable: Boolean = false
     };
 
     private enum class HasNoteName {
@@ -183,7 +181,7 @@ enum class OriginType(
 
         fun fromCode(code: String?): OriginType {
             for (value in values()) {
-                if (value.getCode().equals(code, ignoreCase = true)) {
+                if (value.code.equals(code, ignoreCase = true)) {
                     return value
                 }
             }
@@ -262,15 +260,13 @@ enum class OriginType(
         }
     }
 
-    override fun isSelectable(): Boolean {
-        return true
-    }
+    override val isSelectable: Boolean = true
 
-    override fun getCode(): String = getId().toString()
+    override val code: String = getId().toString()
 
     override fun title(context: Context?): CharSequence? = title
 
-    override fun getDialogTitleResId(): Int = R.string.label_origin_type
+    override val dialogTitleResId: Int = R.string.label_origin_type
 
     fun getId(): Long = id
 
@@ -295,7 +291,7 @@ enum class OriginType(
     }
 
     fun isTimelineTypeSyncable(timelineType: TimelineType?): Boolean {
-        return if (timelineType == null || !timelineType.isSyncable()) {
+        return if (timelineType == null || !timelineType.isSyncable) {
             false
         } else when (timelineType) {
             TimelineType.PUBLIC -> isPublicTimeLineSyncable

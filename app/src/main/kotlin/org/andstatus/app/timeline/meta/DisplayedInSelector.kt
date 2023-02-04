@@ -21,15 +21,13 @@ import org.andstatus.app.lang.SelectableEnum
 
 enum class DisplayedInSelector(
         /** Code - identifier of the type  */
-        private val code: String?,
+        private val codeIn: String,
         /** The id of the string resource with the localized name of this enum to use in UI  */
         private val titleResId: Int) : SelectableEnum {
     ALWAYS("always", R.string.always), IN_CONTEXT("in_context", R.string.in_context), NEVER("no", R.string.never);
 
     /** String to be used for persistence  */
-    fun save(): String? {
-        return code
-    }
+    fun save(): String = code
 
     override fun toString(): String {
         return "DisplayedInSelector:$code"
@@ -44,17 +42,11 @@ enum class DisplayedInSelector(
         }
     }
 
-    override fun isSelectable(): Boolean {
-        return true
-    }
+    override val isSelectable: Boolean = true
 
-    override fun getCode(): String? {
-        return code
-    }
+    override val code: String = codeIn
 
-    override fun getDialogTitleResId(): Int {
-        return R.string.select_displayed_in_selector
-    }
+    override val dialogTitleResId: Int = R.string.select_displayed_in_selector
 
     companion object {
         /** Returns the enum or NEVER  */

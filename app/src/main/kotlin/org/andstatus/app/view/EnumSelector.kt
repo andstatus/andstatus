@@ -41,7 +41,7 @@ class EnumSelector<E>(private val enums: SelectableEnumList<E>? = null) : Select
         setTitle(enums.getDialogTitleResId())
         setListAdapter(newListAdapter())
         listView?.onItemClickListener = OnItemClickListener { parent, view, position, id ->
-            returnSelected(Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, enums[position].getCode() ?: 0)) }
+            returnSelected(Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, enums[position].code ?: 0)) }
     }
 
     private fun newListAdapter(): MySimpleAdapter {

@@ -33,11 +33,11 @@ import java.util.function.Function
 
 class ActorEndpoints private constructor(private val myContext: MyContext, private val actorId: Long) {
     enum class State {
-        EMPTY, ADDING, LAZYLOAD, LOADED
+        EMPTY, ADDING, LAZY_LOAD, LOADED
     }
 
     private val initialized: AtomicBoolean = AtomicBoolean()
-    private val state: AtomicReference<State> = AtomicReference(if (actorId == 0L) State.EMPTY else State.LAZYLOAD)
+    private val state: AtomicReference<State> = AtomicReference(if (actorId == 0L) State.EMPTY else State.LAZY_LOAD)
 
     @Volatile
     private var map: Map<ActorEndpointType, List<Uri>> = emptyMap()
@@ -65,7 +65,7 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
                 state.set(State.ADDING)
             }
         }
-        while (state.get() == State.LAZYLOAD && AsyncUtil.nonUiThread) {
+        while (state.get() == State.LAZY_LOAD && AsyncUtil.nonUiThread) {
             if (initialized.compareAndSet(false, true)) {
                 return load()
             }
@@ -74,7 +74,7 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
     }
 
     override fun toString(): String {
-        return map.toString()
+        return "Endpoints:{initialized:${initialized.get()}, state:${state.get()}, $map}"
     }
 
     private fun load(): ActorEndpoints {
@@ -86,14 +86,14 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
             " WHERE " + ActorEndpointTable.ACTOR_ID + "=" + actorId +
             " ORDER BY " + ActorEndpointTable.ENDPOINT_TYPE +
             "," + ActorEndpointTable.ENDPOINT_INDEX
-        MyQuery.foldLeft(myContext, sql, map, { m: MutableMap<ActorEndpointType, List<Uri>> ->
+        MyQuery.foldLeft(myContext, sql, map) { m: MutableMap<ActorEndpointType, List<Uri>> ->
             Function { cursor: Cursor ->
                 add(
                     m, ActorEndpointType.fromId(DbUtils.getLong(cursor, ActorEndpointTable.ENDPOINT_TYPE)),
                     UriUtils.fromString(DbUtils.getString(cursor, ActorEndpointTable.ENDPOINT_URI))
                 )
             }
-        })
+        }
         this.map = map
         state.set(State.LOADED)
         return this

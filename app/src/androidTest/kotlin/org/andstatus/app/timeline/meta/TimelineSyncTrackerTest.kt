@@ -43,7 +43,7 @@ class TimelineSyncTrackerTest {
         Assert.assertEquals("Account was found", accountName, ma.accountName)
         val timeline = findTimeline(myContext, timelineType, ma)
         if (timeline === Timeline.EMPTY) return
-        if (timelineType.isAtOrigin()) {
+        if (timelineType.isAtOrigin) {
             if (timeline.origin.originType.isTimelineTypeSyncable(timelineType)) {
                 assertDefaultTimelinePersistence(
                     message, TimelineType.Companion.getDefaultOriginTimelineTypes().contains(timelineType), timeline

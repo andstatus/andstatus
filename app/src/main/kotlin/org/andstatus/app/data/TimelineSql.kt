@@ -111,7 +111,7 @@ object TimelineSql {
             else -> {
             }
         }
-        if (timeline.timelineType.isAtOrigin() && !timeline.isCombined) {
+        if (timeline.timelineType.isAtOrigin && !timeline.isCombined) {
             actWhere.append(ActivityTable.ORIGIN_ID, "=" + timeline.origin.id)
         }
         var tables = ("(SELECT * FROM " + ActivityTable.TABLE_NAME + actWhere.getWhere()
