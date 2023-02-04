@@ -69,7 +69,7 @@ class AccountConnectionData private constructor(
     }
 
     override fun toString(): String {
-        return if (myAccount.isEmpty) if (origin.hasHost()) origin.getHost() else originUrl.toString() else myAccount.getAccountName()
+        return if (myAccount.isEmpty) if (origin.hasHost()) origin.getHost() else originUrl.toString() else myAccount.accountName
     }
 
     companion object {

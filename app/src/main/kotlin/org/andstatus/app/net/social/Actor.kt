@@ -40,7 +40,6 @@ import org.andstatus.app.os.AsyncUtil
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
-import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.user.User
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.LazyVal
@@ -60,7 +59,6 @@ import org.junit.Assert
 import java.net.URL
 import java.util.*
 import java.util.function.Supplier
-import java.util.stream.Collectors
 
 /**
  * @author yvolk@yurivolkov.com
@@ -108,13 +106,6 @@ class Actor private constructor(// In our system
 
     @Volatile
     private var isFullyDefined: TriState = TriState.UNKNOWN
-
-    fun getDefaultMyAccountTimelineTypes(): List<TimelineType> {
-        return if (origin.originType.isPrivatePostsSupported()) TimelineType.getDefaultMyAccountTimelineTypes()
-        else TimelineType.getDefaultMyAccountTimelineTypes().stream()
-            .filter { t: TimelineType? -> t != TimelineType.PRIVATE }
-            .collect(Collectors.toList())
-    }
 
     private fun betterToCache(other: Actor): Actor {
         return if (isBetterToCacheThan(other)) this else other

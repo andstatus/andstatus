@@ -84,7 +84,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
     override fun toString(): String {
         return MyStringBuilder.formatKeyValue(this,
                 toSummary()
-                        + ", account=" + timeline.myAccountToSync.getAccountName()
+                        + ", account=" + timeline.myAccountToSync.accountName
                         + (if (timeline.actorId == 0L) "" else ", selectedActorId=" + timeline.actorId) //    + ", projection=" + Arrays.toString(mProjection)
                         + (if (minDate > 0) ", minDate=" + MyLog.formatDateTime(minDate) else "")
                         + (if (maxDate > 0) ", maxDate=" + MyLog.formatDateTime(maxDate) else "")

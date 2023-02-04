@@ -245,12 +245,12 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         ActivityTestHelper.closeContextMenu(activity)
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.ACT_AS, R.id.note_wrapper)
         val account2 = myContext.accounts.firstOtherSucceededForSameOrigin(origin, account1)
-        logMsg += ", account 2:" + account2.getAccountName()
+        logMsg += ", account 2:" + account2.accountName
         Assert.assertNotSame(logMsg, account1, account2)
         helper.selectIdFromSelectorDialog(logMsg, account2.actorId)
         DbUtils.waitMs(method, 500)
         val account3 = activity.getContextMenu()?.getSelectedActingAccount() ?: MyAccount.EMPTY
-        logMsg += ", actor2Actual:" + account3.getAccountName()
+        logMsg += ", actor2Actual:" + account3.accountName
         Assert.assertEquals(logMsg, account2, account3)
     }
 }

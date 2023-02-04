@@ -40,7 +40,7 @@ class TimelineSyncTrackerTest {
         val ma: MyAccount = DemoData.demoData.getMyAccount(accountName)
         val message = timelineType.save() + " " + ma
         Assert.assertTrue(ma.isValid)
-        Assert.assertEquals("Account was found", accountName, ma.getAccountName())
+        Assert.assertEquals("Account was found", accountName, ma.accountName)
         val timeline = findTimeline(myContext, timelineType, ma)
         if (timeline === Timeline.EMPTY) return
         if (timelineType.isAtOrigin()) {
@@ -50,9 +50,7 @@ class TimelineSyncTrackerTest {
                 )
             }
         } else {
-            assertDefaultTimelinePersistence(
-                message, ma.actor.getDefaultMyAccountTimelineTypes().contains(timelineType), timeline
-            )
+            assertDefaultTimelinePersistence(message, ma.defaultTimelineTypes.contains(timelineType), timeline)
         }
         val time1 = System.currentTimeMillis()
         var syncTracker = TimelineSyncTracker(timeline, true)

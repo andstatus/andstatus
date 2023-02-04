@@ -121,7 +121,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
             assertTrue("$msg != 0", accountActorId != 0L)
         }
         assertTrue("Account $actorOid is persistent", ma.isValid)
-        assertTrue("Account actorOid", ma.getActorOid().equals(actorOid, ignoreCase = true))
+        assertTrue("Account actorOid", ma.actorOid.equals(actorOid, ignoreCase = true))
         assertEquals(
             "No WebFingerId stored $actor",
             actor.webFingerId, MyQuery.actorIdToWebfingerId(myContext, actor.actorId)
@@ -142,7 +142,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         var ma: MyAccount = MyAccount.EMPTY
         for (account in aa) {
             ma = MyAccountBuilder.loadFromAndroidAccount(myContext, account).myAccount
-            if (maExpected.getAccountName() == ma.getAccountName()) {
+            if (maExpected.accountName == ma.accountName) {
                 break
             }
         }
@@ -158,7 +158,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
             insertTestClientKeys(builder1.myAccount)
         }
         val builder: MyAccountBuilder = MyAccountBuilder.fromAccountName(accountName).setOAuth(true)
-        if (builder.myAccount.isOAuth()) {
+        if (builder.myAccount.isOAuth) {
             builder.setAccessTokenWithSecret(
                 "sampleAccessTokenFor" + actor.uniqueName,
                 "sampleAccessSecretFor" + actor.uniqueName
@@ -181,7 +181,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         )
         val actorId = ma.actorId
         assertTrue("Account " + actor.getUniqueNameWithOrigin() + " has ActorId", actorId != 0L)
-        assertEquals("Account actorOid", ma.getActorOid(), actor.oid)
+        assertEquals("Account actorOid", ma.actorOid, actor.oid)
         val oid = MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId, 0)
         if (oid.isEmpty()) {
             val message = "Couldn't find an Actor in the database for id=" + actorId + " oid=" + actor.oid
@@ -198,17 +198,18 @@ class DemoAccountInserter(private val myContext: MyContext) {
             (if (actor.origin.shouldHaveUrl()) actor.getUsername() + "@" +
                 actor.origin.getAccountNameHost() else actor.uniqueName) +
                 AccountName.ORIGIN_SEPARATOR +
-                actor.origin.getOriginInAccountName(accountName.host), ma.getAccountName()
+                actor.origin.getOriginInAccountName(accountName.host), ma.accountName
         )
-        assertEquals("Account name provided", accountName.name, ma.getAccountName())
+        assertEquals("Account name provided", accountName.name, ma.accountName)
         val existingAndroidAccount = AccountUtils.getExistingAndroidAccount(accountName)
-        assertEquals("Android account name", accountName.name,
+        assertEquals(
+            "Android account name", accountName.name,
             existingAndroidAccount.map { a: Account -> a.name }.getOrElse("(not found)")
         )
         assertEquals("User should be known as this actor $actor", actor.uniqueName, actor.user.getKnownAs())
         assertEquals("User is not mine $actor", TriState.TRUE, actor.user.isMyUser)
         assertNotEquals("User is not added $actor", 0, actor.user.userId)
-        MyLog.v(this, ma.getAccountName() + " added, id=" + ma.actorId)
+        MyLog.v(this, ma.accountName + " added, id=" + ma.actorId)
         return ma
     }
 
@@ -244,7 +245,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
 
         fun assertDefaultTimelinesForAccounts() {
             for (myAccount in myContextHolder.getNow().accounts.get()) {
-                for (timelineType in myAccount.actor.getDefaultMyAccountTimelineTypes()) {
+                for (timelineType in myAccount.defaultTimelineTypes) {
                     if (!myAccount.connection.hasApiEndpoint(timelineType.connectionApiRoutine)) continue
                     var count: Long = 0
                     val logMsg: StringBuilder = StringBuilder(myAccount.toString())

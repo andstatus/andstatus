@@ -75,7 +75,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
                         ("About to download " + data.toString() + "; connection"
                             + (if (connectionStub == null) "" else " (stubbed)")
                             + ": " + connection
-                            + "; account:" + ma.getAccountName())
+                            + "; account:" + ma.accountName)
                     }
                     HttpRequest
                         .of(ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
@@ -85,7 +85,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
                         .map { true }
 
                 } else {
-                    TryUtils.failure("No account to download " + data.toString() + "; account:" + ma.getAccountName())
+                    TryUtils.failure("No account to download " + data.toString() + "; account:" + ma.accountName)
                 }
             }
             .flatMap {

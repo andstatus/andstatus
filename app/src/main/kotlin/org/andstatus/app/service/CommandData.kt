@@ -126,7 +126,7 @@ class CommandData private constructor(
         if (command == CommandEnum.EMPTY) return bundle
         BundleUtils.putNotZero(bundle, IntentExtra.COMMAND_ID, commandId)
         if (myAccount.isValid) {
-            bundle.putString(IntentExtra.ACCOUNT_NAME.key, myAccount.getAccountName())
+            bundle.putString(IntentExtra.ACCOUNT_NAME.key, myAccount.accountName)
         }
         timeline.toBundle(bundle)
         BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId)
@@ -165,7 +165,7 @@ class CommandData private constructor(
         if (mInForeground) {
             builder.withComma("foreground")
         }
-        builder.withComma("account", myAccount.getAccountName()) { myAccount.nonEmpty }
+        builder.withComma("account", myAccount.accountName) { myAccount.nonEmpty }
         builder.withComma("username", username)
         if (description.isNotEmpty() && description != username) {
             builder.withSpaceQuoted(description)
@@ -283,7 +283,7 @@ class CommandData private constructor(
             if (getTimelineType().isAtOrigin()) {
                 builder.withSpace(commandTimeline.origin.name)
             } else {
-                builder.withSpace(timeline.myAccountToSync.getAccountName())
+                builder.withSpace(timeline.myAccountToSync.accountName)
             }
         }
     }
@@ -308,7 +308,7 @@ class CommandData private constructor(
                 builder.append(" ")
                 builder.append(getTimelineType().title(myContext.context))
             }
-            else -> builder.append(command.getTitle(myContext, timeline.myAccountToSync.getAccountName()))
+            else -> builder.append(command.getTitle(myContext, timeline.myAccountToSync.accountName))
         }
         return builder.toString()
     }

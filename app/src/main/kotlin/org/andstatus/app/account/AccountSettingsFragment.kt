@@ -49,7 +49,7 @@ class AccountSettingsFragment : Fragment() {
         val state = accountSettingsActivity.state
         if (state.builder.isPersistent()) {
             for (account in AccountUtils.getCurrentAccounts(accountSettingsActivity)) {
-                if (state.myAccount.getAccountName() == account.name) {
+                if (state.myAccount.accountName == account.name) {
                     MyLog.i(this, "Removing account: " + account.name)
                     AsyncRunnable(taskId = this, AsyncEnum.DEFAULT_POOL, cancelable = false)
                         .doInBackground {

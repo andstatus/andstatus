@@ -403,7 +403,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             bodyView.setSelection(bodyView.getText().toString().length)
         }
         MyUrlSpan.showText(editorView, R.id.note_author, if (shouldShowAccountName())
-            editorData.myAccount.getAccountName() else "", false, false)
+            editorData.myAccount.accountName else "", false, false)
         showNoteDetails()
         MyUrlSpan.showText(editorView, R.id.inReplyToBody,
                 editorData.activity.getNote().inReplyTo.getNote().content, TextMediaType.HTML,

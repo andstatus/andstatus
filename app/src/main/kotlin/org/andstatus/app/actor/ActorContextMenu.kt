@@ -46,7 +46,7 @@ open class ActorContextMenu(val menuContainer: NoteEditorContainer, menuGroup: I
         try {
             ContextMenuHeader(getActivity(), menu)
                     .setTitle(actor.toActorTitle())
-                    .setSubtitle(getActingAccount().getAccountName())
+                    .setSubtitle(getActingAccount().accountName)
             val shortName = actor.getUsername()
             if (actor.groupType == GroupType.LIST_MEMBERS) {
                 ActorContextMenuItem.LIST_MEMBERS.addTo(menu, menuGroup, order++,
@@ -104,7 +104,7 @@ open class ActorContextMenu(val menuContainer: NoteEditorContainer, menuGroup: I
             val contextMenuItem: ActorContextMenuItem = ActorContextMenuItem.fromId(item.getItemId())
             MyLog.v(this) {
                 ("onContextItemSelected: " + contextMenuItem + "; account="
-                        + ma.getAccountName() + "; actor=" + getViewItem().actor.uniqueName)
+                        + ma.accountName + "; actor=" + getViewItem().actor.uniqueName)
             }
             contextMenuItem.execute(this)
         } else {

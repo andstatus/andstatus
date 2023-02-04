@@ -116,7 +116,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     fun fromAccountName(accountName: AccountName?): MyAccount {
         if (accountName == null || !accountName.isValid) return MyAccount.EMPTY
         for (persistentAccount in myAccounts) {
-            if (persistentAccount.getAccountName() == accountName.name) {
+            if (persistentAccount.accountName == accountName.name) {
                 return persistentAccount
             }
         }
@@ -321,7 +321,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
 
     fun hasSyncedAutomatically(): Boolean {
         for (ma in myAccounts) {
-            if (ma.shouldBeSyncedAutomatically()) return true
+            if (ma.shouldBeSyncedAutomatically) return true
         }
         return false
     }
@@ -330,8 +330,8 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
      */
     fun minSyncIntervalMillis(): Long {
         return myAccounts.stream()
-            .filter { obj: MyAccount -> obj.shouldBeSyncedAutomatically() }
-            .map { obj: MyAccount -> obj.getEffectiveSyncFrequencyMillis() }
+            .filter { obj: MyAccount -> obj.shouldBeSyncedAutomatically }
+            .map { obj: MyAccount -> obj.effectiveSyncFrequencyMillis }
             .min { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }.orElse(0L)
     }
 
@@ -387,8 +387,8 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         val prevAccount = currentAccount
         if (ma.nonValid || ma == prevAccount) return
         MyLog.v(this) {
-            ("Changing current account from '" + prevAccount.getAccountName()
-                + "' to '" + ma.getAccountName() + "'")
+            ("Changing current account from '" + prevAccount.accountName
+                + "' to '" + ma.accountName + "'")
         }
         recentAccounts.remove(ma)
         recentAccounts.add(0, ma)
@@ -413,14 +413,14 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     private fun accountToSyncFilter(account: MyAccount, syncedAutomaticallyOnly: Boolean): Boolean {
         if (!account.isValidAndSucceeded()) {
             MyLog.v(this) {
-                "Account '" + account.getAccountName() + "'" +
+                "Account '" + account.accountName + "'" +
                     " skipped as invalid authenticated account"
             }
             return false
         }
         if (syncedAutomaticallyOnly && !account.isSyncedAutomatically) {
             MyLog.v(this) {
-                "Account '" + account.getAccountName() + "'" +
+                "Account '" + account.accountName + "'" +
                     " skipped as it is not synced automatically"
             }
             return false
@@ -461,7 +461,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
                         val accessStatus = builder.myAccount.accessStatus
                         if (accessStatus != AccessStatus.SUCCEEDED) {
                             newDescriptor.getLogger().logProgress(
-                                "Account " + builder.myAccount.getAccountName() +
+                                "Account " + builder.myAccount.accountName +
                                     " was not successfully verified"
                             )
                             builder.onSuccessfulAccess()

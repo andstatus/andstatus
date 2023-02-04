@@ -236,9 +236,12 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         return (timelineType.ordinal + 1L) * 2 + if (isCombined) 1 else 0
     }
 
-    private fun calcIsSyncable(myAccountToSync: MyAccount): Boolean = (!isCombined && timelineType.isSyncable()
-        && myAccountToSync.isValidAndSucceeded()
-        && myAccountToSync.origin.originType.isTimelineTypeSyncable(timelineType))
+    private fun calcIsSyncable(myAccountToSync: MyAccount): Boolean = !isCombined &&
+        timelineType.isSyncable() &&
+        myAccountToSync.isValidAndSucceeded() &&
+        myAccountToSync.origin.originType.isTimelineTypeSyncable(timelineType)
+        // TODO: In a separate change...
+        // && myAccountToSync.connection.hasApiEndpoint(timelineType.connectionApiRoutine)
 
     private fun calcIsSyncableForAccounts(myContext: MyContext): Boolean = isCombined &&
         timelineType.isSyncable() && timelineType.canBeCombinedForMyAccounts() &&
@@ -434,7 +437,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
                 && (origin.originType.isTimelineTypeSyncable(timelineType)
                 || timelineType == TimelineType.EVERYTHING))
         } else {
-            actor.user.isMyUser.isTrue && actor.getDefaultMyAccountTimelineTypes().contains(timelineType)
+            actor.user.isMyUser.isTrue && myAccountToSync.defaultTimelineTypes.contains(timelineType)
         }
     }
 
@@ -452,7 +455,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
             if (actor.isEmpty) {
                 builder.withComma("(all accounts)")
             } else if (actor.user.isMyUser.isTrue && myAccountToSync.isValid) {
-                builder.withComma("account", myAccountToSync.getAccountName())
+                builder.withComma("account", myAccountToSync.accountName)
                 if (myAccountToSync.origin != origin && origin.isValid) {
                     builder.withComma("origin", origin.name)
                 }
@@ -543,7 +546,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
             if (System.currentTimeMillis() - getLastSyncedDate() < MIN_RETRY_PERIOD_MS) {
                 return false
             }
-            val syncFrequencyMs = myAccountToSync.getEffectiveSyncFrequencyMillis()
+            val syncFrequencyMs = myAccountToSync.effectiveSyncFrequencyMillis
             // This correction needs to take into account
             // that we stored time when sync ended, and not when Android initiated the sync.
             val correctionForExecutionTime = syncFrequencyMs / 10

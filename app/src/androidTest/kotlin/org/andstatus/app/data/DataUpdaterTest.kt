@@ -183,7 +183,7 @@ class DataUpdaterTest {
         val audience: Audience = fromNoteId(accountActor.origin, noteId)
         Assert.assertNotEquals("No audience for $activity", 0, audience.getNonSpecialActors().size.toLong())
         Assert.assertEquals(
-            "Recipient " + ma.getAccountName() + "; " + audience.getNonSpecialActors(),
+            "Recipient " + ma.accountName + "; " + audience.getNonSpecialActors(),
             ma.actorId, audience.getFirstNonSpecial().actorId
         )
         Assert.assertEquals("Number of audience for $activity", 1, audience.getNonSpecialActors().size.toLong())

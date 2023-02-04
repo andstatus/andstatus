@@ -166,7 +166,7 @@ private class MyRecyclerViewAdapter(val activity: ManageAccountsActivity) :
 
     class MyRecyclerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(activity: ManageAccountsActivity, ma: MyAccount, syncedText: String) {
-            val visibleName = ma.getAccountName().let { if (ma.isValidAndSucceeded()) it else "($it)" }
+            val visibleName = ma.accountName.let { if (ma.isValidAndSucceeded()) it else "($it)" }
             MyUrlSpan.showText(itemView, R.id.visible_name, visibleName, false, true)
                 ?.setOnClickListener {
                     activity.reorderAccounts()
@@ -174,7 +174,7 @@ private class MyRecyclerViewAdapter(val activity: ManageAccountsActivity) :
                         activity.finish()
                     }
                     val intent = Intent(activity, AccountSettingsActivity::class.java)
-                    intent.putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
+                    intent.putExtra(IntentExtra.ACCOUNT_NAME.key, ma.accountName)
                     activity.startActivity(intent)
                 }
             MyUrlSpan.showText(

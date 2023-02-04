@@ -87,7 +87,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
         return TAG + "{" +
                 "noteForAnyAccount=" + noteForAnyAccount +
                 ", isAuthorMySucceededMyAccount=" + isAuthorMySucceededMyAccount +
-                ", myAccount=" + myAccount.getAccountName() +
+                ", myAccount=" + myAccount.accountName +
                 ", accountActorId=" + myAccount.actorId +
                 ", isSubscribed=" + isSubscribed +
                 ", isAuthor=" + isAuthor +

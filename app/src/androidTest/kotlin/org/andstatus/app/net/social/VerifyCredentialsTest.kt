@@ -77,7 +77,7 @@ class VerifyCredentialsTest {
         assertTrue("Account is persistent", builder.isPersistent())
         val actorId = builder.myAccount.actorId
         assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
-        assertEquals("Account actorOid", builder.myAccount.getActorOid(), actor.oid)
+        assertEquals("Account actorOid", builder.myAccount.actorOid, actor.oid)
         assertEquals(
             "Actor in the database for id=$actorId",
             actor.oid,

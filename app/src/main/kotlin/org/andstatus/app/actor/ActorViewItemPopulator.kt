@@ -59,7 +59,7 @@ class ActorViewItemPopulator(myActivity: LoadableListActivity<*>, isCombined: Bo
     private fun showMyActorsFollowingTheActor(view: View, item: ActorViewItem) {
         val builder: MyStringBuilder = MyStringBuilder.of(
                 item.getMyActorsFollowingTheActor(myActivity.myContext)
-                        .map { actor: Actor -> myActivity.myContext.accounts.fromActorOfAnyOrigin(actor).getAccountName() }
+                        .map { actor: Actor -> myActivity.myContext.accounts.fromActorOfAnyOrigin(actor).accountName }
                         .collect(Collectors.joining(", ")))
         if (builder.nonEmpty) {
             builder.prependWithSeparator(myActivity.getText(R.string.followed_by), " ")
@@ -70,7 +70,7 @@ class ActorViewItemPopulator(myActivity: LoadableListActivity<*>, isCombined: Bo
     private fun showMyActorsFollowedByTheActor(view: View, item: ActorViewItem) {
         val builder: MyStringBuilder = MyStringBuilder.of(
                 item.getMyActorsFollowedByTheActor(myActivity.myContext)
-                        .map { actor: Actor -> myActivity.myContext.accounts.fromActorOfAnyOrigin(actor).getAccountName() }
+                        .map { actor: Actor -> myActivity.myContext.accounts.fromActorOfAnyOrigin(actor).accountName }
                         .collect(Collectors.joining(", ")))
         if (builder.nonEmpty) {
             builder.prependWithSeparator(myActivity.getText(R.string.follows), " ")

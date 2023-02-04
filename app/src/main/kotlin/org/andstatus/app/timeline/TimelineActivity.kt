@@ -468,7 +468,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             item.getOrigin(),
             getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false
         )
-        MyLog.v(this) { "onItemClick, " + item + "; " + item + " account=" + ma.getAccountName() }
+        MyLog.v(this) { "onItemClick, " + item + "; " + item + " account=" + ma.accountName }
         if (item.getNoteId() <= 0) return
         val uri: Uri = MatchedUri.getTimelineItemUri(
             myContext.timelines[TimelineType.EVERYTHING, Actor.EMPTY, item.getOrigin()],
@@ -651,9 +651,9 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                 continue
             }
             ma.actor.avatarFile.showImage(this, avatarView)
-            avatarView.contentDescription = ma.getAccountName()
+            avatarView.contentDescription = ma.accountName
             if (Build.VERSION.SDK_INT >= 26) {
-                avatarView.tooltipText = ma.getAccountName()
+                avatarView.tooltipText = ma.accountName
             }
             avatarView.setOnClickListener(if (ind == 0) View.OnClickListener { v: View? ->
                 startForTimeline(
@@ -1167,7 +1167,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         if (!timeline.isCombined && timeline.origin != myContext.accounts.currentAccount.origin) {
             MyLog.d(
                 this,
-                "Correcting account ${myContext.accounts.currentAccount.getAccountName()} -> ${timeline.myAccountToSync.getAccountName()}"
+                "Correcting account ${myContext.accounts.currentAccount.accountName} -> ${timeline.myAccountToSync.accountName}"
             )
             myContext.accounts.setCurrentAccount(timeline.myAccountToSync)
         }

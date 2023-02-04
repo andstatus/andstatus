@@ -136,7 +136,7 @@ class TimelineSaver {
     }
 
     fun addDefaultForMyAccount(myContext: MyContext, myAccount: MyAccount) {
-        for (timelineType in myAccount.actor.getDefaultMyAccountTimelineTypes()) {
+        for (timelineType in myAccount.defaultTimelineTypes) {
             myContext.timelines.forUser(timelineType, myAccount.actor).save(myContext)
         }
     }

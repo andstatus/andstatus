@@ -78,11 +78,13 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
                                 menuContainer.getActivity().myContext, future.activityId,
                                 future.noteId, selectedMyAccount, currentMyAccount)
                         if (MyLog.isVerboseEnabled()) {
-                            MyLog.v(noteContextMenu, "acting:${accountToNote.getMyAccount().getAccountName()}" +
+                            MyLog.v(noteContextMenu, "acting:${accountToNote.getMyAccount().accountName}" +
                                     "${if (accountToNote.getMyAccount() == selectedMyAccount || selectedMyAccount.nonValid) "" 
-                                    else ", selected:" + selectedMyAccount.getAccountName()}" +
+                                    else ", selected:" + selectedMyAccount.accountName
+                                    }" +
                                     "${if (accountToNote.getMyAccount() == currentMyAccount || currentMyAccount.nonValid) "" 
-                                    else ", current:" + currentMyAccount.getAccountName()} $accountToNote")
+                                    else ", current:" + currentMyAccount.accountName
+                                    } $accountToNote")
                         }
                         return if (accountToNote.getMyAccount().isValid) Try.success(accountToNote)
                             else TryUtils.notFound()

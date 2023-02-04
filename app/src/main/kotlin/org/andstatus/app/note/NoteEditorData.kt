@@ -137,7 +137,7 @@ class NoteEditorData private constructor(
         if (replyToConversationParticipants) {
             builder.withComma("ReplyAll")
         }
-        builder.withComma("ma", ma.getAccountName())
+        builder.withComma("ma", ma.accountName)
         return MyStringBuilder.formatKeyValue(this, builder)
     }
 
@@ -165,7 +165,7 @@ class NoteEditorData private constructor(
             )
         }
         values.put("audience", activity.getNote().audience().toAudienceString(inReplyTo.getAuthor()))
-        values.put("ma", ma.getAccountName())
+        values.put("ma", ma.accountName)
         return values.toString()
     }
 

@@ -82,7 +82,7 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
         var order = 0
         try {
             ContextMenuHeader(getActivity(), menu).setTitle(noteForAnyAccount.getBodyTrimmed())
-                    .setSubtitle(getActingAccount().getAccountName())
+                    .setSubtitle(getActingAccount().accountName)
             if ((getMyContext().context.getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager).isTouchExplorationEnabled) {
                 addNoteLinksSubmenu(menu, v, order++)
             }
@@ -294,12 +294,13 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
         if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ACCOUNT_NAME.key)) {
             setSelectedActingAccount(menuContainer.getActivity().myContext.accounts.fromAccountName(
                     savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
-                            menuContainer.getActivity().myContext.accounts.currentAccount.getAccountName())))
+                            menuContainer.getActivity().myContext.accounts.currentAccount.accountName
+                    )))
         }
     }
 
     fun saveState(outState: Bundle) {
-        outState.putString(IntentExtra.ACCOUNT_NAME.key, getSelectedActingAccount().getAccountName())
+        outState.putString(IntentExtra.ACCOUNT_NAME.key, getSelectedActingAccount().accountName)
     }
 
     fun getNoteId(): Long {

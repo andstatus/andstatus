@@ -70,7 +70,9 @@ class MyAccount internal constructor(
     internal var accessStatus: AccessStatus = AccessStatus.NEVER
 
     /** Is this account authenticated with OAuth?  */
-    private var isOAuth = true
+    var isOAuth = true
+        private set
+
     internal var syncFrequencySeconds: Long = 0
     var isSyncable = true
     internal var isSyncedAutomatically = true
@@ -103,7 +105,7 @@ class MyAccount internal constructor(
     fun getNewOrExistingAndroidAccount(): Try<Account> {
         return AccountUtils.getExistingAndroidAccount(data.accountName).recoverWith(Exception::class.java)
         { notFound: Exception? ->
-            if (isValidAndSucceeded()) AccountUtils.addEmptyAccount(data.accountName, getPassword())
+            if (isValidAndSucceeded()) AccountUtils.addEmptyAccount(data.accountName, password)
             else Try.failure(notFound)
         }
     }
@@ -127,7 +129,7 @@ class MyAccount internal constructor(
     }
 
     fun getShortestUniqueAccountName(): String {
-        var uniqueName = getAccountName()
+        var uniqueName = accountName
         var found = false
         var possiblyUnique = actor.uniqueName
         for (persistentAccount in myContext.accounts.get()) {
@@ -185,8 +187,8 @@ class MyAccount internal constructor(
     val isValid: Boolean
         get() {
             return (!deleted
-                    && actor.actorId != 0L && connection.nonEmpty && data.accountName.isValid
-                    && actor.oid.isNotEmpty())
+                && actor.actorId != 0L && connection.nonEmpty && data.accountName.isValid
+                && actor.oid.isNotEmpty())
         }
 
     fun setOAuth(isOAuthTriState: TriState) {
@@ -204,15 +206,9 @@ class MyAccount internal constructor(
      * @return account name, unique for this application and suitable for android.accounts.AccountManager
      * The name is permanent and cannot be changed. This is why it may be used as Id
      */
-    fun getAccountName(): String {
-        return data.accountName.name
-    }
-
+    val accountName: String get() = data.accountName.name
     val actorId: Long get() = actor.actorId
-
-    fun getActorOid(): String {
-        return actor.oid
-    }
+    val actorOid: String get() = actor.oid
 
     /**
      * @return The system in which the Account is defined, see [OriginTable]
@@ -220,9 +216,7 @@ class MyAccount internal constructor(
     val origin: Origin get() = data.accountName.origin
     val originId: Long get() = origin.id
 
-    fun areClientKeysPresent(): Boolean {
-        return connection.areOAuthClientKeysPresent()
-    }
+    val areClientKeysPresent: Boolean get() = connection.areOAuthClientKeysPresent()
 
     fun charactersLeftForNote(html: String?): Int {
         return origin.charactersLeftForNote(html)
@@ -232,21 +226,14 @@ class MyAccount internal constructor(
         return origin.alternativeTermForResourceId(resId)
     }
 
-    fun isOAuth(): Boolean {
-        return isOAuth
-    }
+    val password: String get() = connection.getPassword()
 
-    fun getPassword(): String {
-        return connection.getPassword()
-    }
+    val isUsernameValid: Boolean get() = actor.isUsernameValid()
 
-    fun isUsernameValid(): Boolean {
-        return actor.isUsernameValid()
-    }
-
-    fun isSearchSupported(searchObjects: SearchObjects?): Boolean {
-        return connection.hasApiEndpoint(if (searchObjects == SearchObjects.NOTES) ApiRoutineEnum.SEARCH_NOTES else ApiRoutineEnum.SEARCH_ACTORS)
-    }
+    fun isSearchSupported(searchObjects: SearchObjects?): Boolean =
+        (if (searchObjects == SearchObjects.NOTES) ApiRoutineEnum.SEARCH_NOTES else ApiRoutineEnum.SEARCH_ACTORS).let {
+            connection.hasApiEndpoint(it)
+        }
 
     fun requestSync() {
         if (!isPersistent()) return
@@ -254,13 +241,14 @@ class MyAccount internal constructor(
             .onSuccess { a: Account? -> ContentResolver.requestSync(a, MatchedUri.AUTHORITY, Bundle()) }
     }
 
-    fun getEffectiveSyncFrequencyMillis(): Long {
-        var effectiveSyncFrequencySeconds = syncFrequencySeconds
-        if (effectiveSyncFrequencySeconds <= 0) {
-            effectiveSyncFrequencySeconds = MyPreferences.getSyncFrequencySeconds()
+    val effectiveSyncFrequencyMillis: Long
+        get() {
+            var effectiveSyncFrequencySeconds = syncFrequencySeconds
+            if (effectiveSyncFrequencySeconds <= 0) {
+                effectiveSyncFrequencySeconds = MyPreferences.getSyncFrequencySeconds()
+            }
+            return TimeUnit.SECONDS.toMillis(effectiveSyncFrequencySeconds)
         }
-        return TimeUnit.SECONDS.toMillis(effectiveSyncFrequencySeconds)
-    }
 
     override fun toString(): String {
         if (EMPTY === this) {
@@ -274,7 +262,7 @@ class MyAccount internal constructor(
             if (!isPersistent()) {
                 members += "not persistent,"
             }
-            if (isOAuth()) {
+            if (isOAuth) {
                 members += "OAuth,"
             }
             if (accessStatus != AccessStatus.SUCCEEDED) {
@@ -323,7 +311,7 @@ class MyAccount internal constructor(
         }
         return if (order > other.order) 1
         else if (order < other.order) -1
-        else getAccountName().compareTo(other.getAccountName())
+        else accountName.compareTo(other.accountName)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -342,27 +330,30 @@ class MyAccount internal constructor(
         return result
     }
 
-    fun shouldBeSyncedAutomatically(): Boolean {
-        return isSyncedAutomatically && isValidAndSucceeded() && getEffectiveSyncFrequencyMillis() > 0
-    }
+    val shouldBeSyncedAutomatically: Boolean
+        get() = isSyncedAutomatically && isValidAndSucceeded() && effectiveSyncFrequencyMillis > 0
 
-    fun getLastSyncSucceededDate(): Long {
-        return if (isValid && isPersistent()) myContext.timelines
+    val lastSyncSucceededDate: Long
+        get() = if (isValid && isPersistent()) myContext.timelines
             .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor, Origin.EMPTY)
             .map { obj: Timeline -> obj.getSyncSucceededDate() }
             .max { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }
             .orElse(0L) else 0L
-    }
 
-    fun hasAnyTimelines(): Boolean {
-        for (timeline in myContext.timelines.values()) {
-            if (timeline.myAccountToSync == this) {
-                return true
+    val hasAnyTimelines: Boolean
+        get() {
+            for (timeline in myContext.timelines.values()) {
+                if (timeline.myAccountToSync == this) {
+                    return true
+                }
             }
+            MyLog.v(this) { accountName + " doesn't have any timeline" }
+            return false
         }
-        MyLog.v(this) { getAccountName() + " doesn't have any timeline" }
-        return false
-    }
+
+    val defaultTimelineTypes: List<TimelineType>
+        get() = TimelineType.getDefaultMyAccountTimelineTypes()
+            .filter { origin.originType.isPrivatePostsSupported || it != TimelineType.PRIVATE }
 
     companion object {
         val KEY_ACCOUNT_NAME: String = "account_name"

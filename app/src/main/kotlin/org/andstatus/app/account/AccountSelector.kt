@@ -82,7 +82,7 @@ class AccountSelector : SelectorDialog() {
         val syncText = getText(R.string.synced_abbreviated).toString()
         for (ma in listData) {
             val map: MutableMap<String, String> = HashMap()
-            var visibleName = ma.getAccountName()
+            var visibleName = ma.accountName
             if (!ma.isValidAndSucceeded()) {
                 visibleName = "($visibleName)"
             }
@@ -102,7 +102,7 @@ class AccountSelector : SelectorDialog() {
     private fun returnSelectedAccount(ma: MyAccount) {
         returnSelected(
             Intent()
-                .putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
+                .putExtra(IntentExtra.ACCOUNT_NAME.key, ma.accountName)
                 .putExtra(
                     IntentExtra.MENU_GROUP.key,
                     myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE)

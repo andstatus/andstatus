@@ -46,7 +46,7 @@ class MyAccountTest {
         val accountName: AccountName = AccountName.Companion.fromAccountName(myContext, accountNameString)
         val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(accountName)
         Assert.assertEquals(logMsg, origin, builder.myAccount.origin)
-        Assert.assertEquals(logMsg, accountNameString, builder.myAccount.getAccountName())
+        Assert.assertEquals(logMsg, accountNameString, builder.myAccount.accountName)
         Assert.assertEquals(logMsg, username, builder.myAccount.username)
         if (uniqueName.isEmpty()) {
             Assert.assertEquals(logMsg, "", builder.myAccount.getWebFingerId())
@@ -70,7 +70,7 @@ class MyAccountTest {
     companion object {
         fun fixPersistentAccounts(myContext: MyContext) {
             for (ma in myContext.accounts.get()) {
-                fixAccountByName(myContext, ma.getAccountName())
+                fixAccountByName(myContext, ma.accountName)
             }
         }
 

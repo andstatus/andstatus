@@ -210,7 +210,7 @@ class DemoData {
 
     fun getAccountActorByOid(actorOid: String?): Actor {
         for (ma in myContextHolder.getNow().accounts.get()) {
-            if (ma.getActorOid() == actorOid) {
+            if (ma.actorOid == actorOid) {
                 return ma.actor
             }
         }

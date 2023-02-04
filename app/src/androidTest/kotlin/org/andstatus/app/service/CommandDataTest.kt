@@ -198,7 +198,7 @@ class CommandDataTest {
             msgLog, summary, CoreMatchers.containsString(
                 command.getTitle(
                     myContextHolder.getNow(),
-                    ma.getAccountName()
+                    ma.accountName
                 ).toString() + " " + MyQuery.actorIdToWebfingerId(myContextHolder.getNow(), actorId)
             )
         )

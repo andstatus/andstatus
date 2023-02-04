@@ -18,9 +18,10 @@ package org.andstatus.app.service
 import io.vavr.control.Try
 import org.andstatus.app.data.DataPruner
 import org.andstatus.app.data.DataUpdater
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.StatusCode
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.TryUtils
 
 /**
  * Downloads ("loads") different types of Timelines
@@ -34,15 +35,17 @@ internal abstract class TimelineDownloader(execContext: CommandExecutionContext)
 
     override suspend fun execute(): Try<Boolean> {
         if (!isApiSupported(execContext.timeline.timelineType.connectionApiRoutine)) {
-            MyLog.v(this) {
-                (execContext.timeline.toString() + " is not supported for "
-                    + execContext.myAccount.getAccountName())
-            }
-            return TryUtils.TRUE
+            return Try.failure(
+                ConnectionException.fromStatusCode(
+                    StatusCode.UNSUPPORTED_API,
+                    execContext.timeline.timelineType.title(execContext.context).toString() +
+                        " is not supported for " + execContext.myAccount.accountName
+                )
+            )
         }
         MyLog.d(
             this, "Getting " + execContext.commandData.toCommandSummary(execContext.myContext) +
-                " by " + execContext.myAccount.getAccountName()
+                " by " + execContext.myAccount.accountName
         )
         return download()
     }

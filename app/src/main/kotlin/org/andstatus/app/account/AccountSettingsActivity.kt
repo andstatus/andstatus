@@ -396,7 +396,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         val ma = myAccount
         if (ma.isValid || state.accountAction != Intent.ACTION_INSERT) {
             var title = getText(R.string.account_settings_activity_title).toString()
-            title += " - " + ma.getAccountName()
+            title += " - " + ma.accountName
             setTitle(title)
         } else {
             setTitle(getText(R.string.header_add_new_account).toString())
@@ -477,15 +477,15 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         val labelBuilder = StringBuilder()
         if (isNeeded) {
             labelBuilder.append(getText(R.string.summary_preference_password))
-            if (ma.getPassword().isEmpty()) {
+            if (ma.password.isEmpty()) {
                 labelBuilder.append(": (" + getText(R.string.not_set) + ")")
             }
         }
         showTextView(R.id.password_label, labelBuilder.toString(), isNeeded)
         val passwordEditable = findFragmentViewById(R.id.password) as EditText?
         if (passwordEditable != null) {
-            if (ma.getPassword().compareTo(passwordEditable.text.toString()) != 0) {
-                passwordEditable.setText(ma.getPassword())
+            if (ma.password.compareTo(passwordEditable.text.toString()) != 0) {
+                passwordEditable.setText(ma.password)
             }
             passwordEditable.visibility = if (isNeeded) View.VISIBLE else View.GONE
             passwordEditable.isEnabled = !ma.isValidAndSucceeded()
@@ -538,7 +538,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         updateChangedFields()
         updateScreen()
         var error: CharSequence = ""
-        var addAccountEnabled = !state.isUsernameNeededToStartAddingNewAccount() || myAccount.isUsernameValid()
+        var addAccountEnabled = !state.isUsernameNeededToStartAddingNewAccount() || myAccount.isUsernameValid
         if (addAccountEnabled) {
             if (!state.builder.isOAuth() && state.builder.getPassword().isEmpty()) {
                 addAccountEnabled = false
@@ -663,7 +663,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
     }
 
     private fun showLastSyncSucceededDate() {
-        val lastSyncSucceededDate = myAccount.getLastSyncSucceededDate()
+        val lastSyncSucceededDate = myAccount.lastSyncSucceededDate
         MyUrlSpan.showText(
             findFragmentViewById(R.id.last_synced) as TextView?,
             if (lastSyncSucceededDate == 0L) getText(R.string.never).toString()
@@ -735,7 +735,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 // Credentials are not present,
                 // so start asynchronous OAuth Authentication process
 
-                if (!myAccount.areClientKeysPresent()) {
+                if (!myAccount.areClientKeysPresent) {
                     OAuthRegisterClientTask()
                         .execute(this, Unit)
                         .onFailure { e: Throwable -> appendError(e.message) }
@@ -761,7 +761,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         }
         val passwordEditable = findFragmentViewById(R.id.password) as EditText?
         if (passwordEditable != null
-            && myAccount.getPassword().compareTo(passwordEditable.text.toString()) != 0
+            && myAccount.password.compareTo(passwordEditable.text.toString()) != 0
         ) {
             state.builder.setPassword(passwordEditable.text.toString())
         }
@@ -799,7 +799,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
         myContextHolder
             .initialize(this)
             .then("returnTo$activityOnFinish", false) { myContext: MyContext ->
-                val myAccount = myContext.accounts.fromAccountName(state.myAccount.getAccountName())
+                val myAccount = myContext.accounts.fromAccountName(state.myAccount.accountName)
                 if (myAccount.isValid) {
                     myContext.accounts.setCurrentAccount(myAccount)
                 }
@@ -866,13 +866,13 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 if (isMaPersistent()) {
                     // Pass the new/edited account back to the AccountManager
                     val result = Bundle()
-                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.myAccount.getAccountName())
+                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.myAccount.accountName)
                     result.putString(
                         AccountManager.KEY_ACCOUNT_TYPE,
                         AuthenticatorService.ANDROID_ACCOUNT_TYPE
                     )
                     authenticatorResponse.onResult(result)
-                    message += "; authenticatorResponse; account.name=" + state.myAccount.getAccountName() + "; "
+                    message += "; authenticatorResponse; account.name=" + state.myAccount.accountName + "; "
                 }
             } else {
                 authenticatorResponse.onError(AccountManager.ERROR_CODE_CANCELED, "canceled")
@@ -904,12 +904,12 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
             var succeeded = false
             var connectionErrorMessage = ""
             try {
-                if (!myAccount.areClientKeysPresent()) {
+                if (!myAccount.areClientKeysPresent) {
                     state.builder.registerClient().onFailure {
                         connectionErrorMessage = it.toString()
                     }
                 }
-                if (myAccount.areClientKeysPresent()) {
+                if (myAccount.areClientKeysPresent) {
                     state.builder.getOriginConfig()
                     succeeded = true
                 }
@@ -1183,7 +1183,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
                 } finally {
                     state.builder.setAccessTokenWithSecret(accessToken, accessSecret)
                     MyLog.d(
-                        this, "Access token for " + myAccount.getAccountName() +
+                        this, "Access token for " + myAccount.accountName +
                             ": " + accessToken + ", " + accessSecret
                     )
                 }
@@ -1287,7 +1287,7 @@ class AccountSettingsActivity : MyActivity(AccountSettingsActivity::class) {
             return oauth2.getOauth2Service(false)
                 .introspectAccessToken(introspectionEndpoint, oauth2.accessToken)
                 .flatMap { isActive ->
-                    MyLog.d(this, "Access token for ${builder.myAccount.getAccountName()} active:$isActive")
+                    MyLog.d(this, "Access token for ${builder.myAccount.accountName} active:$isActive")
                     if (isActive) TryUtils.SUCCESS
                     else oauth2.refreshAccess()
                 }

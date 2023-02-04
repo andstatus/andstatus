@@ -52,7 +52,7 @@ class MyAccountBuilder private constructor(
             changed = true
             assignActorId()
             MyLog.i(
-                this, "MyAccount '" + myAccount.getAccountName()
+                this, "MyAccount '" + myAccount.accountName
                     + "' was not connected to the Actor table. actorId=" + myAccount.actor.actorId
             )
         }
@@ -111,11 +111,11 @@ class MyAccountBuilder private constructor(
     }
 
     fun getPassword(): String {
-        return myAccount.getPassword()
+        return myAccount.password
     }
 
     fun isOAuth(): Boolean {
-        return myAccount.isOAuth()
+        return myAccount.isOAuth
     }
 
     /**
@@ -165,7 +165,7 @@ class MyAccountBuilder private constructor(
                             this.toString()
                     }
                     myAccount.myContext.accounts.addIfAbsent(myAccount)
-                    if (myAccount.myContext.isReady && !myAccount.hasAnyTimelines()) {
+                    if (myAccount.myContext.isReady && !myAccount.hasAnyTimelines) {
                         TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myAccount.myContext)
                     }
                 }
@@ -243,7 +243,7 @@ class MyAccountBuilder private constructor(
             MyLog.w(
                 this, myAccount.myContext.context.getText(R.string.error_credentials_of_other_user).toString() + ": " +
                     actor.getUniqueNameWithOrigin() +
-                    " account name: " + myAccount.getAccountName() +
+                    " account name: " + myAccount.accountName +
                     " vs username: " + actor.getUsername()
             )
             return Try.failure(

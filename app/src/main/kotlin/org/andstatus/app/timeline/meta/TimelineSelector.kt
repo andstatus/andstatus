@@ -121,7 +121,7 @@ class TimelineSelector : SelectorDialog() {
             val selector: SelectorDialog = TimelineSelector()
             selector.setRequestCode(requestCode)
             selector.arguments?.putLong(IntentExtra.TIMELINE_ID.key, timeline.id)
-            selector.arguments?.putString(IntentExtra.ACCOUNT_NAME.key, currentMyAccount.getAccountName())
+            selector.arguments?.putString(IntentExtra.ACCOUNT_NAME.key, currentMyAccount.accountName)
             selector.show(activity)
         }
     }

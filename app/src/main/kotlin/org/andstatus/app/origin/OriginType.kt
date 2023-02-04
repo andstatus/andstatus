@@ -266,7 +266,7 @@ enum class OriginType(
         return true
     }
 
-    override fun getCode(): String? = getId().toString()
+    override fun getCode(): String = getId().toString()
 
     override fun title(context: Context?): CharSequence? = title
 
@@ -346,9 +346,7 @@ enum class OriginType(
         return OriginConfig.getMaxAttachmentsToSend(this)
     }
 
-    fun isPrivatePostsSupported(): Boolean {
-        return this !== TWITTER
-    }
+    val isPrivatePostsSupported: Boolean get() = this !== TWITTER
 
     init {
         when (api) {
