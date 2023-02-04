@@ -29,6 +29,22 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="60.03" android:versionCode="363"
+        versionDate="2023-02-04"
+        versionTitle="Improve account access problems detection">
+        <changes>
+            <change>Remember timeline syncing errors. Improve detection if timeline is syncable.
+                In a case automatically syncable timeline fails with UNAUTHORIZED response, account is marked as failed.
+                User needs to go to Settings -&gt; Accounts -&gt; Manage Accounts -&gt; and log in again.
+            </change>
+            <change>"(Re)verify credentials" button really checks access for ActivityPub C2S accounts.
+                <a href="https://github.com/andstatus/andstatus/issues/574">#574</a>
+            </change>
+            <change>OAuth 2.0 refreshToken and Token Introspection implemented.
+                <a href="https://github.com/andstatus/andstatus/issues/562">#562</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="60.01" android:versionCode="361"
         versionDate="2023-01-17"
         versionTitle="Avoid confusing current account">

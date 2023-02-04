@@ -159,97 +159,113 @@ class MyFutureContext private constructor(
     companion object {
         private val TAG: String = MyFutureContext::class.simpleName!!
 
+        /** @return previousFuture in a case of an error */
         fun fromPrevious(
+            previousFuture: MyFutureContext,
+            calledBy: Any?,
+            duringUpgrade: Boolean,
+            reinitialize: Boolean
+        ): MyFutureContext {
+            return try {
+                runBlocking {
+                    fromPreviousInner(previousFuture, calledBy, duringUpgrade, reinitialize)
+                }
+            } catch (e: Exception) {
+                // Return previous future in a case of an exception
+                previousFuture
+            }
+        }
+
+        private suspend fun fromPreviousInner(
             previousFuture: MyFutureContext,
             calledByIn: Any?,
             duringUpgrade: Boolean,
             reinitialize: Boolean
-        ): MyFutureContext =
-            runBlocking {
-                val previousContext = previousFuture.getNow()
-                val calledBy: Any = calledByIn ?: previousContext
-                var willInitialize = true;
-                val reason: String = (
-                    if (myContextHolder.isShuttingDown) {
-                        willInitialize = false
-                        "Shutting down"
-                    } else if (myContextHolder.onDeleteApplicationData) {
-                        willInitialize = false
-                        "On delete application data"
-                    } else if (duringUpgrade) {
-                        "During upgrade"
-                    } else if (DatabaseConverterController.isUpgrading()) {
-                        willInitialize = false
-                        "DatabaseConverterController is upgrading"
-                    } else if (previousContext.state == MyContextState.UPGRADING) {
-                        willInitialize = false
-                        "Is upgrading"
-                    } else if (previousContext.state == MyContextState.RESTORING) {
-                        willInitialize = false
-                        "Is restoring"
-                    } else if (reinitialize) {
-                        "Reinitialize"
-                    } else if (previousFuture.future.isRunning) {
-                        willInitialize = false
-                        "Previous is running"
-                    } else if (!previousFuture.future.isFinished) {
-                        willInitialize = false
-                        "Previous didn't finish"
-                    } else if (!previousContext.isReady) {
-                        "Previous not ready"
-                    } else if (previousContext.isExpired) {
-                        "Previous expired"
-                    } else if (previousContext.isPreferencesChanged) {
-                        "Preferences changed"
-                    } else {
-                        willInitialize = false
-                        "Is Ready"
-                    }) +
-                    ", previous in ${previousFuture.instanceTag}: " + previousContext +
-                    ", called by: " + Taggable.anyToTag(calledBy) +
-                    "\n${AsyncTaskLauncher.threadPoolInfo}"
+        ): MyFutureContext {
+            val previousContext = previousFuture.getNow()
+            val calledBy: Any = calledByIn ?: previousContext
+            var willInitialize = true;
+            val reason: String = (
+                if (myContextHolder.isShuttingDown) {
+                    willInitialize = false
+                    "Shutting down"
+                } else if (myContextHolder.onDeleteApplicationData) {
+                    willInitialize = false
+                    "On delete application data"
+                } else if (duringUpgrade) {
+                    "During upgrade"
+                } else if (DatabaseConverterController.isUpgrading()) {
+                    willInitialize = false
+                    "DatabaseConverterController is upgrading"
+                } else if (previousContext.state == MyContextState.UPGRADING) {
+                    willInitialize = false
+                    "Is upgrading"
+                } else if (previousContext.state == MyContextState.RESTORING) {
+                    willInitialize = false
+                    "Is restoring"
+                } else if (reinitialize) {
+                    "Reinitialize"
+                } else if (previousFuture.future.isRunning) {
+                    willInitialize = false
+                    "Previous is running"
+                } else if (!previousFuture.future.isFinished) {
+                    willInitialize = false
+                    "Previous didn't finish"
+                } else if (!previousContext.isReady) {
+                    "Previous not ready"
+                } else if (previousContext.isExpired) {
+                    "Previous expired"
+                } else if (previousContext.isPreferencesChanged) {
+                    "Preferences changed"
+                } else {
+                    willInitialize = false
+                    "Is Ready"
+                }) +
+                ", previous in ${previousFuture.instanceTag}: " + previousContext +
+                ", called by: " + Taggable.anyToTag(calledBy) +
+                "\n${AsyncTaskLauncher.threadPoolInfo}"
 
-                if (!willInitialize) {
-                    MyLog.d(previousFuture, "ShouldInitialize: no, $reason")
-                    return@runBlocking previousFuture
+            if (!willInitialize) {
+                MyLog.d(previousFuture, "ShouldInitialize: no, $reason")
+                return previousFuture
+            }
+
+            val future = AsyncResult<MyContext, MyContext>("futureContext", AsyncEnum.DEFAULT_POOL, false)
+                .also { future ->
+                    future.doInBackground {
+                        TryUtils.ofS {
+                            MyLog.v(previousFuture) { "Preparing initialization of ${future.instanceTag}" }
+                            if (reinitialize) {
+                                previousFuture.release { "Reinitialization of ${future.instanceTag}" }
+                            } else {
+                                release2(
+                                    previousFuture,
+                                    previousContext
+                                ) { "Initialization of ${future.instanceTag}" }
+                            }
+                            previousContext.newInstance(calledBy).also { myContext ->
+                                myContext.initialize()
+                                SyncInitiator.register(myContext)
+                                MyServiceManager.registerReceiver(myContext.context)
+                            }
+                        }.also {
+                            MyLog.v(previousFuture) { "Completed initialization of ${future.instanceTag}, result: $it" }
+                        }
+                    }
                 }
 
-                val future = AsyncResult<MyContext, MyContext>("futureContext", AsyncEnum.DEFAULT_POOL, false)
-                    .also { future ->
-                        future.doInBackground {
-                            TryUtils.ofS {
-                                MyLog.v(previousFuture) { "Preparing initialization of ${future.instanceTag}" }
-                                if (reinitialize) {
-                                    previousFuture.release { "Reinitialization of ${future.instanceTag}" }
-                                } else {
-                                    release2(
-                                        previousFuture,
-                                        previousContext
-                                    ) { "Initialization of ${future.instanceTag}" }
-                                }
-                                previousContext.newInstance(calledBy).also { myContext ->
-                                    myContext.initialize()
-                                    SyncInitiator.register(myContext)
-                                    MyServiceManager.registerReceiver(myContext.context)
-                                }
-                            }.also {
-                                MyLog.v(previousFuture) { "Completed initialization of ${future.instanceTag}, result: $it" }
-                            }
-                        }
-                    }
+            return MyFutureContext(previousContext, future)
+                .also { futureContext ->
+                    MyLog.d(futureContext, "ShouldInitialize: yes, $reason")
 
-                return@runBlocking MyFutureContext(previousContext, future)
-                    .also { futureContext ->
-                        MyLog.d(futureContext, "ShouldInitialize: yes, $reason")
-
-                        future.onPostExecute { _, _ ->
-                            futureContext.checkQueueExecutor(null, true)
-                        }
-                        if (future.isPending) {
-                            future.execute(futureContext.previousContext)
-                        }
+                    future.onPostExecute { _, _ ->
+                        futureContext.checkQueueExecutor(null, true)
                     }
-            }
+                    if (future.isPending) {
+                        future.execute(futureContext.previousContext)
+                    }
+                }
+        }
 
         private suspend fun release2(
             previousFuture: MyFutureContext,

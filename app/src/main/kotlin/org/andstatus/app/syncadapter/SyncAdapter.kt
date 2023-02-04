@@ -40,6 +40,10 @@ class SyncAdapter(private val mContext: Context, autoInitialize: Boolean) :
             return
         }
         val myContext: MyContext = myContextHolder.initialize(mContext, this).getNow()
+        if (!myContext.isReady) {
+            MyLog.d(this, "MyContext is not ready")
+            return
+        }
         MyServiceCommandsRunner(myContext).autoSyncAccount(
             myContext.accounts.fromAccountName(account.name), syncResult
         )
