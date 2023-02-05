@@ -99,7 +99,7 @@ class NoteSaver(private val editor: NoteEditor) : AsyncResult<NoteEditorCommand?
             CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.myAccount, data.getNoteId())
         else CommandData.newUpdateStatus(data.myAccount, data.activity.id, data.getNoteId())
         MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.UNKNOWN)
-            .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
+            .setCommandData(commandData).setEvent(MyServiceEvent.ON_DATA_CHANGED).broadcast()
     }
 
     override suspend fun onPostExecute(result: Try<NoteEditorData>) {

@@ -41,7 +41,6 @@ import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MySettingsActivity
 import org.andstatus.app.net.http.CLIENT_URI
-import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.util.DialogFactory
 import org.andstatus.app.util.MyLog
@@ -264,22 +263,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
             val intent = Intent(this, TimelineActivity::class.java)
             startActivity(intent)
             finish()
-        } else if (!MyServiceManager.isServiceAvailable()) {
-            val actionName = "makeServiceAvailable"
-            myContextHolder.future.then(actionName, false) { myContext ->
-                if (!myContext.accounts.getFirstSucceeded().isValidAndSucceeded()) {
-                    MyLog.i(actionName, "No succeeded accounts yet")
-                } else if (MyServiceManager.isServiceAvailable()) {
-                    MyLog.i(actionName, "Service is already available")
-                } else if (myContext.isReady) {
-                    MyLog.i(actionName, "Making service available")
-                    MyServiceManager.setServiceAvailable()
-                } else {
-                    MyLog.i(actionName, "MyContext is not ready: $myContext")
-                }
-            }
         }
-
     }
 
     override fun onPause() {

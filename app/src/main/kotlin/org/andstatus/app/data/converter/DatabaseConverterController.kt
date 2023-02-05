@@ -91,7 +91,7 @@ object DatabaseConverterController {
             skip = true
         }
         if (!skip && acquireUpgradeLock(requestorName)) {
-            AsyncUpgrade(upgradeRequestorIn, myContextHolder.isRestoring).execute(TAG, Unit)
+            UpgradeTask(upgradeRequestorIn, myContextHolder.isRestoring).execute(TAG, Unit)
         }
     }
 

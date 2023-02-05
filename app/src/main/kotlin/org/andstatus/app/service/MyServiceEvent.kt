@@ -21,6 +21,7 @@ import org.andstatus.app.util.MyLog
  * Event in [MyService]
  */
 enum class MyServiceEvent {
+    ON_DATA_CHANGED,
     ON_COMMAND_RECEIVED, BEFORE_EXECUTING_COMMAND, PROGRESS_EXECUTING_COMMAND, AFTER_EXECUTING_COMMAND, ON_STOP, UNKNOWN;
 
     fun save(): String {

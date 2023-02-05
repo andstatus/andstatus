@@ -30,37 +30,42 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.Taggable
 import org.andstatus.app.util.TryUtils
 
-class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) :
-    AsyncRunnable("AsyncUpgrade", AsyncEnum.DEFAULT_POOL) {
-    var progressLogger: ProgressLogger = ProgressLogger.getEmpty(DatabaseConverterController.TAG)
+class UpgradeTask(val upgradeRequester: Activity, val isRestoring: Boolean) :
+    AsyncRunnable("upgradeTask", AsyncEnum.DEFAULT_POOL) {
+    val progressLogger: ProgressLogger = if (upgradeRequester is MyActivity) {
+        val progressListener: ProgressLogger.ProgressListener =
+            DefaultProgressListener(upgradeRequester, R.string.label_upgrading, "ConvertDatabase")
+        ProgressLogger(progressListener)
+    } else {
+        ProgressLogger.getEmpty(this.instanceTag)
+    }
     override val cancelable: Boolean = false
 
     override suspend fun doInBackground(params: Unit): Try<Unit> {
-        syncUpgrade()
+        upgrade()
         return TryUtils.SUCCESS
     }
 
-    suspend fun syncUpgrade() {
+    suspend fun upgrade() {
         var success = false
         try {
             progressLogger.logProgress(upgradeRequester.getText(R.string.label_upgrading))
-            success = doUpgrade()
+            success = upgradeInner()
         } finally {
             progressLogger.onComplete(success)
+            MyLog.v(this, "Set service available")
+            MyServiceManager.setServiceAvailable()
         }
     }
 
-    private suspend fun doUpgrade(): Boolean {
+    private suspend fun upgradeInner(): Boolean {
         var success = false
         var locUpgradeStarted = false
         try {
             synchronized(DatabaseConverterController.upgradeLock) {
                 DatabaseConverterController.mProgressLogger = progressLogger
             }
-            MyLog.i(
-                DatabaseConverterController.TAG,
-                "Upgrade triggered by " + Taggable.anyToTag(upgradeRequester)
-            )
+            MyLog.i(this, "Upgrade triggered by " + Taggable.anyToTag(upgradeRequester))
             MyServiceManager.setServiceUnavailable()
             myContextHolder.release { "doUpgrade" }
             // Upgrade will occur inside this call synchronously
@@ -70,23 +75,23 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) :
                 DatabaseConverterController.shouldTriggerDatabaseUpgrade = false
             }
         } catch (e: Exception) {
-            MyLog.i(DatabaseConverterController.TAG, "Failed to upgrade database, will try later", e)
+            MyLog.i(this, "Failed to upgrade database, will try later", e)
         } finally {
             synchronized(DatabaseConverterController.upgradeLock) {
                 success = DatabaseConverterController.upgradeEndedSuccessfully
-                DatabaseConverterController.mProgressLogger = ProgressLogger.getEmpty(DatabaseConverterController.TAG)
+                DatabaseConverterController.mProgressLogger = ProgressLogger.getEmpty(this.instanceTag)
                 locUpgradeStarted = DatabaseConverterController.upgradeStarted
                 DatabaseConverterController.upgradeStarted = false
                 DatabaseConverterController.upgradeEndTime = 0L
             }
         }
         if (!locUpgradeStarted) {
-            MyLog.v(DatabaseConverterController.TAG, "Upgrade didn't start")
+            MyLog.v(this, "Upgrade didn't start")
         }
         if (success) {
-            MyLog.i(DatabaseConverterController.TAG, "success " + myContextHolder.getNow().state)
+            MyLog.i(this, "success " + myContextHolder.getNow().state)
             onUpgradeSucceeded()
-            MyLog.i(DatabaseConverterController.TAG, "after onUpgradeSucceeded " + myContextHolder.future)
+            MyLog.i(this, "after onUpgradeSucceeded " + myContextHolder.future)
         }
         return success
     }
@@ -104,17 +109,5 @@ class AsyncUpgrade(val upgradeRequester: Activity, val isRestoring: Boolean) :
         DataChecker.fixData(progressLogger, false, false)
         myContextHolder.release { "onUpgradeSucceeded2" }
         myContextHolder.initialize(upgradeRequester).tryCompleted()
-        MyLog.v("onUpgradeSucceeded3", "Set service available")
-        MyServiceManager.setServiceAvailable()
-    }
-
-    init {
-        progressLogger = if (upgradeRequester is MyActivity) {
-            val progressListener: ProgressLogger.ProgressListener =
-                DefaultProgressListener(upgradeRequester, R.string.label_upgrading, "ConvertDatabase")
-            ProgressLogger(progressListener)
-        } else {
-            ProgressLogger.getEmpty("ConvertDatabase")
-        }
     }
 }

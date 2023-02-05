@@ -379,6 +379,7 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
 
     override fun onReceive(commandData: CommandData, myServiceEvent: MyServiceEvent) {
         when (myServiceEvent) {
+            MyServiceEvent.ON_DATA_CHANGED -> setRefreshNeeded(commandData)
             MyServiceEvent.BEFORE_EXECUTING_COMMAND -> if (isCommandToShowInSyncIndicator(commandData)) {
                 showSyncing(commandData)
             }
@@ -420,9 +421,13 @@ abstract class LoadableListActivity<T : ViewItem<T>>(clazz: KClass<*>) : MyBaseL
 
     protected open fun onReceiveAfterExecutingCommand(commandData: CommandData) {
         if (isRefreshNeededAfterExecuting(commandData)) {
-            refreshNeededSince.compareAndSet(0, System.currentTimeMillis())
-            refreshNeededAfterForegroundCommand.compareAndSet(false, commandData.isInForeground())
+            setRefreshNeeded(commandData)
         }
+    }
+
+    private fun setRefreshNeeded(commandData: CommandData) {
+        refreshNeededSince.compareAndSet(0, System.currentTimeMillis())
+        refreshNeededAfterForegroundCommand.compareAndSet(false, commandData.isInForeground())
     }
 
     /**
