@@ -107,12 +107,12 @@ tasks.register<JacocoReport>("jacocoUnitTestReport") {
         include("**/testDebugUnitTest.exec")
     })
 
-    reports {
-        xml.isEnabled = true
-        xml.destination = file("$buildDir/reports/coverage/debugUnitTest/report.xml")
-        html.isEnabled = true
-        html.destination = file("$buildDir/reports/coverage/debugUnitTest/html")
-    }
+//    reports {
+//        xml.isEnabled = true
+//        xml.destination = file("$buildDir/reports/coverage/debugUnitTest/report.xml")
+//        html.isEnabled = true
+//        html.destination = file("$buildDir/reports/coverage/debugUnitTest/html")
+//    }
 
     doFirst {
         cancelIfNoCoverage()
