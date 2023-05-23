@@ -15,7 +15,7 @@ env:
     - ANDROID_TOOLS_URL="https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip"
     - EMU_FLAVOR=default # use google_apis flavor if no default flavor emulator
     - GRAVIS="https://raw.githubusercontent.com/DanySK/Gravis-CI/master/"
-    - JDK="zulu@1.11.0-9"
+    - JDK="zulu@1.17.0-7"
     - TOOLS=${ANDROID_HOME}/tools
     # PATH order is incredibly important. e.g. the 'emulator' script exists in more than one place!
     - PATH=${ANDROID_HOME}:${ANDROID_HOME}/emulator:${TOOLS}:${TOOLS}/bin:${ANDROID_HOME}/platform-tools:${PATH}

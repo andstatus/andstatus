@@ -46,7 +46,7 @@ class AttachmentDownloaderTest {
         val inserter = DemoNoteInserter(ma)
         val activity = inserter.buildActivity(inserter.buildActor(), "", body,
                 null, null, DownloadStatus.LOADED)
-        activity.addAttachment(Attachment.Companion.fromUri("https://picsum.photos/id/1016/3844/2563.jpg"))
+        activity.addAttachment(Attachment.Companion.fromUri("https://img.freepik.com/premium-psd/white-t-shirts-mockup-design_53876-98813.jpg"))
         inserter.onActivity(activity)
         val dd: DownloadData = DownloadData.Companion.getSingleAttachment(activity.getNote().noteId)
         Assert.assertEquals("Image URI stored", activity.getNote().attachments.list[0].uri, dd.getUri())
