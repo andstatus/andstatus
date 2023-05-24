@@ -74,6 +74,7 @@ jacoco {
     toolVersion = rootProject.extra["jacocoToolVersion"] as String
 }
 
+// See https://docs.gradle.org/current/userguide/jacoco_plugin.html
 tasks.register<JacocoReport>("jacocoUnitTestReport") {
     group = "verification"
 
@@ -107,12 +108,12 @@ tasks.register<JacocoReport>("jacocoUnitTestReport") {
         include("**/testDebugUnitTest.exec")
     })
 
-//    reports {
-//        xml.isEnabled = true
-//        xml.destination = file("$buildDir/reports/coverage/debugUnitTest/report.xml")
-//        html.isEnabled = true
-//        html.destination = file("$buildDir/reports/coverage/debugUnitTest/html")
-//    }
+    reports {
+        xml.required.set(true)
+        xml.outputLocation.set(layout.buildDirectory.file("reports/coverage/debugUnitTest/report.xml"))
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/coverage/debugUnitTest/html"))
+    }
 
     doFirst {
         cancelIfNoCoverage()

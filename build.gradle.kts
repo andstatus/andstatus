@@ -31,7 +31,7 @@ buildscript {
     extra["hamcrestVersion"] = "2.2"              // http://hamcrest.org/JavaHamcrest/distributables#using-hamcrest-in-a-gradle-project
     extra["httpClientVersion"] = "4.5.8"          // https://github.com/smarek/httpclient-android
     extra["httpMimeVersion"] = "4.5.14"           // https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime
-    extra["jacocoToolVersion"] = "0.8.10"         // https://mvnrepository.com/artifact/org.jacoco/org.jacoco.agent
+    extra["jacocoToolVersion"] = "0.8.9"         // https://mvnrepository.com/artifact/org.jacoco/org.jacoco.agent
     extra["junitVersion"] = "4.13.2"              // https://mvnrepository.com/artifact/junit/junit
     extra["ktxVersion"] = "1.9.0"                 // https://mvnrepository.com/artifact/androidx.core/core-ktx
     extra["materialVersion"] = "1.3.0"            // https://mvnrepository.com/artifact/com.google.android.material/material
