@@ -4,7 +4,7 @@ AndStatus is an Open Source multiple accounts client for multiple Social network
 [Mastodon](https://github.com/tootsuite/documentation),
 [Twitter](https://twitter.com),
 [ActivityPub](https://socialhub.activitypub.rocks/c/activitypub/c2s/6) (Client to Server),
-[GNU social](http://gnu.io/social) and [Pump.io](http://pump.io).  
+[GNU social](https://www.gnusocial.rocks/) and [Pump.io](http://pump.io).  
 AndStatus can combine your feeds from all networks into one Timeline,
 and it allows you to read and post even when you are offline.
 
@@ -45,10 +45,10 @@ Read the [FAQ](doc/FAQ.md) to help you find information that is not present on t
 </p>
 
 For the latest news on the project please follow
-[AndStatus@mastodon.social](https://mastodon.social/@AndStatus),
-[@AndStatus@loadaverage.org](https://loadaverage.org/andstatus) at GNU Social,
-[@AndStatus1](https://twitter.com/AndStatus1) at Twitter
-or [@AndStatus@identi.ca](http://identi.ca/andstatus) at Pump.io.
+[AndStatus@mastodon.social](https://mastodon.social/@AndStatus).
+Project accounts also present [@AndStatus@identi.ca](http://identi.ca/andstatus) at Pump.io,
+[@andstatus@gnusocial.net](https://gnusocial.net/andstatus) at GNU Social
+and [@AndStatus1](https://twitter.com/AndStatus1) at Twitter.
 
 AndStatus is an open project:
 * Open for user's ideas, problems and questions. Please start from searching at the "[Issues](https://github.com/andstatus/andstatus/issues)" page.
