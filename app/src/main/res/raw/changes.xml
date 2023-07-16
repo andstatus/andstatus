@@ -29,6 +29,15 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="60.04" android:versionCode="364"
+        versionDate="2023-07-16"
+        versionTitle="Fix ActivityPub newer page request">
+        <changes>
+            <change>Fix ActivityPub "next" page was requested when no "prev" page link was present.
+                See <a href="https://github.com/friendica/friendica/issues/12775#issuecomment-1474757322">Friendica #12775</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="60.03" android:versionCode="363"
         versionDate="2023-02-04"
         versionTitle="Improve account access problems detection">
