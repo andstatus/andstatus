@@ -52,13 +52,13 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
             downloadingLatest = true
         }
         val tryActor = getActorWithOid()
-        val toDownload = if (downloadingLatest) LATEST_NOTES_TO_DOWNLOAD_MAX else
+        val toDownloadCount = if (downloadingLatest) LATEST_NOTES_TO_DOWNLOAD_MAX else
             if (isSyncYounger()) YOUNGER_NOTES_TO_DOWNLOAD_MAX else OLDER_NOTES_TO_DOWNLOAD_MAX
         var positionToRequest = syncTracker.getPreviousPosition()
         if (MyLog.isDebugEnabled()) {
-            var strLog = ("Loading "
-                + (if (downloadingLatest) "latest " else "")
-                + execContext.commandData.toCommandSummary(execContext.myContext))
+            val whatToDownload = if (downloadingLatest) "latest" else
+                if (isSyncYounger()) "younger" else "older"
+            var strLog = ("Loading $whatToDownload " + execContext.commandData.toCommandSummary(execContext.myContext))
             if (syncTracker.getPreviousItemDate() > 0) {
                 strLog += ("; last Timeline item at=" + Date(syncTracker.getPreviousItemDate()).toString()
                     + "; last time downloaded at=" + Date(syncTracker.getPreviousSyncedDate()).toString())
@@ -70,7 +70,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
         val dataUpdater = DataUpdater(execContext)
         for (loopCounter in 0..99) {
             val limit = getConnection().fixedDownloadLimit(
-                toDownload, timeline.timelineType.connectionApiRoutine
+                toDownloadCount, timeline.timelineType.connectionApiRoutine
             )
             syncTracker.onPositionRequested(positionToRequest)
             var tryPage: Try<InputTimelinePage>
@@ -111,7 +111,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
                     dataUpdater.onActivity(activity, false)
                 }
                 val optPositionToRequest = syncTracker.getNextPositionToRequest()
-                if (toDownload - syncTracker.getDownloadedCounter() <= 0 || !optPositionToRequest.isPresent) {
+                if (toDownloadCount - syncTracker.getDownloadedCounter() <= 0 || !optPositionToRequest.isPresent) {
                     break
                 }
                 positionToRequest = optPositionToRequest.get()

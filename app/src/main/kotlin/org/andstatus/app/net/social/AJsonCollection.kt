@@ -74,14 +74,12 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
     fun getPrevId(): String {
         if (prevPage.id.isPresent()) return prevPage.id.get()
         if (firstPage.prevPage.id.isPresent()) return firstPage.prevPage.id.get()
-        if (nextPage.id.isPresent()) return nextPage.id.get()
         return if (firstPage.id.isPresent()) firstPage.id.get() else getId()
     }
 
     fun getNextId(): String {
         if (nextPage.id.isPresent()) return nextPage.id.get()
         if (firstPage.nextPage.id.isPresent()) return firstPage.nextPage.id.get()
-        if (prevPage.id.isPresent()) return prevPage.id.get()
         return if (firstPage.id.isPresent()) firstPage.id.get() else getId()
     }
 

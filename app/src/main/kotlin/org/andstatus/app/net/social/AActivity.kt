@@ -159,25 +159,29 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
     }
 
     fun getPrevTimelinePosition(): TimelinePosition {
-        return if (prevTimelinePosition.isEmpty) if (nextTimelinePosition.isEmpty) TimelinePosition.of(oid) else nextTimelinePosition else prevTimelinePosition
+        return if (prevTimelinePosition.isEmpty && nextTimelinePosition.isEmpty) {
+            TimelinePosition.of(oid)
+        } else prevTimelinePosition
     }
 
     fun getNextTimelinePosition(): TimelinePosition {
-        return if (nextTimelinePosition.isEmpty) if (prevTimelinePosition.isEmpty) TimelinePosition.of(oid) else prevTimelinePosition else nextTimelinePosition
+        return if (prevTimelinePosition.isEmpty && nextTimelinePosition.isEmpty) {
+            TimelinePosition.of(oid)
+        } else nextTimelinePosition
     }
 
     fun setTimelinePositions(prevPosition: String?, nextPosition: String?): AActivity {
-        prevTimelinePosition = TimelinePosition.of(if (prevPosition.isNullOrEmpty()) "" else prevPosition)
-        nextTimelinePosition = TimelinePosition.of(if (nextPosition.isNullOrEmpty()) "" else nextPosition)
+        prevTimelinePosition = TimelinePosition.of(prevPosition)
+        nextTimelinePosition = TimelinePosition.of(nextPosition)
         return this
     }
 
     private fun buildTempOid(): String {
         return StringUtil.toTempOid(
             getActorPrefix() +
-                    type.name.toLowerCase() + "-" +
-                    (if (!getNote().oid.isNullOrEmpty()) getNote().oid + "-" else "") +
-                    MyLog.uniqueDateTimeFormatted()
+                type.name.toLowerCase() + "-" +
+                (if (!getNote().oid.isNullOrEmpty()) getNote().oid + "-" else "") +
+                MyLog.uniqueDateTimeFormatted()
         )
     }
 
@@ -211,6 +215,7 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
     else when (type) {
         ActivityType.ANNOUNCE, ActivityType.CREATE, ActivityType.DELETE, ActivityType.LIKE, ActivityType.UPDATE,
         ActivityType.UNDO_ANNOUNCE, ActivityType.UNDO_LIKE -> getActivity().getNote()
+
         else -> Note.EMPTY
     }
 
@@ -255,21 +260,21 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
         return if (this === EMPTY) {
             "EMPTY"
         } else "AActivity{" +
-                (if (this === EMPTY) "(EMPTY), " else (if (isEmpty) "(empty), " else "")) +
-                type +
-                ", id:" + id +
-                ", oid:" + oid +
-                ", updated:" + MyLog.debugFormatOfDate(updatedDate) +
-                ", me:" + (if (accountActor.isEmpty) "EMPTY" else accountActor.oid) +
-                (if (subscribedByMe.known) if (subscribedByMe == TriState.TRUE) ", subscribed" else ", NOT subscribed" else "") +
-                (if (interacted.isTrue) ", interacted" else "") +
-                (if (notified.isTrue) ", notified" + (if (notifiedActor.isEmpty) " ???" else "Actor:$objActor") else "") +
-                (if (newNotificationEventType.isEmpty) "" else ", $newNotificationEventType") +
-                (if (actor.isEmpty) "" else ", \nactor:$actor") +
-                (if (note.isEmpty) "" else ", \nnote:$note") +
-                (if (getActivity().isEmpty) "" else ", activity:${getActivity()} ") +
-                (if (objActor.isEmpty) "" else ", objActor:$objActor") +
-                "}"
+            (if (this === EMPTY) "(EMPTY), " else (if (isEmpty) "(empty), " else "")) +
+            type +
+            ", id:" + id +
+            ", oid:" + oid +
+            ", updated:" + MyLog.debugFormatOfDate(updatedDate) +
+            ", me:" + (if (accountActor.isEmpty) "EMPTY" else accountActor.oid) +
+            (if (subscribedByMe.known) if (subscribedByMe == TriState.TRUE) ", subscribed" else ", NOT subscribed" else "") +
+            (if (interacted.isTrue) ", interacted" else "") +
+            (if (notified.isTrue) ", notified" + (if (notifiedActor.isEmpty) " ???" else "Actor:$objActor") else "") +
+            (if (newNotificationEventType.isEmpty) "" else ", $newNotificationEventType") +
+            (if (actor.isEmpty) "" else ", \nactor:$actor") +
+            (if (note.isEmpty) "" else ", \nnote:$note") +
+            (if (getActivity().isEmpty) "" else ", activity:${getActivity()} ") +
+            (if (objActor.isEmpty) "" else ", objActor:$objActor") +
+            "}"
     }
 
     fun isSubscribedByMe(): TriState {
@@ -340,6 +345,7 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
                         return true
                     }
                 }
+
                 ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE -> {
                     val reblAndType = MyQuery.noteIdToLastReblogging(
                         myContext.database,
@@ -352,6 +358,7 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
                         return true
                     }
                 }
+
                 else -> {
                 }
             }
@@ -374,7 +381,7 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
             id = MyQuery.conditionToLongColumnValue(
                 myContext.database, "", ActivityTable.TABLE_NAME,
                 BaseColumns._ID, ActivityTable.NOTE_ID + "=" + getNote().noteId + " AND "
-                        + ActivityTable.ACTIVITY_TYPE + "=" + type.id
+                    + ActivityTable.ACTIVITY_TYPE + "=" + type.id
             )
         }
     }
@@ -390,15 +397,15 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
         if (isNotified().isTrue) {
             MyLog.i(
                 "NewNotification", newNotificationEventType.name +
-                        " " + accountActor.origin.name +
-                        " " + accountActor.uniqueName +
-                        " " + MyLog.formatDateTime(getUpdatedDate()) +
-                        " " + actor.actorNameInTimeline + " " + type +
-                        (if (getNote().nonEmpty) " '" + getNote().oid + "' " + I18n.trimTextAt(
-                            getNote().content,
-                            300
-                        ) else "") +
-                        if (getObjActor().nonEmpty) " " + getObjActor().actorNameInTimeline else ""
+                    " " + accountActor.origin.name +
+                    " " + accountActor.uniqueName +
+                    " " + MyLog.formatDateTime(getUpdatedDate()) +
+                    " " + actor.actorNameInTimeline + " " + type +
+                    (if (getNote().nonEmpty) " '" + getNote().oid + "' " + I18n.trimTextAt(
+                        getNote().content,
+                        300
+                    ) else "") +
+                    if (getObjActor().nonEmpty) " " + getObjActor().actorNameInTimeline else ""
             )
         }
     }
@@ -436,6 +443,7 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
                         .findFirst()
                         .orElse(Actor.EMPTY)
                 )
+
             NotificationEventType.ANNOUNCE, NotificationEventType.LIKE -> getAuthor()
             NotificationEventType.FOLLOW -> getObjActor()
             NotificationEventType.HOME -> accountActor
@@ -491,11 +499,12 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
                 if (myActorAccount.isValid) {
                     MyLog.v(this) {
                         (myActorAccount.toString() + " " + type
-                                + " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().content, 80))
+                            + " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().content, 80))
                     }
                     MyProvider.updateNoteFavorited(myContext, actor.origin, getNote().noteId)
                 }
             }
+
             else -> {
             }
         }
