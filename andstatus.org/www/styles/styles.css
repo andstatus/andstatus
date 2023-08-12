@@ -1,5 +1,6 @@
 html {
-    margin: 0;
+	width: 900px;
+    margin: 0 auto;
     padding: 0;
     background-color: #fff;
     color: #000;
@@ -24,6 +25,14 @@ h1 {
 h2 {
 	font-size: 32px;
 	font-weight: 400;
+}
+
+header {
+	text-align: center;
+}
+
+main {
+	text-align: justify;
 }
 
 h1 img {
