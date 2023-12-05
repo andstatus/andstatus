@@ -2,7 +2,7 @@ AndStatus 是一個開源的低流量社交網絡客戶端,
 具有樹狀線程對話。
 它支持不同的社交網絡,
 包括
-GNU社交 (例如Quitter.se, LoadAverage, Vinilox等), Twitter 和 Pump.io.
+GNU社交 (例如Quitter.se, LoadAverage, Vinilox等) 和 Pump.io.
 AndStatus 可以將您的提要從所有網路合併到一個時間表中,
 即使在離線狀態下也可以閱讀和發布。
 

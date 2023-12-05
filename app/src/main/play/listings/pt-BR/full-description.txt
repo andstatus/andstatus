@@ -1,6 +1,6 @@
 AndStatus é um aplicativo leve para redes sociais com conversas ramificadas.
 Suporta várias redes sociais, incluindo
-GNU social (como Quitter.se, LoadAverage, Vinilox, etc.), Twitter e Pump.io.
+GNU social (como Quitter.se, LoadAverage, Vinilox, etc.) e Pump.io.
 AndStatus pode combinar suas linhas do tempo de redes sociais diferentes em uma única só,
 e permite ler e publicar mesmo quando estiver offline.
 

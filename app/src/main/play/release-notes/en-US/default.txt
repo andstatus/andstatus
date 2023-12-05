@@ -1,3 +1,1 @@
-v.60.03 For ActivityPub C3S: Improve detection if timeline is syncable. Improve account access failures detection.
-v.60.02 Remember timelines sync errors.
-Refresh Access Token for OAuth 2.0 implemented.
+v.61.00 Twitter is no longer supported

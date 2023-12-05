@@ -29,6 +29,16 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="61.00" android:versionCode="365"
+        versionDate="2023-12-06"
+        versionTitle="Twitter is no longer supported">
+        <changes>
+            <change>There is no free access to reading tweets anymore.
+                So we cannot support Twitter in the Open Source app.
+                More details in <a href="https://github.com/andstatus/andstatus/issues/579">#579</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="60.04" android:versionCode="364"
         versionDate="2023-07-16"
         versionTitle="Fix ActivityPub newer page request">

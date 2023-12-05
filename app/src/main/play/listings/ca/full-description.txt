@@ -1,4 +1,4 @@
-L'AndStatus és un client de xarxes socails de baix trànsit amb converses arborescents. Permet múltiples protocols, incloent-hi el GNU social ("StatusNet", p. ex. Quitter, LoadAverage, Vinilox...). Twitter, Mastodon i Pump.io. L'AndStatus combina els teus comptes de totes les xarxes en una única línia temporal i et permet llegir i escriure fins i tot fora de línia.
+L'AndStatus és un client de xarxes socails de baix trànsit amb converses arborescents. Permet múltiples protocols, incloent-hi el GNU social ("StatusNet", p. ex. Quitter, LoadAverage, Vinilox...). Mastodon i Pump.io. L'AndStatus combina els teus comptes de totes les xarxes en una única línia temporal i et permet llegir i escriure fins i tot fora de línia.
 
 Per dispositius Android v.7.0+
 

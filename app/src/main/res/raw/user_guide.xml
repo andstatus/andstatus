@@ -51,7 +51,7 @@
     </title>
     <p>AndStatus is an Open Source low traffic social networking
         client with tree-like threaded conversations.
-        It supports multiple protocols, including GNU social, Twitter and Pump.io.
+        It supports multiple protocols, including GNU social and Pump.io.
         AndStatus combines your accounts from all networks into one Timeline
         and allows you reading and posting even while you are offline.</p>
     <p>Link to this guide is available in the Action bar-&gt;Help.</p>
@@ -76,9 +76,7 @@
         tap the "Discover open instances" menu item to pick a system
         from a live online list, maintained by the GNU social community;
         or "Add new system" manually prior to adding a new account.</p>
-    <p>For Twitter you are allowed to press "Add this account"
-        immediately.
-        For other systems you will be prompted to type your Username and Password
+    <p>You will be prompted to type your Username and Password
         before you will be allowed to "Add this account".</p>
     <p>After successful creation of an account, please tap "left arrow"
         on an
@@ -119,7 +117,7 @@
     <title>
         <p>3. Sending and replying</p>
     </title>
-    <p>1. In order to update your status, tap the "Post" button ("Tweet" for Twitter).
+    <p>1. In order to update your status, tap the "Post" button.
         It resembles an "Envelope+".
         A message editor will open at the bottom of the screen.
     </p>

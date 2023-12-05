@@ -1,5 +1,5 @@
 AndStatus est un client libre et multi-comptes prenant en charge plusieurs réseaux sociaux dont
-GNU social, Mastodon, Twitter et Pump.io.
+GNU social, Mastodon et Pump.io.
 AndStatus peut combiner vos flux de tous les réseaux sociaux dans un seul fil d'actualité
 et vous permet de lire et de publier même lorsque vous êtes en mode hors connexion.
 

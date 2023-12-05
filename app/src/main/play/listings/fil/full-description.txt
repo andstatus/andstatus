@@ -1,6 +1,6 @@
 Ang AndStatus ay isang Open Source na mababang trapik na kliyente sa pang-social networking na may parang-puno na mga nakahiblang konbersasyon.
 Ito ay sumusuporta sa magkakaibang mga Social network, kasama na ang
-GNU social, Mastodon, Twitter at Pump.io.
+GNU social, Mastodon at Pump.io.
 Maaaring pagsamahin ng AndStatus ang iyong mga feed mula sa lahat ng mga network sa iisang Timeline,
 at ito ay pumapayag sa iyo na makapagbasa at makag-post kahit ikaw ay naka-offline.
 

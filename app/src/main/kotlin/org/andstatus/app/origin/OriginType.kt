@@ -38,7 +38,8 @@ import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
 import java.net.URL
-import java.util.*
+import java.util.Arrays
+import java.util.Optional
 import java.util.function.Function
 import java.util.regex.Pattern
 
@@ -260,7 +261,7 @@ enum class OriginType(
         }
     }
 
-    override val isSelectable: Boolean = true
+    override val isSelectable: Boolean get() = this !== TWITTER
 
     override val code: String = getId().toString()
 

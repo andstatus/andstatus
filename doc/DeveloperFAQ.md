@@ -11,13 +11,6 @@ With a few easy steps you can start developing AndStatus features:
 * Optionally integrate Project issues published at [Issues](https://github.com/andstatus/andstatus/issues) with Android Studio.
 * Optionally [Use SonarQube for static code analysis](https://www.sonarsource.com/products/codeanalyzers/sonarjava.html).
 
-### 2. (Optionally) Configure your copy of the AndStatus project for OAuth in Twitter
-* Register your "AndStatus-yoursuffix" application...<br/>
-  <img alt="The Home Timeline with an image attached" src="screenshots/AndStatus-yvolk_settings.png">
-* Insert your application's private keys to the project:
-  See "[OAuthClientKeys.java](https://github.com/andstatus/andstatus/blob/master/app/src/main/java/org/andstatus/app/net/http/OAuthClientKeys.java)"  
-  file for more information.
-
 ## Testing and Debugging
 1. Set the logging level of the whole application to VERBOSE using the "Minimum logging level"
    option in the "Preferences". [More on logging here](https://github.com/andstatus/andstatus/issues/225).

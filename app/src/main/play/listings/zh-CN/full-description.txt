@@ -1,5 +1,5 @@
 AndStatus 是一个支持多种社交网络的开源多帐户客户端，支持的社交网络有：
-GNU social、Mastodon、Twitter 和 Pump.io。
+GNU social、Mastodon 和 Pump.io。
 AndStatus 可以将来自所有网络的提要合并到单独一条时间轴中，
 即使在离线状态下也可以阅读和发布。
 

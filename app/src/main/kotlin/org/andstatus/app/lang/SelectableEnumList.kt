@@ -17,13 +17,26 @@ package org.andstatus.app.lang
 
 import android.content.Context
 import android.widget.ArrayAdapter
-import java.util.*
+import java.util.EnumSet
 
 /**
  * @author yvolk@yurivolkov.com
  */
 class SelectableEnumList<E> private constructor(clazz: Class<E>) where E : Enum<E>, E : SelectableEnum {
     private val list: MutableList<E> = ArrayList()
+
+    init {
+        require(SelectableEnum::class.java.isAssignableFrom(clazz)) {
+            "Class '" + clazz.name +
+                "' doesn't implement SelectableEnum"
+        }
+        for (value in EnumSet.allOf(clazz)) {
+            if (value?.isSelectable == true) {
+                list.add(value)
+            }
+        }
+    }
+
     fun getList(): MutableList<E> {
         return list
     }
@@ -54,7 +67,8 @@ class SelectableEnumList<E> private constructor(clazz: Class<E>) where E : Enum<
 
     fun getSpinnerArrayAdapter(context: Context): ArrayAdapter<CharSequence?> {
         val spinnerArrayAdapter = ArrayAdapter(
-                context, android.R.layout.simple_spinner_item, getTitles(context))
+            context, android.R.layout.simple_spinner_item, getTitles(context)
+        )
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         return spinnerArrayAdapter
     }
@@ -70,18 +84,6 @@ class SelectableEnumList<E> private constructor(clazz: Class<E>) where E : Enum<
     companion object {
         fun <E> newInstance(clazz: Class<E>): SelectableEnumList<E> where E : Enum<E>, E : SelectableEnum {
             return SelectableEnumList(clazz)
-        }
-    }
-
-    init {
-        require(SelectableEnum::class.java.isAssignableFrom(clazz)) {
-            "Class '" + clazz.name +
-                    "' doesn't implement SelectableEnum"
-        }
-        for (value in EnumSet.allOf(clazz)) {
-            if (value?.isSelectable == true) {
-                list.add(value)
-            }
         }
     }
 }

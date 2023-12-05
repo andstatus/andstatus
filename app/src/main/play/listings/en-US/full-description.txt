@@ -1,4 +1,4 @@
-AndStatus is an Open Source multiple accounts client for multiple Social networks, including Mastodon, Twitter, ActivityPub (Client to Server), GNU social and Pump.io.
+AndStatus is an Open Source multiple accounts client for multiple Social networks, including Mastodon, ActivityPub (Client to Server), GNU social and Pump.io.
 AndStatus can combine your feeds from all networks into one Timeline,
 and it allows you to read and post even when you are offline.
 

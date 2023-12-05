@@ -1,5 +1,5 @@
 AndStatus é un cliente de código aberto para varias contas en varias redes sociais, incluíndo
-GNU social, Mastodon, Twitter e Pump.io.
+GNU social, Mastodon e Pump.io.
 AndStatus combina as súas fontes de diferentes redes nunha liña temporal,
 e permítelle ler e publicar cando non está en liña.
 

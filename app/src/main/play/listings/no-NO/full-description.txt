@@ -1,5 +1,5 @@
 AndStatus er en åpen kildekode-flere kontoer-klient for flere sosiale nettverk, inkludert
-GNU social, Mastodon, Twitter and Pump.io.
+GNU social, Mastodon and Pump.io.
 AndStatus kan kombinere strømmer fra alle nettverk i en tidslinje,
 og det lar deg lese og poste selv når du er frakoblet.
 

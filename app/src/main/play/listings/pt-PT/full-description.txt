@@ -1,5 +1,5 @@
 AndStatus é uma aplicação Open Source para acesso a diversas redes sociais incluindo
-GNU social, Mastodon, Twitter e Pump.io.
+GNU social, Mastodon e Pump.io.
 O AndStatus pode combinar as fontes de todas as redes em apenas uma cronologia que
 lhe permite-lhe ler e publicar informações mesmo que esteja offline.
 

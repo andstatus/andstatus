@@ -1,6 +1,6 @@
 AndStatus este un client Open Source cu trafic redus pentru rețele sociale cu conversațiile aranjate în stilul unui copac.
 Funcționează cu diferite rețele sociale, incluzând
-GNU social (ex. Quitter.se, LoadAverage, Vinilox, etc.), Twitter and Pump.io.
+GNU social (ex. Quitter.se, LoadAverage, Vinilox, etc.) and Pump.io.
 AndStatus poate combina feed-urile din toate rețelele într-o singură Cronologie
 și vă permite să citiți și să postați chiar când sunteți offline.
 

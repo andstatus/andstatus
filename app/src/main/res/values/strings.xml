@@ -433,7 +433,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="since">Since %s</string>
   <string name="splash_button_learn_more">Learn More</string>
   <string name="splash_button_get_started">Get Started</string>
-  <string name="splash_payoff_line">AndStatus is an Open Source multiple accounts client for multiple Social networks, including Mastodon, Twitter, ActivityPub (Client to Server), GNU social and Pump.io.</string>
+  <string name="splash_payoff_line">AndStatus is an Open Source multiple accounts client for multiple Social networks, including Mastodon, ActivityPub (Client to Server), GNU social and Pump.io.</string>
   <string name="status_destroyed">The note has been removed.</string>
   <string name="subtitle">Subtitle</string>
   <string name="summaryCw">Summary / Content Warning</string>

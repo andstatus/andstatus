@@ -1,5 +1,5 @@
 AndStatus birden fazla sosyal ağı, birden fazla hesapla kullanmanıza izen veren açık bir kaynak bir istemcidir
-GNU social, Mastodon, Twitter ve Pump.io.
+GNU social, Mastodon ve Pump.io.
 AndStatus tüm ağlardaki akışları bir Zaman Çizelgesi'nde birleştirebilir,
 çevrimdışı olduğunuzda bile okumanıza ve ileti göndermenize izin verir.
 
