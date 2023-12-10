@@ -41,7 +41,7 @@ class VerifyCredentialsActivityPubTest {
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
         val origin: Origin = myContext.origins.fromName(DemoData.demoData.activityPubTestOriginName)
-        val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN)
+        val accountName: AccountName = AccountName.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN)
         stub = ConnectionStub.newFor(MyAccountBuilder.Companion.fromAccountName(accountName).myAccount)
     }
 

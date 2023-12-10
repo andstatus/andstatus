@@ -43,7 +43,7 @@ class MyAccountTest {
         MyLog.v(this, logMsg)
         val origin = myContext.origins.fromOriginInAccountNameAndHost(originType.title, host)
         val accountNameString = uniqueName + AccountName.Companion.ORIGIN_SEPARATOR + origin.getOriginInAccountName(host)
-        val accountName: AccountName = AccountName.Companion.fromAccountName(myContext, accountNameString)
+        val accountName: AccountName = AccountName.fromAccountName(myContext, accountNameString)
         val builder: MyAccountBuilder = MyAccountBuilder.Companion.fromAccountName(accountName)
         Assert.assertEquals(logMsg, origin, builder.myAccount.origin)
         Assert.assertEquals(logMsg, accountNameString, builder.myAccount.accountName)

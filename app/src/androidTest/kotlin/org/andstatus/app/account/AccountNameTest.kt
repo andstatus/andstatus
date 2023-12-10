@@ -19,7 +19,8 @@ import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.origin.Origin
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AccountNameTest {
@@ -27,7 +28,7 @@ class AccountNameTest {
 
     @Test
     fun preserveInputValues() {
-        assertForOneOrigin( Origin.EMPTY)
+        assertForOneOrigin(Origin.EMPTY)
         assertForOneOrigin(DemoData.demoData.getPumpioConversationOrigin())
         assertForOneOrigin(DemoData.demoData.getGnuSocialOrigin())
     }
@@ -39,19 +40,27 @@ class AccountNameTest {
     }
 
     private fun assertInputValues(origin: Origin, uniqueName: String?) {
-        val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, uniqueName)
-        Assert.assertEquals(origin, accountName.origin)
+        val accountName: AccountName = AccountName.fromOriginAndUniqueName(origin, uniqueName)
+        assertEquals(origin, accountName.origin)
         val expected = if (uniqueName.isNullOrEmpty()) "" else
             if (uniqueName.contains("@")) uniqueName else uniqueName +
                 if (origin.hasHost()) "@" + origin.getHost() else ""
-        Assert.assertEquals(expected, accountName.getUniqueName())
+        assertEquals(expected, accountName.getUniqueName())
     }
 
     @Test
     fun testUniqueAccountName() {
         val accountName1: AccountName = AccountName.Companion.fromAccountName(myContext, "someTester/Pump.io")
-        Assert.assertEquals(accountName1.toString(), accountName1.origin.name, "Pump.io")
+        assertEquals(accountName1.toString(), accountName1.origin.name, "Pump.io")
         val accountName2: AccountName = AccountName.Companion.fromAccountName(myContext, "someTester/PumpioTest")
-        Assert.assertEquals(accountName2.toString(), accountName2.origin.name, "PumpioTest")
+        assertEquals(accountName2.toString(), accountName2.origin.name, "PumpioTest")
+    }
+
+    @Test
+    fun testNonIcannTld() {
+        val origin = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName).origin
+        val nonIcannTld = "marek22k@social.dn42"
+        val accountName: AccountName = AccountName.fromOriginAndUniqueName(origin, nonIcannTld)
+        assertTrue(accountName.toString(), accountName.isValid)
     }
 }

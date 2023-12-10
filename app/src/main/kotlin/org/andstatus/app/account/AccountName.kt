@@ -127,7 +127,7 @@ class AccountName private constructor(uniqueName: String,
             val nonNullName = StringUtil.notNull(uniqueNameIn).trim { it <= ' ' }
             val uniqueName = nonNullName +
                     if (!nonNullName.contains("@") && origin.shouldHaveUrl()) "@" + origin.getAccountNameHost() else ""
-            return if (Actor.uniqueNameToUsername(origin, uniqueName).isPresent()) {
+            return if (Actor.uniqueNameToUsername(origin, uniqueName).isPresent) {
                 uniqueName
             } else {
                 ""
