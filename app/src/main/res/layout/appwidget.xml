@@ -35,7 +35,7 @@
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
 		    android:layout_alignParentRight="true"
-		    android:src="@drawable/icon" />
+		    android:src="@mipmap/ic_launcher" />
 
 		<RelativeLayout android:id="@+id/widget_text_column"
 			android:layout_height="wrap_content" android:focusable="true"

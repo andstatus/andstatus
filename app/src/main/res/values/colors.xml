@@ -55,6 +55,7 @@
     <color name="black_cat">#413839</color>
     <color name="grey_wolf">#504A4B</color>
     <color name="carbon_grey">#625D5D</color>
+	<color name="ic_launcher_background">#005b97</color>
 
     <color name="message_background_color">#FF000000</color>
     <color name="message_background_color_light">#FFFFFFFF</color>

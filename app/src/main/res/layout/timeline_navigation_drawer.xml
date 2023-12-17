@@ -22,7 +22,7 @@
             android:layout_gravity="center_vertical"
             android:padding="8dp"
             android:scaleType="fitCenter"
-            tools:src="@drawable/icon"/>
+            tools:src="@mipmap/ic_launcher"/>
 
         <org.andstatus.app.graphics.AvatarView
             android:id="@+id/account_avatar_image_2"
@@ -32,7 +32,7 @@
             android:layout_gravity="top"
             android:padding="8dp"
             android:scaleType="fitCenter"
-            tools:src="@drawable/icon"/>
+            tools:src="@mipmap/ic_launcher"/>
 
         <org.andstatus.app.graphics.AvatarView
             android:id="@+id/account_avatar_image_1"
@@ -42,7 +42,7 @@
             android:layout_toStartOf="@id/account_avatar_image_2"
             android:padding="8dp"
             android:scaleType="fitCenter"
-            tools:src="@drawable/icon"/>
+            tools:src="@mipmap/ic_launcher"/>
 
     </RelativeLayout>
 

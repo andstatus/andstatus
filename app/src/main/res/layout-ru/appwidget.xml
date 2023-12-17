@@ -32,7 +32,7 @@
 		<ImageView android:id="@+id/icon"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:src="@drawable/icon"
+			android:src="@mipmap/ic_launcher"
 			android:layout_alignParentRight="true"
 			android:layout_alignParentLeft="false" 
 			/>
