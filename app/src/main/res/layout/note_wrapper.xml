@@ -87,5 +87,5 @@
         android:layout_height="48dp"
         android:layout_alignParentStart="true"
         android:scaleType="fitCenter"
-        tools:src="@drawable/icon"/>
+        tools:src="@mipmap/ic_launcher"/>
 </RelativeLayout>

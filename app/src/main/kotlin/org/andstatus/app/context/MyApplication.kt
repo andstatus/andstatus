@@ -35,7 +35,7 @@ import java.io.File
 
 @AcraMailSender(mailTo = "andstatus@gmail.com")
 @AcraDialog(
-    resIcon = R.drawable.icon,
+    resIcon = R.mipmap.ic_launcher,
     resText = R.string.crash_dialog_text,
     resCommentPrompt = R.string.crash_dialog_comment_prompt
 )

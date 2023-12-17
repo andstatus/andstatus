@@ -49,6 +49,6 @@
         android:paddingLeft="1dp"
         android:paddingRight="1dp"
         android:scaleType="fitCenter"
-        tools:src="@drawable/icon"/>
+        tools:src="@mipmap/ic_launcher"/>
 
 </RelativeLayout>
