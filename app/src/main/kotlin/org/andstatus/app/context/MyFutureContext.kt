@@ -186,7 +186,10 @@ class MyFutureContext private constructor(
             val calledBy: Any = calledByIn ?: previousContext
             var willInitialize = true;
             val reason: String = (
-                if (myContextHolder.isShuttingDown) {
+                if (myContextHolder.dontInitialize) {
+                    willInitialize = false
+                    "Don't initialize flag"
+                } else if (myContextHolder.isShuttingDown) {
                     willInitialize = false
                     "Shutting down"
                 } else if (myContextHolder.onDeleteApplicationData) {

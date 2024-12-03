@@ -49,18 +49,22 @@ class GenerateDemoData(
 
     override suspend fun doInBackground(params: Unit): Try<Unit> {
         MyLog.i(logTag, "$logTag; started")
+        myContextHolder.dontInitialize = false
         progressListener.onProgressMessage("Generating demo data...")
         delay(500)
         MyLog.v(logTag, "Before initialize 1")
-        val myContext: MyContext = myContextHolder.initialize(null, logTag).getCompleted()
+        val myContext: MyContext = myContextHolder.reInitialize(null, logTag).getCompleted()
+        myContextHolder.dontInitialize = true
         MyLog.v(logTag, "After initialize 1")
         MyServiceManager.setServiceUnavailable()
         val originInserter = DemoOriginInserter(myContext)
         originInserter.insert()
         val accountInserter = DemoAccountInserter(myContext)
         accountInserter.insert()
+        MyLog.v(logTag, "Before timelines.saveChanged")
         myContext.timelines.saveChanged()
         MyLog.v(logTag, "Before initialize 2")
+        myContextHolder.dontInitialize = false
         myContextHolder.initialize(null, logTag).getCompleted()
         MyLog.v(logTag, "After initialize 2")
         MyServiceManager.setServiceUnavailable()
@@ -123,6 +127,7 @@ class GenerateDemoData(
     }
 
     override suspend fun onPostExecute(result: Try<Unit>) {
+        myContextHolder.dontInitialize = false
         FirstActivity.checkAndUpdateLastOpenedAppVersion(myContextHolder.getNow().context, true)
         progressListener.onComplete(result.isSuccess)
     }

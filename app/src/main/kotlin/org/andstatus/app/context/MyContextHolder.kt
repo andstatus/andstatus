@@ -48,6 +48,9 @@ class MyContextHolder private constructor(
         AtomicReference(MyFutureContext.completed(MyContextEmpty.EMPTY))
 
     @Volatile
+    var dontInitialize = false
+
+    @Volatile
     var isRestoring = false
 
     @Volatile
@@ -105,7 +108,7 @@ class MyContextHolder private constructor(
         return !future.isReady
     }
 
-    fun reInitialize(context: Context, calledBy: Any): MyFutureContext {
+    fun reInitialize(context: Context?, calledBy: Any): MyFutureContext {
         return initializeInner(context, calledBy, false, true)
     }
 
