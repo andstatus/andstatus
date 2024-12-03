@@ -208,5 +208,6 @@ class MyContextHolder private constructor(
 
     companion object {
         val myContextHolder: MyContextHolder = MyContextHolder()
+        suspend fun myContextCompleted() = myContextHolder.getCompleted()
     }
 }

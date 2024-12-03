@@ -19,6 +19,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContext
@@ -29,10 +30,15 @@ import org.andstatus.app.util.Taggable
 /**
  * @author yvolk@yurivolkov.com
  */
-class MyServiceEventsReceiver(private val myContext: MyContext, private val listener: MyServiceEventsListener) : BroadcastReceiver() {
+class MyServiceEventsReceiver(private val myContext: MyContext, private val listener: MyServiceEventsListener) :
+    BroadcastReceiver() {
     private val mInstanceId = InstanceId.next()
     fun registerReceiver(context: Context) {
-        context.registerReceiver(this, IntentFilter(MyAction.SERVICE_STATE.action))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            context.registerReceiver(this, IntentFilter(MyAction.SERVICE_STATE.action), Context.RECEIVER_EXPORTED)
+        } else {
+            context.registerReceiver(this, IntentFilter(MyAction.SERVICE_STATE.action))
+        }
     }
 
     fun unregisterReceiver(context: Context) {
@@ -49,7 +55,7 @@ class MyServiceEventsReceiver(private val myContext: MyContext, private val list
         if (event == MyServiceEvent.UNKNOWN) return
         MyLog.v(this) {
             ("onReceive " + event + " for " + Taggable.anyToTag(listener)
-                    + ", instanceId:" + mInstanceId)
+                + ", instanceId:" + mInstanceId)
         }
         listener.onReceive(CommandData.fromIntent(myContext, intent), event)
     }
@@ -57,7 +63,7 @@ class MyServiceEventsReceiver(private val myContext: MyContext, private val list
     init {
         MyLog.v(this) {
             ("Created, instanceId=" + mInstanceId
-                    + ("; listener=" + Taggable.anyToTag(listener)))
+                + ("; listener=" + Taggable.anyToTag(listener)))
         }
     }
 }

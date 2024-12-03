@@ -41,7 +41,8 @@ import java.util.stream.Collectors.toList
 
 class DemoAccountInserter(private val myContext: MyContext) {
     private var firstAccountActorOid: String? = null
-    fun insert() {
+
+    suspend fun insert() {
         addAccount(
             demoData.pumpioTestAccountActorOid, demoData.pumpioTestAccountName,
             "", OriginType.PUMPIO
@@ -76,7 +77,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         )
     }
 
-    private fun addAccount(
+    private suspend fun addAccount(
         actorOid: String,
         accountNameString: String,
         avatarUrl: String?,
@@ -137,7 +138,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         return ma
     }
 
-    private fun assertAccountIsAddedToAccountManager(maExpected: MyAccount) {
+    private suspend fun assertAccountIsAddedToAccountManager(maExpected: MyAccount) {
         val aa = AccountUtils.getCurrentAccounts(myContext.context)
         var ma: MyAccount = MyAccount.EMPTY
         for (account in aa) {
@@ -152,7 +153,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         )
     }
 
-    private fun addAccountFromActor(actor: Actor, accountName: AccountName): MyAccount {
+    private suspend fun addAccountFromActor(actor: Actor, accountName: AccountName): MyAccount {
         val builder1: MyAccountBuilder = MyAccountBuilder.fromAccountName(accountName).setOAuth(true)
         if (actor.origin.isOAuthDefault() || actor.origin.canChangeOAuth()) {
             insertTestClientKeys(builder1.myAccount)

@@ -34,7 +34,7 @@ class MyAccountTest {
         createAccountOfOriginType("test2User", "somepipe.example.com", OriginType.PUMPIO)
         createAccountOfOriginType("PeterPom", DemoData.demoData.gnusocialTestHost, OriginType.GNUSOCIAL)
         createAccountOfOriginType("", "", OriginType.ACTIVITYPUB)
-        createAccountOfOriginType("AndStatus", "pleroma.site", OriginType.ACTIVITYPUB)
+        createAccountOfOriginType("AndStatus", "pleroma.example.com", OriginType.ACTIVITYPUB)
     }
 
     private fun createAccountOfOriginType(username: String?, host: String?, originType: OriginType) {

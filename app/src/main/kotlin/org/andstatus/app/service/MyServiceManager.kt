@@ -54,6 +54,7 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                     myContextHolder.onShutDown()
                 }
             }
+
             else -> {
                 if (serviceAvailability.get().isAvailable() && !myContextHolder.getNow().isReady) {
                     myContextHolder.initialize(context, this)
@@ -63,10 +64,12 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                         MyLog.d(this, "Start service on boot $instanceId")
                         sendCommand(CommandData.EMPTY)
                     }
+
                     MyAction.SYNC -> {
                         MyLog.v(TAG) { "onReceive $instanceId SYNC" }
                         SyncInitiator.tryToSync(context)
                     }
+
                     else -> MyLog.v(TAG) { "onReceive $instanceId $intent" }
                 }
             }
@@ -136,7 +139,11 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
                 filter.addAction(MyAction.BOOT_COMPLETED.action)
                 filter.addAction(MyAction.SYNC.action)
                 filter.addAction(MyAction.ACTION_SHUTDOWN.action)
-                context.registerReceiver(receiver, filter)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    context.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
+                } else {
+                    context.registerReceiver(receiver, filter)
+                }
                 MyLog.v(TAG) { "Receiver is registered ${receiver.instanceId}" }
             }
         }

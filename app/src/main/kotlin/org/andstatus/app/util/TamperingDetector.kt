@@ -46,11 +46,14 @@ object TamperingDetector {
         ACRA.errorReporter.putCustomData("apkSignatures", builder.toString())
     }
 
-    private fun getAppSignatures(context: Context): MutableList<String> {
+    private fun getAppSignatures(context: Context): List<String> {
         val signatures: MutableList<String> = ArrayList()
         try {
-            val packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES)
-            for (signature in packageInfo.signatures) {
+            val packageSignatures =
+                context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES)
+                    ?.signatures
+                    ?: return signatures
+            for (signature in packageSignatures) {
                 val md = MessageDigest.getInstance("SHA")
                 md.update(signature.toByteArray())
                 var signatureString = Base64.encodeToString(md.digest(), Base64.DEFAULT)
@@ -71,7 +74,7 @@ object TamperingDetector {
 
     fun getAppSignatureInfo(): String {
         return knownAppSignature?.takeIf {
-             it.isNotEmpty()
+            it.isNotEmpty()
         } ?: "unknown-keys"
     }
 

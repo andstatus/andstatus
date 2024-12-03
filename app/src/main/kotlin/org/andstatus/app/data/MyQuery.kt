@@ -153,7 +153,7 @@ object MyQuery {
         if (entityId == 0L) return ""
         val db = myContext.database
         return if (db == null) {
-            MyLog.databaseIsNull { "idToOid, oe=$oe id=$entityId" }
+            MyLog.databaseIsNull { "idToOid, oe=$oe id=$entityId, myContext: $myContext" }
             ""
         } else {
             idToOid(db, oe, entityId, rebloggerActorId)

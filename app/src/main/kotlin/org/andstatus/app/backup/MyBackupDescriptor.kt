@@ -78,7 +78,7 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
         }
         appInstanceName = MyPreferences.getAppInstanceName()
         applicationVersionCode = pi.versionCode
-        applicationVersionName = pi.versionName
+        applicationVersionName = pi.versionName ?: pi.versionCode.toString()
     }
 
     fun getBackupSchemaVersion(): Int {

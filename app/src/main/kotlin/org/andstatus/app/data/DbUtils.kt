@@ -45,7 +45,7 @@ object DbUtils {
     /**
      * @return rowId
      */
-    fun addRowWithRetry(myContext: MyContext, tableName: String?, values: ContentValues?, nRetries: Int): Try<Long> {
+    fun addRowWithRetry(myContext: MyContext, tableName: String, values: ContentValues?, nRetries: Int): Try<Long> {
         val method = "addRowWithRetry"
         var rowId: Long = -1
         val db = myContext.database
@@ -78,7 +78,7 @@ object DbUtils {
      */
     fun updateRowWithRetry(
         myContext: MyContext,
-        tableName: String?,
+        tableName: String,
         rowId: Long,
         values: ContentValues?,
         nRetries: Int

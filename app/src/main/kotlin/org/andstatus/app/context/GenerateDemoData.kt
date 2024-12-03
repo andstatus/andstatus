@@ -39,7 +39,7 @@ import org.hamcrest.MatcherAssert
 import org.junit.Assert
 import java.util.*
 
-class GenerateDemoData constructor(
+class GenerateDemoData(
     val progressListener: ProgressLogger.ProgressListener,
     val demoData: DemoData
 ) :

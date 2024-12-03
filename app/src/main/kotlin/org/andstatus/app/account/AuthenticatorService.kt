@@ -47,13 +47,12 @@ class AuthenticatorService : Service() {
             response: AccountAuthenticatorResponse?, accountType: String,
             authTokenType: String?, requiredFeatures: Array<String?>?, options: Bundle?
         ): Bundle {
+            val username: String? = options?.getString(OPTIONS_USERNAME)
             // There are two cases here:
             // 1) We are called with a username/password; this comes from the traditional email
             //    app UI; we simply create the account and return the proper bundle
-            return if (options != null && options.containsKey(OPTIONS_PASSWORD)
-                && options.containsKey(OPTIONS_USERNAME)
-            ) {
-                val account = Account(options.getString(OPTIONS_USERNAME), ANDROID_ACCOUNT_TYPE)
+            return if (options != null && options.containsKey(OPTIONS_PASSWORD) && !username.isNullOrEmpty()) {
+                val account = Account(username, ANDROID_ACCOUNT_TYPE)
                 AccountManager.get(this@AuthenticatorService).addAccountExplicitly(
                     account, options.getString(OPTIONS_PASSWORD), null
                 )

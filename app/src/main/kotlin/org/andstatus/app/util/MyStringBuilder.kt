@@ -18,8 +18,10 @@ package org.andstatus.app.util
 import java.util.*
 
 /** Adds convenience methods to [StringBuilder]  */
-class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) : CharSequence, IsEmpty {
+class MyStringBuilder(val builder: StringBuilder = StringBuilder()) : CharSequence {
     private constructor(text: CharSequence) : this(StringBuilder(text))
+
+    val nonEmpty: Boolean get() = !isEmpty()
 
     fun <T> withCommaNonEmpty(label: CharSequence?, obj: T?): MyStringBuilder {
         return withComma(label, obj, { it -> nonEmptyObj(it) })
@@ -58,7 +60,7 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
     }
 
     fun atNewLine(label: CharSequence?, obj: Any?): MyStringBuilder {
-        val separator = if (isEmpty) "" else {
+        val separator = if (isEmpty()) "" else {
             when (get(lastIndex - 1)) {
                 '\n' -> ""
                 ',' -> "\n"
@@ -111,8 +113,6 @@ class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) 
     fun apply(unaryOperator: (MyStringBuilder) -> MyStringBuilder): MyStringBuilder {
         return unaryOperator(this)
     }
-
-    override val isEmpty: Boolean get() = length == 0
 
     fun toKeyValue(key: Any): String {
         return formatKeyValue(key, toString())

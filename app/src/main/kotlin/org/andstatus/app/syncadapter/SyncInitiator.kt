@@ -21,6 +21,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.PowerManager
 import android.os.SystemClock
 import org.andstatus.app.MyAction
@@ -124,8 +125,22 @@ class SyncInitiator : BroadcastReceiver() {
         }
 
         private fun registerBroadcastReceiver(myContext: MyContext?) {
-            if (myContext != null && myContext.accounts.hasSyncedAutomatically()) myContext.context
-                .registerReceiver(BROADCAST_RECEIVER, IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED))
+            if (myContext != null && myContext.accounts.hasSyncedAutomatically()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    myContext.context
+                        .registerReceiver(
+                            BROADCAST_RECEIVER,
+                            IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED),
+                            Context.RECEIVER_EXPORTED
+                        )
+                } else {
+                    myContext.context
+                        .registerReceiver(
+                            BROADCAST_RECEIVER,
+                            IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED)
+                        )
+                }
+            }
         }
 
         fun unregister(myContext: MyContext?) {

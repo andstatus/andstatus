@@ -61,7 +61,7 @@ object AccountUtils {
     }
 
     /** Add this account to the Account Manager Without userdata yet  */
-    fun addEmptyAccount(am: AccountManager, accountName: String?, password: String?): Try<Account> {
+    fun addEmptyAccount(am: AccountManager, accountName: String, password: String?): Try<Account> {
         return Try.of {
             val androidAccount = Account(accountName, AuthenticatorService.ANDROID_ACCOUNT_TYPE)
             if (am.addAccountExplicitly(androidAccount, password, null)) {
