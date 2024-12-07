@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/actor_profile_wrapper"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:fitsSystemWindows="true"
     android:orientation="vertical"
     tools:theme="@style/Theme.AndStatus.FullyDefined">
 
@@ -17,11 +17,11 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_centerInParent="true"
-            android:paddingTop="2dp"
             android:paddingLeft="1dp"
+            android:paddingTop="2dp"
             android:paddingRight="1dp"
             android:scaleType="fitCenter"
-            tools:src="@mipmap/ic_launcher"/>
+            tools:src="@mipmap/ic_launcher" />
 
     </RelativeLayout>
 
@@ -30,85 +30,90 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="2dip"
-        android:paddingTop="2dip" >
+        android:paddingTop="2dip"
+        android:paddingBottom="2dip">
 
         <TextView
             android:id="@+id/realname"
+            style="@style/messageUsernameAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            style="@style/messageUsernameAppearance"
-            tools:text="John Smith"/>
+            tools:text="John Smith" />
 
         <TextView
             android:id="@+id/username"
+            style="@style/messageUsernameAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            style="@style/messageUsernameAppearance"
-            tools:text="user35@some.domain"/>
+            tools:text="user35@some.domain" />
 
         <TextView
             android:id="@+id/profile_url"
+            style="@style/messageBodyAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            style="@style/messageBodyAppearance"
-            tools:text="http://mysite.org/user35/profile"/>
+            tools:text="http://mysite.org/user35/profile" />
 
         <TextView
             android:id="@+id/description"
+            style="@style/messageBodyAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/messageBodyAppearance"
-            tools:text="I am an ordinary guy, interested in computer science"/>
+            tools:text="I am an ordinary guy, interested in computer science" />
 
         <TextView
             android:id="@+id/location"
+            style="@style/messageBodyAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            style="@style/messageBodyAppearance"
-            tools:text="Moscow, Russia"/>
+            tools:text="Moscow, Russia" />
 
         <TextView
             android:id="@+id/homepage"
+            style="@style/messageBodyAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            style="@style/messageBodyAppearance"
-            tools:text="http://andstatus.org/"/>
+            tools:text="http://andstatus.org/" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
+
             <ImageView
                 android:id="@+id/msg_count_image"
                 android:layout_width="24dip"
                 android:layout_height="24dip"
                 android:scaleType="fitCenter"
-                android:src="?attr/msgCountIcon"/>
+                android:src="?attr/msgCountIcon" />
+
             <TextView
                 android:id="@+id/msg_count"
+                style="@style/messageBodyAppearance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/messageBodyAppearance"
-                tools:text="25764"/>
+                tools:text="25764" />
+
             <ImageView
                 android:id="@+id/following_count_image"
                 android:layout_width="24dip"
                 android:layout_height="24dip"
-                android:scaleType="fitCenter"
                 android:layout_marginLeft="6dp"
-                android:src="?attr/followingCountIcon"/>
+                android:scaleType="fitCenter"
+                android:src="?attr/followingCountIcon" />
+
             <TextView
                 android:id="@+id/following_count"
+                style="@style/messageBodyAppearance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/messageBodyAppearance"
-                tools:text="380"/>
+                tools:text="380" />
+
             <ImageView
                 android:id="@+id/followers_count_image"
                 android:layout_width="28dip"
@@ -117,42 +122,45 @@
                 android:layout_marginTop="-2dp"
                 android:layout_marginBottom="-4dp"
                 android:scaleType="fitCenter"
-                android:src="?attr/followersCountIcon"/>
+                android:src="?attr/followersCountIcon" />
+
             <TextView
                 android:id="@+id/followers_count"
+                style="@style/messageBodyAppearance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingTop="1dp"
-                style="@style/messageBodyAppearance"
-                tools:text="974"/>
+                tools:text="974" />
+
             <ImageView
                 android:id="@+id/favorites_count_image"
                 android:layout_width="24dip"
                 android:layout_height="24dip"
                 android:layout_marginLeft="6dp"
                 android:scaleType="fitCenter"
-                android:src="?attr/favoriteIcon"/>
+                android:src="?attr/favoriteIcon" />
+
             <TextView
                 android:id="@+id/favorites_count"
+                style="@style/messageBodyAppearance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/messageBodyAppearance"
-                tools:text="1564"/>
+                tools:text="1564" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/followed_by"
+            style="@style/messageDetailsAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/messageDetailsAppearance"
-            tools:text="Followed by andstatus, yvolk"/>
+            tools:text="Followed by andstatus, yvolk" />
 
         <TextView
             android:id="@+id/follows"
+            style="@style/messageDetailsAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/messageDetailsAppearance"
-            tools:text="Follows yvolkru"/>
+            tools:text="Follows yvolkru" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -166,7 +174,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_marginTop="14dp"
-                tools:text="15 minute ago"/>
+                tools:text="15 minute ago" />
 
             <LinearLayout
                 android:id="@+id/selectProfileOriginGroup"
@@ -179,9 +187,9 @@
                     style="@style/drawerListItem"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:onClick="onSelectProfileOriginButtonClick"
-                    tools:text="LoadAverage"
-                    android:layout_gravity="center_vertical" />
+                    tools:text="LoadAverage" />
 
                 <ImageView
                     android:id="@+id/selectProfileOriginDropDown"
@@ -189,7 +197,7 @@
                     android:layout_height="48dp"
                     android:contentDescription="@string/label_origin_list"
                     android:onClick="onSelectProfileOriginButtonClick"
-                    android:src="?attr/arrowDropDownIcon"/>
+                    android:src="?attr/arrowDropDownIcon" />
 
             </LinearLayout>
 

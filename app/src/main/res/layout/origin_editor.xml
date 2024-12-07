@@ -3,180 +3,181 @@
     android:id="@+id/my_layout_parent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
-	<include layout="@layout/action_bar" />
+    <include layout="@layout/action_bar" />
 
     <ScrollView
         android:id="@+id/main_container"
-        android:layout_weight="1"
-        android:layout_width="match_parent"
-        android:layout_height="0dp" >
-    
-    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:orientation="vertical" >
+        android:layout_weight="1">
 
-	    <TextView
-	        android:id="@+id/label_origin_type"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/label_origin_type" />
-	
-	    <Spinner
-	        android:id="@+id/origin_type"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:prompt="@string/label_origin_type" />
-	
-		<View style="@style/Divider"/>
-			    
-	    <TextView
-	        android:id="@+id/label_host"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/label_host" />
-	
-	    <org.andstatus.app.widget.LongHintEditText
-	        android:id="@+id/host"
-			android:inputType="textNoSuggestions|textMultiLine"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:ems="10"
-	        android:hint="@string/host_hint" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="vertical">
 
-		<TextView
-			android:id="@+id/label_origin_name"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:text="@string/label_origin_name" />
+            <TextView
+                android:id="@+id/label_origin_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_origin_type" />
 
-		<org.andstatus.app.widget.LongHintEditText
-			android:id="@+id/origin_name"
-			android:inputType="textNoSuggestions|textMultiLine"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:ems="10"
-			android:hint="@string/origin_name_hint" />
+            <Spinner
+                android:id="@+id/origin_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:prompt="@string/label_origin_type" />
 
-		<View style="@style/Divider"/>
+            <View style="@style/Divider" />
 
-		<CheckBox
-	        android:id="@+id/is_ssl"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/title_preference_ssl" />
+            <TextView
+                android:id="@+id/label_host"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_host" />
 
-	    <LinearLayout
-	        android:id="@+id/ssl_mode_container"
-	        android:layout_width="match_parent"
-	        android:layout_height="wrap_content"
-	        android:orientation="vertical" >
-	        
-			<View style="@style/Divider"/>
-	        
-		    <TextView
-		        android:id="@+id/ssl_mode_label"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:text="@string/preference_ssl_mode_title" />
-		
-		    <Spinner
-		        android:id="@+id/ssl_mode"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:entries="@array/preference_ssl_mode_entries"
-		        android:prompt="@string/preference_ssl_mode_title" />
-		    
-		    <TextView
-		        android:id="@+id/ssl_mode_summary"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:text="@string/preference_ssl_mode_secure_summary" />
-	        
-			<View style="@style/Divider"/>
-			
-	    </LinearLayout>
-	    	    	    	
-	    <CheckBox
-	        android:id="@+id/allow_html"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/label_allow_html_content" />
-        
-        <View style="@style/Divider"/>
-        	        
-	    <TextView
-	        android:id="@+id/mention_as_webfingerid_label"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/mention_as_webfingerid_title" />
-        
-	    <Spinner
-	        android:id="@+id/mention_as_webfingerid"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:entries="@array/tristate_yes_no_auto_entries"
-	        android:prompt="@string/mention_as_webfingerid_title" />
-            
-        <View style="@style/Divider"/>
-        	
-	    <TextView
-            android:id="@+id/use_legacy_http_protocol_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/use_legacy_http_protocol_title" />
-    
-        <Spinner
-            android:id="@+id/use_legacy_http_protocol"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:entries="@array/tristate_yes_no_auto_entries"
-            android:prompt="@string/use_legacy_http_protocol_title" />
-        	    
-		<View style="@style/Divider"/>
-	    	    	    	    	    	
-	    <CheckBox
-	        android:id="@+id/in_combined_global_search"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/in_combined_global_search_label" />
-	    	    	    	
-	    <CheckBox
-	        android:id="@+id/in_combined_public_reload"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/in_combined_public_reload_label" />
-	    	    
-    </LinearLayout>
+            <org.andstatus.app.widget.LongHintEditText
+                android:id="@+id/host"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/host_hint"
+                android:inputType="textNoSuggestions|textMultiLine" />
+
+            <TextView
+                android:id="@+id/label_origin_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_origin_name" />
+
+            <org.andstatus.app.widget.LongHintEditText
+                android:id="@+id/origin_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/origin_name_hint"
+                android:inputType="textNoSuggestions|textMultiLine" />
+
+            <View style="@style/Divider" />
+
+            <CheckBox
+                android:id="@+id/is_ssl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_preference_ssl" />
+
+            <LinearLayout
+                android:id="@+id/ssl_mode_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <View style="@style/Divider" />
+
+                <TextView
+                    android:id="@+id/ssl_mode_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/preference_ssl_mode_title" />
+
+                <Spinner
+                    android:id="@+id/ssl_mode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:entries="@array/preference_ssl_mode_entries"
+                    android:prompt="@string/preference_ssl_mode_title" />
+
+                <TextView
+                    android:id="@+id/ssl_mode_summary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/preference_ssl_mode_secure_summary" />
+
+                <View style="@style/Divider" />
+
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/allow_html"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_allow_html_content" />
+
+            <View style="@style/Divider" />
+
+            <TextView
+                android:id="@+id/mention_as_webfingerid_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/mention_as_webfingerid_title" />
+
+            <Spinner
+                android:id="@+id/mention_as_webfingerid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/tristate_yes_no_auto_entries"
+                android:prompt="@string/mention_as_webfingerid_title" />
+
+            <View style="@style/Divider" />
+
+            <TextView
+                android:id="@+id/use_legacy_http_protocol_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/use_legacy_http_protocol_title" />
+
+            <Spinner
+                android:id="@+id/use_legacy_http_protocol"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:entries="@array/tristate_yes_no_auto_entries"
+                android:prompt="@string/use_legacy_http_protocol_title" />
+
+            <View style="@style/Divider" />
+
+            <CheckBox
+                android:id="@+id/in_combined_global_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/in_combined_global_search_label" />
+
+            <CheckBox
+                android:id="@+id/in_combined_public_reload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/in_combined_public_reload_label" />
+
+        </LinearLayout>
     </ScrollView>
 
     <LinearLayout
         android:id="@+id/buttons_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
 
         <Button
             android:id="@+id/button_discard"
-            android:layout_weight="1"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/button_discard" />
 
         <Button
             android:id="@+id/button_delete"
-            android:layout_weight="1"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/button_delete" />
-    
+
         <Button
             android:id="@+id/button_save"
-            android:layout_weight="1"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/button_save" />
     </LinearLayout>
-    
+
 </LinearLayout>

@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context=".actor.ActorsScreen">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".actor.ActorsScreen">
 
-    <View android:id="@+id/divider" style="@style/Divider"/>
+    <View
+        android:id="@+id/divider"
+        style="@style/Divider" />
 
     <TextView
         android:id="@+id/position"
@@ -19,36 +22,36 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:orientation="vertical"
-        android:paddingBottom="2dip"
         android:paddingLeft="54dip"
+        android:paddingTop="2dip"
         android:paddingRight="6dip"
-        android:paddingTop="2dip" >
+        android:paddingBottom="2dip">
 
         <TextView
             android:id="@+id/username"
+            style="@style/messageBodyAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/messageBodyAppearance"
-            tools:text="user35@some.domain (John Smith)"/>
+            tools:text="user35@some.domain (John Smith)" />
 
         <TextView
             android:id="@+id/description"
+            style="@style/messageDetailsAppearance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/messageDetailsAppearance"
-            tools:text="I am an ordinary guy, interested in computer science"/>
+            tools:text="I am an ordinary guy, interested in computer science" />
     </LinearLayout>
 
     <org.andstatus.app.graphics.AvatarView
         android:id="@+id/avatar_image"
         android:layout_width="49dip"
         android:layout_height="50dip"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:paddingTop="2dp"
+        android:layout_alignParentLeft="true"
         android:paddingLeft="1dp"
+        android:paddingTop="2dp"
         android:paddingRight="1dp"
         android:scaleType="fitCenter"
-        tools:src="@mipmap/ic_launcher"/>
+        tools:src="@mipmap/ic_launcher" />
 
 </RelativeLayout>

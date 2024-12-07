@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 
+<?xml version="1.0" encoding="utf-8"?><!--
     Copyright (c) 2010-2017 yvolk (Yuri Volkov), http://yurivolkov.com
 
 	Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,64 +13,67 @@
 	See the License for the specific language governing permissions and
 	limitations under the License.
 -->
- 
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     android:installLocation="internalOnly">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
-    
+
     <supports-screens
-        android:resizeable="true"
-        android:smallScreens="true"
-        android:normalScreens="true"
+        android:anyDensity="true"
         android:largeScreens="true"
-        android:anyDensity="true" />
+        android:normalScreens="true"
+        android:resizeable="true"
+        android:smallScreens="true" />
 
     <application
         android:name=".context.MyApplication"
         android:allowBackup="false"
         android:backupAgent="org.andstatus.app.backup.MyBackupAgent"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:vmSafeMode="true"
-        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true"
+        android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Transparent"
-        android:requestLegacyExternalStorage="true">
-    <meta-data android:name="com.google.android.backup.api_key"
-		    android:value="AEdPqrEAAAAIwaY-1-9DmEnU74ycFHDSJiTl_1CW6CzuHsWMLA" />
+        android:usesCleartextTraffic="true"
+        android:vmSafeMode="true">
+        <meta-data
+            android:name="com.google.android.backup.api_key"
+            android:value="AEdPqrEAAAAIwaY-1-9DmEnU74ycFHDSJiTl_1CW6CzuHsWMLA" />
 
-		<provider android:name="org.andstatus.app.data.MyProvider"
-			android:authorities="org.andstatus.app.data.MyProvider" 
-			android:exported="false" />
-		<provider android:name="org.andstatus.app.data.FileProvider"
-			android:authorities="org.andstatus.app.data.FileProvider" 
-			android:exported="true"
+        <provider
+            android:name="org.andstatus.app.data.MyProvider"
+            android:authorities="org.andstatus.app.data.MyProvider"
+            android:exported="false" />
+        <provider
+            android:name="org.andstatus.app.data.FileProvider"
+            android:authorities="org.andstatus.app.data.FileProvider"
+            android:exported="true"
             android:grantUriPermissions="true"
-            android:permission="android.permission.READ_EXTERNAL_STORAGE"/>
-				
-		<service android:name="org.andstatus.app.service.MyService"
+            android:permission="android.permission.READ_EXTERNAL_STORAGE" />
+
+        <service
+            android:name="org.andstatus.app.service.MyService"
             android:enabled="true"
-		    android:exported="true"
+            android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <service
             android:name="org.andstatus.app.account.AuthenticatorService"
-            android:exported="false"
-            android:enabled="true">
+            android:enabled="true"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
             <meta-data
                 android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/authenticator"
-                />
+                android:resource="@xml/authenticator" />
         </service>
         <service
             android:name="org.andstatus.app.syncadapter.SyncService"
@@ -85,32 +87,36 @@
                 android:resource="@xml/syncadapter" />
         </service>
 
-        <receiver android:name="org.andstatus.app.service.MyServiceManager"
-		    android:exported="true">
+        <receiver
+            android:name="org.andstatus.app.service.MyServiceManager"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_SHUTDOWN" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="org.andstatus.app.action.SERVICE_STATE" />
                 <action android:name="org.andstatus.app.action.SYNC" />
             </intent-filter>
-		</receiver>
-        <receiver android:name="org.andstatus.app.appwidget.MyAppWidgetProvider"
-			android:exported="true">
-            <meta-data android:name="android.appwidget.provider"
-                    android:resource="@xml/appwidget_info" />
+        </receiver>
+        <receiver
+            android:name="org.andstatus.app.appwidget.MyAppWidgetProvider"
+            android:exported="true">
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/appwidget_info" />
             <intent-filter>
-				<action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
                 <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
-				<action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-			</intent-filter>
+            </intent-filter>
         </receiver>
 
-        <activity android:name=".FirstActivity"
-                  android:launchMode="singleTask"
-                  android:screenOrientation="user"
-                  android:exported="true">
-        <intent-filter>
+        <activity
+            android:name=".FirstActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="user">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -123,38 +129,49 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
-        <activity android:name=".timeline.TimelineActivity"
-                  android:screenOrientation="user"
-                  android:windowSoftInputMode="adjustResize"
-                  android:permission=""
-                  android:exported="true">
+        <activity
+            android:name=".timeline.TimelineActivity"
+            android:exported="true"
+            android:permission=""
+            android:screenOrientation="user"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <action android:name="android.intent.action.PICK"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.PICK" />
+
+                <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.note"/>
-                <data android:scheme="http" android:host="timeline.app.andstatus.org" />
+
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.note" />
+                <data
+                    android:host="timeline.app.andstatus.org"
+                    android:scheme="http" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.SEARCH"/>
+                <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="content" android:host="timeline.app.andstatus.org"/>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="timeline.app.andstatus.org"
+                    android:scheme="content" />
             </intent-filter>
         </activity>
-        <activity android:name=".note.ConversationActivity"
-                  android:label="@string/label_conversation"
-                  android:screenOrientation="user"
-                  android:permission=""
-                  android:exported="false">
+        <activity
+            android:name=".note.ConversationActivity"
+            android:exported="true"
+            android:label="@string/label_conversation"
+            android:permission=""
+            android:screenOrientation="user">
             <!--
     mimeType attribute is required for intent-filter of .ConversationActivity
     as it has both custom action and Uri present in Intent,
@@ -163,143 +180,150 @@
              -->
             <intent-filter android:label="@string/resolve_view">
                 <action android:name="org.andstatus.app.action.VIEW_CONVERSATION" />
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.note"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.note" />
             </intent-filter>
         </activity>
-        <activity android:name=".actor.ActorsScreen"
-                  android:label="@string/user_list"
-                  android:screenOrientation="user"
-                  android:parentActivityName=".timeline.TimelineActivity"
-                  android:permission=""
-                  android:exported="false">
+        <activity
+            android:name=".actor.ActorsScreen"
+            android:exported="true"
+            android:label="@string/user_list"
+            android:parentActivityName=".timeline.TimelineActivity"
+            android:permission=""
+            android:screenOrientation="user">
             <intent-filter>
                 <action android:name="org.andstatus.app.action.VIEW_ACTORS" />
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.actor"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.actor" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.intent.action.SEARCH"/>
+                <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
         </activity>
-        <activity android:name=".actor.GroupMembersScreen"
-                  android:label="@string/group_members"
-                  android:screenOrientation="user"
-                  android:parentActivityName=".timeline.TimelineActivity"
-                  android:permission=""
-                  android:exported="false">
+        <activity
+            android:name=".actor.GroupMembersScreen"
+            android:exported="true"
+            android:label="@string/group_members"
+            android:parentActivityName=".timeline.TimelineActivity"
+            android:permission=""
+            android:screenOrientation="user">
             <intent-filter>
                 <action android:name="org.andstatus.app.action.VIEW_GROUP_MEMBERS" />
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.actor"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="vnd.android.cursor.dir/org.andstatus.app.provider.actor" />
             </intent-filter>
         </activity>
-        <activity android:name=".context.MySettingsActivity"
-                  android:label="@string/settings_activity_title"
-                  android:screenOrientation="user"
-                  android:launchMode="standard"
-                  android:parentActivityName=".timeline.TimelineActivity"
-                  android:exported="true">
+        <activity
+            android:name=".context.MySettingsActivity"
+            android:exported="true"
+            android:label="@string/settings_activity_title"
+            android:launchMode="standard"
+            android:parentActivityName=".timeline.TimelineActivity"
+            android:screenOrientation="user">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-        <activity android:name=".HelpActivity"
-                  android:screenOrientation="user"
-                  android:launchMode="singleTop"
-                  android:parentActivityName=".context.MySettingsActivity"
-                  android:exported="true">
+        <activity
+            android:name=".HelpActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:parentActivityName=".context.MySettingsActivity"
+            android:screenOrientation="user">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".appwidget.MyAppWidgetConfigure"
-                  android:screenOrientation="user"
-                  android:permission=""
-                  android:exported="true">
+        <activity
+            android:name=".appwidget.MyAppWidgetConfigure"
+            android:exported="true"
+            android:permission=""
+            android:screenOrientation="user">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-        <activity android:name=".account.AccountSettingsActivity"
-                  android:label="@string/account_settings_activity_title"
-                  android:screenOrientation="user"
-                  android:alwaysRetainTaskState="true"
-                  android:launchMode="singleTask"
-                  android:parentActivityName=".context.MySettingsActivity"
-                  android:permission=""
-                  android:exported="true">
+        <activity
+            android:name=".account.AccountSettingsActivity"
+            android:alwaysRetainTaskState="true"
+            android:exported="true"
+            android:label="@string/account_settings_activity_title"
+            android:launchMode="singleTask"
+            android:parentActivityName=".context.MySettingsActivity"
+            android:permission=""
+            android:screenOrientation="user">
             <intent-filter>
-                <action
-                    android:name="org.andstatus.app.ACCOUNT_MANAGER_ENTRY" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
+                <action android:name="org.andstatus.app.ACCOUNT_MANAGER_ENTRY" />
+                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
-				<action android:name="android.intent.action.VIEW" />
-				<category android:name="android.intent.category.DEFAULT" />
-				<category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="http" android:host="oauth-redirect.andstatus.org" />
-			</intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="oauth-redirect.andstatus.org"
+                    android:scheme="http" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.EDIT" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data
-                    android:scheme="content"
                     android:host="ui.app.andstatus.org"
                     android:path="/settings"
-                    />
+                    android:scheme="content" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".account.AccountSettingsWebActivity"
-                  android:screenOrientation="user">
-        </activity>
-        <activity android:name=".origin.DiscoveredOriginList"
-                  android:label="@string/discover_open_instances_title"
-                  android:screenOrientation="user"
-                  android:parentActivityName=".origin.PersistentOriginList">
-        </activity>
-        <activity android:name=".origin.PersistentOriginList"
-                  android:label="@string/label_origin_list"
-                  android:screenOrientation="user"
-                  android:parentActivityName=".context.MySettingsActivity">
-        </activity>
-        <activity android:name=".origin.OriginEditor"
-                  android:label="@string/label_origin_system"
-                  android:screenOrientation="user"
-                  android:parentActivityName=".context.MySettingsActivity">
-        </activity>
-        <activity android:name=".backup.BackupActivity"
-                  android:label="@string/label_backup"
-                  android:screenOrientation="user"
-                  android:parentActivityName=".context.MySettingsActivity">
-        </activity>
-        <activity android:name=".backup.RestoreActivity"
-                  android:label="@string/label_restore"
-                  android:screenOrientation="user"
-                  android:parentActivityName=".context.MySettingsActivity">
-        </activity>
-        <activity android:name=".service.QueueViewer"
-                  android:label="@string/commands_in_a_queue"
-                  android:screenOrientation="user"
-                  android:exported="true"
-                  android:permission=""
-                  android:parentActivityName=".timeline.TimelineActivity">
-        </activity>
-        <activity android:name=".timeline.meta.ManageTimelines"
-                  android:label="@string/manage_timelines"
-                  android:screenOrientation="user"
-                  android:parentActivityName=".context.MySettingsActivity">
-        </activity>
-        <activity android:name=".account.ManageAccountsActivity"
-                  android:label="@string/manage_accounts"
-                  android:screenOrientation="user"
-                  android:parentActivityName=".context.MySettingsActivity">
-        </activity>
+        <activity
+            android:name=".account.AccountSettingsWebActivity"
+            android:screenOrientation="user"></activity>
+        <activity
+            android:name=".origin.DiscoveredOriginList"
+            android:label="@string/discover_open_instances_title"
+            android:parentActivityName=".origin.PersistentOriginList"
+            android:screenOrientation="user"></activity>
+        <activity
+            android:name=".origin.PersistentOriginList"
+            android:label="@string/label_origin_list"
+            android:parentActivityName=".context.MySettingsActivity"
+            android:screenOrientation="user"></activity>
+        <activity
+            android:name=".origin.OriginEditor"
+            android:label="@string/label_origin_system"
+            android:parentActivityName=".context.MySettingsActivity"
+            android:screenOrientation="user"></activity>
+        <activity
+            android:name=".backup.BackupActivity"
+            android:label="@string/label_backup"
+            android:parentActivityName=".context.MySettingsActivity"
+            android:screenOrientation="user"></activity>
+        <activity
+            android:name=".backup.RestoreActivity"
+            android:label="@string/label_restore"
+            android:parentActivityName=".context.MySettingsActivity"
+            android:screenOrientation="user"></activity>
+        <activity
+            android:name=".service.QueueViewer"
+            android:exported="true"
+            android:label="@string/commands_in_a_queue"
+            android:parentActivityName=".timeline.TimelineActivity"
+            android:permission=""
+            android:screenOrientation="user"></activity>
+        <activity
+            android:name=".timeline.meta.ManageTimelines"
+            android:label="@string/manage_timelines"
+            android:parentActivityName=".context.MySettingsActivity"
+            android:screenOrientation="user"></activity>
+        <activity
+            android:name=".account.ManageAccountsActivity"
+            android:label="@string/manage_accounts"
+            android:parentActivityName=".context.MySettingsActivity"
+            android:screenOrientation="user"></activity>
     </application>
 </manifest>

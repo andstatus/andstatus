@@ -45,22 +45,22 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
         mLayoutId = R.layout.my_settings
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
-            // Create the fragment only when the activity is created for the first time.
-            // ie. not after orientation changes
-            var fragment = supportFragmentManager.findFragmentByTag(MySettingsFragment.FRAGMENT_TAG)
-            if (fragment == null) {
-                fragment = MySettingsFragment()
-            }
             val ft = supportFragmentManager.beginTransaction()
-            ft.replace(R.id.settings_container, fragment, MySettingsFragment.FRAGMENT_TAG)
+            ft.replace(R.id.settings_container, myFragment(), MySettingsFragment.FRAGMENT_TAG)
             ft.commit()
         }
         parseNewIntent(intent)
     }
 
+    /** Create the fragment only when the activity is created for the first time.
+     * ie. not after orientation changes */
+    private fun myFragment(): PreferenceFragmentCompat =
+        (supportFragmentManager.findFragmentByTag(MySettingsFragment.FRAGMENT_TAG) as PreferenceFragmentCompat?)
+            ?: MySettingsFragment()
+
     // TODO: Not fully implemented, but it is unused yet...
     override fun onPreferenceStartScreen(
-        preferenceFragmentCompat: PreferenceFragmentCompat?,
+        preferenceFragmentCompat: PreferenceFragmentCompat,
         preferenceScreen: PreferenceScreen
     ): Boolean {
         val ft = supportFragmentManager.beginTransaction()
@@ -74,7 +74,7 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
         return true
     }
 
-    override fun onPreferenceStartFragment(caller: PreferenceFragmentCompat?, pref: Preference): Boolean {
+    override fun onPreferenceStartFragment(caller: PreferenceFragmentCompat, pref: Preference): Boolean {
         val args = pref.getExtras()
         args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, pref.getKey())
         val fragment = MySettingsFragment()
@@ -115,7 +115,7 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
                 }
                 val preference = Preference(this)
                 preference.key = settingsGroup.key
-                onPreferenceStartFragment(null, preference)
+                onPreferenceStartFragment(myFragment(), preference)
             }
         }
     }
@@ -154,6 +154,7 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
                 }
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }

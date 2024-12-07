@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2006 The Android Open Source Project
+<?xml version="1.0" encoding="utf-8"?><!-- Copyright (C) 2006 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -17,26 +16,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    >
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/appwidget_configure_instructions"
-    />
+        android:text="@string/appwidget_configure_instructions" />
 
     <EditText
         android:id="@+id/appwidget_title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-    />
+        android:layout_height="wrap_content" />
 
     <Button
         android:id="@+id/ok_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@android:string/ok"
-    />
+        android:text="@android:string/ok" />
 
 </LinearLayout>

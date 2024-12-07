@@ -7,8 +7,8 @@ import androidx.preference.ListPreference
 import androidx.preference.PreferenceViewHolder
 
 class MultilineListPreference : ListPreference {
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
     override fun onBindViewHolder(viewHolder: PreferenceViewHolder) {
         super.onBindViewHolder(viewHolder)

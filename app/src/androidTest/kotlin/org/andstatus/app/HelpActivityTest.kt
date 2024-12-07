@@ -57,13 +57,14 @@ class HelpActivityTest : ActivityTest<HelpActivity>() {
         EspressoUtils.waitForIdleSync()
         val mFlipper = mActivityRule.activity.findViewById<ViewPager?>(R.id.help_flipper)
         Assert.assertNotNull(mFlipper)
+        DbUtils.waitMs("test", 200)
         Assert.assertEquals(
             "At Changelog page",
             HelpActivity.Companion.PAGE_CHANGELOG.toLong(),
             mFlipper.currentItem.toLong()
         )
-        DbUtils.waitMs("test", 500)
         Espresso.onView(ViewMatchers.withId(R.id.button_help_learn_more)).perform(ViewActions.click())
+        DbUtils.waitMs("test", 200)
         Assert.assertEquals(
             "At User Guide",
             HelpActivity.Companion.PAGE_USER_GUIDE.toLong(),

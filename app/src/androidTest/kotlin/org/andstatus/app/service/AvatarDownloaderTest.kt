@@ -102,7 +102,7 @@ class AvatarDownloaderTest {
             ma, "In a case avatar removed from actor, we see the last loaded",
             DownloadStatus.LOADED, DownloadStatus.LOADED, false
         )
-        changeMaAvatarUrl(ma, "http://example.com/inexistent.jpg")
+        changeMaAvatarUrl(ma, "http://andstatus.org/images/inexistent.jpg")
         loadAndAssertStatusForMa(
             ma, "Inexistent avatar",
             DownloadStatus.HARD_ERROR, DownloadStatus.LOADED, false

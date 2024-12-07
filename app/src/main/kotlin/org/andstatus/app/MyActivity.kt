@@ -139,7 +139,7 @@ open class MyActivity(
         super.onResume()
     }
 
-    override fun startActivityForResult(intent: Intent?, requestCode: Int) {
+    override fun startActivityForResult(intent: Intent, requestCode: Int) {
         try {
             super.startActivityForResult(intent, requestCode)
         } catch (e: Exception) {

@@ -74,7 +74,10 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
     private val noteBodyTokenizer: NoteBodyTokenizer = NoteBodyTokenizer()
 
     enum class ScreenToggleState(private val nextState: ScreenToggleState?, val isFullScreen: Boolean) {
-        SHOW_TIMELINE(null, true), MAXIMIZE_EDITOR(SHOW_TIMELINE, true), INITIAL(MAXIMIZE_EDITOR, false), EMPTY(INITIAL, false);
+        SHOW_TIMELINE(null, true), MAXIMIZE_EDITOR(SHOW_TIMELINE, true), INITIAL(MAXIMIZE_EDITOR, false), EMPTY(
+            INITIAL,
+            false
+        );
 
         fun toggle(isNextState: Boolean, isFullscreen: Boolean): ScreenToggleState {
             val state = if (isNextState) nextState ?: INITIAL else if (this == EMPTY) INITIAL else this
@@ -91,7 +94,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
     private var bodyView: NoteEditorBodyView by Delegates.notNull()
     private var mCharsLeftText: TextView by Delegates.notNull()
     private var editorData: NoteEditorData = NoteEditorData.EMPTY
-    
+
     private fun getEditorView(): ViewGroup {
         var editorView = getActivity().findViewById<ViewGroup?>(R.id.note_editor)
         if (editorView == null) {
@@ -99,7 +102,8 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             val inflater = LayoutInflater.from(getActivity())
             editorView = inflater.inflate(R.layout.note_editor, null) as ViewGroup
             val layoutParams = RelativeLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            )
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE)
             editorView.layoutParams = layoutParams
             layoutParent.addView(editorView)
@@ -114,7 +118,8 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                 editorData.setContent(s.toString(), editorContentMediaType)
                 MyLog.v(editorData) { "Content updated to '" + editorData.getContent() + "'" }
                 mCharsLeftText.setText(
-                        editorData.myAccount.charactersLeftForNote(editorData.getContent()).toString())
+                    editorData.myAccount.charactersLeftForNote(editorData.getContent()).toString()
+                )
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -132,6 +137,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                         sendAndHide()
                         true
                     }
+
                     else -> false
                 }
             } else false
@@ -255,9 +261,9 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         val item = menu.findItem(R.id.attach_menu_id)
         if (item != null) {
             val enableAttach = (isVisible()
-                    && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true)
-                    && (!editorData.visibility.isPrivate || editorData.myAccount.origin.originType
-                    .allowAttachmentForPrivateNote()))
+                && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true)
+                && (!editorData.visibility.isPrivate || editorData.myAccount.origin.originType
+                .allowAttachmentForPrivateNote()))
             item.isEnabled = enableAttach
             item.isVisible = enableAttach
         }
@@ -333,10 +339,17 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         updateDataFromScreen()
         val contentWithName: MyStringBuilder = MyStringBuilder.of(shared.content)
         if (!ma.origin.originType.hasNoteName && subjectHasAdditionalContent(shared.name, shared.content)) {
-            shared.name.ifPresent { name: String -> contentWithName.prependWithSeparator(name, if (shared.textMediaType == TextMediaType.HTML) "<br/>" else "\n") }
+            shared.name.ifPresent { name: String ->
+                contentWithName.prependWithSeparator(
+                    name,
+                    if (shared.textMediaType == TextMediaType.HTML) "<br/>" else "\n"
+                )
+            }
         }
-        val currentData: NoteEditorData = NoteEditorData.newEmpty(ma).setContent(contentWithName.toString(),
-                shared.textMediaType ?: TextMediaType.UNKNOWN)
+        val currentData: NoteEditorData = NoteEditorData.newEmpty(ma).setContent(
+            contentWithName.toString(),
+            shared.textMediaType ?: TextMediaType.UNKNOWN
+        )
         if (ma.origin.originType.hasNoteName) {
             shared.name.ifPresent { name: String -> currentData.setName(name) }
         }
@@ -365,7 +378,8 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         saveData(command)
         if (data.myAccount.connection.hasApiEndpoint(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             MyServiceManager.sendForegroundCommand(
-                    CommandData.newAccountCommand(CommandEnum.RATE_LIMIT_STATUS, data.myAccount))
+                CommandData.newAccountCommand(CommandEnum.RATE_LIMIT_STATUS, data.myAccount)
+            )
         }
     }
 
@@ -387,27 +401,35 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         MyCheckBox.set(getActivity(), R.id.is_followers, editorData.visibility.isFollowers(), true)
         ViewUtils.showView(editorView, R.id.is_sensitive, editorData.canChangeIsSensitive())
         MyCheckBox.set(getActivity(), R.id.is_sensitive, editorData.getSensitive(), true)
-        MyUrlSpan.showText(editorView, R.id.note_name_edit, editorData.activity.getNote().getName(), false,
-                editorData.ma.origin.originType.hasNoteName)
-        MyUrlSpan.showText(editorView, R.id.summary_edit, editorData.activity.getNote().summary, false,
-                editorData.ma.origin.originType.hasNoteSummary)
+        MyUrlSpan.showText(
+            editorView, R.id.note_name_edit, editorData.activity.getNote().getName(), false,
+            editorData.ma.origin.originType.hasNoteName
+        )
+        MyUrlSpan.showText(
+            editorView, R.id.summary_edit, editorData.activity.getNote().summary, false,
+            editorData.ma.origin.originType.hasNoteSummary
+        )
         var body = MyHtml.fromContentStored(editorData.getContent(), editorContentMediaType)
         if (body != bodyView.getText().toString().trim { it <= ' ' }) {
             if (body.isNotEmpty()) {
                 body += " "
             }
             if (MyLog.isVerboseEnabled() && !TextUtils.isEmpty(bodyView.getText()) && body.isNotEmpty()) {
-                MyLog.v(editorData,"Body updated\n'${bodyView.getText()}' to \n'$body'", Exception())
+                MyLog.v(editorData, "Body updated\n'${bodyView.getText()}' to \n'$body'", Exception())
             }
             bodyView.setText(body)
             bodyView.setSelection(bodyView.getText().toString().length)
         }
-        MyUrlSpan.showText(editorView, R.id.note_author, if (shouldShowAccountName())
-            editorData.myAccount.accountName else "", false, false)
+        MyUrlSpan.showText(
+            editorView, R.id.note_author, if (shouldShowAccountName())
+                editorData.myAccount.accountName else "", false, false
+        )
         showNoteDetails()
-        MyUrlSpan.showText(editorView, R.id.inReplyToBody,
-                editorData.activity.getNote().inReplyTo.getNote().content, TextMediaType.HTML,
-                false, false)
+        MyUrlSpan.showText(
+            editorView, R.id.inReplyToBody,
+            editorData.activity.getNote().inReplyTo.getNote().content, TextMediaType.HTML,
+            false, false
+        )
         mCharsLeftText.setText(editorData.myAccount.charactersLeftForNote(editorData.getContent()).toString())
         showAttachedImages()
     }
@@ -418,8 +440,10 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         } else {
             val adapterOld = bodyView.getAdapter() as ActorAutoCompleteAdapter?
             if (adapterOld == null || adapterOld.getOrigin() != editorData.myAccount.origin) {
-                val adapter = ActorAutoCompleteAdapter(getActivity(),
-                        editorData.myAccount.origin)
+                val adapter = ActorAutoCompleteAdapter(
+                    getActivity(),
+                    editorData.myAccount.origin
+                )
                 bodyView.setAdapter(adapter)
             }
         }
@@ -429,14 +453,20 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         val builder = MyStringBuilder()
         val inReplyToAuthor = editorData.activity.getNote().inReplyTo.getAuthor()
         if (inReplyToAuthor.nonEmpty) {
-            builder.withSpace(StringUtil.format(getActivity(), R.string.message_source_in_reply_to,
-                    inReplyToAuthor.actorNameInTimeline))
+            builder.withSpace(
+                StringUtil.format(
+                    getActivity(), R.string.message_source_in_reply_to,
+                    inReplyToAuthor.actorNameInTimeline
+                )
+            )
         }
         if (editorData.getAttachedImageFiles().nonEmpty) {
-            builder.withSpace("("
+            builder.withSpace(
+                "("
                     + getActivity().getText(R.string.label_with_media).toString() + " "
                     + editorData.getAttachedImageFiles().toMediaSummary(getActivity())
-                    + ")")
+                    + ")"
+            )
         }
         MyUrlSpan.showText(editorView, R.id.noteEditDetails, builder.toString(), false, false)
     }
@@ -457,13 +487,15 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
             val attachmentLayout = if (imageFile.imageMayBeShown()) if (imageFile.isTargetVideo())
                 R.layout.attachment_video_preview else R.layout.attachment_image else R.layout.attachment_link
             val attachmentView = LayoutInflater.from(getActivity())
-                    .inflate(attachmentLayout, attachmentsList, false)
+                .inflate(attachmentLayout, attachmentsList, false)
             if (imageFile.imageMayBeShown()) {
                 val imageView: IdentifiableImageView = attachmentView.findViewById(R.id.attachment_image)
                 imageFile.showImage(getActivity(), imageView)
             } else {
-                MyUrlSpan.showText(attachmentView, R.id.attachment_link,
-                        imageFile.getTargetUri().toString(), true, false)
+                MyUrlSpan.showText(
+                    attachmentView, R.id.attachment_link,
+                    imageFile.getTargetUri().toString(), true, false
+                )
             }
             attachmentsList.addView(attachmentView)
         }
@@ -479,7 +511,8 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         } else if (editorData.myAccount.charactersLeftForNote(editorData.getContent()) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long, Toast.LENGTH_SHORT).show()
         } else if (editorData.getAttachedImageFiles()
-                        .tooLargeAttachment(MyPreferences.getMaximumSizeOfAttachmentBytes()).isPresent) {
+                .tooLargeAttachment(MyPreferences.getMaximumSizeOfAttachmentBytes()).isPresent
+        ) {
             Toast.makeText(getActivity(), R.string.attachment_is_too_large, Toast.LENGTH_SHORT).show()
         } else {
             val command = NoteEditorCommand(editorData.copy())
@@ -490,12 +523,14 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
 
     private fun updateDataFromScreen() {
         editorData
-                .setPublicAndFollowers(MyCheckBox.isChecked(getActivity(), R.id.is_public, false),
-                        MyCheckBox.isChecked(getActivity(), R.id.is_followers, false))
-                .setSensitive(MyCheckBox.isChecked(getActivity(), R.id.is_sensitive, false))
-                .setName(MyUrlSpan.getText(editorView, R.id.note_name_edit))
-                .setSummary(MyUrlSpan.getText(editorView, R.id.summary_edit))
-                .setContent(bodyView.getText().toString(), editorContentMediaType)
+            .setPublicAndFollowers(
+                MyCheckBox.isChecked(getActivity(), R.id.is_public, false),
+                MyCheckBox.isChecked(getActivity(), R.id.is_followers, false)
+            )
+            .setSensitive(MyCheckBox.isChecked(getActivity(), R.id.is_sensitive, false))
+            .setName(MyUrlSpan.getText(editorView, R.id.note_name_edit))
+            .setSummary(MyUrlSpan.getText(editorView, R.id.summary_edit))
+            .setContent(bodyView.getText().toString(), editorContentMediaType)
     }
 
     private fun discardAndHide() {
@@ -587,7 +622,10 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
     }
 
     private fun onAttach() {
-        val intent = if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MODERN_INTERFACE_TO_SELECT_AN_ATTACHMENT, true)) getIntentForKitKatMediaChooser() else getIntentToPickImages()
+        val intent =
+            (if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MODERN_INTERFACE_TO_SELECT_AN_ATTACHMENT, true))
+                getIntentForKitKatMediaChooser() else getIntentToPickImages())
+                ?: return
         getActivity().startActivityForResult(intent, ActivityRequestCode.ATTACH.id)
     }
 
@@ -596,11 +634,11 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
      */
     private fun getIntentForKitKatMediaChooser(): Intent? {
         val intent = Intent()
-                .setType("*/*")
-                .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf<String?>("image/*", "video/*"))
-                .setAction(Intent.ACTION_GET_CONTENT)
-                .addCategory(Intent.CATEGORY_OPENABLE)
-                .addFlags(UriUtils.flagsToTakePersistableUriPermission())
+            .setType("*/*")
+            .putExtra(Intent.EXTRA_MIME_TYPES, arrayOf<String?>("image/*", "video/*"))
+            .setAction(Intent.ACTION_GET_CONTENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .addFlags(UriUtils.flagsToTakePersistableUriPermission())
         return Intent.createChooser(intent, getActivity().getText(R.string.options_menu_attach))
     }
 
@@ -608,10 +646,12 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
      * See http://stackoverflow.com/questions/19837358/android-kitkat-securityexception-when-trying-to-read-from-mediastore
      */
     private fun getIntentToPickImages(): Intent {
-        return Intent(Intent.ACTION_PICK,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                .setType("image/*")
-                .addFlags(UriUtils.flagsToTakePersistableUriPermission())
+        return Intent(
+            Intent.ACTION_PICK,
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        )
+            .setType("image/*")
+            .addFlags(UriUtils.flagsToTakePersistableUriPermission())
     }
 
     fun showData(data: NoteEditorData) {
@@ -633,7 +673,8 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
 
     fun onScreenToggle(isNextState: Boolean, isFullscreen: Boolean) {
         if (screenToggleState != ScreenToggleState.EMPTY && !isNextState
-                && isFullscreen == screenToggleState.isFullScreen) return
+            && isFullscreen == screenToggleState.isFullScreen
+        ) return
         screenToggleState = screenToggleState.toggle(isNextState, isFullscreen)
         if (isNextState && isFullscreen != screenToggleState.isFullScreen) {
             getActivity().toggleFullscreen(TriState.fromBoolean(screenToggleState.isFullScreen))
@@ -644,10 +685,12 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                 if (inReplyToBody != null) inReplyToBody.maxLines = 3
                 bodyView.setMaxLines(5)
             }
+
             ScreenToggleState.MAXIMIZE_EDITOR -> {
                 if (inReplyToBody != null) inReplyToBody.maxLines = Int.MAX_VALUE
                 bodyView.setMaxLines(15)
             }
+
             else -> {
                 if (inReplyToBody != null) inReplyToBody.maxLines = 5
                 bodyView.setMaxLines(8)
@@ -659,9 +702,11 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
     companion object {
         fun subjectHasAdditionalContent(name: Optional<String>, content: Optional<String>): Boolean {
             if (!name.isPresent()) return false
-            return if (!content.isPresent()) true else content.flatMap { c: String -> name
-                    .map { n: String -> !c.startsWith(stripEllipsis(stripBeginning(n))) } }
-                    .orElse(false)
+            return if (!content.isPresent()) true else content.flatMap { c: String ->
+                name
+                    .map { n: String -> !c.startsWith(stripEllipsis(stripBeginning(n))) }
+            }
+                .orElse(false)
         }
 
         /**

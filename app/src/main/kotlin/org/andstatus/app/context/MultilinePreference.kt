@@ -25,8 +25,8 @@ import androidx.preference.PreferenceViewHolder
  * @author yvolk@yurivolkov.com
  */
 class MultilinePreference : Preference {
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     override fun onBindViewHolder(viewHolder: PreferenceViewHolder) {
         super.onBindViewHolder(viewHolder)

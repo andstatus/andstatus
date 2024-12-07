@@ -983,7 +983,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         contextMenu?.saveState(outState)
     }
 
-    override fun startActivityForResult(intent: Intent?, requestCode: Int) {
+    override fun startActivityForResult(intent: Intent, requestCode: Int) {
         selectorActivityStub?.startActivityForResult(intent, requestCode)
             ?: super.startActivityForResult(intent, requestCode)
     }

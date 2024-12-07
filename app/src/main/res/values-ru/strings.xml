@@ -416,7 +416,7 @@ contains://andstatus.org/</string>
   <string name="since">Начиная с: %s</string>
   <string name="splash_button_learn_more">Узнать больше</string>
   <string name="splash_button_get_started">Начать работу</string>
-  <string name="splash_payoff_line">Open Source клиент для нескольких аккаунтов и социальных сетей, включая GNU social, Твиттер, и Pump.Io</string>
+  <string name="splash_payoff_line">Open Source клиент для нескольких аккаунтов и социальных сетей, включая Mastodon, ActivityPub (Client to Server), GNU social, и Pump.Io</string>
   <string name="status_destroyed">Сообщение удалено.</string>
   <string name="subtitle">Подзаголовок</string>
   <string name="summaryCw">Резюме / Предупреждение о содержании</string>

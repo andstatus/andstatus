@@ -4,6 +4,7 @@
     android:id="@+id/my_layout_parent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:fitsSystemWindows="true"
     android:paddingStart="4dp"
     android:paddingEnd="4dp">
 
@@ -11,8 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        tools:context=".account.AccountSettingsActivity"
-        android:weightSum="1">
+        android:weightSum="1"
+        tools:context=".account.AccountSettingsActivity">
 
         <TextView
             android:id="@+id/origin_label"
@@ -109,19 +110,23 @@
                 android:layout_height="wrap_content"
                 android:text="@string/options_menu_home_timeline" />
 
-            <LinearLayout android:orientation="horizontal"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <TextView android:labelFor="@+id/last_synced"
-                      android:text="@string/last_synced"
-                      android:layout_width="wrap_content"
-                      android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-                <TextView android:id="@+id/last_synced"
-                          android:layout_width="wrap_content"
-                          android:layout_height="wrap_content"
-                          tools:text="15 minute ago"
-                          android:layout_marginStart="4dp"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:labelFor="@+id/last_synced"
+                    android:text="@string/last_synced" />
+
+                <TextView
+                    android:id="@+id/last_synced"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    tools:text="15 minute ago" />
             </LinearLayout>
 
             <CheckBox
@@ -141,8 +146,8 @@
                 android:id="@+id/sync_frequency"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?attr/messageBodyTextAppearance"
-                android:hint="@string/sync_frequency_minutes" />
+                android:hint="@string/sync_frequency_minutes"
+                android:textAppearance="?attr/messageBodyTextAppearance" />
 
             <TextView
                 android:id="@+id/is_default_account"
@@ -150,6 +155,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/title_preference_is_default_account" />
         </LinearLayout>
+
         <Button
             android:id="@+id/log_out"
             android:layout_width="match_parent"
