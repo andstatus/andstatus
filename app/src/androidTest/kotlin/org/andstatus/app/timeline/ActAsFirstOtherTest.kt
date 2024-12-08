@@ -40,7 +40,7 @@ import org.junit.Test
 /**
  * @author yvolk@yurivolkov.com
  */
-class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
+class ActAsFirstOtherTest : TimelineActivityTest<ActivityViewItem>() {
 
     override fun getActivityIntent(): Intent = runBlocking {
         MyLog.i(this, "setUp started")

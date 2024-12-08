@@ -33,8 +33,6 @@ import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.context.MyContext
-import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.context.MyTheme
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.Taggable
@@ -46,7 +44,8 @@ open class SelectorDialog : DialogFragment() {
     private var toolbar: Toolbar? = null
     var listView: ListView? = null
     private val mLayoutId = R.layout.my_list_dialog
-    protected var myContext: MyContext = myContextHolder.getNow()
+
+    @Volatile
     private var resultReturned = false
 
     fun setRequestCode(requestCode: ActivityRequestCode): Bundle {

@@ -149,7 +149,7 @@ class ListActivityTestHelper<T : MyBaseListActivity> {
                 MyLog.v(methodExt, "$method; before performContextMenuIdentifierAction")
                 activity.getWindow().performContextMenuIdentifierAction(menuItemId, 0)
             }
-            EspressoUtils.waitForIdleSync()
+            waitForIdleSync()
         }
         MyLog.v(methodExt, "$method ended $success")
         return success

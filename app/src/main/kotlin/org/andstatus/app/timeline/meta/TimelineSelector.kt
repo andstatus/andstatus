@@ -27,6 +27,7 @@ import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.util.TriState
@@ -42,6 +43,7 @@ class TimelineSelector : SelectorDialog() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val arguments = requireArguments()
+        val myContext = MyContextHolder.myContextHolder.getNow()
         setTitle(R.string.dialog_title_select_timeline)
         val currentTimeline = myContext.timelines.fromId(arguments.getLong(IntentExtra.TIMELINE_ID.key, 0))
         val currentMyAccount = myContext.accounts.fromAccountName(

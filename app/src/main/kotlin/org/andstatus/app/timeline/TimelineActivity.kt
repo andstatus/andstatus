@@ -225,6 +225,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             } else {
                 FirstActivity.goHome(this)
             }
+
             TapOnATimelineTitleBehaviour.GO_TO_THE_TOP -> onGoToTheTopButtonClick(item)
             TapOnATimelineTitleBehaviour.SELECT_TIMELINE -> onTimelineTypeButtonClick(item)
             else -> {
@@ -438,6 +439,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                     layout.openDrawer(Gravity.LEFT)
                 }
             }
+
             R.id.search_menu_id -> onSearchRequested()
             R.id.sync_menu_item -> syncWithInternet(getParamsLoaded().timeline, true, true)
             R.id.refresh_menu_item -> refreshFromCache()
@@ -716,11 +718,13 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                     getListData().pages[getListData().pages.size - 1].params
                 } else getParamsLoaded()
             }
+
             WhichPage.YOUNGER -> {
                 if (getListData().size() > 0) {
                     getListData().pages[0].params
                 } else getParamsLoaded()
             }
+
             WhichPage.EMPTY -> TimelineParameters(myContext, Timeline.EMPTY, WhichPage.EMPTY)
             else -> getParamsNew()
         }
@@ -989,14 +993,15 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val requestCodeType = ActivityRequestCode.fromId(requestCode)
         MyLog.v(this) {
-            ("onActivityResult; request:" + requestCode
-                + ", result:" + if (resultCode == RESULT_OK) "ok" else "fail")
+            "onActivityResult; request:$requestCodeType ($requestCode)" +
+                ", result:${if (resultCode == RESULT_OK) "ok" else "fail"}"
         }
         if (resultCode != RESULT_OK || data == null) {
             return
         }
-        when (ActivityRequestCode.fromId(requestCode)) {
+        when (requestCodeType) {
             ActivityRequestCode.SELECT_ACCOUNT -> onAccountSelected(data)
             ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> setSelectedActingAccount(data)
             ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA -> sharedNote.ifPresent { shared: SharedNote ->
@@ -1005,6 +1010,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                     shared
                 )
             }
+
             ActivityRequestCode.SELECT_TIMELINE -> {
                 val timeline = myContext.timelines
                     .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0))
@@ -1012,6 +1018,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                     switchView(timeline)
                 }
             }
+
             ActivityRequestCode.SELECT_ORIGIN -> onOriginSelected(data)
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
@@ -1044,6 +1051,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
         val ma = myContext.accounts.fromAccountName(
             data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)
         )
+        MyLog.v(this){ "setSelectedActingAccount: ${ma.accountName}, isValid:${ma.isValid}" }
         if (ma.isValid) {
             val contextMenu = getContextMenu(
                 data.getIntExtra(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE)
@@ -1059,6 +1067,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             MyContextMenu.MENU_GROUP_OBJACTOR -> contextMenu?.objActor
             MyContextMenu.MENU_GROUP_ACTOR_PROFILE -> if (actorProfileViewer == null) contextMenu?.note
             else actorProfileViewer?.contextMenu
+
             else -> contextMenu?.note
         } ?: throw IllegalStateException("No context menu for $menuGroup")
     }
@@ -1082,6 +1091,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
             CommandEnum.UNDO_FOLLOW,
             CommandEnum.ANNOUNCE,
             CommandEnum.UNDO_ANNOUNCE -> true
+
             else -> false
         }
     }
@@ -1097,6 +1107,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                     + commandData.result.hourlyLimit)
                 updateTitle(mRateLimitText)
             }
+
             else -> {
             }
         }
@@ -1127,6 +1138,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
                     showSyncListButtons()
                 }
             }
+
             else -> {
             }
         }

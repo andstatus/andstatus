@@ -55,7 +55,7 @@ abstract class MyContextMenu(protected val listActivity: LoadableListActivity<*>
     }
 
     fun showContextMenu() {
-        viewOfTheContext?.takeIf { it.getParent() != null && listActivity.isMyResumed() }
+        viewOfTheContext?.takeIf { it.parent != null && listActivity.isMyResumed() }
                 ?.let { view ->
                     view.post(object : Runnable {
                         override fun run() {

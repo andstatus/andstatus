@@ -18,7 +18,7 @@ package org.andstatus.app
 import android.app.Activity
 
 // Request codes for called activities
-enum class ActivityRequestCode(id: Int) {
+enum class ActivityRequestCode(idIn: Int) {
     ATTACH(6),
     CHECK_DATA_COUNT_ONLY(13),
     CHECK_DATA_INCLUDE_LONG(14),
@@ -39,7 +39,7 @@ enum class ActivityRequestCode(id: Int) {
     SELECT_FOLDER(16),
     UNKNOWN(100);
 
-    val id: Int = Activity.RESULT_FIRST_USER + id
+    val id: Int = Activity.RESULT_FIRST_USER + idIn
 
     companion object {
         fun fromId(id: Int): ActivityRequestCode {

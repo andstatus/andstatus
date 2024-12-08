@@ -29,6 +29,7 @@ import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder.Companion.myContextHolder
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.MyLog
 import org.andstatus.app.view.MyContextMenu
 import org.andstatus.app.view.MySimpleAdapter
 import org.andstatus.app.view.SelectorDialog
@@ -40,8 +41,8 @@ import java.util.stream.Collectors
  * @author yvolk@yurivolkov.com
  */
 class AccountSelector : SelectorDialog() {
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         setTitle(R.string.label_accountselector)
         val listData = newListData()
         if (listData.isEmpty()) {
@@ -54,7 +55,9 @@ class AccountSelector : SelectorDialog() {
         setListAdapter(newListAdapter(listData))
         listView?.onItemClickListener = OnItemClickListener { _: AdapterView<*>?, view: View, _: Int, _: Long ->
             val actorId = (view.findViewById<View?>(R.id.id) as TextView).text.toString().toLong()
-            returnSelectedAccount(myContextHolder.getNow().accounts.fromActorId(actorId))
+            val selectedAccount = myContextHolder.getNow().accounts.fromActorId(actorId)
+            MyLog.v(this, "Selected actorId:${actorId}, account:${selectedAccount.accountName}")
+            returnSelectedAccount(selectedAccount)
         }
     }
 
