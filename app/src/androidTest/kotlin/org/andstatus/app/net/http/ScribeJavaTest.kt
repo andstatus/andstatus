@@ -1,6 +1,6 @@
 package org.andstatus.app.net.http
 
-import com.github.scribejava.core.base64.Base64
+import com.github.scribejava.core.java8.Base64
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.nio.charset.Charset
@@ -17,9 +17,8 @@ class ScribeJavaTest {
     @Test
     fun base64Test() {
         val str1 = "toEncode"
-        assertEquals(
-            "Encoding '$str1' using ${Base64.getInstance()::class.qualifiedName}", "dG9FbmNvZGU=",
-            Base64.encode(str1.toByteArray(Charset.forName("UTF-8")))
-        )
+        val instance = Base64.getEncoder()
+        assertEquals("Encoding '$str1' using ${instance::class.qualifiedName}", "dG9FbmNvZGU=",
+            instance.encodeToString(str1.toByteArray(Charset.forName("UTF-8"))))
     }
 }

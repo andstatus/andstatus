@@ -16,9 +16,11 @@ Under Free/Libre and Open Source License.
 See the [Change Log](http://andstatus.org/changelog.html) for descriptions of all the features of AndStatus
  and for the links to their discussion.
 
-[<img src="doc/images/get-it-on-google-play.png" alt="Get it on Google Play" width="250">](https://play.google.com/store/apps/details?id=org.andstatus.app)
+[<img src="doc/images/get-it-on-google-play.png" alt="Get it on Google Play" height="60">](https://play.google.com/store/apps/details?id=org.andstatus.app)
 [<img src="doc/images/15x15.png" width="15">](#)
-[<img src="doc/images/get-it-on-fdroid.png" alt="Get it on F-Droid" width="250">](https://f-droid.org/repository/browse/?fdid=org.andstatus.app)
+[<img src="doc/images/get-it-on-fdroid.png" alt="Get it on F-Droid" height="60">](https://f-droid.org/repository/browse/?fdid=org.andstatus.app)
+[<img src="doc/images/15x15.png" width="15">](#)
+[<img src="doc/images/get-it-on-rustore.png" alt="Get it on RuStore" height="64" />](https://apps.rustore.ru/app/org.andstatus.app)
 
 ## Differentiating features of AndStatus:
 * Many accounts in different Social networks. You may have several accounts in each, write/reply as any "You" and share between accounts and systems.

@@ -25,7 +25,8 @@ buildscript {
     extra["acraVersion"] = "5.8.3"                // https://github.com/ACRA/acra/wiki/AdvancedUsage
     extra["annotationVersion"] = "1.9.1"          // https://mvnrepository.com/artifact/androidx.annotation/annotation
     extra["appCompatVersion"] = "1.7.0"           // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
-    extra["commonsLangVersion"] = "3.17.0"        // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    /** commons-lang3 version 3.16+ requires minSdk=26 (Android 8) due to java.time.Instant */
+    extra["commonsLangVersion"] = "3.15.0"        // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     extra["documentFileVersion"] = "1.0.1"        // https://developer.android.com/jetpack/androidx/releases/documentfile
     extra["espressoCoreVersion"] = "3.6.1"        // https://developer.android.com/jetpack/androidx/releases/test
     extra["hamcrestVersion"] = "3.0"              // http://hamcrest.org/JavaHamcrest/distributables#using-hamcrest-in-a-gradle-project
@@ -38,7 +39,8 @@ buildscript {
     extra["preferenceVersion"] = "1.2.1"          // https://mvnrepository.com/artifact/androidx.preference/preference-ktx
     extra["recyclerViewVersion"] = "1.3.2"        // https://mvnrepository.com/artifact/androidx.recyclerview/recyclerview
     extra["screenshottyVersion"] = "1.0.4"        // https://github.com/bolteu/screenshotty
-    extra["scribeJavaCoreVersion"] = "8.3.3"      // https://github.com/scribejava/scribejava
+    /** ScribeJava v > 8.1.0 doesn't work properly on Android 7 */
+    extra["scribeJavaCoreVersion"] = "8.1.0"      // https://github.com/scribejava/scribejava
     extra["signPostVersion"] = "2.1.1"            // https://mvnrepository.com/artifact/oauth.signpost/signpost-core
     extra["swipeRefreshLayoutVersion"] = "1.1.0"  // https://developer.android.com/jetpack/androidx/releases/swiperefreshlayout
     extra["testRulesVersion"] = "1.6.1"           // https://developer.android.com/jetpack/androidx/releases/test
