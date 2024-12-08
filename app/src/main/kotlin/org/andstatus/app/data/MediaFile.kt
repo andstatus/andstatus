@@ -39,13 +39,15 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
 import java.util.function.Consumer
 
-abstract class MediaFile internal constructor(filename: String,
-                                              @Volatile var contentType: MyContentType,
-                                              mediaMetadata: MediaMetadata,
-                                              val downloadId: Long,
-                                              val downloadStatus: DownloadStatus,
-                                              val downloadedDate: Long,
-                                              override val isEmpty: Boolean = false) : IsEmpty, Identifiable {
+abstract class MediaFile internal constructor(
+    filename: String,
+    @Volatile var contentType: MyContentType,
+    mediaMetadata: MediaMetadata,
+    val downloadId: Long,
+    val downloadStatus: DownloadStatus,
+    val downloadedDate: Long,
+    override val isEmpty: Boolean = false
+) : IsEmpty, Identifiable {
     val downloadFile: DownloadFile = DownloadFile(filename)
 
     @Volatile
@@ -106,7 +108,7 @@ abstract class MediaFile internal constructor(filename: String,
 
     fun imageMayBeShown(): Boolean {
         return !isEmpty && downloadStatus != DownloadStatus.HARD_ERROR &&
-                (downloadStatus != DownloadStatus.LOADED || mediaMetadata.nonEmpty)
+            (downloadStatus != DownloadStatus.LOADED || mediaMetadata.nonEmpty)
     }
 
     private fun showBlankImage(imageView: ImageView) {
@@ -226,9 +228,11 @@ abstract class MediaFile internal constructor(filename: String,
                 image == null -> {
                     mediaFile.logResult("Failed to preload", taskSuffix)
                 }
+
                 image.id != mediaFile.id -> {
                     mediaFile.logResult("Loaded wrong image.id:" + image.id, taskSuffix)
                 }
+
                 else -> {
                     mediaFile.logResult("Preloaded", taskSuffix)
                 }

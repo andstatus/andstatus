@@ -45,6 +45,9 @@ abstract class HttpConnectionOAuth : HttpConnection() {
     @Volatile
     var authorizationServerMetadata: AuthorizationServerMetadata? = null
 
+    val scopesSupported: String get() = (authorizationServerMetadata?.scopesSupported ?: oauthScopesKnown)
+        .joinToString(" ")
+
     @Volatile
     var accessToken: String = ""
 
@@ -113,12 +116,12 @@ abstract class HttpConnectionOAuth : HttpConnection() {
     override val credentialsPresent: Boolean
         get() {
             val yes = areClientKeysPresent()
-                    && accessToken.isNotEmpty()
-                    && accessSecret.isNotEmpty()
+                && accessToken.isNotEmpty()
+                && accessSecret.isNotEmpty()
             if (!yes && logMe) {
                 MyLog.v(this) {
                     ("Credentials presence: clientKeys:" + oauthClientKeys?.areKeysPresent()
-                            + "; accessToken:" + accessToken.isNotEmpty() + ", accessSecret:" + accessSecret.isNotEmpty())
+                        + "; accessToken:" + accessToken.isNotEmpty() + ", accessSecret:" + accessSecret.isNotEmpty())
                 }
             }
             return yes
@@ -190,7 +193,7 @@ abstract class HttpConnectionOAuth : HttpConnection() {
         if (logMe) {
             MyLog.v(this) {
                 ("Credentials set?: " + !token.isNullOrEmpty()
-                        + ", " + !secret.isNullOrEmpty())
+                    + ", " + !secret.isNullOrEmpty())
             }
         }
     }

@@ -76,7 +76,7 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
                     val consumerKey = jso.getString("client_id")
                     val consumerSecret = jso.getString("client_secret")
                     oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
-                    oauthClientKeys?.areKeysPresent() ?: false
+                    oauthClientKeys?.areKeysPresent() == true
                 }
                 .flatMap { keysArePresent: Boolean ->
                     if (keysArePresent) {
@@ -101,11 +101,10 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         val params = JSONObject()
         if (forMastodon) {
             // redirect_uris should be an array according to spec, but this doesn't work for Mastodon hosts.
-            // So we assign it with string value and not an array
+            // So we assign it with a string value and not an array
             params.put("redirect_uris", CALLBACK_URI)
 
             // Legacy, this is not in OAuth 2.0 spec
-            params.put("scopes", OAUTH_SCOPE)
             params.put("website", CLIENT_URI)
         } else {
             // According to RFC 7591
@@ -116,7 +115,11 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         params.put("client_name", USER_AGENT)
         params.put("client_uri", CLIENT_URI)
         params.put("logo_uri", LOGO_URI)
-        params.put("scope", OAUTH_SCOPE)
+        oauthScopesKnown.joinToString(" ").let {
+            params.put("scope", it)
+            // "scopes" - Another Mastodon specifics
+            params.put("scopes", it)
+        }
         params.put("policy_uri", POLICY_URI)
         return params
     }
@@ -266,7 +269,7 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         clientConfig.isFollowRedirects = false
         val serviceBuilder = ServiceBuilder(oauthClientKeys?.getConsumerKey())
             .apiSecret(oauthClientKeys?.getConsumerSecret())
-            .defaultScope(OAUTH_SCOPE)
+            .defaultScope(scopesSupported)
             .httpClientConfig(clientConfig)
         if (redirect) {
             serviceBuilder.callback(CALLBACK_URI)

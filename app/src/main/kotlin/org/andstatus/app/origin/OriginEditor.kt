@@ -73,7 +73,9 @@ class OriginEditor : MyActivity(OriginEditor::class) {
         buttonDiscard.setOnClickListener { v: View? -> finish() }
         buttonDelete = (findViewById<View?>(R.id.button_delete) as Button).also { button ->
             button.setOnClickListener({ v: View ->
-                if (builder.build().hasNotes()) {
+                val hasNotes = this@OriginEditor.builder?.build()?.hasNotes() ?: return@setOnClickListener
+                MyLog.v(this, "Delete button was clicked, hasNotes:$hasNotes")
+                if (hasNotes) {
                     DialogFactory.showOkCancelDialog(
                         this,
                         String.format(getText(R.string.delete_origin_dialog_title).toString(), builder.build().name),
@@ -106,7 +108,7 @@ class OriginEditor : MyActivity(OriginEditor::class) {
                     setResult(RESULT_OK)
                     finish()
                 }
-            }
+            }.execute(Unit)
     }
 
     private fun processNewIntent(intentNew: Intent) {
@@ -164,9 +166,11 @@ class OriginEditor : MyActivity(OriginEditor::class) {
                 UrlUtils.isHostOnly(origin.url) -> {
                     origin.url?.host
                 }
+
                 origin.url != null -> {
                     origin.url?.toExternalForm()
                 }
+
                 else -> {
                     ""
                 }

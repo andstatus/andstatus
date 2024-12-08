@@ -34,7 +34,8 @@ import java.net.URL
 const val CLIENT_URI = "http://andstatus.org/andstatus"
 const val CALLBACK_URI: String = "http://oauth-redirect.andstatus.org"
 const val LOGO_URI = "http://andstatus.org/images/andstatus-logo.png"
-const val OAUTH_SCOPE: String = "read write follow"
+val oauthScopesMinimum: List<String> = listOf("read", "write", "follow")
+val oauthScopesKnown: List<String> = oauthScopesMinimum + "profile"
 const val POLICY_URI = "https://github.com/andstatus/andstatus/blob/master/doc/Privacy-Policy.md"
 const val USER_AGENT: String = "AndStatus"
 
@@ -42,7 +43,7 @@ open class HttpConnection {
     open var data: HttpConnectionData = HttpConnectionData.EMPTY
     var isStub: Boolean = false
 
-    val oauthHttp: HttpConnectionOAuth? get() = if (this is HttpConnectionOAuth) this else null
+    val oauthHttp: HttpConnectionOAuth? get() = this as? HttpConnectionOAuth
 
     open fun pathToUrlString(path: String): String {
         // TODO: return Try

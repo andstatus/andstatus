@@ -157,12 +157,7 @@ class HttpReadResult(val request: HttpRequest) {
                         Try.success(jso.getJSONArray(arrayName))
                     } catch (e: JSONException) {
                         Try.failure(
-                            ConnectionException.loggedJsonException(
-                                this,
-                                "$method, arrayName=$arrayName",
-                                e,
-                                jso
-                            )
+                            loggedJsonException(this, "$method, arrayName=$arrayName", e, jso)
                         )
                     }
                 } else Try.success(JSONArray())
@@ -225,7 +220,7 @@ class HttpReadResult(val request: HttpRequest) {
                         jso.getJSONArray(arrayKey)
                     } catch (e: JSONException) {
                         return Try.failure(
-                            ConnectionException.loggedJsonException(
+                            loggedJsonException(
                                 this, "'" + arrayKey + "' is not an array?!"
                                     + method + toString(), e, jso
                             )
@@ -246,7 +241,7 @@ class HttpReadResult(val request: HttpRequest) {
             }
             jsa = obj as JSONArray
         } catch (e: JSONException) {
-            return Try.failure(ConnectionException.loggedJsonException(this, method + toString(), e, strResponse))
+            return Try.failure(loggedJsonException(this, method + toString(), e, strResponse))
         } catch (e: Exception) {
             return Try.failure(ConnectionException.loggedHardJsonException(this, method + toString(), e, strResponse))
         }

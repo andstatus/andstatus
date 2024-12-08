@@ -19,6 +19,8 @@ import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.UrlUtils
+import org.andstatus.app.util.toCsv
+import org.andstatus.app.util.toListOfStrings
 import org.json.JSONObject
 import java.net.URL
 
@@ -26,6 +28,8 @@ private const val KEY_ISSUER = "issuer"
 private const val KEY_AUTHORIZATION_ENDPOINT = "authorization_endpoint"
 private const val KEY_TOKEN_ENDPOINT = "token_endpoint"
 private const val KEY_REGISTRATION_ENDPOINT = "registration_endpoint"
+private const val KEY_SCOPES_SUPPORTED = "scopes_supported"
+
 /** OAuth 2.0 Token Introspection https://www.rfc-editor.org/rfc/rfc7662 */
 private const val KEY_INTROSPECTION_ENDPOINT = "introspection_endpoint"
 
@@ -35,18 +39,20 @@ data class AuthorizationServerMetadata(
     val authorizationEndpoint: String?,
     val tokenEndpoint: String?,
     val registrationEndpoint: String?,
+    val scopesSupported: List<String>?,
     val introspectionEndpoint: String?
 ) {
     fun save(connectionData: HttpConnectionData) {
         if (connectionData.originUrl == null) {
             MyLog.v(this) { "OriginUrl is null; $connectionData" }
         }
-        val keySuffix = java.lang.Long.toString(connectionData.getAccountName().origin.id) +
-                "-" + connectionData.originUrl?.host
+        val keySuffix = connectionData.getAccountName().origin.id.toString() +
+            "-" + connectionData.originUrl?.host
         saveString(KEY_ISSUER + keySuffix, issuer.toString())
         saveString(KEY_AUTHORIZATION_ENDPOINT + keySuffix, authorizationEndpoint)
         saveString(KEY_TOKEN_ENDPOINT + keySuffix, tokenEndpoint)
         saveString(KEY_REGISTRATION_ENDPOINT + keySuffix, registrationEndpoint)
+        saveString(KEY_SCOPES_SUPPORTED + keySuffix, scopesSupported.toCsv())
         saveString(KEY_INTROSPECTION_ENDPOINT + keySuffix, introspectionEndpoint)
     }
 
@@ -67,7 +73,9 @@ data class AuthorizationServerMetadata(
                     JsonUtils.optString(json1, KEY_AUTHORIZATION_ENDPOINT),
                     JsonUtils.optString(json1, KEY_TOKEN_ENDPOINT),
                     JsonUtils.optString(json1, KEY_REGISTRATION_ENDPOINT),
-                    JsonUtils.optString(json1, KEY_INTROSPECTION_ENDPOINT)
+                    json1.toListOfStrings(KEY_SCOPES_SUPPORTED).filter { oauthScopesKnown.contains(it) }
+                        .takeIf { it.isNotEmpty() },
+                    JsonUtils.optString(json1, KEY_INTROSPECTION_ENDPOINT).takeIf { it.isNotEmpty() }
                 )
             }
         }
@@ -77,8 +85,8 @@ data class AuthorizationServerMetadata(
                 MyLog.v(this) { "OriginUrl is null; $connectionData" }
                 return null
             }
-            val keySuffix = java.lang.Long.toString(connectionData.getAccountName().origin.id) +
-                    "-" + connectionData.originUrl?.host
+            val keySuffix = connectionData.getAccountName().origin.id.toString() +
+                "-" + connectionData.originUrl?.host
             val issuer = UrlUtils.fromString(SharedPreferencesUtil.getString(KEY_ISSUER + keySuffix)) ?: return null
 
             return AuthorizationServerMetadata(
@@ -86,7 +94,8 @@ data class AuthorizationServerMetadata(
                 SharedPreferencesUtil.getString(KEY_AUTHORIZATION_ENDPOINT + keySuffix),
                 SharedPreferencesUtil.getString(KEY_TOKEN_ENDPOINT + keySuffix),
                 SharedPreferencesUtil.getString(KEY_REGISTRATION_ENDPOINT + keySuffix),
-                SharedPreferencesUtil.getString(KEY_INTROSPECTION_ENDPOINT + keySuffix)
+                SharedPreferencesUtil.getString(KEY_SCOPES_SUPPORTED + keySuffix).split(","),
+                SharedPreferencesUtil.getString(KEY_INTROSPECTION_ENDPOINT + keySuffix).takeIf { it.isNotEmpty() }
             )
         }
 

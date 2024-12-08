@@ -120,6 +120,11 @@ object JsonUtils {
     }
 }
 
+fun JSONObject.toListOfStrings(key: String): List<String> = optJSONArray(key)?.let { array ->
+    (0 until array.length()).mapNotNull { array.optString(it) }.filter { it.isNotEmpty() }
+} ?: emptyList()
+
+
 fun JSONArray.toJsonObjects(): Try<List<JSONObject>> {
     val objects: MutableList<JSONObject> = ArrayList()
     for (index in 0 until length()) {

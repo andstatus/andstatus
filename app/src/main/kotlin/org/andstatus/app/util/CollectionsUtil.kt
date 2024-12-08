@@ -71,3 +71,7 @@ object CollectionsUtil {
         return TryUtils.notFound()
     }
 }
+
+fun List<String>?.toCsv(): String? = this?.fold(null) { acc, item ->
+    (acc?.let<String, String> { "$it," } ?: "") + item
+}
