@@ -74,12 +74,15 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                     ActivityType.UNDO_LIKE,
                     ActivityType.ANNOUNCE,
                     ActivityType.UNDO_ANNOUNCE -> activity.setActivity(noteActivity)
+
                     ActivityType.FOLLOW,
                     ActivityType.UNDO_FOLLOW -> activity.setObjActor(data.getAccountActor())
+
                     else -> activity.setNote(noteActivity.getNote())
                 }
                 activity
             }
+
             isConversation(jso) -> {
                 // https://docs.joinmastodon.org/entities/conversation/
                 val noteActivity = activityFromJson2(jso.optJSONObject("last_status"))
@@ -88,6 +91,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 }
                 noteActivity
             }
+
             else -> super.activityFromTwitterLikeJson(jso)
         }
     }
@@ -526,13 +530,32 @@ class ConnectionMastodon : ConnectionTwitterLike() {
             .map { uri: Uri -> HttpRequest.of(apiRoutine, uri) }
             .flatMap(::execute)
             .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-            .map({ result: JSONObject? ->
-                // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
-                val textLimit = if (result == null || result.optInt(TEXT_LIMIT_KEY) < 1)
-                    OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
-                else result.optInt(TEXT_LIMIT_KEY)
-                OriginConfig.fromTextLimit(textLimit, (10 * MyPreferences.BYTES_IN_MB).toLong())
-            })
+            .map { json: JSONObject? ->
+                val defaultConfig = OriginConfig.fromTextLimit(
+                    OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT,
+                    (10 * MyPreferences.BYTES_IN_MB).toLong()
+                )
+                if (json == null) return@map defaultConfig
+
+                val configuration: JSONObject = json.optJSONObject("configuration")
+                    ?: return@map run {
+                        // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
+                        val textLimit: Int = json.optInt(LEGACY_TEXT_LIMIT_KEY)
+                            .takeIf { it > 100 }
+                            ?: defaultConfig.textLimit
+                        OriginConfig.fromTextLimit(textLimit, defaultConfig.uploadLimit)
+                    }
+
+                val textLimit: Int =
+                    // https://github.com/mastodon/mastodon/blob/main/app/serializers/rest/instance_serializer.rb#L57
+                    configuration.optJSONObject("statuses")?.optInt("max_characters")
+                        ?.takeIf { it > 100 }
+                        ?: defaultConfig.textLimit
+                val mediaSizeLimit: Long = configuration.optJSONObject("media_attachments")?.optLong("image_size_limit")
+                    ?.takeIf { it > 10_000 }
+                    ?: defaultConfig.uploadLimit
+                OriginConfig.fromTextLimit(textLimit, mediaSizeLimit)
+            }
     }
 
     companion object {
@@ -549,7 +572,8 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         private val CONTENT_PROPERTY: String = "content"
 
         /** Only Pleroma has this, see https://github.com/tootsuite/mastodon/issues/4915  */
-        private val TEXT_LIMIT_KEY: String = "max_toot_chars"
+        private val LEGACY_TEXT_LIMIT_KEY: String = "max_toot_chars"
+
         fun partialPath(routine: ApiRoutineEnum): String {
             return when (routine) {
                 ApiRoutineEnum.GET_CONFIG -> "v1/instance" // https://docs.joinmastodon.org/api/rest/instances/
