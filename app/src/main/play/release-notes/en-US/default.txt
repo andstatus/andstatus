@@ -1,1 +1,1 @@
-v.61.00 Twitter is no longer supported
+v.62.03 Mastodon login fixed, maximum number of characters in a message from a server's config. Updated for Android 15.

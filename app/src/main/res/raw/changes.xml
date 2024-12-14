@@ -32,14 +32,18 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="62.01" android:versionCode="368"
-        versionDate="2024-12-08"
+    <release android:versionName="62.03" android:versionCode="370"
+        versionDate="2024-12-14"
         versionTitle="Mastodon login fixed">
         <changes>
             <change>Due to recent Mastodon changes login to Mastodon stopped working with
                 "The requested scope is invalid, unknown or malformed" error message.
                 Fixing it here.
                 <a href="https://github.com/andstatus/andstatus/issues/596">#596</a>
+            </change>
+            <change>For Mastodon AndStatus now takes maximum number of characters in a message from a server's config.
+                Previously it used default 500 characters limit.
+                <a href="https://github.com/andstatus/andstatus/issues/600">#600</a>
             </change>
             <change>
                 Updated to target Android 15.

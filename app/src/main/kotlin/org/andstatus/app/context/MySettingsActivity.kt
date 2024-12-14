@@ -45,18 +45,21 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
         mLayoutId = R.layout.my_settings
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
-            val ft = supportFragmentManager.beginTransaction()
-            ft.replace(R.id.settings_container, myFragment(), MySettingsFragment.FRAGMENT_TAG)
-            ft.commit()
+            val myFragment = myFragment()
+            logEvent("onCreate", "myFragment " + (myFragment?.let { "found" } ?: "not found"))
+            (myFragment() ?: MySettingsFragment()).let {
+                val ft = supportFragmentManager.beginTransaction()
+                ft.replace(R.id.settings_container, it, MySettingsFragment.FRAGMENT_TAG)
+                ft.commit()
+            }
         }
         parseNewIntent(intent)
     }
 
     /** Create the fragment only when the activity is created for the first time.
      * ie. not after orientation changes */
-    private fun myFragment(): PreferenceFragmentCompat =
+    private fun myFragment(): PreferenceFragmentCompat? =
         (supportFragmentManager.findFragmentByTag(MySettingsFragment.FRAGMENT_TAG) as PreferenceFragmentCompat?)
-            ?: MySettingsFragment()
 
     // TODO: Not fully implemented, but it is unused yet...
     override fun onPreferenceStartScreen(
@@ -74,7 +77,10 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
         return true
     }
 
-    override fun onPreferenceStartFragment(caller: PreferenceFragmentCompat, pref: Preference): Boolean {
+    override fun onPreferenceStartFragment(caller: PreferenceFragmentCompat, pref: Preference): Boolean =
+        myOnPreferenceStartFragment(caller, pref)
+
+    fun myOnPreferenceStartFragment(caller: PreferenceFragmentCompat?, pref: Preference): Boolean {
         val args = pref.getExtras()
         args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, pref.getKey())
         val fragment = MySettingsFragment()
@@ -115,7 +121,9 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
                 }
                 val preference = Preference(this)
                 preference.key = settingsGroup.key
-                onPreferenceStartFragment(myFragment(), preference)
+                val myFragment = myFragment()
+                logEvent("parseNewIntent", "myFragment " + (myFragment?.let { "found" } ?: "not found"))
+                myOnPreferenceStartFragment(myFragment, preference)
             }
         }
     }
@@ -162,6 +170,9 @@ class MySettingsActivity : MyActivity(MySettingsActivity::class),
     private fun closeAndRestartApp() {
         if (resumedOnce) {
             if (onFinishAction.compareAndSet(OnFinishAction.NONE, OnFinishAction.RESTART_APP)) {
+                // TODO: Instead on finishing the activity now,
+                //  we need to ensure that app is in the foreground during the whole restart.
+                // See https://developer.android.com/guide/components/activities/background-starts
                 finish()
             }
         }
