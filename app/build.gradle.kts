@@ -167,34 +167,6 @@ tasks.named("sonarqube") {
     }
 }
 
-sonarqube {
-    // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
-    // and https://sonarcloud.io/documentation/analysis/scan/sonarscanner-for-gradle/
-    properties {
-        property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.login", sonarQubeToken.value ?: "")
-        property("sonar.verbose", "true")
-
-        property("sonar.organization", "default")
-        property("sonar.projectName", "AndStatus")
-        property("sonar.projectKey", "andstatus")
-        property("sonar.projectVersion", project.android.defaultConfig.versionName!!)
-
-        property("sonar.sourceEncoding", "UTF-8")
-        // See http://docs.sonarqube.org/display/SONAR/Narrowing+the+Focus
-        property("sonar.exclusions", "build/**,libs/**,**/*.png,**/*.json,**/*.iml,**/*Secret.*")
-
-        property("sonar.import_unknown_files", true)
-
-        property("sonar.android.lint.report", "build/reports/lint-results.xml")
-        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/coverage/androidTest/debug/report.xml")
-    }
-}
-
-//play {
-//    enabled.set(false)
-//}
-
 configurations {
     all {
         exclude(group = "org.apache.httpcomponents", module = "httpclient")
