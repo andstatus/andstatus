@@ -75,7 +75,7 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>,
         override fun performFiltering(prefix: CharSequence?): FilterResults {
             var filteredValues: MutableList<String> = ArrayList()
             if (!TextUtils.isEmpty(prefix)) {
-                val prefixString = prefix.toString().toLowerCase()
+                val prefixString = prefix.toString().lowercase()
                 filteredValues = loadFiltered(prefixString)
                 CollectionsUtil.sort(filteredValues)
             }
@@ -91,7 +91,7 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>,
             }
             val filteredValues: MutableList<String> = ArrayList()
             for (item in getAllSuggestions(searchObjects)) {
-                if (item.toLowerCase().startsWith(prefixString)) {
+                if (item.lowercase().startsWith(prefixString)) {
                     filteredValues.add(item)
                 }
             }

@@ -234,7 +234,7 @@ class OriginEditor : MyActivity(OriginEditor::class) {
     }
 
     fun showSslMode(isSsl: Boolean) {
-        findViewById<View?>(R.id.ssl_mode_container).visibility = if (isSsl) View.VISIBLE else View.GONE
+        findViewById<View>(R.id.ssl_mode_container).visibility = if (isSsl) View.VISIBLE else View.GONE
     }
 
     public override fun onNewIntent(intent: Intent) {

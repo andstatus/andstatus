@@ -186,7 +186,16 @@ class MyServiceTestHelper : MyServiceEventsListener {
 
     fun stopService(clearQueue: Boolean): Boolean {
         MyServiceManager.stopService()
-        return waitForServiceStop(clearQueue)
+        return waitForServiceStop(clearQueue).let {
+            if (!it) {
+                // TODO: fix org.andstatus.app.net.http.MyHttpClientFactory
+                MyServiceManager.forceStopService()
+                if (clearQueue) {
+                    dropQueues()
+                }
+            }
+            true
+        }
     }
 
     fun waitForServiceStop(clearQueue: Boolean): Boolean {
@@ -211,7 +220,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
                     break
                 }
             }
-        } while (stopWatch.notPassedSeconds(130)) // TODO: fix org.andstatus.app.net.http.MyHttpClientFactory to decrease this
+        } while (stopWatch.notPassedSeconds(40))
         MyLog.v(
             this, method + " ended, " + (if (stopped) "stopped" else "didn't stop") +
                 ", ${stopWatch.time} ms"

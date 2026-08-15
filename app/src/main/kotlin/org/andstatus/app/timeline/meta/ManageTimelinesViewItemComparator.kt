@@ -31,16 +31,16 @@ internal class ManageTimelinesViewItemComparator(private val sortByField: Int, p
             R.id.displayedInSelector -> {
                 result = compareAny(lhs.timeline, rhs.timeline)
                 if (result != 0) return result
-                result = compareAny(lhs.timelineTitle.toString().toLowerCase(),
-                        rhs.timelineTitle.toString().toLowerCase())
+                result = compareAny(lhs.timelineTitle.toString().lowercase(),
+                        rhs.timelineTitle.toString().lowercase())
                 if (result != 0) return result
                 result = compareAny(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName)
                 if (result != 0) return result
                 return compareAny(lhs.timelineTitle.originName, rhs.timelineTitle.originName)
             }
             R.id.title -> {
-                result = compareAny(lhs.timelineTitle.toString().toLowerCase(),
-                        rhs.timelineTitle.toString().toLowerCase())
+                result = compareAny(lhs.timelineTitle.toString().lowercase(),
+                        rhs.timelineTitle.toString().lowercase())
                 if (result != 0) return result
                 result = compareAny(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName)
                 if (result != 0) return result

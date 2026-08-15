@@ -84,7 +84,7 @@ object MyHtml {
     }
 
     fun getContentToSearch(html: String?): String {
-        return normalizeWordsForSearch(htmlToCompactPlainText(html)).toLowerCase(MY_DEFAULT_LOCALE)
+        return normalizeWordsForSearch(htmlToCompactPlainText(html)).lowercase(MY_DEFAULT_LOCALE)
     }
 
     /** Strips ALL markup from the String, including line breaks. And remove all whiteSpace  */

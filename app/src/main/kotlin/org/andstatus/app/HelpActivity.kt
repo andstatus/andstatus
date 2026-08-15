@@ -102,7 +102,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
     }
 
     private fun showRestoreButton() {
-        val restoreButton = findViewById<Button?>(R.id.button_restore)
+        val restoreButton = findViewById<Button>(R.id.button_restore)
         if (!generatingDemoData
             && myContextHolder.getNow().isReady && myContextHolder.getNow().accounts.isEmpty
         ) {
@@ -117,7 +117,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
 
     private fun showGetStartedButton() {
         //The button is always visible in order to avoid a User's confusion,
-        val getStarted = findViewById<Button?>(R.id.button_help_get_started)
+        val getStarted = findViewById<Button>(R.id.button_help_get_started)
         getStarted.visibility = if (generatingDemoData) View.GONE else View.VISIBLE
         getStarted.setOnClickListener { v: View? ->
             if (myContextHolder.future.tryCurrent.isFailure) {
@@ -180,7 +180,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
         }
 
         private fun showVersionText(context: Context?, parentView: View) {
-            val versionText = parentView.findViewById<TextView?>(R.id.splash_application_version)
+            val versionText = parentView.findViewById<TextView>(R.id.splash_application_version)
             val text: MyStringBuilder = MyStringBuilder.of(myContextHolder.getVersionText(context))
             myContextHolder.getNow().takeIf { !it.isReady }?.let { myContext ->
                 text.withSpace(myContext.toString())
@@ -212,7 +212,7 @@ class HelpActivity : MyActivity(HelpActivity::class) {
             }
         })
         if (ViewUtils.showView(this, R.id.button_help_learn_more, myContextHolder.getNow().isReady)) {
-            val learnMore = findViewById<Button?>(R.id.button_help_learn_more)
+            val learnMore = findViewById<Button>(R.id.button_help_learn_more)
             learnMore.setOnClickListener { v: View? ->
                 val adapter = flipper.getAdapter()
                 if (adapter != null) {

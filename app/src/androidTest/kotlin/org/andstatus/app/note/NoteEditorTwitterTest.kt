@@ -121,7 +121,7 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem>() {
 
     private fun assertInitialText(description: String) {
         val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
-        val textView = activity.findViewById<TextView?>(R.id.noteBodyEditText)
+        val textView = activity.findViewById<TextView>(R.id.noteBodyEditText)
         ActivityTestHelper.waitTextInAView(description, textView,
                 MyHtml.fromContentStored(data.getContent(), TextMediaType.PLAIN))
         Assert.assertEquals(description, data.toTestSummary(), editor.getData().toTestSummary())

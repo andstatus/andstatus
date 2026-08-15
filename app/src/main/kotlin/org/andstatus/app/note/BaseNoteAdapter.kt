@@ -87,7 +87,7 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
     protected fun getEmptyView(convertView: View?): ViewGroup {
         if (convertView == null) return newView()
         convertView.setBackgroundResource(0)
-        val noteIndented = convertView.findViewById<View?>(R.id.note_indented)
+        val noteIndented = convertView.findViewById<View>(R.id.note_indented)
         noteIndented.setBackgroundResource(0)
         return convertView as ViewGroup
     }
@@ -176,7 +176,7 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
     private fun showMarkRepliesToMe(view: ViewGroup, item: T) {
         if (myContext.users.isMe(item.inReplyToActor.actor) &&
                 !myContext.users.isMe(item.author.actor)) {
-            val referencedView = view.findViewById<View?>(R.id.note_indented)
+            val referencedView = view.findViewById<View>(R.id.note_indented)
             val replyToMeMarkerView: ImageView = ConversationIndentImageView(myContext.context, referencedView, dpToPixes(6),
                     R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker)
             replyToMeMarkerView.id = R.id.reply_timeline_marker
@@ -202,7 +202,7 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
     }
 
     private fun setOnButtonClick(viewGroup: View, buttonId: Int, menuItem: NoteContextMenuItem) {
-        viewGroup.findViewById<View?>(buttonId).setOnClickListener { view: View ->
+        viewGroup.findViewById<View>(buttonId).setOnClickListener { view: View ->
             val item = getItem(view)
             if (item.nonEmpty && (item.noteStatus == DownloadStatus.LOADED || menuItem.appliedToUnsentNotesAlso)) {
                 contextMenu.onViewSelected(view) { contextMenu: NoteContextMenu ->
@@ -213,7 +213,7 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
     }
 
     private fun setOnClickShowContextMenu(viewGroup: View, buttonId: Int) {
-        viewGroup.findViewById<View?>(buttonId).setOnClickListener { view: View? -> viewGroup.showContextMenu() }
+        viewGroup.findViewById<View>(buttonId).setOnClickListener { view: View? -> viewGroup.showContextMenu() }
     }
 
     protected fun showButtonsBelowNote(view: View, item: T) {
@@ -233,14 +233,14 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
     }
 
     private fun tintIcon(viewGroup: View, colored: Boolean, viewId: Int, viewIdColored: Int) {
-        val imageView = viewGroup.findViewById<ImageView?>(viewId)
-        val imageViewTinted = viewGroup.findViewById<ImageView?>(viewIdColored)
+        val imageView = viewGroup.findViewById<ImageView>(viewId)
+        val imageViewTinted = viewGroup.findViewById<ImageView>(viewIdColored)
         imageView.visibility = if (colored) View.GONE else View.VISIBLE
         imageViewTinted.visibility = if (colored) View.VISIBLE else View.GONE
     }
 
     protected fun showFavorited(view: View, item: T) {
-        val favorited = view.findViewById<View?>(R.id.note_favorited)
+        val favorited = view.findViewById<View>(R.id.note_favorited)
         favorited.visibility = if (item.favorited) View.VISIBLE else View.GONE
     }
 

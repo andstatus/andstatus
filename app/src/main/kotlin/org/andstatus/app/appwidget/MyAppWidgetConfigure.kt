@@ -49,7 +49,7 @@ class MyAppWidgetConfigure : Activity() {
         mAppWidgetTitle = findViewById(R.id.appwidget_title)
 
         // Bind the action for the save button.
-        findViewById<View?>(R.id.ok_button).setOnClickListener(mOnClickListener)
+        findViewById<View>(R.id.ok_button).setOnClickListener(mOnClickListener)
         mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
         MyLog.v(TAG) { "mAppWidgetId=$mAppWidgetId" }
 

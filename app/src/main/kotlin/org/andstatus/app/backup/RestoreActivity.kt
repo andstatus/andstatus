@@ -41,9 +41,9 @@ class RestoreActivity : MyActivity(RestoreActivity::class), ProgressLogger.Progr
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.restore
         super.onCreate(savedInstanceState)
-        findViewById<View?>(R.id.button_restore).setOnClickListener { v: View? -> doRestore(v) }
-        findViewById<View?>(R.id.backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }
-        findViewById<View?>(R.id.button_select_backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }
+        findViewById<View>(R.id.button_restore).setOnClickListener { v: View? -> doRestore(v) }
+        findViewById<View>(R.id.backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }
+        findViewById<View>(R.id.button_select_backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }
         showDataFolder()
     }
 
@@ -122,13 +122,13 @@ class RestoreActivity : MyActivity(RestoreActivity::class), ProgressLogger.Progr
 
     private fun resetProgress() {
         progressCounter = 0
-        val progressLog = findViewById<TextView?>(R.id.progress_log)
+        val progressLog = findViewById<TextView>(R.id.progress_log)
         progressLog.text = ""
     }
 
     private fun addProgressMessage(message: CharSequence?) {
         progressCounter++
-        val progressLog = findViewById<TextView?>(R.id.progress_log)
+        val progressLog = findViewById<TextView>(R.id.progress_log)
         val log = "${Integer.toString(progressCounter)}. $message" +
             "\n${progressLog.text}"
         progressLog.text = log

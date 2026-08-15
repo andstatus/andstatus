@@ -141,13 +141,10 @@ object MyPreferences {
         return SharedPreferencesUtil.getLongStoredAsString(KEY_DONT_SYNCHRONIZE_OLD_NOTES, 0)
     }
 
-    fun getConnectionTimeoutMs(): Int {
-        return TimeUnit.SECONDS.toMillis(
-            SharedPreferencesUtil.getLongStoredAsString(
-                KEY_CONNECTION_TIMEOUT_SECONDS, CONNECTION_TIMEOUT_DEFAULT_SECONDS
-            )
-        ).toInt()
-    }
+    fun getConnectionTimeoutMs(): Int =
+        SharedPreferencesUtil.getLongStoredAsString(KEY_CONNECTION_TIMEOUT_SECONDS, CONNECTION_TIMEOUT_DEFAULT_SECONDS)
+            .let { TimeUnit.SECONDS.toMillis(it) }
+            .toInt()
 
     fun setConnectionTimeoutMs(value: Int) {
         val stringValue = TimeUnit.MILLISECONDS.toSeconds(value.toLong()).coerceAtLeast(1).toString()

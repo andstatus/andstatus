@@ -137,12 +137,14 @@ class MyService(
         if (commandData.result.hasError) failedCommands.incrementAndGet()
         else succeededCommands.incrementAndGet()
         MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-            .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast()
+            .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND)
+            .broadcast()
     }
 
     fun broadcastAfterExecutingCommand(commandData: CommandData) {
         MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-            .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
+            .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
+            .broadcast()
     }
 
     private suspend fun ensureInitialized() {
@@ -202,7 +204,10 @@ class MyService(
                 "$method; shouldStop:$shouldStop, needToExecute:$needToExecute"
             }
             if (shouldStop || (!needToExecute
-                    && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))
+                        && RelativeTime.moreSecondsAgoThan(
+                    latestActivityTime,
+                    STOP_ON_INACTIVITY_AFTER_SECONDS
+                ))
             ) {
                 stopDelayed(false)
             } else if (needToExecute) startExecution()
@@ -241,6 +246,8 @@ class MyService(
         CoroutineScope(Dispatchers.Default).launch {
             if (isStopping.compareAndSet(false, true)) {
                 MyLog.v(this) { "Stopping" + if (forceNow) ", forced" else "" }
+            } else if (forceNow) {
+                MyLog.d(this) { "Force Stopping" }
             }
             if (!executors.stopAll(forceNow) && !forceNow) {
                 // TODO
@@ -266,8 +273,8 @@ class MyService(
             myContext.notifier.clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
             MyLog.i(
                 this, "Stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime) +
-                    ", succeeded:" + succeededCommands.get() +
-                    ", failed:" + failedCommands.get()
+                        ", succeeded:" + succeededCommands.get() +
+                        ", failed:" + failedCommands.get()
             )
         } finally {
             succeededCommands.set(0)
@@ -280,7 +287,9 @@ class MyService(
 
     companion object {
         private val onStartJobTask: AtomicReference<AsyncRunnable> =
-            AtomicReference(AsyncRunnable(AsyncEnum.DEFAULT_POOL).apply { result = TryUtils.SUCCESS })
+            AtomicReference(AsyncRunnable(AsyncEnum.DEFAULT_POOL).apply {
+                result = TryUtils.SUCCESS
+            })
         private val isStarting get() = !onStartJobTask.get().isFinished
         private val myServiceRef: AtomicReference<MyService> = AtomicReference()
         private const val STOP_ON_INACTIVITY_AFTER_SECONDS: Long = 10
@@ -295,6 +304,13 @@ class MyService(
 
         fun stopService() {
             myServiceRef.get()?.stopDelayed(false)
+        }
+
+        fun forceStopService() {
+            val service = myServiceRef.get() ?: return
+            if (service.initialized.get()) {
+                service.stopDelayed(true)
+            }
         }
     }
 }

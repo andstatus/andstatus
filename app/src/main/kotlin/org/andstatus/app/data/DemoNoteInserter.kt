@@ -134,7 +134,7 @@ class DemoNoteInserter(val accountActor: Actor) {
         val activity: AActivity = AActivity.from(accountActor, type)
         activity.setOid(
             ((if (noteOid.isNullOrEmpty()) MyLog.uniqueDateTimeFormatted() else noteOid))
-                + "-" + activity.type.name.toLowerCase()
+                + "-" + activity.type.name.lowercase()
         )
         activity.setActor(actor)
         activity.setUpdatedDate(System.currentTimeMillis())

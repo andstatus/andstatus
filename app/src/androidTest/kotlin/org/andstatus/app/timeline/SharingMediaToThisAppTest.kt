@@ -62,9 +62,9 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
         val listActivityTestHelper: ListActivityTestHelper<TimelineActivity<*>> =
             ListActivityTestHelper.newForSelectorDialog(activity, SelectorDialog.Companion.dialogTag)
         listActivityTestHelper.selectIdFromSelectorDialog(method, ma.actorId)
-        val editorView = activity.findViewById<View?>(R.id.note_editor)
+        val editorView = activity.findViewById<View>(R.id.note_editor)
         ActivityTestHelper.waitViewVisible(method, editorView)
-        val details = editorView.findViewById<TextView?>(R.id.noteEditDetails)
+        val details = editorView.findViewById<TextView>(R.id.noteEditDetails)
         val textToFind: String = myContext.context.getText(R.string.label_with_media).toString()
         ActivityTestHelper.waitTextInAView(method, details, textToFind)
         EspressoUtils.waitForIdleSync()

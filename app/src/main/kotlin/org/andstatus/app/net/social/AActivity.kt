@@ -179,7 +179,7 @@ class AActivity private constructor(val accountActor: Actor, val type: ActivityT
     private fun buildTempOid(): String {
         return StringUtil.toTempOid(
             getActorPrefix() +
-                type.name.toLowerCase() + "-" +
+                type.name.lowercase() + "-" +
                 (if (!getNote().oid.isNullOrEmpty()) getNote().oid + "-" else "") +
                 MyLog.uniqueDateTimeFormatted()
         )

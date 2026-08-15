@@ -98,7 +98,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
     private fun getEditorView(): ViewGroup {
         var editorView = getActivity().findViewById<ViewGroup?>(R.id.note_editor)
         if (editorView == null) {
-            val layoutParent = getActivity().findViewById<ViewGroup?>(R.id.relative_list_parent)
+            val layoutParent = getActivity().findViewById<ViewGroup>(R.id.relative_list_parent)
             val inflater = LayoutInflater.from(getActivity())
             editorView = inflater.inflate(R.layout.note_editor, null) as ViewGroup
             val layoutParams = RelativeLayout.LayoutParams(

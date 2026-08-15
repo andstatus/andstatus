@@ -132,7 +132,7 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
     }
 
     private fun oneAttempt(timelineActivity: TimelineActivity<*>, publicNoteText: String): Int {
-        val list = timelineActivity.findViewById<ViewGroup?>(android.R.id.list)
+        val list = timelineActivity.findViewById<ViewGroup>(android.R.id.list)
         var msgCount = 0
         for (index in 0 until list.childCount) {
             val noteView = list.getChildAt(index)

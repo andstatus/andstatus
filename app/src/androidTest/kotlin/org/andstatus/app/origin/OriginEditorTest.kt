@@ -110,15 +110,15 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
             activity.onNewIntent(intent)
         }
         waitForIdleSync()
-        val buttonSave = activity.findViewById<Button?>(R.id.button_save)
-        val spinnerOriginType = activity.findViewById<Spinner?>(R.id.origin_type)
-        val editTextOriginName = activity.findViewById<EditText?>(R.id.origin_name)
-        val editTextHost = activity.findViewById<EditText?>(R.id.host)
-        val checkBoxIsSsl = activity.findViewById<CheckBox?>(R.id.is_ssl)
-        val spinnerSslMode = activity.findViewById<Spinner?>(R.id.ssl_mode)
-        val checkBoxAllowHtml = activity.findViewById<CheckBox?>(R.id.allow_html)
-        val spinnerMentionAsWebFingerId = activity.findViewById<Spinner?>(R.id.mention_as_webfingerid)
-        val spinnerUseLegacyHttpProtocol = activity.findViewById<Spinner?>(R.id.use_legacy_http_protocol)
+        val buttonSave = activity.findViewById<Button>(R.id.button_save)
+        val spinnerOriginType = activity.findViewById<Spinner>(R.id.origin_type)
+        val editTextOriginName = activity.findViewById<EditText>(R.id.origin_name)
+        val editTextHost = activity.findViewById<EditText>(R.id.host)
+        val checkBoxIsSsl = activity.findViewById<CheckBox>(R.id.is_ssl)
+        val spinnerSslMode = activity.findViewById<Spinner>(R.id.ssl_mode)
+        val checkBoxAllowHtml = activity.findViewById<CheckBox>(R.id.allow_html)
+        val spinnerMentionAsWebFingerId = activity.findViewById<Spinner>(R.id.mention_as_webfingerid)
+        val spinnerUseLegacyHttpProtocol = activity.findViewById<Spinner>(R.id.use_legacy_http_protocol)
         val clicker: Runnable = object : Runnable {
             override fun run() {
                 spinnerOriginType.setSelection(

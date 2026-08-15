@@ -1,10 +1,8 @@
-import org.jetbrains.kotlin.utils.addToStdlib.ifNotEmpty
-
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    val androidGradlePluginVersion = "8.7.3" // https://maven.google.com/web/index.html#com.android.tools.build:gradle
+    val androidGradlePluginVersion = "9.3.1" // https://maven.google.com/web/index.html#com.android.tools.build:gradle
                                              // https://developer.android.com/studio/releases/gradle-plugin
-    val kotlinVersion = "2.0.21"             // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
+    val kotlinVersion = "2.4.10"             // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-stdlib
     extra["kotlinVersion"] = kotlinVersion
     val kotlinGradlePluginVersion = kotlinVersion // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-gradle-plugin
 
@@ -17,18 +15,18 @@ buildscript {
     }
 
     extra["compileSdk"] = 35
-    extra["buildToolsVersion"] = "35.0.0"
+    extra["buildToolsVersion"] = "37.0.0"
     extra["minSdk"] = 24
-    extra["targetSdk"] = 35
+    extra["targetSdk"] = 37
 
     // Lookup the latest here: https://mvnrepository.com/
     extra["acraVersion"] = "5.8.3"                // https://github.com/ACRA/acra/wiki/AdvancedUsage
     extra["annotationVersion"] = "1.9.1"          // https://mvnrepository.com/artifact/androidx.annotation/annotation
     extra["appCompatVersion"] = "1.7.0"           // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
     /** commons-lang3 version 3.16+ requires minSdk=26 (Android 8) due to java.time.Instant */
-    extra["commonsLangVersion"] = "3.15.0"        // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    extra["commonsLangVersion"] = "3.20.0"        // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     extra["documentFileVersion"] = "1.0.1"        // https://developer.android.com/jetpack/androidx/releases/documentfile
-    extra["espressoCoreVersion"] = "3.6.1"        // https://developer.android.com/jetpack/androidx/releases/test
+    extra["espressoCoreVersion"] = "3.7.0"        // https://developer.android.com/jetpack/androidx/releases/test
     extra["hamcrestVersion"] = "3.0"              // http://hamcrest.org/JavaHamcrest/distributables#using-hamcrest-in-a-gradle-project
     extra["httpClientVersion"] = "4.5.8"          // https://github.com/smarek/httpclient-android
     extra["httpMimeVersion"] = "4.5.14"           // https://mvnrepository.com/artifact/org.apache.httpcomponents/httpmime
@@ -113,8 +111,8 @@ tasks.register("printInfo") {
     fun printProjectInfo(project: Project) {
         println("\nProject '${project.name}' ----------------")
 
-        project.subprojects.ifNotEmpty {
-            println("Subprojects ($size): $this")
+        if (project.subprojects.isNotEmpty()) {
+            println("Subprojects (${project.subprojects.size}): $this")
         }
 
         "archivesBaseName".let { name ->

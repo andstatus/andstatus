@@ -110,7 +110,7 @@ class ActorAutoCompleteAdapter(private val myActivity: LoadableListActivity<*>,
             val referenceChar = prefixWithReferenceChar.get(0)
             val prefixString = prefixWithReferenceChar.toString().substring(1)
             val matchGroupsOnly = origin.groupActorReferenceChar().map { c: Char? -> c == referenceChar }.orElse(false)
-            val viewItems = loadFiltered(matchGroupsOnly, prefixString.toLowerCase())
+            val viewItems = loadFiltered(matchGroupsOnly, prefixString.lowercase())
             CollectionsUtil.sort(viewItems)
             val results = FilterResults()
             results.values = FilteredValues(matchGroupsOnly, referenceChar.toString(), viewItems)

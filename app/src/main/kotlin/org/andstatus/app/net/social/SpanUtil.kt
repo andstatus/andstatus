@@ -73,11 +73,11 @@ object SpanUtil {
 
     private fun mentionAdded(spannable: Spannable, audience: Audience, region: Region, text: String): Boolean {
         if (audience.hasNonSpecial() && text.contains("@")) {
-            val upperText = text.toUpperCase()
+            val upperText = text.uppercase()
             val mentionedByAtWebfingerID = audience.getNonSpecialActors().stream()
                     .filter { actor: Actor ->
                         actor.isWebFingerIdValid() &&
-                                upperText.contains("@" + actor.webFingerId.toUpperCase())
+                                upperText.contains("@" + actor.webFingerId.uppercase())
                     }.findAny().orElse(Actor.EMPTY)
             if (mentionedByAtWebfingerID.nonEmpty) {
                 return notesByActorSpanAdded(
@@ -88,7 +88,7 @@ object SpanUtil {
                 val mentionedByWebfingerID = audience.getNonSpecialActors().stream()
                         .filter { actor: Actor ->
                             actor.isWebFingerIdValid() &&
-                                    upperText.contains(actor.webFingerId.toUpperCase())
+                                    upperText.contains(actor.webFingerId.uppercase())
                         }.findAny().orElse(Actor.EMPTY)
                 if (mentionedByWebfingerID.nonEmpty) {
                     return notesByActorSpanAdded(
@@ -99,7 +99,7 @@ object SpanUtil {
                     val mentionedByUsername = audience.getNonSpecialActors().stream()
                             .filter { actor: Actor ->
                                 actor.isUsernameValid() &&
-                                        upperText.contains("@" + actor.getUsername().toUpperCase())
+                                        upperText.contains("@" + actor.getUsername().uppercase())
                             }.findAny().orElse(Actor.EMPTY)
                     if (mentionedByUsername.nonEmpty) {
                         return notesByActorSpanAdded(spannable, audience, region,
@@ -148,10 +148,10 @@ object SpanUtil {
         val substr1 = spannable.subSequence(region.start, region.end).toString()
         val indInRegion = substr1.indexOf(stringFound)
         if (indInRegion >= 0) return indInRegion
-        val foundUpper = stringFound.toUpperCase()
+        val foundUpper = stringFound.uppercase()
         var ind = 0
         do {
-            val ind2 = substr1.substring(ind).toUpperCase().indexOf(foundUpper)
+            val ind2 = substr1.substring(ind).uppercase().indexOf(foundUpper)
             if (ind2 >= 0) return ind2 + ind
             ind++
         } while (ind + stringFound.length < substr1.length)

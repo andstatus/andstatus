@@ -61,7 +61,7 @@ class DemoData {
     val gnusocialTestAccountName: String = gnusocialTestAccountUsername + "@" + gnusocialTestHost +
         "/" + OriginType.GNUSOCIAL.title
     val gnusocialTestAccountActorOid: String = "115391"
-    val gnusocialTestAccountAvatarUrl: String = "https://findicons.com/files/icons/2036/farm/48/rabbit.png"
+    val gnusocialTestAccountAvatarUrl: String = "https://cdn.jsdelivr.net/gh/alohe/avatars/png/memo_19.png"
     val gnusocialTestAccount2Username: String = "gtester2"
     val gnusocialTestAccount2Name: String = gnusocialTestAccount2Username + "@" + gnusocialTestHost +
         "/" + OriginType.GNUSOCIAL.title

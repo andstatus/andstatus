@@ -104,7 +104,7 @@ class SpanUtilTest {
         )
         Assert.assertEquals(
             "Username in region $index $message",
-            username.toUpperCase(), actor.getUsername().toUpperCase()
+            username.uppercase(), actor.getUsername().uppercase()
         )
     }
 

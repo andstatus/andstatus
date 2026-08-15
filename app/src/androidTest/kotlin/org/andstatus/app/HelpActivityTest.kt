@@ -55,7 +55,7 @@ class HelpActivityTest : ActivityTest<HelpActivity>() {
     @Test
     fun test() {
         EspressoUtils.waitForIdleSync()
-        val mFlipper = mActivityRule.activity.findViewById<ViewPager?>(R.id.help_flipper)
+        val mFlipper = mActivityRule.activity.findViewById<ViewPager>(R.id.help_flipper)
         Assert.assertNotNull(mFlipper)
         DbUtils.waitMs("test", 200)
         Assert.assertEquals(

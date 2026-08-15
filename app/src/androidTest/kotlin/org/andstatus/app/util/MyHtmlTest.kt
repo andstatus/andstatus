@@ -50,8 +50,8 @@ class MyHtmlTest {
         val result1 = (",somebody,@somebody,This,is,a,normalised,text,user,@user@domain.com,AndStatus,#AndStatus,"
                 + "gnusocial,!gnusocial,")
         Assert.assertEquals(result1, MyHtml.normalizeWordsForSearch(text2))
-        Assert.assertEquals(result1.toLowerCase(), MyHtml.getContentToSearch(text2))
-        Assert.assertEquals(result1.toLowerCase(), MyHtml.getContentToSearch(text1))
+        Assert.assertEquals(result1.lowercase(), MyHtml.getContentToSearch(text2))
+        Assert.assertEquals(result1.lowercase(), MyHtml.getContentToSearch(text1))
         val text3 = "<p>Hello! Does anyone use?! <a href=\"https://mstdn.io/tags/andstatus\" rel=\"nofollow " +
                 "noopener\" target=\"_blank\">#<span>Andstatus</span></a>? How do I get to recognize my instance?</p>"
         val result2 = ",hello,does,anyone,use,andstatus,#andstatus,how,do,i,get,to,recognize,my,instance,"

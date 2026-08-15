@@ -168,7 +168,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
 
     private fun assertInitialText(description: String) {
         val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
-        val textView = activity.findViewById<TextView?>(R.id.noteBodyEditText)
+        val textView = activity.findViewById<TextView>(R.id.noteBodyEditText)
         ActivityTestHelper.waitTextInAView(
             description, textView,
             MyHtml.fromContentStored(data.getContent(), TextMediaType.PLAIN)
@@ -261,7 +261,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             .check(ViewAssertions.matches(ViewMatchers.withText(CoreMatchers.startsWith("@"))))
         EspressoUtils.waitForIdleSync()
         val content = "Replying to you during " + DemoData.demoData.testRunUid
-        val bodyText = editorView.findViewById<EditText?>(R.id.noteBodyEditText)
+        val bodyText = editorView.findViewById<EditText>(R.id.noteBodyEditText)
         // Espresso types in the centre, unfortunately, so we need to retype text
         onView(ViewMatchers.withId(R.id.noteBodyEditText))
             .perform(ReplaceTextAction(bodyText.text.toString().trim { it <= ' ' }

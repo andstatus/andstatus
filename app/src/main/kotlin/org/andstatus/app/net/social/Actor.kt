@@ -375,7 +375,7 @@ class Actor private constructor(// In our system
         var potentialUsername = webFingerIdIn
         val nameBeforeTheLastAt = webFingerIdIn.substring(0, webFingerIdIn.lastIndexOf("@"))
         if (isWebFingerIdValid(webFingerIdIn)) {
-            webFingerId = webFingerIdIn.toLowerCase()
+            webFingerId = webFingerIdIn.lowercase()
             isWebFingerIdValid = true
             potentialUsername = nameBeforeTheLastAt
         } else {
@@ -383,7 +383,7 @@ class Actor private constructor(// In our system
             if (lastButOneIndex > -1) {
                 val potentialWebFingerId = webFingerIdIn.substring(lastButOneIndex + 1)
                 if (isWebFingerIdValid(potentialWebFingerId)) {
-                    webFingerId = potentialWebFingerId.toLowerCase()
+                    webFingerId = potentialWebFingerId.lowercase()
                     isWebFingerIdValid = true
                     potentialUsername = webFingerIdIn.substring(0, lastButOneIndex)
                 }
@@ -963,19 +963,19 @@ class Actor private constructor(// In our system
                 if (uniqueName.contains("@")) {
                     val nameBeforeTheLastAt = uniqueName.substring(0, uniqueName.lastIndexOf("@"))
                     if (isWebFingerIdValid(uniqueName)) {
-                        return Optional.of(uniqueName.toLowerCase())
+                        return Optional.of(uniqueName.lowercase())
                     } else {
                         val lastButOneIndex = nameBeforeTheLastAt.lastIndexOf("@")
                         if (lastButOneIndex > -1) {
                             val potentialWebFingerId = uniqueName.substring(lastButOneIndex + 1)
                             if (isWebFingerIdValid(potentialWebFingerId)) {
-                                return Optional.of(potentialWebFingerId.toLowerCase())
+                                return Optional.of(potentialWebFingerId.lowercase())
                             }
                         }
                     }
                 } else {
                     return Optional.of(
-                        uniqueName.toLowerCase() + "@" +
+                        uniqueName.lowercase() + "@" +
                             origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
                     )
                 }

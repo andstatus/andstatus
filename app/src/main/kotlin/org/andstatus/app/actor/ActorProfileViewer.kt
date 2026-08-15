@@ -33,7 +33,7 @@ class ActorProfileViewer(container: NoteContextMenuContainer) {
     }
 
     private fun setContextMenuTo(viewId: Int) {
-        val view = profileView.findViewById<View?>(viewId)
+        val view = profileView.findViewById<View>(viewId)
         view.setOnCreateContextMenuListener(contextMenu)
         view.setOnClickListener { obj: View -> obj.showContextMenu() }
     }

@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     id("com.android.application")
     id("jacoco")
@@ -20,9 +22,10 @@ android {
     compileSdk = rootProject.extra["compileSdk"] as Int
     buildToolsVersion = rootProject.extra["buildToolsVersion"] as String
 
+    val versionName1 = "62.04"
     defaultConfig {
-        versionCode = 370
-        versionName = "62.03"
+        versionCode = 371
+        versionName = versionName1
 
         applicationId = "org.andstatus.app"
         minSdk = rootProject.extra["minSdk"] as Int
@@ -31,7 +34,9 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         // To test arguments:
         // testInstrumentationRunnerArgument "executionMode", "travisTest"
-        setProperty("archivesBaseName", "AndStatus-$versionName")
+    }
+    base {
+        archivesName.set("AndStatus-$versionName1")
     }
 
     buildTypes {
@@ -48,13 +53,9 @@ android {
         }
     }
 
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     packagingOptions {
         resources {
@@ -67,7 +68,14 @@ android {
             jacocoVersion = rootProject.extra["jacocoToolVersion"] as String
         }
     }
+}
 
+kotlin {
+    target {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_21
+        }
+    }
 }
 
 jacoco {

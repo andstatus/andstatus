@@ -219,7 +219,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
 
         fun <T : ViewItem<T>> hideEditorAndSaveDraft(method: String, activity: TimelineActivity<T>): View {
             return try {
-                val editorView = activity.findViewById<View?>(R.id.note_editor)
+                val editorView = activity.findViewById<View>(R.id.note_editor)
                 if (editorView.visibility == View.VISIBLE) {
                     val helper = ActivityTestHelper<TimelineActivity<*>>(activity)
                     helper.clickMenuItem("$method hiding editor", R.id.saveDraftButton)
@@ -236,7 +236,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
         fun <T : ViewItem<T>> clickSendButton(logMsg: String, activity: TimelineActivity<T>): View {
             val method = "Click Send button; $logMsg"
             return try {
-                val editorView = activity.findViewById<View?>(R.id.note_editor)
+                val editorView = activity.findViewById<View>(R.id.note_editor)
                 if (editorView.visibility != View.VISIBLE) Assert.fail("EditorView is invisible $method")
                 val helper = ActivityTestHelper<TimelineActivity<*>>(activity)
                 helper.clickMenuItem(method, R.id.noteSendButton)
@@ -253,7 +253,7 @@ class ActivityTestHelper<T : MyActivity> : SelectorActivityStub {
             return try {
                 val createNoteButton = activity.getOptionsMenu()?.findItem(R.id.createNoteButton)
                     ?: throw IllegalStateException("createNoteButton not found")
-                val editorView = activity.findViewById<View?>(R.id.note_editor)
+                val editorView = activity.findViewById<View>(R.id.note_editor)
                 Assert.assertTrue(editorView != null)
                 if (editorView.visibility != View.VISIBLE) {
                     Assert.assertTrue("Blog button is visible", createNoteButton.isVisible)

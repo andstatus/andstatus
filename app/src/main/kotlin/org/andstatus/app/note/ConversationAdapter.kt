@@ -83,14 +83,14 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu,
 
     private fun showCentralItem(view: View, item: ConversationViewItem) {
         if (item.getNoteId() == selectedNoteId && count > 1) {
-            view.findViewById<View?>(R.id.note_indented).background = ImageCaches.getStyledImage(
+            view.findViewById<View>(R.id.note_indented).background = ImageCaches.getStyledImage(
                     R.drawable.current_message_background_light,
                     R.drawable.current_message_background).getDrawable()
         }
     }
 
     private fun showIndentImage(view: View, indentPixels: Int) {
-        val referencedView = view.findViewById<View?>(R.id.note_indented)
+        val referencedView = view.findViewById<View>(R.id.note_indented)
         val parentView = referencedView.parent as ViewGroup
         val oldView = parentView.findViewById<ImageView?>(R.id.indent_image)
         if (oldView != null) {
@@ -105,7 +105,7 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu,
     }
 
     private fun showDivider(view: View, viewToTheLeftId: Int) {
-        val divider = view.findViewById<View?>(R.id.divider)
+        val divider = view.findViewById<View>(R.id.divider)
         val layoutParams = divider.layoutParams as RelativeLayout.LayoutParams
         setRightOf(layoutParams, viewToTheLeftId)
         divider.layoutParams = layoutParams
@@ -129,13 +129,13 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu,
     }
 
     private fun indentedNote(view: View, indentPixels: Int) {
-        val msgView = view.findViewById<View?>(R.id.note_indented)
+        val msgView = view.findViewById<View>(R.id.note_indented)
         msgView.setPadding(indentPixels + 6, msgView.paddingTop, msgView.paddingRight,
                 msgView.paddingBottom)
     }
 
     override fun showNoteNumberEtc(view: ViewGroup, item: ConversationViewItem, position: Int) {
-        val number = view.findViewById<TextView?>(R.id.note_number)
+        val number = view.findViewById<TextView>(R.id.note_number)
         number.text = item.historyOrder.toString()
     }
 

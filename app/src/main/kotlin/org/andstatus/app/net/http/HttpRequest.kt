@@ -128,9 +128,9 @@ class HttpRequest private constructor(val apiRoutine: ApiRoutineEnum, val uri: U
                 connectionData.getOriginType() === OriginType.PUMPIO ||
                 apiRoutine == ApiRoutineEnum.OAUTH_REGISTER_CLIENT ||
             apiRoutine == ApiRoutineEnum.AUTHORIZATION_SERVER_METADATA) {
-            uri.getHost() + "-" + apiRoutine.name.toLowerCase()
+            uri.getHost() + "-" + apiRoutine.name.lowercase()
         } else {
-            connectionData.getAccountName().logName + "-" + apiRoutine.name.toLowerCase()
+            connectionData.getAccountName().logName + "-" + apiRoutine.name.lowercase()
         }
     }
 

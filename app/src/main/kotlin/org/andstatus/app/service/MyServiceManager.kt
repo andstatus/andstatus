@@ -208,6 +208,10 @@ class MyServiceManager : BroadcastReceiver(), Identifiable {
             MyService.stopService()
         }
 
+        fun forceStopService() {
+            MyService.forceStopService()
+        }
+
         fun getServiceState(): MyServiceState {
             return MyService.serviceState
         }

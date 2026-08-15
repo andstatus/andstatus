@@ -87,9 +87,9 @@ class MyUrlSpanTest : ActivityTest<HelpActivity>() {
                              spannedStringChecker: Function<SpannedString, Try<Unit>>): Try<Unit> {
         val method = "forOneString"
         DbUtils.waitMs(method, 1000)
-        val pager = activity.findViewById<ViewPager?>(R.id.help_flipper)
+        val pager = activity.findViewById<ViewPager>(R.id.help_flipper)
         Assert.assertNotNull(pager)
-        val textView = activity.findViewById<TextView?>(R.id.splash_payoff_line)
+        val textView = activity.findViewById<TextView>(R.id.splash_payoff_line)
         val result = AtomicReference(TryUtils.notFound<Unit>())
         activity.runOnUiThread {
             pager.currentItem = HelpActivity.Companion.PAGE_LOGO

@@ -253,7 +253,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(TimelineActi
     }
 
     private fun closeDrawer() {
-        val mDrawerList = findViewById<ViewGroup?>(R.id.navigation_drawer)
+        val mDrawerList = findViewById<ViewGroup>(R.id.navigation_drawer)
         mDrawerLayout?.closeDrawer(mDrawerList)
     }
 

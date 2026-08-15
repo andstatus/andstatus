@@ -63,7 +63,7 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
         mLayoutId = R.layout.timeline_list
         super.onCreate(savedInstanceState)
         contextMenu = ManageTimelinesContextMenu(this)
-        val linearLayout = findViewById<LinearLayout?>(R.id.linear_list_wrapper)
+        val linearLayout = findViewById<LinearLayout>(R.id.linear_list_wrapper)
         val inflater = layoutInflater
         val listHeader = inflater.inflate(R.layout.timeline_list_header, linearLayout, false)
         linearLayout.addView(listHeader, 0)
@@ -207,7 +207,7 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>(ManageTime
             }
 
             protected fun showDisplayedInSelector(parentView: View, item: ManageTimelinesViewItem) {
-                val view = parentView.findViewById<CheckBox?>(R.id.displayedInSelector)
+                val view = parentView.findViewById<CheckBox>(R.id.displayedInSelector)
                 MyCheckBox.set(
                     parentView,
                     R.id.displayedInSelector,

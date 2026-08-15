@@ -98,7 +98,7 @@ object UrlUtils {
     private fun correctedHostOrUrl(hostOrUrl: String?): String {
         return if (hostOrUrl.isNullOrEmpty()) {
             ""
-        } else hostOrUrl.replace(" ".toRegex(), "").toLowerCase(MY_DEFAULT_LOCALE)
+        } else hostOrUrl.replace(" ".toRegex(), "").lowercase(MY_DEFAULT_LOCALE)
         // Test with: http://www.regexplanet.com/advanced/java/index.html
     }
 

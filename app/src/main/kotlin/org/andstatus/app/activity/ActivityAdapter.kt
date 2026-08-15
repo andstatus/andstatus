@@ -77,7 +77,7 @@ class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: Ti
         val item = getItem(position)
         val layoutType = calcLayoutType(item)
         showActor(view, item, layoutType)
-        val noteView = view.findViewById<ViewGroup?>(R.id.note_wrapper)
+        val noteView = view.findViewById<ViewGroup>(R.id.note_wrapper)
         if (layoutType.isNoteShown()) {
             noteAdapter.populateView(view, item.noteViewItem, showReceivedTime, position)
             noteView.setOnCreateContextMenuListener(contextMenu.note)
@@ -87,7 +87,7 @@ class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: Ti
             noteAdapter.removeReplyToMeMarkerView(view)
             noteView.visibility = View.GONE
         }
-        val objActorView = view.findViewById<ViewGroup?>(R.id.actor_wrapper)
+        val objActorView = view.findViewById<ViewGroup>(R.id.actor_wrapper)
         if (layoutType.isObjActorViewShown()) {
             if (layoutType.isObjActorShown()) {
                 objActorAdapter.populator.populateView(objActorView, item.getObjActorItem(), position)
@@ -127,21 +127,21 @@ class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: Ti
         if (convertView == null) {
             val viewGroup = LayoutInflater.from(contextMenu.note.getActivity())
                     .inflate(R.layout.activity, null) as ViewGroup
-            noteAdapter?.setupButtons(viewGroup)
+            noteAdapter.setupButtons(viewGroup)
             return viewGroup
         }
         convertView.setBackgroundResource(0)
-        val noteIndented = convertView.findViewById<View?>(R.id.note_indented)
+        val noteIndented = convertView.findViewById<View>(R.id.note_indented)
         noteIndented.setBackgroundResource(0)
         if (showAvatars) {
-            convertView.findViewById<View?>(R.id.actor_avatar_image).visibility = View.GONE
-            convertView.findViewById<View?>(R.id.avatar_image).visibility = View.GONE
+            convertView.findViewById<View>(R.id.actor_avatar_image).visibility = View.GONE
+            convertView.findViewById<View>(R.id.avatar_image).visibility = View.GONE
         }
         return convertView as ViewGroup
     }
 
     private fun showActor(view: ViewGroup, item: ActivityViewItem, layoutType: LayoutType) {
-        val actorView = view.findViewById<ViewGroup?>(R.id.action_wrapper)
+        val actorView = view.findViewById<ViewGroup>(R.id.action_wrapper)
         if (layoutType.isActorShown()) {
             item.noteViewItem.hideTheReblogger(item.actor.actor)
             item.getObjActorItem().hideFollowedBy(item.actor.actor)

@@ -55,7 +55,7 @@ class MyAccountTest {
             val indexOfAt = uniqueName.lastIndexOf("@")
             Assert.assertEquals(logMsg, uniqueName, builder.myAccount.username +
                     "@" + uniqueName.substring(indexOfAt + 1))
-            Assert.assertEquals(logMsg, uniqueName.toLowerCase(), builder.myAccount.actor.webFingerId)
+            Assert.assertEquals(logMsg, uniqueName.lowercase(), builder.myAccount.actor.webFingerId)
         }
     }
 

@@ -26,10 +26,10 @@ class MyAccountsTest {
     fun test() {
         val accounts: MyAccounts = TestSuite.initializeWithAccounts(this).accounts
         Assert.assertNotEquals(accounts.toString(), MyAccount.EMPTY,
-                accounts.fromWebFingerId(DemoData.demoData.pumpioTestAccountUniqueName.toLowerCase()))
+                accounts.fromWebFingerId(DemoData.demoData.pumpioTestAccountUniqueName.lowercase()))
         Assert.assertNotEquals(accounts.toString(), MyAccount.EMPTY,
-                accounts.fromWebFingerId(DemoData.demoData.conversationAccountSecondUniqueName.toLowerCase()))
+                accounts.fromWebFingerId(DemoData.demoData.conversationAccountSecondUniqueName.lowercase()))
         Assert.assertEquals(accounts.toString(), MyAccount.EMPTY,
-                accounts.fromWebFingerId(DemoData.demoData.conversationAuthorSecondUniqueName.toLowerCase()))
+                accounts.fromWebFingerId(DemoData.demoData.conversationAuthorSecondUniqueName.lowercase()))
     }
 }
