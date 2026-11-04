@@ -21,4 +21,20 @@ class ScribeJavaTest {
         assertEquals("Encoding '$str1' using ${instance::class.qualifiedName}", "dG9FbmNvZGU=",
             instance.encodeToString(str1.toByteArray(Charset.forName("UTF-8"))))
     }
+
+    @Test
+    fun testOAuth2ServiceScopeBehavior() {
+        val http = HttpConnectionOAuthStub()
+        val oauth2 = HttpConnectionOAuth2()
+        oauth2.data = http.data
+        oauth2.oauthClientKeys = OAuthClientKeys.fromConnectionData(http.data).also {
+            it.setConsumerKeyAndSecret("test_client_id", "test_client_secret")
+        }
+
+        val serviceRedirect = oauth2.getOauth2Service(true)
+        val serviceRefresh = oauth2.getOauth2Service(false)
+
+        org.junit.Assert.assertNotNull("Service with redirect (auth) should not be null", serviceRedirect)
+        org.junit.Assert.assertNotNull("Service without redirect (refresh) should not be null", serviceRefresh)
+    }
 }
