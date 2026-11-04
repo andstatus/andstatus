@@ -269,9 +269,9 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         clientConfig.isFollowRedirects = false
         val serviceBuilder = ServiceBuilder(oauthClientKeys?.getConsumerKey())
             .apiSecret(oauthClientKeys?.getConsumerSecret())
-            .defaultScope(scopesSupported)
             .httpClientConfig(clientConfig)
         if (redirect) {
+            serviceBuilder.defaultScope(scopesSupported)
             serviceBuilder.callback(CALLBACK_URI)
         }
         if (MyPreferences.isLogNetworkLevelMessages() && MyLog.isVerboseEnabled()) {

@@ -31,7 +31,7 @@ class MyOAuth2Service(
     }
 
     override fun createRefreshTokenRequest(refreshToken: String?, scope: String?): OAuthRequest {
-        return super.createRefreshTokenRequest(refreshToken, scope).apply {
+        return super.createRefreshTokenRequest(refreshToken, null).apply {
             // https://www.rfc-editor.org/rfc/rfc6749#section-3.2.1
             // "A client MAY use the "client_id" request parameter to identify itself
             //   when sending requests to the token endpoint..."
