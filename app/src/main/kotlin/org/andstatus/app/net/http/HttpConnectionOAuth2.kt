@@ -125,27 +125,35 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
     }
 
     override fun refreshAccess(): Try<Unit> {
-        MyLog.d(this, "About to refresh Access token for ${data.getAccountName()}, old response:$accessSecret")
+        MyLog.i(this, "Refreshing OAuth2 access token for account: ${data.getAccountName()}")
         if (accessSecret.isEmpty()) {
-            return TryUtils.failure("No access token response")
+            val msg = "No access token response found for ${data.getAccountName()}"
+            MyLog.w(this, msg)
+            return TryUtils.failure(msg)
         }
         val oldToken: OAuth2AccessToken = OAuth2AccessTokenJsonExtractor.instance()
             .extract(Response(200, "", Collections.emptyMap(), accessSecret))
         if (oldToken.refreshToken.isNullOrBlank()) {
-            return TryUtils.failure("No refreshToken in access token response")
+            val msg = "No refreshToken found in access token response for ${data.getAccountName()}"
+            MyLog.w(this, msg)
+            return TryUtils.failure(msg)
         }
         val service = getOauth2Service(false)
-        val newToken = service.refreshAccessToken(oldToken.refreshToken)
+        val newToken = try {
+            service.refreshAccessToken(oldToken.refreshToken)
+        } catch (e: Exception) {
+            MyLog.w(this, "Failed to execute OAuth2 token refresh request for ${data.getAccountName()}: $e")
+            throw e
+        }
         if (newToken.accessToken.isNullOrBlank()) {
-            return TryUtils.failure("No Access token in access token response")
+            val msg = "No Access token in refreshed response for ${data.getAccountName()}"
+            MyLog.w(this, msg)
+            return TryUtils.failure(msg)
         }
 
         accessToken = newToken.accessToken
         accessSecret = newToken.rawResponse
-        MyLog.d(
-            this, "Refreshed Access token for " + data.getAccountName() +
-                ": " + accessToken + ", " + accessSecret
-        )
+        MyLog.i(this, "Successfully refreshed OAuth2 access token for account: ${data.getAccountName()}")
 
         val builder = MyAccountBuilder.fromAccountName(data.getAccountName())
         builder.setAccessTokenWithSecret(newToken.accessToken, newToken.rawResponse)
