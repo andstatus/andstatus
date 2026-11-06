@@ -112,21 +112,25 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
         }
 
         private fun calcType(jso: JSONObject): Type {
-            return when (JsonUtils.optString(jso, "type")) {
-                "Collection" -> if (jso.has("items")) Type.COLLECTION else Type.PAGED_COLLECTION
-                "OrderedCollection" -> if (jso.has("orderedItems")) Type.ORDERED_COLLECTION else Type.PAGED_ORDERED_COLLECTION
-                "CollectionPage" -> if (jso.has("items")) Type.PAGE else Type.EMPTY
-                "OrderedCollectionPage" -> if (jso.has("orderedItems")) Type.ORDERED_PAGE else Type.EMPTY
-                else -> Type.EMPTY
-            }
+            val typeStr = JsonUtils.optString(jso, "type")
+            return if (typeStr.contains("Page", ignoreCase = true)) Type.ORDERED_PAGE else Type.ORDERED_COLLECTION
         }
 
-        private fun calcItems(jso: JSONObject, type: Type?): ObjectOrId {
-            return when (type) {
-                Type.COLLECTION, Type.PAGE -> ObjectOrId.of(jso, "items")
-                Type.ORDERED_COLLECTION, Type.ORDERED_PAGE -> ObjectOrId.of(jso, "orderedItems")
-                else -> ObjectOrId.empty()
+        private fun calcItems(jso: JSONObject): ObjectOrId {
+            val knownKeys = arrayOf("orderedItems", "ordereditems", "items", "object", "objects", "data", "element", "elements")
+            for (key in knownKeys) {
+                if (jso.has(key) && jso.opt(key) != null) {
+                    return ObjectOrId.of(jso, key)
+                }
             }
+            val keys = jso.keys()
+            while (keys.hasNext()) {
+                val key = keys.next()
+                if (jso.optJSONArray(key) != null || jso.optJSONObject(key) != null) {
+                    return ObjectOrId.of(jso, key)
+                }
+            }
+            return ObjectOrId.of(jso, "orderedItems")
         }
     }
 
@@ -135,7 +139,7 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
         val parent: Optional<JSONObject> = objectOrId.optObj
         id = if (objectOrId.id.isPresent) objectOrId.id else parent.flatMap { p: JSONObject -> ObjectOrId.of(p, "id").id }
         type = parent.map { jso: JSONObject -> calcType(jso) }.orElse(Type.EMPTY)
-        items = parent.map { p: JSONObject -> calcItems(p, type) }.orElse(ObjectOrId.empty())
+        items = parent.map { p: JSONObject -> calcItems(p) }.orElse(ObjectOrId.empty())
         firstPage = calcPage(parent, "first")
         prevPage = calcPage(parent, "prev")
         currentPage = calcPage(parent, "current")

@@ -17,4 +17,19 @@ class AJsonCollectionTest {
         Assert.assertEquals(c2.toString(), "https://pleroma.site/users/AndStatus/inbox?max_id=9jPPRXLA2WW7NDFvn6&page=true", c2.getId())
         Assert.assertEquals(c2.toString(), Optional.empty<Any?>(), c2.firstPage.id)
     }
+
+    @Test
+    fun testOrderedCollectionWithFirstLink() {
+        val json = """
+            {
+                "@context": "https://www.w3.org/ns/activitystreams",
+                "type": "OrderedCollection",
+                "totalItems": 3,
+                "first": "https://example.com/outbox?page=0"
+            }
+        """
+        val collection = AJsonCollection.of(json)
+        Assert.assertEquals(AJsonCollection.Type.PAGED_ORDERED_COLLECTION, collection.type)
+        Assert.assertEquals(Optional.of("https://example.com/outbox?page=0"), collection.firstPage.id)
+    }
 }
