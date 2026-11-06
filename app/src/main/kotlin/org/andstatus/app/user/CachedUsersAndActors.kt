@@ -127,7 +127,13 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     }
 
     fun isMe(actor: Actor): Boolean {
-        return isMe(actor.actorId)
+        if (actor.isEmpty) return false
+        if (isMe(actor.actorId)) return true
+        return myActors.values.stream().anyMatch { myActor: Actor ->
+            myActor.isSame(actor) ||
+                (actor.isOidReal() && myActor.oid == actor.oid) ||
+                (actor.webFingerId.isNotEmpty() && myActor.webFingerId.equals(actor.webFingerId, ignoreCase = true))
+        }
     }
 
     fun isMe(actorId: Long): Boolean {

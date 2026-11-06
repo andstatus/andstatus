@@ -129,7 +129,14 @@ class ConnectionActivityPub : Connection() {
 
     private fun actorFromPersonTypeJson(jso: JSONObject): Actor {
         val actor = actorFromOid(JsonUtils.optString(jso, ID))
-        actor.setUsername(JsonUtils.optString(jso, "preferredUsername"))
+        val preferredUsername = JsonUtils.optString(jso, "preferredUsername")
+        actor.setUsername(if (preferredUsername.isNotEmpty()) preferredUsername else JsonUtils.optString(jso, NAME_PROPERTY))
+        if (actor.webFingerId.isEmpty()) {
+            val host = data.getOrigin().url?.host ?: ""
+            if (host.isNotEmpty() && actor.getUsername().isNotEmpty() && !actor.getUsername().contains("@")) {
+                actor.setWebFingerId(actor.getUsername() + "@" + host)
+            }
+        }
         actor.setRealName(JsonUtils.optString(jso, NAME_PROPERTY))
         actor.setAvatarUrl(JsonUtils.optStringInside(jso, "icon", "url"))
         actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY)
@@ -300,9 +307,10 @@ class ConnectionActivityPub : Connection() {
         return out
     }
 
-    private fun getAccountActorSafe(jsoActivity: JSONObject? = null): Actor {
+    private fun getAccountActorSafe(jsoActivity: JSONObject? = null, parentActivity: AActivity? = null): Actor {
         val actor = data.getAccountActor()
         if (!actor.isEmpty) return actor
+        if (parentActivity != null && !parentActivity.getActor().isEmpty) return parentActivity.getActor()
         if (jsoActivity != null) {
             val actorTry = actorFromProperty(jsoActivity, "actor")
             if (actorTry.isSuccess && actorTry.get().nonEmpty) {
@@ -454,7 +462,7 @@ class ConnectionActivityPub : Connection() {
             val author = actorFromProperty(jso, "attributedTo")
                 .orElse { actorFromProperty(jso, "author") }.getOrElse(Actor.EMPTY)
             val noteActivity: AActivity = newPartialNote(
-                data.getAccountActor(),
+                getAccountActorSafe(jso, parentActivity),
                 author,
                 oid,
                 updatedOrCreatedDate(jso),

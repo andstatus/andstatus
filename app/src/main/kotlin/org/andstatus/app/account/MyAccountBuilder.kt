@@ -200,6 +200,8 @@ class MyAccountBuilder private constructor(
         // as the Originating system tells us.
         if (ok && myAccount.username.isNotEmpty()
             && myAccount.data.accountName.username.compareTo(actor.getUsername(), ignoreCase = true) != 0
+            && myAccount.data.accountName.username.compareTo(actor.webFingerId, ignoreCase = true) != 0
+            && myAccount.data.accountName.username.substringBefore("@").compareTo(actor.getUsername(), ignoreCase = true) != 0
         ) {
             // Credentials belong to other Account ??
             ok = false

@@ -151,19 +151,24 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
     }
 
     private fun getActorWithOid(): Try<Actor> {
-        if (getActor().actorId == 0L) {
-            if (timeline.myAccountToSync.isValid) {
-                return Try.success(timeline.myAccountToSync.actor)
+        var actor = getActor()
+        if (actor.actorId == 0L || !actor.oid.isRealOid) {
+            if (timeline.myAccountToSync.isValid && timeline.myAccountToSync.actor.nonEmpty) {
+                actor = timeline.myAccountToSync.actor
             }
-        } else {
-            val actor: Actor = Actor.load(execContext.myContext, getActor().actorId)
-            return if (!actor.oid.isRealOid) {
-                Try.failure(hardConnectionException("No real ActorOid for $actor, timeline:${timeline}"))
-            } else Try.success(actor)
         }
-        return if (timeline.timelineType.isForUser()) {
-            Try.failure(hardConnectionException("No actor for the timeline:${timeline}"))
-        } else Try.success(Actor.EMPTY)
+        if (actor.actorId == 0L || !actor.oid.isRealOid) {
+            return if (timeline.timelineType.isForUser()) {
+                Try.failure(hardConnectionException("No actor for the timeline:${timeline}"))
+            } else Try.success(Actor.EMPTY)
+        }
+        if (actor.actorId != 0L) {
+            val loadedActor: Actor = Actor.load(execContext.myContext, actor.actorId)
+            if (loadedActor.oid.isRealOid) {
+                return Try.success(loadedActor)
+            }
+        }
+        return Try.success(actor)
     }
 
     companion object {
