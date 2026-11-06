@@ -503,7 +503,16 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
     override fun onResultIsReady() {
         when (execContext.commandData.command) {
             CommandEnum.REFRESH_ACCESS -> {
-                if (execContext.result.hasError && !execContext.result.shouldWeRetry) {
+                if (!execContext.result.hasError) {
+                    MyServiceManager.sendCommand(
+                        CommandData.newAccountCommand(CommandEnum.GET_TIMELINE, execContext.myAccount)
+                    )
+                } else if (!execContext.result.shouldWeRetry) {
+                    MyLog.w(
+                        this,
+                        "UNAUTHORIZED (401): Automatic token refresh failed for ${execContext.myAccount.accountName}. " +
+                            "Manual re-authentication / credential verification in Account Settings is required."
+                    )
                     MyAccountBuilder.fromMyAccount(execContext.myAccount).apply {
                         onAccessFailure()
                         save()
