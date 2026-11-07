@@ -129,7 +129,15 @@ class ConnectionActivityPub : Connection() {
 
     private fun actorFromPersonTypeJson(jso: JSONObject): Actor {
         val actor = actorFromOid(JsonUtils.optString(jso, ID))
-        actor.setUsername(JsonUtils.optString(jso, "preferredUsername"))
+        val username = JsonUtils.optString(jso, "preferredUsername").takeIf { it.isNotEmpty() }
+            ?: JsonUtils.optString(jso, NAME_PROPERTY)
+        actor.withUniqueName(username)
+//        if (actor.webFingerId.isEmpty()) {
+//            val host = data.getOrigin().url?.host ?: ""
+//            if (host.isNotEmpty() && actor.getUsername().isNotEmpty() && !actor.getUsername().contains("@")) {
+//                actor.setWebFingerId(actor.getUsername() + "@" + host)
+//            }
+//        }
         actor.setRealName(JsonUtils.optString(jso, NAME_PROPERTY))
         actor.setAvatarUrl(JsonUtils.optStringInside(jso, "icon", "url"))
         actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY)
@@ -271,18 +279,31 @@ class ConnectionActivityPub : Connection() {
         return out
     }
 
+    private fun getAccountActorSafe(jsoActivity: JSONObject? = null, parentActivity: AActivity? = null): Actor {
+        val actor = data.getAccountActor()
+        if (!actor.isEmpty) return actor
+        if (parentActivity != null && !parentActivity.getActor().isEmpty) return parentActivity.getActor()
+        if (jsoActivity != null) {
+            val actorTry = actorFromProperty(jsoActivity, "actor")
+            if (actorTry.isSuccess && actorTry.get().nonEmpty) {
+                return actorTry.get()
+            }
+        }
+        return Actor.fromOid(data.getOrigin(), data.getOrigin().url?.toString() ?: "https://unknown")
+    }
+
     fun activityFromJson(jsoActivity: JSONObject?): AActivity {
         if (jsoActivity == null || jsoActivity.length() == 0) return AActivity.EMPTY
 
         val oid = jsoActivity.optString(ID)
         if (jsoActivity.length() == 1 && oid.isNotBlank()) {
-            val activity: AActivity = AActivity.from(data.getAccountActor(), ActivityType.UNKNOWN)
+            val activity: AActivity = AActivity.from(getAccountActorSafe(jsoActivity), ActivityType.UNKNOWN)
             return activity.setOid(oid)
         }
 
         val activityType: ActivityType = ActivityType.from(JsonUtils.optString(jsoActivity, "type"))
         val activity: AActivity = AActivity.from(
-            data.getAccountActor(),
+            getAccountActorSafe(jsoActivity),
             if (activityType == ActivityType.EMPTY) ActivityType.UPDATE else activityType
         )
         return try {
@@ -298,12 +319,12 @@ class ConnectionActivityPub : Connection() {
 
     private fun activityFromOid(oid: String?): AActivity {
         return if (StringUtil.isEmptyOrTemp(oid)) AActivity.EMPTY
-        else AActivity.from(data.getAccountActor(), ActivityType.UPDATE)
+        else AActivity.from(getAccountActorSafe(), ActivityType.UPDATE).setOid(oid)
     }
 
     private fun activityFromJson(objectOrId: ObjectOrId): AActivity {
         return if (objectOrId.id.isPresent) {
-            newPartialNote(data.getAccountActor(), Actor.EMPTY, objectOrId.id.get())
+            newPartialNote(getAccountActorSafe(), Actor.EMPTY, objectOrId.id.get())
                 .setOid(objectOrId.id.get())
         } else if (objectOrId.optObj.isPresent) {
             activityFromJson(objectOrId.optObj.get())
@@ -412,7 +433,7 @@ class ConnectionActivityPub : Connection() {
             val author = actorFromProperty(jso, "attributedTo")
                 .orElse { actorFromProperty(jso, "author") }.getOrElse(Actor.EMPTY)
             val noteActivity: AActivity = newPartialNote(
-                data.getAccountActor(),
+                getAccountActorSafe(jso, parentActivity),
                 author,
                 oid,
                 updatedOrCreatedDate(jso),

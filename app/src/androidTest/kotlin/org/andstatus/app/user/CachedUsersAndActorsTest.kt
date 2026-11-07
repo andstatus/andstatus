@@ -40,4 +40,14 @@ class CachedUsersAndActorsTest {
         Assert.assertEquals(users.toString(), true, users.isMeOrMyFriend(actor))
         Assert.assertEquals(users.toString(), false, users.isMeOrMyFriend(Actor.EMPTY))
     }
+
+    @Test
+    fun testIsMeUnsavedActor() {
+        val users: CachedUsersAndActors = myContextHolder.getNow().users
+        val myActor = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountSecondName).actor
+        val unsavedActor = Actor.fromOid(myActor.origin, myActor.oid)
+        unsavedActor.setWebFingerId(myActor.webFingerId)
+        Assert.assertEquals(0L, unsavedActor.actorId)
+        Assert.assertTrue("Unsaved actor matching my account OID should return isMe == true", users.isMe(unsavedActor))
+    }
 }

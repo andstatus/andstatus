@@ -101,11 +101,16 @@ internal class ConnectionAndUrl private constructor(
             ) {
                 MyLog.v(connection) { "Requesting data from the host: $host" }
                 val httpData = connection.http.data.copy()
+                val token = oauthHttp.accessToken
+                val secret = oauthHttp.accessSecret
                 oauthHttp.oauthClientKeys = null
                 httpData.originUrl = UrlUtils.buildUrl(host, httpData.isSsl())
-                oauthHttp = ConnectionFactory.newHttp(connection.data, oauthHttp).oauthHttp
+                val newOauthHttp = ConnectionFactory.newHttp(connection.data, oauthHttp).oauthHttp
                     ?: return TryUtils.failure("Connection is not OAuth")
-                oauthHttp.data = httpData
+                newOauthHttp.data = httpData
+                newOauthHttp.accessToken = token
+                newOauthHttp.accessSecret = secret
+                oauthHttp = newOauthHttp
             }
             if (!oauthHttp.areClientKeysPresent()) {
                 oauthHttp.obtainAuthorizationServerMetadata()
