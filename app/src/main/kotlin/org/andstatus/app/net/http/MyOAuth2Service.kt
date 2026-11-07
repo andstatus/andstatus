@@ -31,7 +31,12 @@ class MyOAuth2Service(
     }
 
     override fun createRefreshTokenRequest(refreshToken: String?, scope: String?): OAuthRequest {
-        return super.createRefreshTokenRequest(refreshToken, scope).apply {
+        // Omit scope.
+        // RFC 6749 Section 6 (Refreshing an Access Token): Under Section 6, the scope parameter is OPTIONAL:
+        //"scope OPTIONAL. The scope of the access request as described by Section 3.3.
+        // The requested scope MUST NOT include any scope not originally granted by the resource owner,
+        // and if omitted is treated as equal to the scope originally granted by the resource owner."
+        return super.createRefreshTokenRequest(refreshToken, null).apply {
             // https://www.rfc-editor.org/rfc/rfc6749#section-3.2.1
             // "A client MAY use the "client_id" request parameter to identify itself
             //   when sending requests to the token endpoint..."

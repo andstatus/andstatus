@@ -125,27 +125,46 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
     }
 
     override fun refreshAccess(): Try<Unit> {
-        MyLog.d(this, "About to refresh Access token for ${data.getAccountName()}, old response:$accessSecret")
+        val message1 = "Refreshing OAuth2 access token for account ${data.getAccountName()}"
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, "$message1, old response: $accessSecret")
+        } else {
+            MyLog.i(this, message1)
+        }
         if (accessSecret.isEmpty()) {
-            return TryUtils.failure("No access token response")
+            val message = "No access token response found for ${data.getAccountName()}"
+            MyLog.w(this, message)
+            return TryUtils.failure(message)
         }
         val oldToken: OAuth2AccessToken = OAuth2AccessTokenJsonExtractor.instance()
             .extract(Response(200, "", Collections.emptyMap(), accessSecret))
         if (oldToken.refreshToken.isNullOrBlank()) {
-            return TryUtils.failure("No refreshToken in access token response")
+            val message = "No refreshToken found in access token response for ${data.getAccountName()}"
+            MyLog.w(this, message)
+            return TryUtils.failure(message)
         }
         val service = getOauth2Service(false)
-        val newToken = service.refreshAccessToken(oldToken.refreshToken)
+        val newToken = try {
+            service.refreshAccessToken(oldToken.refreshToken)
+        } catch (e: Exception) {
+            val message = "Failed to execute OAuth2 token refresh request for ${data.getAccountName()}: $e"
+            MyLog.w(this, message)
+            return TryUtils.failure(message)
+        }
         if (newToken.accessToken.isNullOrBlank()) {
-            return TryUtils.failure("No Access token in access token response")
+            val message = "No Access token in refreshed response for ${data.getAccountName()}"
+            MyLog.w(this, message)
+            return TryUtils.failure(message)
         }
 
         accessToken = newToken.accessToken
         accessSecret = newToken.rawResponse
-        MyLog.d(
-            this, "Refreshed Access token for " + data.getAccountName() +
-                ": " + accessToken + ", " + accessSecret
-        )
+        val message2 = "Successfully refreshed OAuth2 access token for account: ${data.getAccountName()}"
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, "$message2. $accessToken, $accessSecret")
+        } else {
+            MyLog.i(this, message2)
+        }
 
         val builder = MyAccountBuilder.fromAccountName(data.getAccountName())
         builder.setAccessTokenWithSecret(newToken.accessToken, newToken.rawResponse)
@@ -269,9 +288,11 @@ open class HttpConnectionOAuth2 : HttpConnectionOAuthJavaNet() {
         clientConfig.isFollowRedirects = false
         val serviceBuilder = ServiceBuilder(oauthClientKeys?.getConsumerKey())
             .apiSecret(oauthClientKeys?.getConsumerSecret())
-            .defaultScope(scopesSupported)
             .httpClientConfig(clientConfig)
         if (redirect) {
+            // We assume here that redirect==true for authorization/consent
+            // and scopes are needed only here.
+            serviceBuilder.defaultScope(scopesSupported)
             serviceBuilder.callback(CALLBACK_URI)
         }
         if (MyPreferences.isLogNetworkLevelMessages() && MyLog.isVerboseEnabled()) {
