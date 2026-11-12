@@ -112,25 +112,20 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
         }
 
         private fun calcType(jso: JSONObject): Type {
-            val typeStr = JsonUtils.optString(jso, "type")
-            return if (typeStr.contains("Page", ignoreCase = true)) Type.ORDERED_PAGE else Type.ORDERED_COLLECTION
+            return when (JsonUtils.optString(jso, "type")) {
+                "Collection" -> if (jso.has("items")) Type.COLLECTION else Type.PAGED_COLLECTION
+                "OrderedCollection" -> if (jso.has("orderedItems") || jso.has("ordereditems")) Type.ORDERED_COLLECTION else Type.PAGED_ORDERED_COLLECTION
+                "CollectionPage" -> Type.PAGE
+                "OrderedCollectionPage" -> Type.ORDERED_PAGE
+                else -> if (JsonUtils.optString(jso, "type").contains("Page", ignoreCase = true)) Type.ORDERED_PAGE else Type.ORDERED_COLLECTION
+            }
         }
 
         private fun calcItems(jso: JSONObject): ObjectOrId {
-            val knownKeys = arrayOf("orderedItems", "ordereditems", "items", "object", "objects", "data", "element", "elements")
-            for (key in knownKeys) {
-                if (jso.has(key) && jso.opt(key) != null) {
-                    return ObjectOrId.of(jso, key)
-                }
-            }
-            val keys = jso.keys()
-            while (keys.hasNext()) {
-                val key = keys.next()
-                if (jso.optJSONArray(key) != null || jso.optJSONObject(key) != null) {
-                    return ObjectOrId.of(jso, key)
-                }
-            }
-            return ObjectOrId.of(jso, "orderedItems")
+            return if (jso.has("orderedItems")) ObjectOrId.of(jso, "orderedItems")
+            else if (jso.has("ordereditems")) ObjectOrId.of(jso, "ordereditems")
+            else if (jso.has("items")) ObjectOrId.of(jso, "items")
+            else ObjectOrId.of(jso, "orderedItems")
         }
     }
 
