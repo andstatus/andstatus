@@ -114,19 +114,18 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
         private fun calcType(jso: JSONObject): Type {
             return when (JsonUtils.optString(jso, "type")) {
                 "Collection" -> if (jso.has("items")) Type.COLLECTION else Type.PAGED_COLLECTION
-                "OrderedCollection" -> if (jso.has("orderedItems")) Type.ORDERED_COLLECTION else Type.PAGED_ORDERED_COLLECTION
-                "CollectionPage" -> if (jso.has("items")) Type.PAGE else Type.EMPTY
-                "OrderedCollectionPage" -> if (jso.has("orderedItems")) Type.ORDERED_PAGE else Type.EMPTY
-                else -> Type.EMPTY
+                "OrderedCollection" -> if (jso.has("orderedItems") || jso.has("ordereditems")) Type.ORDERED_COLLECTION else Type.PAGED_ORDERED_COLLECTION
+                "CollectionPage" -> Type.PAGE
+                "OrderedCollectionPage" -> Type.ORDERED_PAGE
+                else -> if (JsonUtils.optString(jso, "type").contains("Page", ignoreCase = true)) Type.ORDERED_PAGE else Type.ORDERED_COLLECTION
             }
         }
 
-        private fun calcItems(jso: JSONObject, type: Type?): ObjectOrId {
-            return when (type) {
-                Type.COLLECTION, Type.PAGE -> ObjectOrId.of(jso, "items")
-                Type.ORDERED_COLLECTION, Type.ORDERED_PAGE -> ObjectOrId.of(jso, "orderedItems")
-                else -> ObjectOrId.empty()
-            }
+        private fun calcItems(jso: JSONObject): ObjectOrId {
+            return if (jso.has("orderedItems")) ObjectOrId.of(jso, "orderedItems")
+            else if (jso.has("ordereditems")) ObjectOrId.of(jso, "ordereditems")
+            else if (jso.has("items")) ObjectOrId.of(jso, "items")
+            else ObjectOrId.of(jso, "orderedItems")
         }
     }
 
@@ -135,7 +134,7 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
         val parent: Optional<JSONObject> = objectOrId.optObj
         id = if (objectOrId.id.isPresent) objectOrId.id else parent.flatMap { p: JSONObject -> ObjectOrId.of(p, "id").id }
         type = parent.map { jso: JSONObject -> calcType(jso) }.orElse(Type.EMPTY)
-        items = parent.map { p: JSONObject -> calcItems(p, type) }.orElse(ObjectOrId.empty())
+        items = parent.map { p: JSONObject -> calcItems(p) }.orElse(ObjectOrId.empty())
         firstPage = calcPage(parent, "first")
         prevPage = calcPage(parent, "prev")
         currentPage = calcPage(parent, "current")
