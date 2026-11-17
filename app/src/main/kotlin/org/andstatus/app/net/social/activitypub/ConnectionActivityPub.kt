@@ -369,7 +369,14 @@ class ConnectionActivityPub : Connection() {
             MyLog.d(this, "Activity has no id:" + jsoActivity.toString(2))
             return AActivity.EMPTY
         }
-        activity.setOid(oid).setUpdatedDate(updatedOrCreatedDate(jsoActivity))
+        var updatedDate = updatedOrCreatedDate(jsoActivity)
+        if (updatedDate <= RelativeTime.SOME_TIME_AGO && jsoActivity.has("object")) {
+            val obj = jsoActivity.optJSONObject("object")
+            if (obj != null) {
+                updatedDate = updatedOrCreatedDate(obj)
+            }
+        }
+        activity.setOid(oid).setUpdatedDate(updatedDate)
         actorFromProperty(jsoActivity, "actor").onSuccess { actor: Actor -> activity.setActor(actor) }
         val `object`: ObjectOrId = ObjectOrId.of(jsoActivity, "object")
             .ifId { id: String ->
