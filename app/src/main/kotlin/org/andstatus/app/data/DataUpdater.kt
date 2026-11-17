@@ -461,6 +461,9 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             if (actor.getUpdatedDate() > 0) {
                 values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate())
             }
+            if (actor.user.userId != 0L) {
+                values.put(ActorTable.USER_ID, actor.user.userId)
+            }
             actor.saveUser()
             val actorUri: Uri = MatchedUri.getActorUri(me.actorId, actor.actorId)
             if (actor.actorId == 0L) {
