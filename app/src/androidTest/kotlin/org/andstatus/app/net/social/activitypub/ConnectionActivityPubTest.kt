@@ -504,4 +504,136 @@ class ConnectionActivityPubTest {
             MyQuery.idToOid(myContext, OidEnum.ACTIVITY_OID, activity1.id, 0L)
         )
     }
+
+    @Test
+    fun testOutboxActivitiesTitlesAndContent() {
+        val outboxJson = """
+            {
+                "@context": "https://www.w3.org/ns/activitystreams",
+                "type": "OrderedCollection",
+                "totalItems": 3,
+                "first": "https://example.com/outbox?page=0"
+            }
+        """
+        val pageJson = """
+            {
+                "@context": "https://www.w3.org/ns/activitystreams",
+                "type": "OrderedCollectionPage",
+                "partOf": "https://example.com/outbox",
+                "orderedItems": [
+                    {
+                        "type": "Create",
+                        "id": "https://example.com/activity/1",
+                        "actor": "https://example.com/user/1",
+                        "object": {
+                            "type": "Note",
+                            "id": "https://example.com/note/1",
+                            "content": "First post body",
+                            "name": "First Title"
+                        }
+                    },
+                    {
+                        "type": "Create",
+                        "id": "https://example.com/activity/2",
+                        "actor": "https://example.com/user/1",
+                        "object": {
+                            "type": "Note",
+                            "id": "https://example.com/note/2",
+                            "content": "Second post body",
+                            "name": "Second Title"
+                        }
+                    },
+                    {
+                        "type": "Create",
+                        "id": "https://example.com/activity/3",
+                        "actor": "https://example.com/user/1",
+                        "object": {
+                            "type": "Note",
+                            "id": "https://example.com/note/3",
+                            "content": "Third post body",
+                            "name": "Third Title"
+                        }
+                    }
+                ]
+            }
+        """
+        stub.http.addResponse(outboxJson)
+        stub.http.addResponse(pageJson)
+
+        val actorForTimeline: Actor = Actor.fromOid(stub.data.getOrigin(), "https://example.com/user/1")
+        actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, "https://example.com/outbox")
+
+        val timeline = stub.connection.getTimeline(
+            true, ApiRoutineEnum.ACTOR_TIMELINE,
+            TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, actorForTimeline
+        ).get()
+
+        Assert.assertNotNull("Timeline returned", timeline)
+        assertEquals("Number of items in outbox timeline", 3, timeline.size().toLong())
+
+        val activity0 = timeline[0]!!
+        assertEquals("First Title", activity0.getNote().getName())
+        assertEquals("First post body", activity0.getNote().content)
+
+        val activity1 = timeline[1]!!
+        assertEquals("Second Title", activity1.getNote().getName())
+        assertEquals("Second post body", activity1.getNote().content)
+
+        val activity2 = timeline[2]!!
+        assertEquals("Third Title", activity2.getNote().getName())
+        assertEquals("Third post body", activity2.getNote().content)
+    }
+
+    @Test
+    fun testRealDrupalOutboxPayloadWithMissingOuterTimestamp() {
+        val pageJson = """
+            {
+                "@context": "https://www.w3.org/ns/activitystreams",
+                "type": "OrderedCollectionPage",
+                "partOf": "https://dap.example.org/user/3/activitypub/test2/outbox",
+                "id": "https://dap.example.org/user/3/activitypub/test2/outbox?page=0",
+                "orderedItems": [
+                    {
+                        "type": "Create",
+                        "id": "https://dap.example.org/activitypub/activity/20",
+                        "actor": "https://dap.example.org/user/3/activitypub/test2",
+                        "to": [
+                            "https://www.w3.org/ns/activitystreams#Public"
+                        ],
+                        "cc": [
+                            "https://dap.example.org/user/3/activitypub/test2/followers"
+                        ],
+                        "object": {
+                            "type": "Note",
+                            "id": "https://dap.example.org/node/5",
+                            "url": "https://dap.example.org/node/5",
+                            "attributedTo": "https://dap.example.org/user/3/activitypub/test2",
+                            "published": "2026-11-07T16:29:09Z",
+                            "name": "Outbox generic from test2",
+                            "content": "<p>Outbox generic from test2</p>",
+                            "summary": "<p>Outbox generic from test2</p>"
+                        }
+                    }
+                ],
+                "totalItems": 1
+            }
+        """
+        stub.http.addResponse(pageJson)
+
+        val actorForTimeline: Actor = Actor.fromOid(stub.data.getOrigin(), "https://dap.example.org/user/3/activitypub/test2")
+        actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, "https://dap.example.org/user/3/activitypub/test2/outbox")
+
+        val timeline = stub.connection.getTimeline(
+            true, ApiRoutineEnum.ACTOR_TIMELINE,
+            TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, actorForTimeline
+        ).get()
+
+        Assert.assertNotNull("Timeline returned", timeline)
+        assertEquals("Number of items", 1, timeline.size().toLong())
+
+        val activity = timeline[0]!!
+        assertTrue("Activity updated date should be parsed from inner note published date", activity.getUpdatedDate() > 0)
+        assertEquals("Outbox generic from test2", activity.getNote().getName())
+        assertEquals("<p>Outbox generic from test2</p>", activity.getNote().content)
+    }
 }

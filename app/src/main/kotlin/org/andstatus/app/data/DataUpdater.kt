@@ -398,6 +398,9 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
         val method = "updateObjActor2"
         try {
             val actor = activity.getObjActor()
+            if (execContext.myContext.users.isMe(actor) && (actor.user.isEmpty || actor.user.userId == 0L)) {
+                actor.user = me.actor.user
+            }
             val actorOid = if (actor.actorId == 0L && !actor.isOidReal()) actor.toTempOid() else actor.oid
             val values = ContentValues()
             if (actor.actorId == 0L || actor.isFullyDefined()) {
@@ -457,6 +460,9 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             }
             if (actor.getUpdatedDate() > 0) {
                 values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate())
+            }
+            if (actor.user.userId != 0L) {
+                values.put(ActorTable.USER_ID, actor.user.userId)
             }
             actor.saveUser()
             val actorUri: Uri = MatchedUri.getActorUri(me.actorId, actor.actorId)
