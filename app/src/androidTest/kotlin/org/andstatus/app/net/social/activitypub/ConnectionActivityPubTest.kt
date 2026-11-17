@@ -583,4 +583,57 @@ class ConnectionActivityPubTest {
         assertEquals("Third Title", activity2.getNote().getName())
         assertEquals("Third post body", activity2.getNote().content)
     }
+
+    @Test
+    fun testRealDrupalOutboxPayloadWithMissingOuterTimestamp() {
+        val pageJson = """
+            {
+                "@context": "https://www.w3.org/ns/activitystreams",
+                "type": "OrderedCollectionPage",
+                "partOf": "https://dap.example.org/user/3/activitypub/test2/outbox",
+                "id": "https://dap.example.org/user/3/activitypub/test2/outbox?page=0",
+                "orderedItems": [
+                    {
+                        "type": "Create",
+                        "id": "https://dap.example.org/activitypub/activity/20",
+                        "actor": "https://dap.example.org/user/3/activitypub/test2",
+                        "to": [
+                            "https://www.w3.org/ns/activitystreams#Public"
+                        ],
+                        "cc": [
+                            "https://dap.example.org/user/3/activitypub/test2/followers"
+                        ],
+                        "object": {
+                            "type": "Note",
+                            "id": "https://dap.example.org/node/5",
+                            "url": "https://dap.example.org/node/5",
+                            "attributedTo": "https://dap.example.org/user/3/activitypub/test2",
+                            "published": "2026-11-07T16:29:09Z",
+                            "name": "Outbox generic from test2",
+                            "content": "<p>Outbox generic from test2</p>",
+                            "summary": "<p>Outbox generic from test2</p>"
+                        }
+                    }
+                ],
+                "totalItems": 1
+            }
+        """
+        stub.http.addResponse(pageJson)
+
+        val actorForTimeline: Actor = Actor.fromOid(stub.data.getOrigin(), "https://dap.example.org/user/3/activitypub/test2")
+        actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, "https://dap.example.org/user/3/activitypub/test2/outbox")
+
+        val timeline = stub.connection.getTimeline(
+            true, ApiRoutineEnum.ACTOR_TIMELINE,
+            TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, actorForTimeline
+        ).get()
+
+        Assert.assertNotNull("Timeline returned", timeline)
+        assertEquals("Number of items", 1, timeline.size().toLong())
+
+        val activity = timeline[0]!!
+        assertTrue("Activity updated date should be parsed from inner note published date", activity.getUpdatedDate() > 0)
+        assertEquals("Outbox generic from test2", activity.getNote().getName())
+        assertEquals("<p>Outbox generic from test2</p>", activity.getNote().content)
+    }
 }
