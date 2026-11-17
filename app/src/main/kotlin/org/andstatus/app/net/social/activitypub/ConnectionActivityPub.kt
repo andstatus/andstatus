@@ -254,16 +254,45 @@ class ConnectionActivityPub : Connection() {
             .flatMap { conu: ConnectionAndUrl -> getActivities(conu) }
     }
 
+    private fun fetchCollectionPage(conu: ConnectionAndUrl, root: JSONObject): Try<AJsonCollection> {
+        val jsonCollection = AJsonCollection.of(root)
+        val hasItems = !jsonCollection.mapObjects { item: JSONObject? -> AActivity.EMPTY }.isEmpty()
+        MyLog.i(TAG, "fetchCollectionPage root hasItems=$hasItems, root type=${root.optString("type")}, first=${root.opt("first")}")
+        if (!hasItems && root.has("first")) {
+            val firstVal = root.opt("first")
+            if (firstVal is String && firstVal.isNotBlank()) {
+                val pageUri = UriUtils.fromString(firstVal)
+                MyLog.i(TAG, "Fetching first collection page from $pageUri")
+                return conu.withUri(pageUri).newRequest()
+                    .let(conu::execute)
+                    .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+                    .map { pageRoot: JSONObject ->
+                        MyLog.i(TAG, "Fetched first collection page root:\n${pageRoot.toString(2)}")
+                        AJsonCollection.of(pageRoot)
+                    }
+            } else if (firstVal is JSONObject) {
+                return Try.success(AJsonCollection.of(firstVal))
+            }
+        }
+        return Try.success(jsonCollection)
+    }
+
     private fun getActivities(conu: ConnectionAndUrl): Try<InputTimelinePage> = conu.newRequest()
         .let(conu::execute)
         .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
-        .map { root: JSONObject ->
-            val jsonCollection: AJsonCollection = AJsonCollection.of(root)
-            val activities = jsonCollection.mapObjects { item: JSONObject? ->
-                activityFromJson(ObjectOrId.of(item))
-                    .setTimelinePositions(jsonCollection.getPrevId(), jsonCollection.getNextId())
-            }
-            MyLog.d(
+        .flatMap { root: JSONObject -> fetchCollectionPage(conu, root) }
+        .map { jsonCollection: AJsonCollection ->
+            val activities = jsonCollection.mapAll(
+                { jso: JSONObject ->
+                    activityFromJson(jso)
+                        .setTimelinePositions(jsonCollection.getPrevId(), jsonCollection.getNextId())
+                },
+                { id: String ->
+                    activityFromOid(id)
+                        .setTimelinePositions(jsonCollection.getPrevId(), jsonCollection.getNextId())
+                }
+            )
+            MyLog.i(
                 TAG,
                 "getTimeline " + conu.apiRoutine + " '" + conu.uri + "' " + activities.size + " activities"
             )
@@ -323,11 +352,12 @@ class ConnectionActivityPub : Connection() {
     }
 
     private fun activityFromJson(objectOrId: ObjectOrId): AActivity {
+        val jso = if (objectOrId.optObj.isPresent) objectOrId.optObj.get() else null
         return if (objectOrId.id.isPresent) {
             newPartialNote(getAccountActorSafe(), Actor.EMPTY, objectOrId.id.get())
                 .setOid(objectOrId.id.get())
         } else if (objectOrId.optObj.isPresent) {
-            activityFromJson(objectOrId.optObj.get())
+            activityFromJson(jso)
         } else {
             AActivity.EMPTY
         }
