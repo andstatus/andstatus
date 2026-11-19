@@ -1,9 +1,11 @@
+:root {
+	color-scheme: light dark;
+}
+
 html {
 	max-width: 900px;
     margin: 0 auto;
     padding: 0;
-    background-color: #fff;
-    color: #000;
     font-family: 'Roboto', sans-serif;
     font-size: 1.2em;
     font-weight: 300;
