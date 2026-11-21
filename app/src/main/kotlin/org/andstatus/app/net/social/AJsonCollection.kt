@@ -114,18 +114,26 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
         private fun calcType(jso: JSONObject): Type {
             return when (JsonUtils.optString(jso, "type")) {
                 "Collection" -> if (jso.has("items")) Type.COLLECTION else Type.PAGED_COLLECTION
-                "OrderedCollection" -> if (jso.has("orderedItems") || jso.has("ordereditems")) Type.ORDERED_COLLECTION else Type.PAGED_ORDERED_COLLECTION
+                "OrderedCollection" -> if (jso.has("orderedItems") || jso.has("ordereditems")) {
+                    Type.ORDERED_COLLECTION
+                } else {
+                    Type.PAGED_ORDERED_COLLECTION
+                }
                 "CollectionPage" -> Type.PAGE
                 "OrderedCollectionPage" -> Type.ORDERED_PAGE
-                else -> if (JsonUtils.optString(jso, "type").contains("Page", ignoreCase = true)) Type.ORDERED_PAGE else Type.ORDERED_COLLECTION
+                else -> if (JsonUtils.optString(jso, "type").contains("Page", ignoreCase = true)) {
+                    Type.ORDERED_PAGE
+                } else {
+                    Type.ORDERED_COLLECTION
+                }
             }
         }
 
-        private fun calcItems(jso: JSONObject): ObjectOrId {
-            return if (jso.has("orderedItems")) ObjectOrId.of(jso, "orderedItems")
-            else if (jso.has("ordereditems")) ObjectOrId.of(jso, "ordereditems")
-            else if (jso.has("items")) ObjectOrId.of(jso, "items")
-            else ObjectOrId.of(jso, "orderedItems")
+        private fun calcItems(jso: JSONObject): ObjectOrId = when {
+            jso.has("orderedItems") -> ObjectOrId.of(jso, "orderedItems")
+            jso.has("ordereditems") -> ObjectOrId.of(jso, "ordereditems")
+            jso.has("items") -> ObjectOrId.of(jso, "items")
+            else -> ObjectOrId.of(jso, "orderedItems")
         }
     }
 

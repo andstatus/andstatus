@@ -54,6 +54,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
 import java.util.function.Consumer
+import kotlin.jvm.optionals.getOrNull
 
 class ConnectionActivityPub : Connection() {
     override fun updateConnectionData(connectionData: AccountConnectionData): AccountConnectionData {
@@ -256,18 +257,18 @@ class ConnectionActivityPub : Connection() {
 
     private fun fetchCollectionPage(conu: ConnectionAndUrl, root: JSONObject): Try<AJsonCollection> {
         val jsonCollection = AJsonCollection.of(root)
-        val hasItems = !jsonCollection.mapObjects { item: JSONObject? -> AActivity.EMPTY }.isEmpty()
-        MyLog.i(TAG, "fetchCollectionPage root hasItems=$hasItems, root type=${root.optString("type")}, first=${root.opt("first")}")
+        val hasItems = jsonCollection.mapObjects { item: JSONObject? -> AActivity.EMPTY }.isNotEmpty()
+        MyLog.d(TAG, "fetchCollectionPage root hasItems=$hasItems, root type=${root.optString("type")}, first=${root.opt("first")}")
         if (!hasItems && root.has("first")) {
             val firstVal = root.opt("first")
             if (firstVal is String && firstVal.isNotBlank()) {
                 val pageUri = UriUtils.fromString(firstVal)
-                MyLog.i(TAG, "Fetching first collection page from $pageUri")
+                MyLog.d(TAG, "Fetching first collection page from $pageUri")
                 return conu.withUri(pageUri).newRequest()
                     .let(conu::execute)
                     .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
                     .map { pageRoot: JSONObject ->
-                        MyLog.i(TAG, "Fetched first collection page root:\n${pageRoot.toString(2)}")
+                        MyLog.d(TAG, "Fetched first collection page root:\n${pageRoot.toString(2)}")
                         AJsonCollection.of(pageRoot)
                     }
             } else if (firstVal is JSONObject) {
@@ -352,12 +353,11 @@ class ConnectionActivityPub : Connection() {
     }
 
     private fun activityFromJson(objectOrId: ObjectOrId): AActivity {
-        val jso = if (objectOrId.optObj.isPresent) objectOrId.optObj.get() else null
         return if (objectOrId.id.isPresent) {
             newPartialNote(getAccountActorSafe(), Actor.EMPTY, objectOrId.id.get())
                 .setOid(objectOrId.id.get())
         } else if (objectOrId.optObj.isPresent) {
-            activityFromJson(jso)
+            activityFromJson(objectOrId.optObj.getOrNull())
         } else {
             AActivity.EMPTY
         }
