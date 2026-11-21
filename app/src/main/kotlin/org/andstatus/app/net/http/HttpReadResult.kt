@@ -119,6 +119,9 @@ class HttpReadResult(val request: HttpRequest) {
     fun setStatusCodeInt(statusCodeInt: Int) {
         this.statusCodeInt = statusCodeInt
         statusCode = StatusCode.fromResponseCode(statusCodeInt)
+        if (statusCode == StatusCode.UNAUTHORIZED) {
+            MyLog.w(this, "HTTP 401 UNAUTHORIZED response received for URL: '$url'. Access token may be expired or invalid.")
+        }
     }
 
     fun appendToLog(chars: CharSequence?) {
